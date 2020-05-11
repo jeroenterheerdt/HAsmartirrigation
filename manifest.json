@@ -1,0 +1,9 @@
+{
+    "domain": "smart_irrigation",
+    "name": "Smart Irrigation",
+    "documentation": "TODO",
+    "issue_tracker": "TODO",
+    "dependencies": [],
+    "codeowners": ["@jeroenterheerdt"],
+    "requirements": []
+  }
