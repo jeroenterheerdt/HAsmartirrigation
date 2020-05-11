@@ -1,2 +1,2 @@
 # HAsmartirrigation
-Smart Irrigation custom omponent for Home Assistant
+Smart Irrigation custom component for Home Assistant
