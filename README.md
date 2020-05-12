@@ -1,7 +1,12 @@
 # HAsmartirrigation
 Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
 
+## USAGE
+test.py [apikey for OpenWeatherMap] [Latitude] [Longitude] [Elevation in meters] [metric|imperial] [JAN_ET,FEB_ET,MAR_ET,APR_ET,MAY_ET,JUN_ET,JUL_ET,AUG_ET,SEP_ET,OCT_ET,NOV_ET,DEC_ET] [number of sprinklers] [flow per sprinkler (gallon or liter per minute] [area (m2 or sq ft)]
 
+
+To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source.
+Refer to documentation on your sprinklers to get flow per sprinkler.
 ## TODO
 - include in HACS
 - manifest: dependencies
