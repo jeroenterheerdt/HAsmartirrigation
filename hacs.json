@@ -1,0 +1,6 @@
+{
+    "name": "Smart Irrigation",
+    "render_readme": true,
+    "content_in_root": true,
+    "domains": ["sensor"]
+  }
