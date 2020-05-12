@@ -8,6 +8,7 @@ test.py [apikey for OpenWeatherMap] [Latitude] [Longitude] [Elevation in meters]
 To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source.
 Refer to documentation on your sprinklers to get flow per sprinkler.
 ## TODO
+- create HA component
 - include in HACS
 - manifest: dependencies
 - manifest: urls (2x)
