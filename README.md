@@ -3,11 +3,6 @@ Smart Irrigation custom component for Home Assistant. Partly based on the excell
 
 
 ## TODO
-- make it work: calculate evotranspiration based on fao56...
-- make it work: metric system internally, but configurable whether to work with metric or imperial (can we read that setting from HA?)
-- make it work: provide a way to configure gpm/lpm for irrigation system
-- make it work: rainfall - ev < 0: irrigation, else not. figure out how long the system needs to run to re-fill the bucket. If irrigating, reset values. Otherwise, keep values as is.
-- make it work: actually call the right things to start / stop irrigation
 - include in HACS
 - manifest: dependencies
 - manifest: urls (2x)
@@ -15,3 +10,9 @@ Smart Irrigation custom component for Home Assistant. Partly based on the excell
 
 ## DONE
 - make it work: add sensors for rain based on OpenWeatherMap. Idea is to call update the data each hour and keep a rolling total for the day.
+- make it work: calculate evotranspiration based on fao56...
+- make it work: include snow in percipitation, not just rain
+- make it work: metric system internally, but configurable whether to work with metric or imperial (can we read that setting from HA?)
+- make it work: provide a way to configure gpm/lpm for irrigation system
+- make it work: rainfall - ev < 0: irrigation, else not. figure out how long the system needs to run to re-fill the bucket. If irrigating, reset values. Otherwise, keep values as is.
+- make it work: actually call the right things to start / stop irrigation
