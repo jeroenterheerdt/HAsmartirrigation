@@ -340,7 +340,7 @@ class Smart_Irrigation_Test():
 
 if len(sys.argv) < 10:
     print("test.py [apikey for OpenWeatherMap] [Latitude] [Longitude] [Elevation in meters] [metric|imperial] [JAN_ET,FEB_ET,MAR_ET,APR_ET,MAY_ET,JUN_ET,JUL_ET,AUG_ET,SEP_ET,OCT_ET,NOV_ET,DEC_ET] [number of sprinklers] [flow per sprinkler (gallon or liter per minute] [area (m2 or sq ft)]")
-    print("To get the monthly ET values use http://www.rainmaster.com/historicET.aspx or another source.")
+    print("To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source.")
     print("Refer to documentation on your sprinklers to get flow per sprinkler.")
     sys.exit(0)
 else:
