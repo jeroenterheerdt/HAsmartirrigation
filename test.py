@@ -12,6 +12,8 @@ LAT = 0
 LON = 0
 ELEVATION = 0
 
+#METRIC TO IMPERIAL (US) FACTORS
+
 MM_TO_INCH_FACTOR = 0.03937008
 LITER_TO_GALLON_FACTOR = 0.26417205
 M2_TO_SQ_FT_FACTOR = 10.7639104
@@ -323,8 +325,6 @@ class Smart_Irrigation_Test():
         print("SNOW TODAY: {}".format(self.show_value(self.snow_day, "mm")))
         print("Bucket Delta: {}".format(self.show_value(self.bucketDelta,
                                                         "mm")))
-        
-        self.bucketDelta = -2
         if(self.bucketDelta >= 0):
             #no need to irrigate
             print("BucketDelta >= 0, no need to irrigate")
@@ -339,7 +339,7 @@ class Smart_Irrigation_Test():
             #open the irrigation valve for self.adjusted_run_time minutes.
 
 if len(sys.argv) < 10:
-    print("test.py [apikey for OpenWeatherMap] [Latitude] [Longitude] [Elevation in meters] [metric|imperial] [JAN_ET,FEB_ET,MAR_ET,APR_ET,MAY_ET,JUN_ET,JUL_ET,AUG_ET,SEP_ET,OCT_ET,NOV_ET,DEC_ET] [number of sprinklers] [flow per sprinkler (gallon or liter per minute] [area (m2 or sq ft)]")
+    print("test.py [apikey for OpenWeatherMap] [Latitude] [Longitude] [Elevation in meters] [metric|US] [JAN_ET,FEB_ET,MAR_ET,APR_ET,MAY_ET,JUN_ET,JUL_ET,AUG_ET,SEP_ET,OCT_ET,NOV_ET,DEC_ET] [number of sprinklers] [flow per sprinkler (gallon or liter per minute] [area (m2 or sq ft)]")
     print("To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source.")
     print("Refer to documentation on your sprinklers to get flow per sprinkler.")
     sys.exit(0)
