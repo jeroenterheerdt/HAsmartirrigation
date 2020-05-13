@@ -17,6 +17,7 @@ ELEVATION = 0
 MM_TO_INCH_FACTOR = 0.03937008
 LITER_TO_GALLON_FACTOR = 0.26417205
 M2_TO_SQ_FT_FACTOR = 10.7639104
+M_TO_FT_FACTOR = 3.2808399
 
 class Smart_Irrigation_Test():
 
@@ -51,6 +52,12 @@ class Smart_Irrigation_Test():
             self.area = AREA
         else:
             self.area = AREA / M2_TO_SQ_FT_FACTOR
+
+        # store elevation (m)
+        if MODE == "metric":
+            self.elevation = ELEVATION
+        else:
+            self.elevation = ELEVATION / M_TO_FT_FACTOR
 
         # calculate precipitation rate (mm / hour)
         self.precipitation_rate = (self.throughput*60) / self.area
@@ -175,7 +182,7 @@ class Smart_Irrigation_Test():
         fao56 = self.estimate_fao56_hourly(day_of_year,
                                     T_hr,
                                     t_dew,
-                                    ELEVATION,
+                                    self.elevation,
                                     LAT,
                                     RH_hr,
                                     u_2,
@@ -247,7 +254,7 @@ class Smart_Irrigation_Test():
                                            t_min,
                                            t_max,
                                            t_dew,
-                                           ELEVATION,
+                                           self.elevation,
                                            LAT,
                                            RH_hr,
                                            u_2,
@@ -339,7 +346,7 @@ class Smart_Irrigation_Test():
             #open the irrigation valve for self.adjusted_run_time minutes.
 
 if len(sys.argv) < 10:
-    print("test.py [apikey for OpenWeatherMap] [Latitude] [Longitude] [Elevation in meters] [metric|US] [JAN_ET,FEB_ET,MAR_ET,APR_ET,MAY_ET,JUN_ET,JUL_ET,AUG_ET,SEP_ET,OCT_ET,NOV_ET,DEC_ET] [number of sprinklers] [flow per sprinkler (gallon or liter per minute] [area (m2 or sq ft)]")
+    print("test.py [apikey for OpenWeatherMap] [Latitude] [Longitude] [Elevation] [metric|US] [JAN_ET,FEB_ET,MAR_ET,APR_ET,MAY_ET,JUN_ET,JUL_ET,AUG_ET,SEP_ET,OCT_ET,NOV_ET,DEC_ET] [number of sprinklers] [flow per sprinkler (gallon or liter per minute] [area (m2 or sq ft)]")
     print("To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source.")
     print("Refer to documentation on your sprinklers to get flow per sprinkler.")
     sys.exit(0)

@@ -10,7 +10,7 @@ To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http
 Refer to documentation on your sprinklers to get flow per sprinkler.
 ## TODO
 - create HA component
-- update README
+- update README)
 - manifest: dependencies
 - manifest: urls (2x)
 - documentation: how to get API key for OpenWeatherMap
