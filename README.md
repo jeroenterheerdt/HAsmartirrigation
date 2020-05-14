@@ -34,7 +34,8 @@ To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http
 
 ## TODO
 - update README - automation example
-- include in HACS
+- include in HACS, including updates
+- add logo for integration
 
 ## DONE
 - make it work: add sensors for rain based on OpenWeatherMap. Idea is to call update the data each hour and keep a rolling total for the day.
