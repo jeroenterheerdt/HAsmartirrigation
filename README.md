@@ -1,4 +1,4 @@
-# HAsmartirrigation
+# Smart Irrigation
 Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
 This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation. It takes into account percipitation (rain,snow) and adjusts accordingly.
 
@@ -13,7 +13,7 @@ Refer to documentation on your sprinklers to get flow per sprinkler.
 ## TODO
 - CONFIG FLOW: error messages do not show up and no labels for reference_et values.
 
-- update README)
+- update README - install instructions and buy me coffee / beer / patreon
 - include in HACS
 - documentation: how to get API key for OpenWeatherMap
 
