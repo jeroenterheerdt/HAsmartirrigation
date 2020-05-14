@@ -1,3 +1,5 @@
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
+
 # Smart Irrigation
 Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
 This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation. It takes into account percipitation (rain,snow) and adjusts accordingly.
