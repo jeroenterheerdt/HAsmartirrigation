@@ -1,4 +1,4 @@
-"""The Smart Irrigation 2 integration."""
+"""The Smart Irrigation integration."""
 import asyncio
 from datetime import timedelta
 import logging

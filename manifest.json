@@ -2,13 +2,11 @@
   "domain": "smart_irrigation",
   "name": "Smart Irrigation",
   "config_flow": true,
-  "documentation": "https://www.home-assistant.io/integrations/smart_irrigation_2",
+  "documentation": "https://github.com/jeroenterheerdt/HASmartIrrigation",
   "requirements": [],
   "ssdp": [],
   "zeroconf": [],
   "homekit": {},
   "dependencies": [],
-  "codeowners": [
-    "@jeroenterheerdt"
-  ]
+  "codeowners": ["@jeroenterheerdt"]
 }
