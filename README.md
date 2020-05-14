@@ -26,7 +26,29 @@ You will need to specify the following:
 - Area that the sprinklers cover in square feet or m2 (whole number)
 
 ### Step 2: creating automation
-Since this component does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. Here is an example automation:
+Since this component does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom component with any irrigation system you might have, regardless of how that interfaces with Home Assistant.
+
+Here is an example automation:
+```
+- alias: Smart Irrigation
+  description: 'Start Smart Irrigation at 06:00 and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
+  trigger:
+  - at: 06:00
+    platform: time
+  condition:
+  - above: '0'
+    condition: numeric_state
+    entity_id: sensor.smart_irrigation_adjusted_run_time
+  action:
+  - data: {}
+    entity_id: switch.irrigation_tap1
+    service: switch.turn_on
+  - delay:
+      seconds: '{{states("sensor.smart_irrigation_adjusted_run_time")}}'
+  - data: {}
+    entity_id: switch.irrigation_tap1
+    service: switch.turn_off
+```
 
 ## Getting Open Weather Map API
 Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key.
@@ -36,18 +58,5 @@ To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http
 
 ## TODO
 - update README - automation example
-- include in HACS, including updates
-- add logo for integration
-
-## DONE
-- make it work: add sensors for rain based on OpenWeatherMap. Idea is to call update the data each hour and keep a rolling total for the day.
-- make it work: calculate evotranspiration based on fao56...
-- make it work: include snow in percipitation, not just rain
-- make it work: metric system internally, but configurable whether to work with metric or imperial (can we read that setting from HA?)
-- make it work: provide a way to configure gpm/lpm for irrigation system
-- make it work: rainfall - ev < 0: irrigation, else not. figure out how long the system needs to run to re-fill the bucket. If irrigating, reset values. Otherwise, keep values as is.
-- make it work: actually call the right things to start / stop irrigation
-
-- create HA component
-- manifest: dependencies
-- manifest: urls (2x)
+- include it in HACS
+- post on HA forum
