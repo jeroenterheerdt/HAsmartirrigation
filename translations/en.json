@@ -1,19 +1,36 @@
 {
     "config": {
         "abort": {
-            "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+            "single_instance_allowed": "Only a single configuration of Smart Irrigation is allowed."
         },
         "error": {
-            "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-            "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
-            "unknown": "[%key:common::config_flow::error::unknown%]"
+            "auth": "Open Weather API key incorrect",
+            "reference_et_problem": "Please check your reference Evatranspiration values - we expect 12, one for each month, separated by a comma.",
+            "irrigation_time_problem": "Check your irrigation time, it needs to be in HH:MM format in 24-hour clock."
         },
+        "title": "Smart Irrigation",
         "step": {
             "user": {
+                "title": "Smart Irrigation",
+                "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
                 "data": {
-                    "host": "[%key:common::config_flow::data::host%]",
-                    "password": "[%key:common::config_flow::data::password%]",
-                    "username": "[%key:common::config_flow::data::username%]"
+                    "api_key": "API key for Open Weather Map",
+                    "reference_et_1": "Reference evatranspiration for January (decimal number)",
+                    "reference_et_2": "Reference evatranspiration for February (decimal number)",
+                    "reference_et_3": "Reference evatranspiration for March (decimal number)",
+                    "reference_et_4": "Reference evatranspiration for April (decimal number)",
+                    "reference_et_5": "Reference evatranspiration for May (decimal number)",
+                    "reference_et_6": "Reference evatranspiration for June (decimal number)",
+                    "reference_et_7": "Reference evatranspiration for July (decimal number)",
+                    "reference_et_8": "Reference evatranspiration for August (decimal number)",
+                    "reference_et_9": "Reference evatranspiration for September (decimal number)",
+                    "reference_et_10": "Reference evatranspiration for October (decimal number)",
+                    "reference_et_11": "Reference evatranspiration for November (decimal number)",
+                    "reference_et_12": "Reference evatranspiration for December (decimal number)",
+                    "number_of_sprinklers": "Number of sprinklers (whole number)",
+                    "flow": "Flow per sprinkler in gpm or lpm (decimal number)",
+                    "area": "Area in sq ft or m2 (whole number)",
+                    "irrigation_time": "Irrigation time (HH:mm, 24 hour format)"
                 }
             }
         }
