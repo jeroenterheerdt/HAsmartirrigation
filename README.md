@@ -33,9 +33,8 @@ Go to https://openweathermap.org and create an account. You can enter any compan
 To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source.
 
 ## TODO
-- update README - install instructions and buy me coffee / beer / patreon
+- update README - automation example
 - include in HACS
-- documentation: how to get API key for OpenWeatherMap
 
 ## DONE
 - make it work: add sensors for rain based on OpenWeatherMap. Idea is to call update the data each hour and keep a rolling total for the day.
