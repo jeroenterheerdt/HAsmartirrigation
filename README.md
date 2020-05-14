@@ -30,7 +30,7 @@ Since this component does not interface with your irrigation system directly, yo
 Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key.
 
 ## Getting Monthly ET values
-To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source.
+To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source that has this information for your area.
 
 ## TODO
 - update README - automation example
