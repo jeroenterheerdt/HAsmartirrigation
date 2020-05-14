@@ -1,9 +1,11 @@
 {
-    "domain": "smart_irrigation",
-    "name": "Smart Irrigation",
-    "documentation": "TODO",
-    "issue_tracker": "TODO",
-    "dependencies": [],
-    "codeowners": ["@jeroenterheerdt"],
-    "requirements": []
-  }
+  "domain": "smart_irrigation",
+  "name": "Smart Irrigation",
+  "documentation": "https://github.com/jeroenterheerdt/HASmartIrrigation",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": [],
+  "codeowners": ["@jeroenterheerdt"]
+}
