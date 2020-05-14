@@ -3,9 +3,11 @@ Smart Irrigation custom component for Home Assistant. Partly based on the excell
 This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation. It takes into account percipitation (rain,snow) and adjusts accordingly.
 
 [![Support the author on Patreon][patreon-shield]][patreon]
+
+[![Buy me a coffee][buymeacoffee-shield]][buymeacoffee]
+
 [patreon-shield]: https://frenck.dev/wp-content/uploads/2019/12/patreon.png
 [patreon]: https://www.patreon.com/dutchdatadude
-[![Buy me a coffee][buymeacoffee-shield]][buymeacoffee]
 
 [buymeacoffee]: https://www.buymeacoffee.com/dutchdatadude
 [buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png
