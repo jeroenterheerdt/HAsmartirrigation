@@ -48,7 +48,3 @@ To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http
 - create HA component
 - manifest: dependencies
 - manifest: urls (2x)
-
-
-## SET UP
-Install 
