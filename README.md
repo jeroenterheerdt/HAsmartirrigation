@@ -1,9 +1,5 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 
-# Smart Irrigation
-Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
-This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation. It takes into account percipitation (rain,snow) and adjusts accordingly.
-
 [![Support the author on Patreon][patreon-shield]][patreon]
 
 [![Buy me a coffee][buymeacoffee-shield]][buymeacoffee]
@@ -13,6 +9,15 @@ This component calculates the time to run your irrigation system to compensate f
 
 [buymeacoffee]: https://www.buymeacoffee.com/dutchdatadude
 [buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png
+
+
+# Smart Irrigation
+Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
+This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account percipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required.
+
+Note that this component at the moment does not take into the account the effects of rain/snow over multiple days.
+
+
 
 ## Configuration
 
@@ -57,6 +62,6 @@ Go to https://openweathermap.org and create an account. You can enter any compan
 To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source that has this information for your area.
 
 ## TODO
-- update README - automation example
+- keep track over multiple days
 - include it in HACS
 - post on HA forum
