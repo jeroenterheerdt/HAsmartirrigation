@@ -1,0 +1,24 @@
+{
+  "title": "Smart Irrigation",
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "api_key": "API_KEY[%key:common::config_flow::data::api_key%]",
+          "reference_et": "[%key:common::config_flow::data::monthly_et%]",
+          "number_of_sprinklers": "[%key:common::config_flow::data::number_of_sprinklers%]",
+          "flow": "[%key:common::config_flow::data::flow%]",
+          "area": "[%key:common::config_flow::data::area%]"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  }
+}

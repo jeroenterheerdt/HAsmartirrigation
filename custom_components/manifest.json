@@ -1,0 +1,12 @@
+{
+  "domain": "smart_irrigation",
+  "name": "Smart Irrigation",
+  "config_flow": true,
+  "documentation": "https://github.com/jeroenterheerdt/HASmartIrrigation",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": [],
+  "codeowners": ["@jeroenterheerdt"]
+}
