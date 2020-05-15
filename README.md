@@ -22,7 +22,7 @@ Note that this component at the moment does not take into the account the effect
 ## Configuration
 
 ### Step 1: configuration of component
-Install the custom component and then use the Configuration --> Integrations pane to search for 'Smart Irrigation'.
+Install the custom component (preferably using HACS) and then use the Configuration --> Integrations pane to search for 'Smart Irrigation'.
 You will need to specify the following:
 - API Key for Open Weather Map. See [Getting Open Weater Map API Key](#getting-open-weather-map-api) below for instructions.
 - Reference Evatranspiration for all months of the year (decimal number, use .0 if you happen to have a whole number). See [Getting Monthly ET values](#getting-monthly-et-values) below for instructions. Note that you can specify these in inches or mm, depending on your Home Assistant settings.
@@ -64,4 +64,3 @@ To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http
 ## TODO
 - keep track over multiple days
 - include it in HACS
-- post on HA forum
