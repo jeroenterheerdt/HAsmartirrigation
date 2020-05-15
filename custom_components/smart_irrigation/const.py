@@ -72,8 +72,8 @@ TYPE_PEAK_ET = "Peak Evatranspiration"
 TYPE_PRECIPITATION_RATE = TYPE_PRECIPITATION + " Rate"
 TYPE_BASE_SCHEDULE_INDEX = "Base Schedule Index"
 TYPE_EVATRANSPIRATION = "Evatranspiration"
-TYPE_ADJUSTED_RUN_TIME = "Adjusted Run Time"
-TYPE_CURRENT_ADJUSTED_RUN_TIME = "Current Adjusted Run Time"
+TYPE_ADJUSTED_RUN_TIME = "Daily Adjusted Run Time"
+TYPE_CURRENT_ADJUSTED_RUN_TIME = "Hourly Adjusted Run Time"
 
 # UNITS
 UNIT_OF_MEASUREMENT_SECONDS = "s"
