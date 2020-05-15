@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "data": {
-          "api_key": "API_KEY[%key:common::config_flow::data::api_key%]",
+          "api_key": "[%key:common::config_flow::data::api_key%]",
           "reference_et": "[%key:common::config_flow::data::monthly_et%]",
           "number_of_sprinklers": "[%key:common::config_flow::data::number_of_sprinklers%]",
           "flow": "[%key:common::config_flow::data::flow%]",

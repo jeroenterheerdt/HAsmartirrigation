@@ -28,7 +28,7 @@ from .const import (
     CONF_PRECIPITATION_RATE,
     CONF_PRECIPITATION,
     CONF_NETTO_PRECIPITATION,
-    CONF_EVATRANSPIRATION,
+    CONF_EVAPOTRANSPIRATION,
     CONF_WATER_BUDGET,
     CONF_RAIN,
     CONF_SNOW,
@@ -73,7 +73,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             self.precipitation = 0.0
             self.rain = 0.0
             self.snow = 0.0
-            self.evatranspiration = 0.0
+            self.evapotranspiration = 0.0
             self.water_budget = 0.0
             self.bucket_delta = 0
         if self.type == TYPE_ADJUSTED_RUN_TIME:
@@ -124,9 +124,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             # parse precipitation out of the today data
             self.precipitation = self.get_precipitation(data)
             # calculate et out of the today data
-            self.evatranspiration = self.get_evatranspiration(data)
+            self.evapotranspiration = self.get_evapotranspiration(data)
             # calculate the adjusted runtime!
-            self.bucket_delta = self.precipitation - self.evatranspiration
+            self.bucket_delta = self.precipitation - self.evapotranspiration
             result = self.calculate_water_budget_and_adjusted_run_time(
                 self.bucket_delta
             )
@@ -165,7 +165,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 CONF_RAIN: self.show_mm_or_inch(self.rain),
                 CONF_SNOW: self.show_mm_or_inch(self.snow),
                 CONF_PRECIPITATION: self.show_mm_or_inch(self.precipitation),
-                CONF_EVATRANSPIRATION: self.show_mm_or_inch(self.evatranspiration),
+                CONF_EVAPOTRANSPIRATION: self.show_mm_or_inch(self.evapotranspiration),
                 CONF_NETTO_PRECIPITATION: self.show_mm_or_inch(self.bucket_delta),
                 CONF_WATER_BUDGET: self.show_percentage(self.water_budget),
             }
@@ -234,7 +234,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         )
         return eto
 
-    def get_evatranspiration(self, d):
+    def get_evapotranspiration(self, d):
         """Calculate Evantranspiration info from OWM data."""
         day_of_year = datetime.datetime.now().timetuple().tm_yday
         t_day = d["temp"]["day"]
