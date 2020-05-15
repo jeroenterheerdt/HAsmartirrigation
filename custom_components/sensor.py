@@ -255,7 +255,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def show_percentage(self, value, show_unit=True):
         """Return nicely formatted percentages."""
-        retval = value * 100
+        retval = round(value * 100,2)
         if show_unit:
             return f"{retval} %"
         else:
