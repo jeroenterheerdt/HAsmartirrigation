@@ -7,6 +7,7 @@ from .const import (
     DOMAIN,
     ICON,
     TYPE_BASE_SCHEDULE_INDEX,
+    TYPE_CURRENT_ADJUSTED_RUN_TIME,
     TYPE_ADJUSTED_RUN_TIME,
     UNIT_OF_MEASUREMENT_SECONDS,
     UNIT_OF_MEASUREMENT_UNKNOWN,
@@ -22,6 +23,7 @@ from .const import (
     M2_TO_SQ_FT_FACTOR,
     CONF_PRECIPITATION_RATE,
     CONF_PRECIPITATION,
+    CONF_NETTO_PRECIPITATION,
     CONF_EVATRANSPIRATION,
     CONF_WATER_BUDGET,
     UNIT_OF_MEASUREMENT_LITERS,
@@ -44,6 +46,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
     async_add_devices(
         [
             SmartIrrigationSensor(coordinator, entry, TYPE_BASE_SCHEDULE_INDEX),
+            SmartIrrigationSensor(coordinator, entry, TYPE_CURRENT_ADJUSTED_RUN_TIME),
             SmartIrrigationSensor(coordinator, entry, TYPE_ADJUSTED_RUN_TIME),
         ]
     )
@@ -57,15 +60,17 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         self._unit_of_measurement = UNIT_OF_MEASUREMENT_UNKNOWN
         if self.type == TYPE_BASE_SCHEDULE_INDEX:
             self._unit_of_measurement = UNIT_OF_MEASUREMENT_SECONDS
-        if self.type == TYPE_ADJUSTED_RUN_TIME:
+        if self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
             self._unit_of_measurement = UNIT_OF_MEASUREMENT_SECONDS
             self.precipitation = 0.0
             self.rain = 0.0
             self.snow = 0.0
             self.evatranspiration = 0.0
             self.water_budget = 0.0
-            self.bucket = 0
-            self.irrigation_time = ""
+            self.bucket_delta = 0
+        if self.type == TYPE_ADJUSTED_RUN_TIME:
+            self._unit_of_measurement = UNIT_OF_MEASUREMENT_SECONDS
+            self.bucket = 0 # ??
 
     @property
     def name(self):
@@ -77,15 +82,15 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         """Return the state of the sensor."""
         if self.type == TYPE_BASE_SCHEDULE_INDEX:
             return round(self.coordinator.base_schedule_index, 1)
-        else:
+        elif self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
             data = self.coordinator.data["daily"][0]
-            # parse percipitation out of the today data
+            # parse precipitation out of the today data
             self.precipitation = self.get_precipitation(data)
             # calculate et out of the today data
             self.evatranspiration = self.get_evatranspiration(data)
             # calculate the adjusted runtime!
-            self.bucket = self.precipitation - self.evatranspiration
-            if self.bucket < 0:
+            self.bucket_delta = self.precipitation - self.evatranspiration
+            if self.bucket_delta < 0:
                 # we need to irrigate
                 self.water_budget = abs(self.bucket) / self.coordinator.peak_et
                 # adjusted runtime
@@ -95,6 +100,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 self.water_budget = 0
                 # return 0 for adjusted runtime
                 return 0
+        else:
+            # adjusted run time
+            k = 0 # ???
 
     @property
     def unit_of_measurement(self):
@@ -116,13 +124,13 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                     self.coordinator.precipitation_rate
                 ),
             }
-        elif self.type == TYPE_ADJUSTED_RUN_TIME:
+        elif self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
             return {
                 CONF_RAIN: self.show_mm_or_inch(self.rain),
                 CONF_SNOW: self.show_mm_or_inch(self.snow),
                 CONF_PRECIPITATION: self.show_mm_or_inch(self.precipitation),
                 CONF_EVATRANSPIRATION: self.show_mm_or_inch(self.evatranspiration),
-                CONF_BUCKET: self.show_mm_or_inch(self.bucket),
+                CONF_NETTO_PRECIPITATION: self.show_mm_or_inch(self.bucket_delta),
                 CONF_WATER_BUDGET: self.show_percentage(self.water_budget),
             }
         else:

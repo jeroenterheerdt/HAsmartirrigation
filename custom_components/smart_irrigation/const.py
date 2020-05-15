@@ -41,7 +41,8 @@ CONF_SNOW = "snow"
 CONF_PRECIPITATION = "precipitation"
 CONF_EVATRANSPIRATION = "ET"
 CONF_WATER_BUDGET = "water budget"
-CONF_BUCKET = "netto precipitation"
+CONF_BUCKET = "bucket"
+CONF_NETTO_PRECIPITATION = "netto precipitation"
 
 # Systems of measurement
 SETTING_METRIC = "metric"
@@ -66,6 +67,7 @@ TYPE_PRECIPITATION_RATE = TYPE_PRECIPITATION + " Rate"
 TYPE_BASE_SCHEDULE_INDEX = "Base Schedule Index"
 TYPE_EVATRANSPIRATION = "Evatranspiration"
 TYPE_ADJUSTED_RUN_TIME = "Adjusted Run Time"
+TYPE_CURRENT_ADJUSTED_RUN_TIME = "Current Adjusted Run Time"
 
 # UNITS
 UNIT_OF_MEASUREMENT_SECONDS = "s"

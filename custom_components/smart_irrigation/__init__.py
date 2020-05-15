@@ -200,13 +200,18 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.precipitation_rate = precipitation_rate
         self.base_schedule_index = base_schedule_index
         self.platforms = []
+        self.bucket = 0
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
 
         # also schedule a last update for utc 23:00:00
         async_track_utc_time_change(
-            hass, self._async_update_data, hour=23, minute=0, second=0
+            hass, self._async_update_last_of_day, hour=23, minute=0, second=0
         )
+
+    async def _async_update_last_of_day(self):
+        await self._async_update_data()
+        #self.bucket = 
 
     async def _async_update_data(self):
         """Update data via library."""
