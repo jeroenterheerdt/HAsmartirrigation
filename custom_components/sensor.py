@@ -1,6 +1,6 @@
 """Sensor platform for Smart Irrigation."""
 import datetime
-from ..smart_irrigation_2 import pyeto
+from ..smart_irrigation import pyeto
 
 from .const import (
     DEFAULT_NAME,
@@ -219,7 +219,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 retval = retval + f" {UNIT_OF_MEASUREMENT_LITERS}"
             return retval
         else:
-            retval = f"{round(value * LITER_TO_GALLON_FACTOR,1)}"
+            retval = f"{round(value * LITER_TO_GALLON_FACTOR,2)}"
             if show_unit:
                 retval = retval + f" {UNIT_OF_MEASUREMENT_GALLONS}"
             return retval
@@ -233,9 +233,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             return retval
         else:
             if isinstance(value, list):
-                retval = f"{[round(x * MM_TO_INCH_FACTOR,1) for x in value]}"
+                retval = f"{[round(x * MM_TO_INCH_FACTOR,2) for x in value]}"
             else:
-                retval = f"{round(value * MM_TO_INCH_FACTOR,1)}"
+                retval = f"{round(value * MM_TO_INCH_FACTOR,2)}"
             if show_unit:
                 retval = retval + f" {UNIT_OF_MEASUREMENT_INCHES}"
             return retval
@@ -248,7 +248,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 retval = retval + " {UNIT_OF_MEASUREMENT_M2}"
             return retval
         else:
-            retval = f"{round(value * M2_TO_SQ_FT_FACTOR,1)}"
+            retval = f"{round(value * M2_TO_SQ_FT_FACTOR,2)}"
             if show_unit:
                 retval = retval + f" {UNIT_OF_MEASUREMENT_SQ_FT}"
             return retval
