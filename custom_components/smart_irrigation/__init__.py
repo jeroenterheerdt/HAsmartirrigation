@@ -48,11 +48,18 @@ from .const import (
     LITER_TO_GALLON_FACTOR,
     M2_TO_SQ_FT_FACTOR,
     M_TO_FT_FACTOR,
+    CONF_NETTO_PRECIPITATION,
+    CONF_BUCKET,
+    CONF_WATER_BUDGET,
+    EVENT_BUCKET_UPDATED,
+    SERVICE_RESET_BUCKET,
+    TYPE_CURRENT_ADJUSTED_RUN_TIME,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
-SCAN_INTERVAL = timedelta(minutes=58)
+# SCAN_INTERVAL = timedelta(minutes=58)
+SCAN_INTERVAL = timedelta(minutes=5)
 
 PLATFORMS = ["sensor"]
 
@@ -138,6 +145,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     entry.add_update_listener(async_reload_entry)
 
+    # register the reset_bucket service
+    hass.services.async_register(
+        DOMAIN, SERVICE_RESET_BUCKET, coordinator.handle_reset_bucket
+    )
     return True
 
 
@@ -201,17 +212,51 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.base_schedule_index = base_schedule_index
         self.platforms = []
         self.bucket = 0
-
+        self.hass = hass
+        self.entities = {}
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
 
-        # also schedule a last update for utc 23:00:00
+        # also schedule a last update for utc 23:00:00 OR SHOULD THIS BE LOCAL TIME???
         async_track_utc_time_change(
             hass, self._async_update_last_of_day, hour=23, minute=0, second=0
         )
 
-    async def _async_update_last_of_day(self):
-        await self._async_update_data()
-        #self.bucket = 
+        ##debug
+        async_track_utc_time_change(
+            hass, self._async_update_last_of_day, hour=21, minute=39, second=30
+        )
+
+    def register_entity(self, thetype, entity):
+        self.entities[thetype] = entity
+
+    def handle_reset_bucket(self, call):
+        """Handle the service reset_bucket call."""
+        _LOGGER.info("Reset bucket service called, resetting bucket to 0.")
+        self.bucket = 0
+        # fire an event so the sensor can update itself.
+        self.hass.bus.fire(EVENT_BUCKET_UPDATED, {CONF_BUCKET: self.bucket})
+
+    def _update_last_of_day(self):
+        cart_entity_id = self.entities[TYPE_CURRENT_ADJUSTED_RUN_TIME]
+        # update the bucket based on the current bucket_delta.
+        cart = self.hass.states.get(cart_entity_id)
+        # this might be in metric or imperial, we need to convert it to metric.
+        bucket_delta = float(cart.attributes[CONF_NETTO_PRECIPITATION].split(" ")[0])
+        if self.system_of_measurement != SETTING_METRIC:
+            bucket_delta = bucket_delta / MM_TO_INCH_FACTOR
+        self.bucket = self.bucket + bucket_delta
+
+        # fire an event so the sensor can update itself.
+        self.hass.bus.fire(EVENT_BUCKET_UPDATED, {CONF_BUCKET: self.bucket})
+
+    async def _async_update_last_of_day(self, *args):
+        _LOGGER.info(
+            "Updating for last time today, calculating adjusted run time for next irrigation time!"
+        )
+        data = await self._async_update_data()
+        self._update_last_of_day()
+        _LOGGER.info("Bucket for today is: {} mm".format(self.bucket))
+        return data
 
     async def _async_update_data(self):
         """Update data via library."""

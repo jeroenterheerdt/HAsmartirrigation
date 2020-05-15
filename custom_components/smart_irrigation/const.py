@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -35,14 +35,20 @@ CONF_AREA = "area"
 CONF_THROUGHPUT = "throughput"
 CONF_PEAK_ET = "peak_et"
 CONF_SYSTEM_OF_MEASUREMENT = "system_of_measurement"
-CONF_PRECIPITATION_RATE = "precipitation Rate"
+CONF_PRECIPITATION_RATE = "precipitation_rate"
 CONF_RAIN = "rain"
 CONF_SNOW = "snow"
 CONF_PRECIPITATION = "precipitation"
-CONF_EVATRANSPIRATION = "ET"
-CONF_WATER_BUDGET = "water budget"
+CONF_EVATRANSPIRATION = "evatranspiration"
+CONF_WATER_BUDGET = "water_budget"
 CONF_BUCKET = "bucket"
-CONF_NETTO_PRECIPITATION = "netto precipitation"
+CONF_NETTO_PRECIPITATION = "netto_precipitation"
+
+# Events
+EVENT_BUCKET_UPDATED = "smart_irrigation_bucket_updated_event"
+
+# Services
+SERVICE_RESET_BUCKET = "reset_bucket"
 
 # Systems of measurement
 SETTING_METRIC = "metric"
@@ -55,7 +61,7 @@ M2_TO_SQ_FT_FACTOR = 10.7639104
 M_TO_FT_FACTOR = 3.2808399
 
 # Defaults
-DEFAULT_NAME = DOMAIN
+DEFAULT_NAME = NAME
 
 # Types
 TYPE_PRECIPITATION = "Precipitation"

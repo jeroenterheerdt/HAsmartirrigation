@@ -53,7 +53,10 @@ Here is an example automation:
   - data: {}
     entity_id: switch.irrigation_tap1
     service: switch.turn_off
+  - service: smart_irrigation.reset_bucket
 ```
+
+> **The last step in this automation is important, since you will need to let the component know you have finished irrigating and the evaporation counter can be reset.**
 
 ## Getting Open Weather Map API
 Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key.

@@ -1,6 +1,10 @@
 """Sensor platform for Smart Irrigation."""
 import datetime
+import asyncio
+
 from ..smart_irrigation import pyeto
+from homeassistant.core import callback, Event
+from homeassistant.helpers import entity_registry as er
 
 from .const import (
     DEFAULT_NAME,
@@ -26,15 +30,16 @@ from .const import (
     CONF_NETTO_PRECIPITATION,
     CONF_EVATRANSPIRATION,
     CONF_WATER_BUDGET,
-    UNIT_OF_MEASUREMENT_LITERS,
-    UNIT_OF_MEASUREMENT_GALLONS,
-    UNIT_OF_MEASUREMENT_MMS,
-    UNIT_OF_MEASUREMENT_INCHES,
-    UNIT_OF_MEASUREMENT_M2,
-    UNIT_OF_MEASUREMENT_SQ_FT,
     CONF_RAIN,
     CONF_SNOW,
     CONF_BUCKET,
+    EVENT_BUCKET_UPDATED,
+    UNIT_OF_MEASUREMENT_LITERS,
+    UNIT_OF_MEASUREMENT_GALLONS,
+    UNIT_OF_MEASUREMENT_SQ_FT,
+    UNIT_OF_MEASUREMENT_M2,
+    UNIT_OF_MEASUREMENT_INCHES,
+    UNIT_OF_MEASUREMENT_MMS,
 )
 from .entity import SmartIrrigationEntity
 
@@ -42,12 +47,15 @@ from .entity import SmartIrrigationEntity
 async def async_setup_entry(hass, entry, async_add_devices):
     """Setup sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
+
     # async_add_devices([SmartIrrigationSensor(coordinator, entry)])
     async_add_devices(
         [
-            SmartIrrigationSensor(coordinator, entry, TYPE_BASE_SCHEDULE_INDEX),
-            SmartIrrigationSensor(coordinator, entry, TYPE_CURRENT_ADJUSTED_RUN_TIME),
-            SmartIrrigationSensor(coordinator, entry, TYPE_ADJUSTED_RUN_TIME),
+            SmartIrrigationSensor(hass, coordinator, entry, TYPE_BASE_SCHEDULE_INDEX),
+            SmartIrrigationSensor(
+                hass, coordinator, entry, TYPE_CURRENT_ADJUSTED_RUN_TIME
+            ),
+            SmartIrrigationSensor(hass, coordinator, entry, TYPE_ADJUSTED_RUN_TIME),
         ]
     )
 
@@ -55,7 +63,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class SmartIrrigationSensor(SmartIrrigationEntity):
     """SmartIrrigation Sensor class."""
 
-    def __init__(self, coordinator, entity, thetype):
+    def __init__(self, hass, coordinator, entity, thetype):
         super(SmartIrrigationSensor, self).__init__(coordinator, entity, thetype)
         self._unit_of_measurement = UNIT_OF_MEASUREMENT_UNKNOWN
         if self.type == TYPE_BASE_SCHEDULE_INDEX:
@@ -70,12 +78,41 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             self.bucket_delta = 0
         if self.type == TYPE_ADJUSTED_RUN_TIME:
             self._unit_of_measurement = UNIT_OF_MEASUREMENT_SECONDS
-            self.bucket = 0 # ??
+            self.bucket = 0  # ??
+
+    @asyncio.coroutine
+    def async_added_to_hass(self):
+        """Complete the initialization."""
+        # register this sensor in the coordinator
+        self.coordinator.register_entity(self.type, self.entity_id)
+
+        # listen to the bucket update event only for the adjusted run time sensor
+        if self.type == TYPE_ADJUSTED_RUN_TIME:
+            self.hass.bus.async_listen(
+                EVENT_BUCKET_UPDATED, lambda event: self._bucket_updated(event)
+            )
+
+    @callback
+    def _bucket_updated(self, ev: Event):
+        """Receive the bucket updated event."""
+        # update the sensor status.
+        e = ev.as_dict()
+        self.bucket = float(e["data"][CONF_BUCKET])
+        result = self.calculate_water_budget_and_adjusted_run_time(self.bucket)
+        art_entity_id = self.coordinator.entities[TYPE_ADJUSTED_RUN_TIME]
+        self.hass.states.set(
+            art_entity_id,
+            result["art"],
+            {
+                CONF_BUCKET: self.show_mm_or_inch(self.bucket),
+                CONF_WATER_BUDGET: self.show_percentage(result["wb"]),
+            },
+        )
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{DEFAULT_NAME}_{self.type}"
+        return f"{DEFAULT_NAME} {self.type}"
 
     @property
     def state(self):
@@ -90,19 +127,18 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             self.evatranspiration = self.get_evatranspiration(data)
             # calculate the adjusted runtime!
             self.bucket_delta = self.precipitation - self.evatranspiration
-            if self.bucket_delta < 0:
-                # we need to irrigate
-                self.water_budget = abs(self.bucket) / self.coordinator.peak_et
-                # adjusted runtime
-                return round(self.water_budget * self.coordinator.base_schedule_index)
-            else:
-                # we do not need to irrigate
-                self.water_budget = 0
-                # return 0 for adjusted runtime
-                return 0
+            result = self.calculate_water_budget_and_adjusted_run_time(
+                self.bucket_delta
+            )
+            self.water_budget = result["wb"]
+            return result["art"]
         else:
             # adjusted run time
-            k = 0 # ???
+            result = self.calculate_water_budget_and_adjusted_run_time(
+                self.coordinator.bucket
+            )
+            self.water_budget = result["wb"]
+            return result["art"]
 
     @property
     def unit_of_measurement(self):
@@ -134,7 +170,10 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 CONF_WATER_BUDGET: self.show_percentage(self.water_budget),
             }
         else:
-            return {"type": self.type}
+            return {
+                CONF_WATER_BUDGET: self.show_percentage(self.water_budget),
+                CONF_BUCKET: self.show_mm_or_inch(self.bucket),
+            }
 
     @property
     def icon(self):
@@ -221,6 +260,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def show_liter_or_gallon(self, value, show_unit=True):
         """Return nicely formatted liters or gallons."""
+        if value is None:
+            return "unknown"
         if self.coordinator.system_of_measurement == SETTING_METRIC:
             retval = f"{value}"
             if show_unit:
@@ -234,6 +275,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def show_mm_or_inch(self, value, show_unit=True):
         """Return nicely formatted mm or inches."""
+        if value is None:
+            return "unknown"
         if self.coordinator.system_of_measurement == SETTING_METRIC:
             retval = f"{value}"
             if show_unit:
@@ -250,6 +293,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def show_m2_or_sq_ft(self, value, show_unit=True):
         """Return nicely formatted m2 or sq ft."""
+        if value is None:
+            return "unknown"
         if self.coordinator.system_of_measurement == SETTING_METRIC:
             retval = f"{value}"
             if show_unit:
@@ -263,8 +308,27 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def show_percentage(self, value, show_unit=True):
         """Return nicely formatted percentages."""
-        retval = round(value * 100,2)
+        if value is None:
+            return "unknown"
+        retval = round(value * 100, 2)
         if show_unit:
             return f"{retval} %"
         else:
             return retval
+
+    def calculate_water_budget_and_adjusted_run_time(self, bucket_val):
+        water_budget = 0
+        adjusted_run_time = 0
+        if bucket_val is None or bucket_val >= 0:
+            # we do not need to irrigate
+            water_budget = 0
+            # return 0 for adjusted runtime
+            adjusted_run_time = 0
+        else:
+            # we need to irrigate
+            water_budget = abs(bucket_val) / self.coordinator.peak_et
+            # adjusted runtime
+            adjusted_run_time = round(
+                water_budget * self.coordinator.base_schedule_index
+            )
+        return {"wb": water_budget, "art": adjusted_run_time}
