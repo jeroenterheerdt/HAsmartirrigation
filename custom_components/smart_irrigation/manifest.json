@@ -3,6 +3,7 @@
   "name": "Smart Irrigation",
   "config_flow": true,
   "documentation": "https://github.com/jeroenterheerdt/HASmartIrrigation",
+  "issue_tracker": "https://github.com/jeroenterheerdt/HASmartIrrigation/issues",
   "requirements": [],
   "ssdp": [],
   "zeroconf": [],
