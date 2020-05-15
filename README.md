@@ -13,7 +13,7 @@
 
 # Smart Irrigation
 Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
-This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required.
+This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation / evapotranspiration. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required.
 
 The component keeps track of hourly precipitation and at 23:00 hours UTC stores it in a daily value. We are still looking into if this should be local time or UTC. It calculates the exact runtime in seconds to compensate for the net evaporation. You can get this value from `sensor.smart_irrigation.daily_adjusted_run_time`. See the example automation below.
 
