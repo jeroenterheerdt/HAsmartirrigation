@@ -221,11 +221,6 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
             hass, self._async_update_last_of_day, hour=23, minute=0, second=0
         )
 
-        ##debug
-        async_track_utc_time_change(
-            hass, self._async_update_last_of_day, hour=21, minute=39, second=30
-        )
-
     def register_entity(self, thetype, entity):
         self.entities[thetype] = entity
 

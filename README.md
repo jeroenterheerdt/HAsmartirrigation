@@ -65,5 +65,4 @@ Go to https://openweathermap.org and create an account. You can enter any compan
 To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source that has this information for your area.
 
 ## TODO
-- keep track over multiple days
-- include it in HACS
+- figure out if we need to follow UTC or local time for getting final adjusted run time
