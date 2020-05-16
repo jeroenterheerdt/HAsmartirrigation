@@ -40,6 +40,10 @@ from .const import (
     UNIT_OF_MEASUREMENT_M2,
     UNIT_OF_MEASUREMENT_INCHES,
     UNIT_OF_MEASUREMENT_MMS,
+    UNIT_OF_MEASUREMENT_INCHES_HOUR,
+    UNIT_OF_MEASUREMENT_MMS_HOUR,
+    UNIT_OF_MEASUREMENT_GPM,
+    UNIT_OF_MEASUREMENT_LPM,
 )
 from .entity import SmartIrrigationEntity
 
@@ -65,11 +69,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def __init__(self, hass, coordinator, entity, thetype):
         super(SmartIrrigationSensor, self).__init__(coordinator, entity, thetype)
-        self._unit_of_measurement = UNIT_OF_MEASUREMENT_UNKNOWN
-        if self.type == TYPE_BASE_SCHEDULE_INDEX:
-            self._unit_of_measurement = UNIT_OF_MEASUREMENT_SECONDS
+        self._unit_of_measurement = UNIT_OF_MEASUREMENT_SECONDS
         if self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
-            self._unit_of_measurement = UNIT_OF_MEASUREMENT_SECONDS
             self.precipitation = 0.0
             self.rain = 0.0
             self.snow = 0.0
@@ -77,8 +78,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             self.water_budget = 0.0
             self.bucket_delta = 0
         if self.type == TYPE_ADJUSTED_RUN_TIME:
-            self._unit_of_measurement = UNIT_OF_MEASUREMENT_SECONDS
-            self.bucket = 0  # ??
+            self.bucket = 0
 
     @asyncio.coroutine
     def async_added_to_hass(self):
@@ -152,11 +152,11 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             return {
                 CONF_NUMBER_OF_SPRINKLERS: self.coordinator.number_of_sprinklers,
                 CONF_FLOW: self.show_liter_or_gallon(self.coordinator.flow),
-                CONF_THROUGHPUT: self.show_liter_or_gallon(self.coordinator.throughput),
+                CONF_THROUGHPUT: self.show_liter_or_gallon_per_minute(self.coordinator.throughput),
                 CONF_REFERENCE_ET: self.show_mm_or_inch(self.coordinator.reference_et),
                 CONF_PEAK_ET: self.show_mm_or_inch(self.coordinator.peak_et),
                 CONF_AREA: self.show_m2_or_sq_ft(self.coordinator.area),
-                CONF_PRECIPITATION_RATE: self.show_mm_or_inch(
+                CONF_PRECIPITATION_RATE: self.show_mm_or_inch_per_hour(
                     self.coordinator.precipitation_rate
                 ),
             }
@@ -272,6 +272,21 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             if show_unit:
                 retval = retval + f" {UNIT_OF_MEASUREMENT_GALLONS}"
             return retval
+    
+    def show_liter_or_gallon_per_minute(self, value, show_unit=True):
+        """Return nicely formatted liters or gallons."""
+        if value is None:
+            return "unknown"
+        if self.coordinator.system_of_measurement == SETTING_METRIC:
+            retval = f"{value}"
+            if show_unit:
+                retval = retval + f" {UNIT_OF_MEASUREMENT_LPM}"
+            return retval
+        else:
+            retval = f"{round(value * LITER_TO_GALLON_FACTOR,2)}"
+            if show_unit:
+                retval = retval + f" {UNIT_OF_MEASUREMENT_GPM}"
+            return retval
 
     def show_mm_or_inch(self, value, show_unit=True):
         """Return nicely formatted mm or inches."""
@@ -289,6 +304,24 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 retval = f"{round(value * MM_TO_INCH_FACTOR,2)}"
             if show_unit:
                 retval = retval + f" {UNIT_OF_MEASUREMENT_INCHES}"
+            return retval
+    
+    def show_mm_or_inch_per_hour(self, value, show_unit=True):
+        """Return nicely formatted mm or inches per hour."""
+        if value is None:
+            return "unknown"
+        if self.coordinator.system_of_measurement == SETTING_METRIC:
+            retval = f"{value}"
+            if show_unit:
+                retval = retval + f" {UNIT_OF_MEASUREMENT_MMS_HOUR}"
+            return retval
+        else:
+            if isinstance(value, list):
+                retval = f"{[round(x * MM_TO_INCH_FACTOR,2) for x in value]}"
+            else:
+                retval = f"{round(value * MM_TO_INCH_FACTOR,2)}"
+            if show_unit:
+                retval = retval + f" {UNIT_OF_MEASUREMENT_INCHES_HOUR}"
             return retval
 
     def show_m2_or_sq_ft(self, value, show_unit=True):

@@ -10,7 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from homeassistant.helpers.event import async_track_utc_time_change
+from homeassistant.helpers.event import async_track_time_change
 
 from homeassistant.const import (
     CONF_UNIT_OF_MEASUREMENT,
@@ -216,8 +216,8 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.entities = {}
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
 
-        # also schedule a last update for utc 23:00:00 OR SHOULD THIS BE LOCAL TIME???
-        async_track_utc_time_change(
+        # last update of the day happens at 23:00 local time
+        async_track_time_change(
             hass, self._async_update_last_of_day, hour=23, minute=0, second=0
         )
 

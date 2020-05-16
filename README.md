@@ -15,7 +15,7 @@
 Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
 This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation / evapotranspiration. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required.
 
-The component keeps track of hourly precipitation and at 23:00 hours UTC stores it in a daily value. We are still looking into if this should be local time or UTC. It calculates the exact runtime in seconds to compensate for the net evaporation. You can get this value from `sensor.smart_irrigation.daily_adjusted_run_time`. See the example automation below.
+The component keeps track of hourly precipitation and at 23:00 (11:00 PM) local time stores it in a daily value. It then calculates the exact runtime in seconds to compensate for the net evaporation. You can get this value from `sensor.smart_irrigation.daily_adjusted_run_time`. See the example automation below.
 
 This component uses reference evapotranspiration values and calculates base schedule indexes and water budgets from that. This is an industry-standard approach. Information can be found at https://www.rainbird.com/professionals/irrigation-scheduling-use-et-save-water, amongst others.
 
@@ -64,6 +64,3 @@ Go to https://openweathermap.org and create an account. You can enter any compan
 
 ## Getting Monthly ET values
 To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source that has this information for your area.
-
-## TODO
-- figure out if we need to follow UTC or local time for getting final adjusted run time

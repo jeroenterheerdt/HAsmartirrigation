@@ -78,7 +78,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             if not valid_api:
                 self._errors["base"] = "auth"
             elif not valid_et:
-                self._errors["base"] = "reference_et_problem"
+                self._errors["base"] = "reference_evapotranspiration_problem"
             return await self._show_config_form(user_input)
         return await self._show_config_form(user_input)
 
@@ -133,7 +133,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                         break
                 return all_floats
         except Exception as e:
-            _LOGGER.error("Supplied reference ET was not valid.")
+            _LOGGER.error("Supplied reference Evapotranspiration was not valid.")
             return False
 
     def _check_irrigation_time(self, itime):
