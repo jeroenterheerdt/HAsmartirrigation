@@ -63,4 +63,4 @@ Here is an example automation:
 Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key.
 
 ## Getting Monthly ET values
-To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/results.asp or another source that has this information for your area.
+To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/ or another source that has this information for your area. Note that for http://wcatlas.iwmi.org/ you will need to make a free account first.
