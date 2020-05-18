@@ -12,6 +12,8 @@
 
 
 # Smart Irrigation
+![](logo.png?raw=true)
+
 Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
 This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation / evapotranspiration. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required.
 
@@ -63,4 +65,18 @@ Here is an example automation:
 Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key.
 
 ## Getting Monthly ET values
-To get the monthly ET values use http://www.rainmaster.com/historicET.aspx, http://wcatlas.iwmi.org/ or another source that has this information for your area. Note that for http://wcatlas.iwmi.org/ you will need to make a free account first.
+To get the monthly ET values use Rainmaster (US only), World Water & Climate Institute (worldwide) or another source that has this information for your area. 
+> **When entering the ET values in the configuration of this component, bear in mind that the component will expect inches or mm depending on the settings in Home Assistant (imperial vs metric system).**
+
+### Using Rainmaster (US only)
+Go to http://www.rainmaster.com/historicET.aspx and enter your 5-digit zipcode and click 'Find'. The values you are looking for are listed for each month in inch/day:
+![](rainmaster.png?raw=true)
+
+
+### World Water & Climate Institute (International)
+Go to http://wcatlas.iwmi.org/ and create an account. Once logged in, enter the locations you are interested in and click 'Submit'. Be sure to select N/S and E/W according to your coordinates:
+![](iwmi1.PNG?raw=true)
+
+The values you are looking for are in the last column (Penman ETo (mm/day)):
+![](iwmi2.png?raw=true)
+
