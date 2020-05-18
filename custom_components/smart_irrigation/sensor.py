@@ -1,6 +1,7 @@
 """Sensor platform for Smart Irrigation."""
 import datetime
 import asyncio
+import logging
 
 from ..smart_irrigation import pyeto
 from homeassistant.core import callback, Event
@@ -47,6 +48,8 @@ from .const import (
 )
 from .entity import SmartIrrigationEntity
 
+_LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_entry(hass, entry, async_add_devices):
     """Setup sensor platform."""
@@ -70,6 +73,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
     def __init__(self, hass, coordinator, entity, thetype):
         super(SmartIrrigationSensor, self).__init__(coordinator, entity, thetype)
         self._unit_of_measurement = UNIT_OF_MEASUREMENT_SECONDS
+        self._state = 0.0
         if self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
             self.precipitation = 0.0
             self.rain = 0.0
@@ -81,8 +85,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             self.bucket = 0
 
     @asyncio.coroutine
-    def async_added_to_hass(self):
+    async def async_added_to_hass(self):
         """Complete the initialization."""
+        await super().async_added_to_hass()
         # register this sensor in the coordinator
         self.coordinator.register_entity(self.type, self.entity_id)
 
@@ -91,6 +96,77 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             self.hass.bus.async_listen(
                 EVENT_BUCKET_UPDATED, lambda event: self._bucket_updated(event)
             )
+
+        state = await self.async_get_last_state()
+        if state is not None:
+            self._state = float(state.state)
+            # _LOGGER.info(
+            #    "async_added_t_hass state: {}, attributes: {}".format(
+            #        state.state, state.attributes
+            #    )
+            # )
+            for a in state.attributes:
+                if a in (
+                    # CONF_AREA,
+                    # CONF_FLOW,
+                    # CONF_NUMBER_OF_SPRINKLERS,
+                    # CONF_PEAK_ET,
+                    # CONF_PRECIPITATION_RATE,
+                    # CONF_REFERENCE_ET,
+                    # CONF_THROUGHPUT,
+                    CONF_EVAPOTRANSPIRATION,
+                    CONF_NETTO_PRECIPITATION,
+                    CONF_PRECIPITATION,
+                    CONF_RAIN,
+                    CONF_SNOW,
+                    CONF_WATER_BUDGET,
+                    CONF_BUCKET,
+                ):
+                    try:
+                        a_val = state.attributes[a]
+                        if isinstance(a_val, str) and not a_val.startswith("["):
+                            numeric_part, unit = a_val.split(" ")
+                            # _LOGGER.info(
+                            #    "attr: {}, val: {}, unit: {}".format(
+                            #        a, numeric_part, unit
+                            #    )
+                            # )
+                            numeric_part = float(numeric_part)
+                            if (
+                                unit in ("%", UNIT_OF_MEASUREMENT_SECONDS)
+                                or self.coordinator.system_of_measurement
+                                == SETTING_METRIC
+                            ):
+                                setattr(self, a, numeric_part)
+                            else:
+                                if unit in (
+                                    UNIT_OF_MEASUREMENT_INCHES,
+                                    UNIT_OF_MEASUREMENT_INCHES_HOUR,
+                                ):
+                                    setattr(
+                                        self,
+                                        a,
+                                        round(numeric_part / MM_TO_INCH_FACTOR, 2),
+                                    )
+                                elif unit in (
+                                    UNIT_OF_MEASUREMENT_GALLONS,
+                                    UNIT_OF_MEASUREMENT_GPM,
+                                ):
+                                    setattr(
+                                        self,
+                                        a,
+                                        round(numeric_part / LITER_TO_GALLON_FACTOR, 2),
+                                    )
+                                elif unit in UNIT_OF_MEASUREMENT_SQ_FT:
+                                    setattr(
+                                        self,
+                                        a,
+                                        round(numeric_part / M2_TO_SQ_FT_FACTOR, 2),
+                                    )
+                                else:
+                                    setattr(self, a, numeric_part)
+                    except Exception as e:
+                        _LOGGER.error(e)
 
     @callback
     def _bucket_updated(self, ev: Event):
@@ -114,9 +190,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         """Return the name of the sensor."""
         return f"{DEFAULT_NAME} {self.type}"
 
-    @property
-    def state(self):
-        """Return the state of the sensor."""
+    def update_state(self):
+        """Update the state."""
         if self.type == TYPE_BASE_SCHEDULE_INDEX:
             return round(self.coordinator.base_schedule_index, 1)
         elif self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
@@ -126,6 +201,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             # calculate et out of the today data
             self.evapotranspiration = self.get_evapotranspiration(data)
             # calculate the adjusted runtime!
+
             self.bucket_delta = self.precipitation - self.evapotranspiration
             result = self.calculate_water_budget_and_adjusted_run_time(
                 self.bucket_delta
@@ -141,6 +217,12 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             return result["art"]
 
     @property
+    def state(self):
+        """Return the state of the sensor."""
+        self._state = self.update_state()
+        return self._state
+
+    @property
     def unit_of_measurement(self):
         """Return the unit of measurement for the sensor."""
         return self._unit_of_measurement
@@ -152,7 +234,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             return {
                 CONF_NUMBER_OF_SPRINKLERS: self.coordinator.number_of_sprinklers,
                 CONF_FLOW: self.show_liter_or_gallon(self.coordinator.flow),
-                CONF_THROUGHPUT: self.show_liter_or_gallon_per_minute(self.coordinator.throughput),
+                CONF_THROUGHPUT: self.show_liter_or_gallon_per_minute(
+                    self.coordinator.throughput
+                ),
                 CONF_REFERENCE_ET: self.show_mm_or_inch(self.coordinator.reference_et),
                 CONF_PEAK_ET: self.show_mm_or_inch(self.coordinator.peak_et),
                 CONF_AREA: self.show_m2_or_sq_ft(self.coordinator.area),
@@ -186,7 +270,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             self.rain = float(data["rain"])
         if "snow" in data:
             self.snow = float(data["snow"])
-        return self.rain + self.snow
+        _LOGGER.info("rain: {}, snow: {}".format(self.rain, self.snow))
+        retval = self.rain + self.snow
+        return retval
 
     def estimate_fao56_daily(
         self,
@@ -272,7 +358,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             if show_unit:
                 retval = retval + f" {UNIT_OF_MEASUREMENT_GALLONS}"
             return retval
-    
+
     def show_liter_or_gallon_per_minute(self, value, show_unit=True):
         """Return nicely formatted liters or gallons."""
         if value is None:
@@ -305,7 +391,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             if show_unit:
                 retval = retval + f" {UNIT_OF_MEASUREMENT_INCHES}"
             return retval
-    
+
     def show_mm_or_inch_per_hour(self, value, show_unit=True):
         """Return nicely formatted mm or inches per hour."""
         if value is None:

@@ -1,10 +1,10 @@
 """SmartIrrigationEntity class"""
-from homeassistant.helpers import entity
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN, NAME, VERSION
 
 
-class SmartIrrigationEntity(entity.Entity):
+class SmartIrrigationEntity(RestoreEntity):
     def __init__(self, coordinator, config_entry, mytype):
         self.coordinator = coordinator
         self.config_entry = config_entry
