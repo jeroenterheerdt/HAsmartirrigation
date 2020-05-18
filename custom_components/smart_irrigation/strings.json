@@ -3,22 +3,35 @@
   "config": {
     "step": {
       "user": {
+        "title": "Smart Irrigation",
+        "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "api_key": "[%key:common::config_flow::data::api_key%]",
-          "reference_et": "[%key:common::config_flow::data::monthly_et%]",
-          "number_of_sprinklers": "[%key:common::config_flow::data::number_of_sprinklers%]",
-          "flow": "[%key:common::config_flow::data::flow%]",
-          "area": "[%key:common::config_flow::data::area%]"
+            "api_key": "API key for Open Weather Map",
+            "reference_evapotranspiration_1": "Reference evapotranspiration for January (decimal number)",
+            "reference_evapotranspiration_2": "Reference evapotranspiration for February (decimal number)",
+            "reference_evapotranspiration_3": "Reference evapotranspiration for March (decimal number)",
+            "reference_evapotranspiration_4": "Reference evapotranspiration for April (decimal number)",
+            "reference_evapotranspiration_5": "Reference evapotranspiration for May (decimal number)",
+            "reference_evapotranspiration_6": "Reference evapotranspiration for June (decimal number)",
+            "reference_evapotranspiration_7": "Reference evapotranspiration for July (decimal number)",
+            "reference_evapotranspiration_8": "Reference evapotranspiration for August (decimal number)",
+            "reference_evapotranspiration_9": "Reference evapotranspiration for September (decimal number)",
+            "reference_evapotranspiration_10": "Reference evapotranspiration for October (decimal number)",
+            "reference_evapotranspiration_11": "Reference evapotranspiration for November (decimal number)",
+            "reference_evapotranspiration_12": "Reference evapotranspiration for December (decimal number)",
+            "number_of_sprinklers": "Number of sprinklers (whole number)",
+            "flow": "Flow per sprinkler in gpm or lpm (decimal number)",
+            "area": "Area in sq ft or m2 (whole number)"
         }
       }
     },
     "error": {
-      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
-      "unknown": "[%key:common::config_flow::error::unknown%]"
+            "auth": "Open Weather API key incorrect",
+            "reference_evapotranspiration_problem": "Please check your reference evapotranspiration values - they should be decimal",
+            "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "single_instance_allowed": "Only a single configuration of Smart Irrigation is allowed."
     }
   }
 }

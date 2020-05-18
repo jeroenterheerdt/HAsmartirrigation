@@ -28,7 +28,7 @@
                     "reference_evapotranspiration_12": "Reference evapotranspiration for December (decimal number)",
                     "number_of_sprinklers": "Number of sprinklers (whole number)",
                     "flow": "Flow per sprinkler in gpm or lpm (decimal number)",
-                    "area": "Area in sq ft or m2 (whole number)",
+                    "area": "Area in sq ft or m2 (whole number)"
                 }
             }
         }
