@@ -77,7 +77,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     api_key = entry.data.get(CONF_API_KEY)
     area = entry.data.get(CONF_AREA)
     flow = entry.data.get(CONF_FLOW)
-    number_of_spinklers = entry.data.get(CONF_NUMBER_OF_SPRINKLERS)
+    number_of_sprinklers = entry.data.get(CONF_NUMBER_OF_SPRINKLERS)
     reference_et = entry.data.get(CONF_REFERENCE_ET)
     reference_et = [float(x) for x in reference_et]
 
@@ -93,7 +93,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         reference_et = [x / MM_TO_INCH_FACTOR for x in reference_et]
 
     peak_et = max(reference_et)
-    throughput = number_of_spinklers * flow
+    throughput = number_of_sprinklers * flow
     precipitation_rate = (throughput * 60) / area
     base_schedule_index = (peak_et / precipitation_rate * 60) * 60  # in seconds
     latitude = hass.config.as_dict().get(CONF_LATITUDE)
@@ -110,7 +110,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         system_of_measurement=system_of_measurement,
         area=area,
         flow=flow,
-        number_of_spinklers=number_of_spinklers,
+        number_of_sprinklers=number_of_sprinklers,
         reference_et=reference_et,
         peak_et=peak_et,
         throughput=throughput,
@@ -175,7 +175,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         system_of_measurement,
         area,
         flow,
-        number_of_spinklers,
+        number_of_sprinklers,
         reference_et,
         peak_et,
         throughput,
@@ -190,7 +190,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.system_of_measurement = system_of_measurement
         self.area = area
         self.flow = flow
-        self.number_of_sprinklers = number_of_spinklers
+        self.number_of_sprinklers = number_of_sprinklers
         self.reference_et = reference_et
         self.peak_et = peak_et
         self.throughput = throughput
