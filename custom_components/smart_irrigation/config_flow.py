@@ -44,10 +44,12 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
 
     def __init__(self):
         """Initialize."""
+        self._api_key = None
+        self._reference_et = {}
         self._errors = {}
 
-    async def async_step_user(self, user_input=None):
-        """Handle a flow initialized by the user."""
+    async def async_step_step3(self, user_input=None):
+        """Handle a flow step3."""
         self._errors = {}
 
         # only a single instance is allowed
@@ -55,7 +57,20 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             return self.async_abort(reason="single_instance_allowed")
 
         if user_input is not None:
-            valid_api = await self._test_api_key(user_input[CONF_API_KEY])
+            user_input[CONF_API_KEY] = self._api_key
+            user_input[CONF_REFERENCE_ET] = self._reference_et
+            return self.async_create_entry(title=NAME, data=user_input)
+        return await self._show_config_form(user_input)
+
+    async def async_step_step2(self, user_input=None):
+        """Handle a flow step2."""
+        self._errors = {}
+
+        # only a single instance is allowed
+        if self._async_current_entries():
+            return self.async_abort(reason="single_instance_allowed")
+
+        if user_input is not None:
             reference_et = [
                 user_input[CONF_REFERENCE_ET_1],
                 user_input[CONF_REFERENCE_ET_2],
@@ -70,25 +85,61 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                 user_input[CONF_REFERENCE_ET_11],
                 user_input[CONF_REFERENCE_ET_12],
             ]
-
             valid_et = self._check_reference_et(reference_et)
-
-            if valid_api and valid_et:
-                return self.async_create_entry(title=NAME, data=user_input)
-            if not valid_api:
-                self._errors["base"] = "auth"
-            elif not valid_et:
+            if valid_et:
+                # store entered values
+                self._reference_et = reference_et
+                # show next step
+                return await self._show_step3(user_input)
+            else:
                 self._errors["base"] = "reference_evapotranspiration_problem"
-            return await self._show_config_form(user_input)
+                return await self._show_config_form(user_input)
+            # valid_et = self._check_reference_et(reference_et)
+
+            # if valid_api and valid_et:
+            #    return self.async_create_entry(title=NAME, data=user_input)
+            # if not valid_api:
+            #    self._errors["base"] = "auth"
+            # elif not valid_et:
+            #    self._errors["base"] = "reference_evapotranspiration_problem"
+            # return await self._show_config_form(user_input)
         return await self._show_config_form(user_input)
 
-    async def _show_config_form(self, user_input):
-        """Show the configuration form to edit info."""
+    async def async_step_user(self, user_input=None):
+        """Handle a flow initialized by the user."""
+        self._errors = {}
+
+        # only a single instance is allowed
+        if self._async_current_entries():
+            return self.async_abort(reason="single_instance_allowed")
+
+        if user_input is not None:
+            valid_api = await self._test_api_key(user_input[CONF_API_KEY])
+            if valid_api:
+                # store values entered
+                self._api_key = user_input[CONF_API_KEY].strip()
+                # show next step
+                return await self._show_step2(user_input)
+            else:
+                self._errors["base"] = "auth"
+                return await self._show_config_form(user_input)
+            # valid_et = self._check_reference_et(reference_et)
+
+            # if valid_api and valid_et:
+            #    return self.async_create_entry(title=NAME, data=user_input)
+            # if not valid_api:
+            #    self._errors["base"] = "auth"
+            # elif not valid_et:
+            #    self._errors["base"] = "reference_evapotranspiration_problem"
+            # return await self._show_config_form(user_input)
+        return await self._show_config_form(user_input)
+
+    async def _show_step2(self, user_input):
+        """Show the configuration form step 2: reference ET values."""
         return self.async_show_form(
-            step_id="user",
+            step_id="step2",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_API_KEY): str,
                     vol.Required(CONF_REFERENCE_ET_1): vol.Coerce(float),
                     vol.Required(CONF_REFERENCE_ET_2): vol.Coerce(float),
                     vol.Required(CONF_REFERENCE_ET_3): vol.Coerce(float),
@@ -101,6 +152,20 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                     vol.Required(CONF_REFERENCE_ET_10): vol.Coerce(float),
                     vol.Required(CONF_REFERENCE_ET_11): vol.Coerce(float),
                     vol.Required(CONF_REFERENCE_ET_12): vol.Coerce(float),
+                    # vol.Required(CONF_NUMBER_OF_SPRINKLERS): vol.Coerce(float),
+                    # vol.Required(CONF_FLOW): vol.Coerce(float),
+                    # vol.Required(CONF_AREA): vol.Coerce(float),
+                }
+            ),
+            errors=self._errors,
+        )
+
+    async def _show_step3(self, user_input):
+        """Show the configuration form step 2: reference ET values."""
+        return self.async_show_form(
+            step_id="step3",
+            data_schema=vol.Schema(
+                {
                     vol.Required(CONF_NUMBER_OF_SPRINKLERS): vol.Coerce(float),
                     vol.Required(CONF_FLOW): vol.Coerce(float),
                     vol.Required(CONF_AREA): vol.Coerce(float),
@@ -109,9 +174,38 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             errors=self._errors,
         )
 
+    async def _show_config_form(self, user_input):
+        """Show the configuration form to edit info."""
+        return self.async_show_form(
+            step_id="user",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_API_KEY): str,
+                    # vol.Required(CONF_REFERENCE_ET_1): vol.Coerce(float),
+                    # vol.Required(CONF_REFERENCE_ET_2): vol.Coerce(float),
+                    # vol.Required(CONF_REFERENCE_ET_3): vol.Coerce(float),
+                    # vol.Required(CONF_REFERENCE_ET_4): vol.Coerce(float),
+                    # vol.Required(CONF_REFERENCE_ET_5): vol.Coerce(float),
+                    # vol.Required(CONF_REFERENCE_ET_6): vol.Coerce(float),
+                    # vol.Required(CONF_REFERENCE_ET_7): vol.Coerce(float),
+                    # vol.Required(CONF_REFERENCE_ET_8): vol.Coerce(float),
+                    # vol.Required(CONF_REFERENCE_ET_9): vol.Coerce(float),
+                    # vol.Required(CONF_REFERENCE_ET_10): vol.Coerce(float),
+                    # vol.Required(CONF_REFERENCE_ET_11): vol.Coerce(float),
+                    # vol.Required(CONF_REFERENCE_ET_12): vol.Coerce(float),
+                    # vol.Required(CONF_NUMBER_OF_SPRINKLERS): vol.Coerce(float),
+                    # vol.Required(CONF_FLOW): vol.Coerce(float),
+                    # vol.Required(CONF_AREA): vol.Coerce(float),
+                }
+            ),
+            errors=self._errors,
+        )
+
     async def _test_api_key(self, api_key):
         """Test access to Open Weather Map API here."""
-        client = OWMClient(api_key=api_key, latitude=52.353218, longitude=5.0027695)
+        client = OWMClient(
+            api_key=api_key.strip(), latitude=52.353218, longitude=5.0027695
+        )
 
         try:
             client.get_data()

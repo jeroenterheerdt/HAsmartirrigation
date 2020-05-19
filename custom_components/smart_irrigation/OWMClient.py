@@ -19,7 +19,7 @@ class OWMClient:
         self.url = OWM_URL.format(latitude, longitude, api_key)
 
     def get_data(self):
-        """Return data."""
+        """Return data.""" 
         try:
             r = requests.get(self.url)
             d = json.loads(r.text)

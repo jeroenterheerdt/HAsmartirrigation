@@ -78,21 +78,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     area = entry.data.get(CONF_AREA)
     flow = entry.data.get(CONF_FLOW)
     number_of_spinklers = entry.data.get(CONF_NUMBER_OF_SPRINKLERS)
-
-    reference_et = [
-        entry.data.get(CONF_REFERENCE_ET_1),
-        entry.data.get(CONF_REFERENCE_ET_2),
-        entry.data.get(CONF_REFERENCE_ET_3),
-        entry.data.get(CONF_REFERENCE_ET_4),
-        entry.data.get(CONF_REFERENCE_ET_5),
-        entry.data.get(CONF_REFERENCE_ET_6),
-        entry.data.get(CONF_REFERENCE_ET_7),
-        entry.data.get(CONF_REFERENCE_ET_8),
-        entry.data.get(CONF_REFERENCE_ET_9),
-        entry.data.get(CONF_REFERENCE_ET_10),
-        entry.data.get(CONF_REFERENCE_ET_11),
-        entry.data.get(CONF_REFERENCE_ET_12),
-    ]
+    reference_et = entry.data.get(CONF_REFERENCE_ET)
     reference_et = [float(x) for x in reference_et]
 
     # convert values to internal metric representation if required.
