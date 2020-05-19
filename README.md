@@ -153,7 +153,7 @@ Go to https://openweathermap.org and create an account. You can enter any compan
 
 ## Getting Monthly ET values
 To get the monthly ET values use Rainmaster (US only), World Water & Climate Institute (worldwide) or another source that has this information for your area. 
-> **When entering the ET values in the configuration of this component, bear in mind that the component will expect inches or mm depending on the settings in Home Assistant (imperial vs metric system).**
+> **When entering the ET values in the configuration of this component, keep in mind that the component will expect inches or mm depending on the settings in Home Assistant (imperial vs metric system).**
 
 ### Using Rainmaster (US only)
 Go to http://www.rainmaster.com/historicET.aspx and enter your 5-digit zipcode and click 'Find'. The values you are looking for are listed for each month in inch/day:
