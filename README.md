@@ -149,7 +149,7 @@ The Adjusted Run Time (ART) is the number of seconds the irrigation needs to run
 Evapotranspiration is calculated using the Penman - Monteith method. More details are in [Allen RG, Pereira LS, Raes D, Smith M (1998) Crop evapotranspiration](http://www.fao.org/3/X0490E/x0490e00.htm). This component uses the [PyETo module to calculate the fao56 evapotranspiration value](https://pyeto.readthedocs.io/en/latest/fao56_penman_monteith.html).
 
 ## Getting Open Weather Map API key
-Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key.
+Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key. If the key does not work right away, no worries. The email you should have received from OpenWeaterMap says it will be activated 'within the next couple of hours'. So if it does not work right away, be patient a bit.
 
 ## Getting Monthly ET values
 To get the monthly ET values use Rainmaster (US only), World Water & Climate Institute (worldwide) or another source that has this information for your area. 
