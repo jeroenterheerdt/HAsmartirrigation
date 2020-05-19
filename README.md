@@ -27,7 +27,7 @@ The component uses the [PyETo module to calculate the evapotranspiration value (
 ### Step 1: configuration of component
 Install the custom component (preferably using HACS) and then use the Configuration --> Integrations pane to search for 'Smart Irrigation'.
 You will need to specify the following:
-- API Key for Open Weather Map. See [Getting Open Weater Map API Key](#getting-open-weather-map-api) below for instructions.
+- API Key for Open Weather Map. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions.
 - Reference Evapotranspiration for all months of the year. See [Getting Monthly ET values](#getting-monthly-et-values) below for instructions. Note that you can specify these in inches or mm, depending on your Home Assistant settings.
 - Number of sprinklers in your irrigation system
 - Flow per spinkler in gallons per minute or liters per minute. Refer to your sprinkler's manual for this information.
@@ -36,7 +36,6 @@ You will need to specify the following:
 ### Step 2: checking entities
 After successful configuration, you should end up with three entities and their attributes, listed below.
 #### `sensor.smart_irrigation_base_schedule_index`
-<img align="right" src="images/bsi_entity.png">
 The number of seconds the irrigation system needs to run assuming maximum evapotranspiration and no rain / snow. This value and the attributes are static for your configuration.
 Attributes:
 | Attribute | Description |
@@ -48,22 +47,38 @@ Attributes:
 |`area`|the total area the irrigation system reaches in m<sup>2</sup> or sq ft.|
 |`precipitation rate`|the output of the irrigation system across the whole area in mm or inch per hour|
 
+Sample screenshot:
+
+![](images/bsi_entity.png?raw=true)
+
 #### `sensor.smart_irrigation_hourly_adjusted_run_time`
-<img align="right" src="images/hart.png">
-The adjusted run time in seconds to compensate for any net moisture lost. Updated approx. every 60 minutes. Attributes:
-- `rain`: the predicted rainfall in mm or inch
-- `snow`: the predicted snowfall in mm or inch
-- `precipitation`: the total predicted precipitation in mm or inch
-- `evapotranspiration`: the expected evapotranspiration
-- `netto precipitation`: the net evapotranspiration in mm or inch, negative values mean more moisture is lost than gets added bu rain/snow, while positive values mean more value is added by rain/snow than evaporates.
-- `water budget`: percentage of expected `evapotranspiration` vs `peak evapotranspiration`.
+The adjusted run time in seconds to compensate for any net moisture lost. Updated approx. every 60 minutes.
+Attributes:
+| Attribute | Description |
+| --- | --- |
+|`rain`|the predicted rainfall in mm or inch|
+|`snow`|the predicted snowfall in mm or inch|
+|`precipitation`|the total predicted precipitation in mm or inch|
+|`evapotranspiration`|the expected evapotranspiration|
+|`netto precipitation`|the net evapotranspiration in mm or inch, negative values mean more moisture is lost than gets added bu rain/snow, while positive values mean more value is added by rain/snow than evaporates|
+|`water budget`|percentage of expected `evapotranspiration` vs `peak evapotranspiration`|
+
+Sample screenshot:
+
+![](images/hart.png?raw=true)
 
 #### `sensor.smart_irrigation_daily_adjusted_run_time`
-<img align="right" src="images/dart.png">
+
 The adjusted run time in seconds to compensate for any net moisture lost. Updated every day at 11:00 PM / 23:00 hours local time. Use this value for your automation (see step 3, below).
 Attributes:
-- `water budget`: percentage of net precipitation / base schedule index.
-- `bucket`: running total of net precipitation. Negative values mean that irrigation is required. Positive values mean that more moisture was added than has evaporated yet, so irrigation is not required. Should be reset to `0` after each irrigation, using the `smart_irrigation.reset_bucket` service.
+| Attribute | Description |
+| --- | --- |
+|`water budget`|percentage of net precipitation / base schedule index|
+|`bucket`|running total of net precipitation. Negative values mean that irrigation is required. Positive values mean that more moisture was added than has evaporated yet, so irrigation is not required. Should be reset to `0` after each irrigation, using the `smart_irrigation.reset_bucket` service|
+
+Sample screenshot:
+
+![](images/dart.png?raw=true)
 
 You will use `sensor.smart_irrigation_daily_adjusted_run_time` to create an automation (see step 3, below).
 
@@ -133,7 +148,7 @@ The Adjusted Run Time (ART) is the number of seconds the irrigation needs to run
 
 Evapotranspiration is calculated using the Penman - Monteith method. More details are in [Allen RG, Pereira LS, Raes D, Smith M (1998) Crop evapotranspiration](http://www.fao.org/3/X0490E/x0490e00.htm). This component uses the [PyETo module to calculate the fao56 evapotranspiration value](https://pyeto.readthedocs.io/en/latest/fao56_penman_monteith.html).
 
-## Getting Open Weather Map API
+## Getting Open Weather Map API key
 Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key.
 
 ## Getting Monthly ET values
