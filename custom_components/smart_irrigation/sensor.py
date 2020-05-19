@@ -417,7 +417,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         if self.coordinator.system_of_measurement == SETTING_METRIC:
             retval = f"{value}"
             if show_unit:
-                retval = retval + " {UNIT_OF_MEASUREMENT_M2}"
+                retval = retval + f" {UNIT_OF_MEASUREMENT_M2}"
             return retval
         else:
             retval = f"{round(value * M2_TO_SQ_FT_FACTOR,2)}"
