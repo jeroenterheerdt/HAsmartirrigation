@@ -14,21 +14,21 @@
                 "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
                 "data": {
                     "api_key": "API key for Open Weather Map",
-                    "reference_evapotranspiration_1": "Reference evapotranspiration for January (decimal number)",
-                    "reference_evapotranspiration_2": "Reference evapotranspiration for February (decimal number)",
-                    "reference_evapotranspiration_3": "Reference evapotranspiration for March (decimal number)",
-                    "reference_evapotranspiration_4": "Reference evapotranspiration for April (decimal number)",
-                    "reference_evapotranspiration_5": "Reference evapotranspiration for May (decimal number)",
-                    "reference_evapotranspiration_6": "Reference evapotranspiration for June (decimal number)",
-                    "reference_evapotranspiration_7": "Reference evapotranspiration for July (decimal number)",
-                    "reference_evapotranspiration_8": "Reference evapotranspiration for August (decimal number)",
-                    "reference_evapotranspiration_9": "Reference evapotranspiration for September (decimal number)",
-                    "reference_evapotranspiration_10": "Reference evapotranspiration for October (decimal number)",
-                    "reference_evapotranspiration_11": "Reference evapotranspiration for November (decimal number)",
-                    "reference_evapotranspiration_12": "Reference evapotranspiration for December (decimal number)",
-                    "number_of_sprinklers": "Number of sprinklers (whole number)",
-                    "flow": "Flow per sprinkler in gpm or lpm (decimal number)",
-                    "area": "Area in sq ft or m2 (whole number)"
+                    "reference_evapotranspiration_1": "Reference evapotranspiration for January",
+                    "reference_evapotranspiration_2": "Reference evapotranspiration for February",
+                    "reference_evapotranspiration_3": "Reference evapotranspiration for March",
+                    "reference_evapotranspiration_4": "Reference evapotranspiration for April",
+                    "reference_evapotranspiration_5": "Reference evapotranspiration for May",
+                    "reference_evapotranspiration_6": "Reference evapotranspiration for June",
+                    "reference_evapotranspiration_7": "Reference evapotranspiration for July",
+                    "reference_evapotranspiration_8": "Reference evapotranspiration for August",
+                    "reference_evapotranspiration_9": "Reference evapotranspiration for September",
+                    "reference_evapotranspiration_10": "Reference evapotranspiration for October",
+                    "reference_evapotranspiration_11": "Reference evapotranspiration for November",
+                    "reference_evapotranspiration_12": "Reference evapotranspiration for December",
+                    "number_of_sprinklers": "Number of sprinklers",
+                    "flow": "Flow per sprinkler in gpm or lpm",
+                    "area": "Area in sq ft or m2"
                 }
             }
         }
