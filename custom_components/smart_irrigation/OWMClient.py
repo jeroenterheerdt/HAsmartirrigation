@@ -13,7 +13,7 @@ class OWMClient:
 
     def __init__(self, api_key, latitude, longitude):
         """Init."""
-        self.api_key = api_key
+        self.api_key = api_key.strip()
         self.longitude = longitude
         self.latitude = latitude
         self.url = OWM_URL.format(latitude, longitude, api_key)
