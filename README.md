@@ -32,6 +32,8 @@ You will need to specify the following:
 - Number of sprinklers in your irrigation system
 - Flow per spinkler in gallons per minute or liters per minute. Refer to your sprinkler's manual for this information.
 - Area that the sprinklers cover in square feet or m2
+ 
+ > **When entering any values in the configuration of this component, keep in mind that the component will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).**
 
 ### Step 2: checking entities
 After successful configuration, you should end up with three entities and their attributes, listed below.
