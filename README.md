@@ -17,7 +17,7 @@
 Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
 This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation / evapotranspiration. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required.
 
-The component keeps track of hourly precipitation and at 23:00 (11:00 PM) local time stores it in a daily value. It then calculates the exact runtime in seconds to compensate for the net evaporation. This is all the component does, and this is on purpose to provide maximum flexibility. Users are expected to use the value of `sensor.smart_irrigation.daily_adjusted_run_time` to interact with their irrigation system and afterwards call `smart_irrigation.reset_bucket`. [See the example automation below](#step-3:-creating-automation).
+The component keeps track of hourly precipitation and at 23:00 (11:00 PM) local time stores it in a daily value. It then calculates the exact runtime in seconds to compensate for the net evaporation. This is all the component does, and this is on purpose to provide maximum flexibility. Users are expected to use the value of `sensor.smart_irrigation.daily_adjusted_run_time` to interact with their irrigation system and afterwards call the `smart_irrigation.reset_bucket` service. [See the example automations below](#step-3-creating-automation).
 
 This component uses reference evapotranspiration values and calculates base schedule indexes and water budgets from that. This is an industry-standard approach. Information can be found at https://www.rainbird.com/professionals/irrigation-scheduling-use-et-save-water, amongst others.
 The component uses the [PyETo module to calculate the evapotranspiration value (fao56)](https://pyeto.readthedocs.io/en/latest/fao56_penman_monteith.html).
@@ -87,9 +87,12 @@ You will use `sensor.smart_irrigation_daily_adjusted_run_time` to create an auto
 The [How this works section](#how-this-works) describes the entities, the attributes and the calculations
 
 ### Step 3: creating automation
-Since this component does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom component with any irrigation system you might have, regardless of how that interfaces with Home Assistant.
+Since this component does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom component with any irrigation system you might have, regardless of how that interfaces with Home Assistant. In order for this to work correctly, you should base your automation on the value of `sensor.smart_irrigation_daily_adjusted_run_time` as long as you run your automation after it was updated (11:00 PM / 23:00 hours local time). If that value is above 0 it is time to irrigate. Note that the value is the run time in seconds. Also, after irrigation, you need to call the `smart_irrigation.reset_bucket` service to reset the net irrigation tracking to 0.
 
-Here is an example automation:
+> **The last step in any automation is very important, since you will need to let the component know you have finished irrigating and the evaporation counter can be reset by calling the `smart_irrigation.reset_bucket` service**
+
+#### Example automation 1: one valve, potentially daily irrigation
+Here is an example automation that run everyday at 6 AM local time. It checks if `sensor.smart_irrigation_daily_adjusted_run_time` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service:
 ```
 - alias: Smart Irrigation
   description: 'Start Smart Irrigation at 06:00 and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
@@ -113,7 +116,88 @@ Here is an example automation:
     service: smart_irrigation.reset_bucket
 ```
 
-> **The last step in this automation is important, since you will need to let the component know you have finished irrigating and the evaporation counter can be reset.**
+#### Example automation 2: one valve, irrigation depending on work day sensor
+Here is an example automation that runs at 5 AM local time, but only on set days of the week indicated by `binary_sensor.workday_sensor`). As above, it checks if `sensor.smart_irrigation_daily_adjusted_run_time` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service.
+This automation depends on the [workday binary sensor](https://www.home-assistant.io/integrations/workday/) which you will have to set up separately. Alternatively you could use a condition such as:
+```
+condition:
+  condition: time
+  weekday:
+  - mon
+  - thu
+```
+
+```
+- alias: Smart Irrigation
+  description: 'Start Smart Irrigation at 05:00 when the workday sensor is on and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
+  trigger:
+  - at: 06:00
+    platform: time
+  condition:
+  - condition: state
+    entity_id: 'binary_sensor.workday_sensor'
+    state: 'on'
+  - above: '0'
+    condition: numeric_state
+    entity_id: sensor.smart_irrigation_daily_adjusted_run_time
+  action:
+  - data: {}
+    entity_id: switch.irrigation_tap1
+    service: switch.turn_on
+  - delay:
+      seconds: '{{states("sensor.smart_irrigation_daily_adjusted_run_time")}}'
+  - data: {}
+    entity_id: switch.irrigation_tap1
+    service: switch.turn_off
+  - data: {}
+    service: smart_irrigation.reset_bucket
+```
+
+#### Example automation 3: two valves, irrigation depending on work day sensor
+Here is an example automation that runs at 4 AM local time, but only on set days of the week indicated by `binary_sensor.workday_sensor`). As above, it checks if `sensor.smart_irrigation_daily_adjusted_run_time` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Then it turns on `switch.irrigation_tap2`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap2`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service.
+This automation depends on the [workday binary sensor](https://www.home-assistant.io/integrations/workday/) which you will have to set up separately. Alternatively you could use a condition such as:
+```
+condition:
+  condition: time
+  weekday:
+  - mon
+  - thu
+```
+
+```
+- alias: Smart Irrigation
+  description: 'Start Smart Irrigation at 05:00 when the workday sensor is on and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
+  trigger:
+  - at: 06:00
+    platform: time
+  condition:
+  - condition: state
+    entity_id: 'binary_sensor.workday_sensor'
+    state: 'on'
+  - above: '0'
+    condition: numeric_state
+    entity_id: sensor.smart_irrigation_daily_adjusted_run_time
+  action:
+  - data: {}
+    entity_id: switch.irrigation_tap1
+    service: switch.turn_on
+  - delay:
+      seconds: '{{states("sensor.smart_irrigation_daily_adjusted_run_time")}}'
+  - data: {}
+    entity_id: switch.irrigation_tap1
+    service: switch.turn_off
+  - data: {}
+    entity_id: switch.irrigation_tap2
+    service: switch.turn_on
+  - delay:
+      seconds: '{{states("sensor.smart_irrigation_daily_adjusted_run_time")}}'
+  - data: {}
+    entity_id: switch.irrigation_tap2
+    service: switch.turn_off
+  - data: {}
+    service: smart_irrigation.reset_bucket
+```
+
 
 ## How this works
 This section describes how this component works and how the input values you specify when setting up the component result in the values and attributes of the three entities created.
