@@ -131,7 +131,7 @@ condition:
 - alias: Smart Irrigation
   description: 'Start Smart Irrigation at 05:00 when the workday sensor is on and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
   trigger:
-  - at: 06:00
+  - at: 05:00
     platform: time
   condition:
   - condition: state
@@ -166,9 +166,9 @@ condition:
 
 ```
 - alias: Smart Irrigation
-  description: 'Start Smart Irrigation at 05:00 when the workday sensor is on and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
+  description: 'Start Smart Irrigation at 04:00 when the workday sensor is on and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
   trigger:
-  - at: 06:00
+  - at: 04:00
     platform: time
   condition:
   - condition: state
