@@ -202,7 +202,7 @@ condition:
     service: smart_irrigation.reset_bucket
 ```
 
-#### Example automation 4: one valve, with extra check
+#### Example automation 4: one valve, with extra check on today's forecast to avoid over-irrigation
 Here is an example automation that runs at 4 AM local time. As above, it checks if *both* `sensor.smart_irrigation_daily_adjusted_run_time` and `sensor.smart_irrigation_hourly_adjusted_run_time` are above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service.
 The extra check that `sensor.smart_irrigation_hourly_adjusted_run_time` is above 0 does not only take into account yesterdays run time, but also the most recent value for today. This will cover for the situation where yesterday triggered irrigation because it was a dry day, but today is expected to be a wet day. In that cause irrigating might be overdoing it.
 With this extra check this situation is avoided.
