@@ -134,12 +134,14 @@ condition:
   - at: 05:00
     platform: time
   condition:
-  - condition: state
-    entity_id: 'binary_sensor.workday_sensor'
-    state: 'on'
-  - above: '0'
-    condition: numeric_state
-    entity_id: sensor.smart_irrigation_daily_adjusted_run_time
+    condition: and
+    conditions:
+    - condition: state
+      entity_id: 'binary_sensor.workday_sensor'
+      state: 'on'
+    - above: '0'
+      condition: numeric_state
+      entity_id: sensor.smart_irrigation_daily_adjusted_run_time
   action:
   - data: {}
     entity_id: switch.irrigation_tap1
@@ -171,12 +173,14 @@ condition:
   - at: 04:00
     platform: time
   condition:
-  - condition: state
-    entity_id: 'binary_sensor.workday_sensor'
-    state: 'on'
-  - above: '0'
-    condition: numeric_state
-    entity_id: sensor.smart_irrigation_daily_adjusted_run_time
+    condition: and
+    conditions:
+    - condition: state
+      entity_id: 'binary_sensor.workday_sensor'
+      state: 'on'
+    - above: '0'
+      condition: numeric_state
+      entity_id: sensor.smart_irrigation_daily_adjusted_run_time
   action:
   - data: {}
     entity_id: switch.irrigation_tap1
@@ -198,6 +202,46 @@ condition:
     service: smart_irrigation.reset_bucket
 ```
 
+#### Example automation 4: one valve, with extra check
+Here is an example automation that runs at 4 AM local time. As above, it checks if *both* `sensor.smart_irrigation_daily_adjusted_run_time` and `sensor.smart_irrigation_hourly_adjusted_run_time` are above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service.
+The extra check that `sensor.smart_irrigation_hourly_adjusted_run_time` is above 0 does not only take into account yesterdays run time, but also the most recent value for today. This will cover for the situation where yesterday triggered irrigation because it was a dry day, but today is expected to be a wet day. In that cause irrigating might be overdoing it.
+With this extra check this situation is avoided.
+
+```
+- alias: Smart Irrigation
+  description: 'Start Smart Irrigation at 04:00 when the workday sensor is on and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
+  trigger:
+  - at: 04:00
+    platform: time
+  condition:
+    condition: and
+    conditions:
+    - above: '0'
+      condition: numeric_state
+      entity_id: sensor.smart_irrigation_daily_adjusted_run_time
+    - above: '0'
+      condition: numeric_state
+      entity_id: sensor.smart_irrigation_hourly_adjusted_run_time
+  action:
+  - data: {}
+    entity_id: switch.irrigation_tap1
+    service: switch.turn_on
+  - delay:
+      seconds: '{{states("sensor.smart_irrigation_daily_adjusted_run_time")}}'
+  - data: {}
+    entity_id: switch.irrigation_tap1
+    service: switch.turn_off
+  - data: {}
+    entity_id: switch.irrigation_tap2
+    service: switch.turn_on
+  - delay:
+      seconds: '{{states("sensor.smart_irrigation_daily_adjusted_run_time")}}'
+  - data: {}
+    entity_id: switch.irrigation_tap2
+    service: switch.turn_off
+  - data: {}
+    service: smart_irrigation.reset_bucket
+```
 
 ## How this works
 This section describes how this component works and how the input values you specify when setting up the component result in the values and attributes of the three entities created.
