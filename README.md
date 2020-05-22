@@ -20,7 +20,7 @@ This component calculates the time to run your irrigation system to compensate f
 The component keeps track of hourly precipitation and at 23:00 (11:00 PM) local time stores it in a daily value. It then calculates the exact runtime in seconds to compensate for the net evaporation. This is all the component does, and this is on purpose to provide maximum flexibility. Users are expected to use the value of `sensor.smart_irrigation.daily_adjusted_run_time` to interact with their irrigation system and afterwards call the `smart_irrigation.reset_bucket` service. [See the example automations below](#step-3-creating-automation).
 
 This component uses reference evapotranspiration values and calculates base schedule indexes and water budgets from that. This is an industry-standard approach. Information can be found at https://www.rainbird.com/professionals/irrigation-scheduling-use-et-save-water, amongst others.
-The component uses the [PyETo module to calculate the evapotranspiration value (fao56)](https://pyeto.readthedocs.io/en/latest/fao56_penman_monteith.html).
+The component uses the [PyETo module to calculate the evapotranspiration value (fao56)](https://pyeto.readthedocs.io/en/latest/fao56_penman_monteith.html). Also, please see the [How this works](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) Wiki page.
 
 ## Configuration
 
@@ -84,23 +84,11 @@ Sample screenshot:
 
 You will use `sensor.smart_irrigation_daily_adjusted_run_time` to create an automation (see step 3, below).
 
-The [How this works section](#how-this-works) describes the entities, the attributes and the calculations
+The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) describes the entities, the attributes and the calculations
 
 #### Showing other sensors
-If you wanted to expose more of the calculations to get history diagrams of relevant parts, this configuration can help: it uses the sensor templating to expose both the bucket and netto precipitation as individual sensors:
-```
-sensor:
-- platform: template
-  sensors:
-    smart_irrigation_hourly_netto_precipitation:
-      friendly_name: Smart Irrigation Netto Precipitation (updated hourly)
-      value_template: "{{state_attr('sensor.smart_irrigation_hourly_adjusted_run_time','netto_precipitation')}}"
-      icon_template: "mdi:sprinkler-variant"
-    smart_irrigation_bucket:
-      friendly_name: Smart Irrigation Bucket
-      value_template: "{{state_attr('sensor.smart_irrigation_daily_adjusted_run_time','bucket')}}"
-      icon_template: "mdi:sprinkler-variant"
-```
+[See the Wiki for more information on how to expose other values this components calculates as sensors](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Showing-other-sensors).
+
 
 ### Step 3: creating automation
 Since this component does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom component with any irrigation system you might have, regardless of how that interfaces with Home Assistant. In order for this to work correctly, you should base your automation on the value of `sensor.smart_irrigation_daily_adjusted_run_time` as long as you run your automation after it was updated (11:00 PM / 23:00 hours local time). If that value is above 0 it is time to irrigate. Note that the value is the run time in seconds. Also, after irrigation, you need to call the `smart_irrigation.reset_bucket` service to reset the net irrigation tracking to 0.
@@ -132,167 +120,10 @@ Here is an example automation that run everyday at 6 AM local time. It checks if
     service: smart_irrigation.reset_bucket
 ```
 
-#### Example automation 2: one valve, irrigation depending on work day sensor
-Here is an example automation that runs at 5 AM local time, but only on set days of the week indicated by `binary_sensor.workday_sensor`). As above, it checks if `sensor.smart_irrigation_daily_adjusted_run_time` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service.
-This automation depends on the [workday binary sensor](https://www.home-assistant.io/integrations/workday/) which you will have to set up separately. Alternatively you could use a condition such as:
-```
-condition:
-  condition: time
-  weekday:
-  - mon
-  - thu
-```
-
-```
-- alias: Smart Irrigation
-  description: 'Start Smart Irrigation at 05:00 when the workday sensor is on and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
-  trigger:
-  - at: 05:00
-    platform: time
-  condition:
-    condition: and
-    conditions:
-    - condition: state
-      entity_id: 'binary_sensor.workday_sensor'
-      state: 'on'
-    - above: '0'
-      condition: numeric_state
-      entity_id: sensor.smart_irrigation_daily_adjusted_run_time
-  action:
-  - data: {}
-    entity_id: switch.irrigation_tap1
-    service: switch.turn_on
-  - delay:
-      seconds: '{{states("sensor.smart_irrigation_daily_adjusted_run_time")}}'
-  - data: {}
-    entity_id: switch.irrigation_tap1
-    service: switch.turn_off
-  - data: {}
-    service: smart_irrigation.reset_bucket
-```
-
-#### Example automation 3: two valves, irrigation depending on work day sensor
-Here is an example automation that runs at 4 AM local time, but only on set days of the week indicated by `binary_sensor.workday_sensor`). As above, it checks if `sensor.smart_irrigation_daily_adjusted_run_time` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Then it turns on `switch.irrigation_tap2`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap2`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service.
-This automation depends on the [workday binary sensor](https://www.home-assistant.io/integrations/workday/) which you will have to set up separately. Alternatively you could use a condition such as:
-```
-condition:
-  condition: time
-  weekday:
-  - mon
-  - thu
-```
-
-```
-- alias: Smart Irrigation
-  description: 'Start Smart Irrigation at 04:00 when the workday sensor is on and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
-  trigger:
-  - at: 04:00
-    platform: time
-  condition:
-    condition: and
-    conditions:
-    - condition: state
-      entity_id: 'binary_sensor.workday_sensor'
-      state: 'on'
-    - above: '0'
-      condition: numeric_state
-      entity_id: sensor.smart_irrigation_daily_adjusted_run_time
-  action:
-  - data: {}
-    entity_id: switch.irrigation_tap1
-    service: switch.turn_on
-  - delay:
-      seconds: '{{states("sensor.smart_irrigation_daily_adjusted_run_time")}}'
-  - data: {}
-    entity_id: switch.irrigation_tap1
-    service: switch.turn_off
-  - data: {}
-    entity_id: switch.irrigation_tap2
-    service: switch.turn_on
-  - delay:
-      seconds: '{{states("sensor.smart_irrigation_daily_adjusted_run_time")}}'
-  - data: {}
-    entity_id: switch.irrigation_tap2
-    service: switch.turn_off
-  - data: {}
-    service: smart_irrigation.reset_bucket
-```
-
-#### Example automation 4: one valve, with extra check on today's forecast to avoid over-irrigation
-Here is an example automation that runs at 4 AM local time. As above, it checks if *both* `sensor.smart_irrigation_daily_adjusted_run_time` and `sensor.smart_irrigation_hourly_adjusted_run_time` are above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service.
-The extra check that `sensor.smart_irrigation_hourly_adjusted_run_time` is above 0 does not only take into account yesterdays run time, but also the most recent value for today. This will cover for the situation where yesterday triggered irrigation because it was a dry day, but today is expected to be a wet day. In that cause irrigating might be overdoing it.
-With this extra check this situation is avoided.
-
-```
-- alias: Smart Irrigation
-  description: 'Start Smart Irrigation at 04:00 when the workday sensor is on and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
-  trigger:
-  - at: 04:00
-    platform: time
-  condition:
-    condition: and
-    conditions:
-    - above: '0'
-      condition: numeric_state
-      entity_id: sensor.smart_irrigation_daily_adjusted_run_time
-    - above: '0'
-      condition: numeric_state
-      entity_id: sensor.smart_irrigation_hourly_adjusted_run_time
-  action:
-  - data: {}
-    entity_id: switch.irrigation_tap1
-    service: switch.turn_on
-  - delay:
-      seconds: '{{states("sensor.smart_irrigation_daily_adjusted_run_time")}}'
-  - data: {}
-    entity_id: switch.irrigation_tap1
-    service: switch.turn_off
-  - data: {}
-    entity_id: switch.irrigation_tap2
-    service: switch.turn_on
-  - delay:
-      seconds: '{{states("sensor.smart_irrigation_daily_adjusted_run_time")}}'
-  - data: {}
-    entity_id: switch.irrigation_tap2
-    service: switch.turn_off
-  - data: {}
-    service: smart_irrigation.reset_bucket
-```
+[See more advanced examples in the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Automation-examples).
 
 ## How this works
-This section describes how this component works and how the input values you specify when setting up the component result in the values and attributes of the three entities created.
-
-### Rationale
-This component uses the industry-standard approach of calculating a Base Schedule Index (BSI) based on reference evapotranspiration values. It then compares these reference values to the actual current values and calculates the amount of time the irrigation needs to run to compensate for evapotranspiration. Information can be found at https://www.rainbird.com/professionals/irrigation-scheduling-use-et-save-water, amongst others.
-
-### Definitions
-The following definitions are used in this component:
-- **Area**: total area that the irrigation system reaches in m<sup>2</sup> or sq ft
-- **Adjusted Run Time** : time in seconds that the irrigation system needs to run to compensate for any net moisture lost.
-- **Base Schedule Index (BSI)**: is the number of seconds the irrigation needs to run to compensate for the highest reference evapotranspiration value provided
-- **Bucket**: Running total of net precipitation. Negative values mean that irrigation is required. Positive values mean that more moisture was added than has evaporated yet, so irrigation is not required. Should be reset to `0` after each irrigation, using the `smart_irrigation.reset_bucket` service.
-- **Evapotranspiration**: the moisture evaporating from the soil and plants due to factors such as wind speed, sun exposure and temperature
-- **Flow**: the amount of water that runs through a single sprinkler in liters or gallons per minute
-- **Peak Evapotranspiration**: the highest evapotranspiration value in the reference evapotranspiration values.
-- **Precipitation**: sum of rain and snow fall in mm or inch
-- **Precipitation Rate**: the output of the irrigation system across the whole area in mm / hour or inch / hour
-- **Netto precipitation**: the net evapotranspiration in mm or inch, negative values mean more moisture is lost than gets added bu rain/snow, while positive values mean more value is added by rain/snow than evaporates.
-- **Reference evapotranspiration**: the reference evapotranspiration values provided by the user - one for each month.
-- **Throughput**: the output of the irrigation system in liters or gallons per minute
-- **Water budget**: percentage of current evapotranspiration vs peak evapotranspiration
-
-
-### Calculating Base Schedule Index
-The Base Schedule Index (BSI) is the number of seconds the irrigation needs to run to compensate for the highest reference evapotranspiration value provided. This is a static value based on the user input, calculated once at setup.
-It is defined as:
-![](images/bsi.png?raw=true)
-
-### Calculating Adjusted Run Time
-The Adjusted Run Time (ART) is the number of seconds the irrigation needs to run to compensate for moisture lost that is not compensated by rain or snow. It is defined as:
-
-![](images/art.png?raw=true)
-
-Evapotranspiration is calculated using the Penman - Monteith method. More details are in [Allen RG, Pereira LS, Raes D, Smith M (1998) Crop evapotranspiration](http://www.fao.org/3/X0490E/x0490e00.htm). This component uses the [PyETo module to calculate the fao56 evapotranspiration value](https://pyeto.readthedocs.io/en/latest/fao56_penman_monteith.html).
+[See the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works).
 
 ## Getting Open Weather Map API key
 Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key. If the key does not work right away, no worries. The email you should have received from OpenWeaterMap says it will be activated 'within the next couple of hours'. So if it does not work right away, be patient a bit.
