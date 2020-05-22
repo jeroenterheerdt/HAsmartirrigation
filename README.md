@@ -86,6 +86,22 @@ You will use `sensor.smart_irrigation_daily_adjusted_run_time` to create an auto
 
 The [How this works section](#how-this-works) describes the entities, the attributes and the calculations
 
+#### Showing other sensors
+If you wanted to expose more of the calculations to get history diagrams of relevant parts, this configuration can help: it uses the sensor templating to expose both the bucket and netto precipitation as individual sensors:
+```
+sensor:
+- platform: template
+  sensors:
+    smart_irrigation_hourly_netto_precipitation:
+      friendly_name: Smart Irrigation Netto Precipitation (updated hourly)
+      value_template: "{{state_attr('sensor.smart_irrigation_hourly_adjusted_run_time','netto_precipitation')}}"
+      icon_template: "mdi:sprinkler-variant"
+    smart_irrigation_bucket:
+      friendly_name: Smart Irrigation Bucket
+      value_template: "{{state_attr('sensor.smart_irrigation_daily_adjusted_run_time','bucket')}}"
+      icon_template: "mdi:sprinkler-variant"
+```
+
 ### Step 3: creating automation
 Since this component does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom component with any irrigation system you might have, regardless of how that interfaces with Home Assistant. In order for this to work correctly, you should base your automation on the value of `sensor.smart_irrigation_daily_adjusted_run_time` as long as you run your automation after it was updated (11:00 PM / 23:00 hours local time). If that value is above 0 it is time to irrigate. Note that the value is the run time in seconds. Also, after irrigation, you need to call the `smart_irrigation.reset_bucket` service to reset the net irrigation tracking to 0.
 
