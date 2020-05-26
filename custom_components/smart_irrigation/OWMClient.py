@@ -19,7 +19,7 @@ class OWMClient:
         self.url = OWM_URL.format(latitude, longitude, api_key)
 
     def get_data(self):
-        """Return data.""" 
+        """Return data."""
         try:
             r = requests.get(self.url)
             d = json.loads(r.text)
@@ -36,7 +36,3 @@ class OWMClient:
             _LOGGER.error("Failed to get OWM URL {}".format(r.text))
             _LOGGER.error(Ex.strerror)
             raise Ex
-
-    async def async_get_data(self):
-        """Return data."""
-        return self.get_data()

@@ -53,8 +53,8 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         self._errors = {}
 
         # only a single instance is allowed
-        if self._async_current_entries():
-            return self.async_abort(reason="single_instance_allowed")
+        # if self._async_current_entries():
+        #    return self.async_abort(reason="single_instance_allowed")
 
         if user_input is not None:
             user_input[CONF_API_KEY] = self._api_key
@@ -67,8 +67,8 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         self._errors = {}
 
         # only a single instance is allowed
-        if self._async_current_entries():
-            return self.async_abort(reason="single_instance_allowed")
+        # if self._async_current_entries():
+        #    return self.async_abort(reason="single_instance_allowed")
 
         if user_input is not None:
             reference_et = [
@@ -110,8 +110,8 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         self._errors = {}
 
         # only a single instance is allowed
-        if self._async_current_entries():
-            return self.async_abort(reason="single_instance_allowed")
+        # if self._async_current_entries():
+        #    return self.async_abort(reason="single_instance_allowed")
 
         if user_input is not None:
             valid_api = await self._test_api_key(user_input[CONF_API_KEY])
@@ -208,7 +208,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         )
 
         try:
-            client.get_data()
+            await self.hass.async_add_executor_job(client.get_data)
             return True
         except Exception as Ex:
             _LOGGER.error(Ex.strerror)

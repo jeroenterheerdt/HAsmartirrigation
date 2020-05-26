@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.9"
+VERSION = "0.0.11"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -93,7 +93,6 @@ STARTUP_MESSAGE = f"""
 -------------------------------------------------------------------
 {NAME}
 Version: {VERSION}
-This is a custom integration! You will see warnings related to 'detected I/O inside the event loop'. This is normal and might be solved in future releases.
 If you have any issues with this you need to open an issue here:
 {ISSUE_URL}
 -------------------------------------------------------------------

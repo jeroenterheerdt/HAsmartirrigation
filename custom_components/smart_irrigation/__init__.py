@@ -234,7 +234,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         _LOGGER.info(
             "Updating for last time today, calculating adjusted run time for next irrigation time!"
         )
-        data = await self._async_update_data()
+        data = await self.hass.async_add_executor_job(self.api.get_data)
         self._update_last_of_day()
         _LOGGER.info("Bucket for today is: {} mm".format(self.bucket))
         return data
@@ -243,7 +243,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         """Update data via library."""
         _LOGGER.info("Updating Smart Irrigation Data")
         try:
-            data = await self.api.async_get_data()
+            data = await self.hass.async_add_executor_job(self.api.get_data)
             return data
         except Exception as exception:
             raise UpdateFailed(exception)
