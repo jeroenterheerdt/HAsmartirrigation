@@ -53,7 +53,12 @@ from .const import (
     CONF_WATER_BUDGET,
     EVENT_BUCKET_UPDATED,
     SERVICE_RESET_BUCKET,
+    SERVICE_CALCULATE_DAILY_ADJUSTED_RUN_TIME,
+    SERVICE_CALCULATE_HOURLY_ADJUSTED_RUN_TIME,
     TYPE_CURRENT_ADJUSTED_RUN_TIME,
+    CONF_LEAD_TIME,
+    CONF_MAXIMUM_DURATION,
+    CONF_FORCE_MODE_DURATION,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -100,6 +105,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     longitude = hass.config.as_dict().get(CONF_LONGITUDE)
     elevation = hass.config.as_dict().get(CONF_ELEVATION)
 
+    # lead time, max duration, force_mode_duration
+    lead_time = entry.options.get(CONF_LEAD_TIME, 0)
+    maximum_duration = entry.options.get(CONF_MAXIMUM_DURATION, -1)
+    force_mode_duration = entry.options.get(CONF_FORCE_MODE_DURATION, 0)
+
     # set up coordinator
     coordinator = SmartIrrigationUpdateCoordinator(
         hass,
@@ -116,6 +126,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         throughput=throughput,
         precipitation_rate=precipitation_rate,
         base_schedule_index=base_schedule_index,
+        lead_time=lead_time,
+        maximum_duration=maximum_duration,
+        force_mode_duration=force_mode_duration,
     )
 
     await coordinator.async_refresh()
@@ -131,10 +144,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     entry.add_update_listener(async_reload_entry)
 
-    # register the reset_bucket service
+    # register the services
     hass.services.async_register(
         DOMAIN, SERVICE_RESET_BUCKET, coordinator.handle_reset_bucket
     )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_CALCULATE_HOURLY_ADJUSTED_RUN_TIME,
+        coordinator.handle_calculate_hourly_adjusted_run_time,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_CALCULATE_DAILY_ADJUSTED_RUN_TIME,
+        coordinator.handle_calculate_daily_adjusted_run_time,
+    )
+
     return True
 
 
@@ -181,6 +205,9 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         throughput,
         precipitation_rate,
         base_schedule_index,
+        lead_time,
+        maximum_duration,
+        force_mode_duration,
     ):
         """Initialize."""
         self.api = OWMClient(api_key=api_key, longitude=longitude, latitude=latitude)
@@ -196,6 +223,9 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.throughput = throughput
         self.precipitation_rate = precipitation_rate
         self.base_schedule_index = base_schedule_index
+        self.lead_time = lead_time
+        self.maximum_duration = maximum_duration
+        self.force_mode_duration = force_mode_duration
         self.platforms = []
         self.bucket = 0
         self.hass = hass
@@ -216,6 +246,20 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.bucket = 0
         # fire an event so the sensor can update itself.
         self.hass.bus.fire(EVENT_BUCKET_UPDATED, {CONF_BUCKET: self.bucket})
+
+    def handle_calculate_daily_adjusted_run_time(self, call):
+        """Handle the service calculate_daily_adjusted_run_time call."""
+        _LOGGER.info(
+            "Calculate Daily Adjusted Run Time service called, calculating now."
+        )
+        self._update_last_of_day()
+
+    def handle_calculate_hourly_adjusted_run_time(self, call):
+        """Handle the service calculate_hourly_adjusted_run_time call."""
+        _LOGGER.info(
+            "Calculate Hourly Adjusted Run Time service called, calculating now."
+        )
+        self._async_update_data()
 
     def _update_last_of_day(self):
         cart_entity_id = self.entities[TYPE_CURRENT_ADJUSTED_RUN_TIME]

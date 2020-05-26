@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.11"
+VERSION = "0.0.12"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -43,12 +43,18 @@ CONF_EVAPOTRANSPIRATION = "evapotranspiration"
 CONF_WATER_BUDGET = "water_budget"
 CONF_BUCKET = "bucket"
 CONF_NETTO_PRECIPITATION = "netto_precipitation"
+CONF_LEAD_TIME = "lead_time"
+CONF_MAXIMUM_DURATION = "maximum_duration"
+CONF_FORCE_MODE_DURATION = "force_mode_duration"
+CONF_ADJUSTED_RUN_TIME_MINUTES = "adjusted_run_time_minutes"
 
 # Events
 EVENT_BUCKET_UPDATED = "smart_irrigation_bucket_updated_event"
 
 # Services
 SERVICE_RESET_BUCKET = "reset_bucket"
+SERVICE_CALCULATE_DAILY_ADJUSTED_RUN_TIME = "calculate_daily_adjusted_run_time"
+SERVICE_CALCULATE_HOURLY_ADJUSTED_RUN_TIME = "calculate_hourly_adjusted_run_time"
 
 # Systems of measurement
 SETTING_METRIC = "metric"

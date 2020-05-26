@@ -24,6 +24,11 @@ The component uses the [PyETo module to calculate the evapotranspiration value (
 
 ## Configuration
 
+In this section:
+- [One-time set up](#step-1-configuration-of-component)
+- [List of entities and attributes created](#step-2-checking-entities)
+- [Example automation](#step-3-creating-automation)
+- [Optional settings](#step-4-configuring-optional-settings)
 ### Step 1: configuration of component
 Install the custom component (preferably using HACS) and then use the Configuration --> Integrations pane to search for 'Smart Irrigation'.
 You will need to specify the following:
@@ -36,7 +41,7 @@ You will need to specify the following:
  > **When entering any values in the configuration of this component, keep in mind that the component will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).**
 
 ### Step 2: checking entities
-After successful configuration, you should end up with three entities and their attributes, listed below.
+After successful configuration, you should end up with three entities and their attributes, listed below as well as [three services](#available-services).
 #### `sensor.smart_irrigation_base_schedule_index`
 The number of seconds the irrigation system needs to run assuming maximum evapotranspiration and no rain / snow. This value and the attributes are static for your configuration.
 Attributes:
@@ -64,6 +69,7 @@ Attributes:
 |`evapotranspiration`|the expected evapotranspiration|
 |`netto precipitation`|the net evapotranspiration in mm or inch, negative values mean more moisture is lost than gets added bu rain/snow, while positive values mean more value is added by rain/snow than evaporates|
 |`water budget`|percentage of expected `evapotranspiration` vs `peak evapotranspiration`|
+|`adjusted_run_time_minutes`|adjusted run time in minutes instead of seconds.|
 
 Sample screenshot:
 
@@ -77,6 +83,9 @@ Attributes:
 | --- | --- |
 |`water budget`|percentage of net precipitation / base schedule index|
 |`bucket`|running total of net precipitation. Negative values mean that irrigation is required. Positive values mean that more moisture was added than has evaporated yet, so irrigation is not required. Should be reset to `0` after each irrigation, using the `smart_irrigation.reset_bucket` service|
+|`lead_time`|time in seconds to add to any irrigation. Very useful if your system needs to handle another task first, such as building up pressure.|
+|`maximum_duration`|maximum duration in seconds for any irrigation, including any `lead_time`.|
+|`adjusted_run_time_minutes`|adjusted run time in minutes instead of seconds.|
 
 Sample screenshot:
 
@@ -121,6 +130,21 @@ Here is an example automation that run everyday at 6 AM local time. It checks if
 ```
 
 [See more advanced examples in the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Automation-examples).
+
+### Step 4: configuring optional settings
+After setting up the component, you can use the options flow to configure the following:
+| Option | Description |
+| --- | --- |
+|Lead time|Time in seconds to add to any irrigation. Very useful if your system needs to handle another task first, such as building up pressure.|
+|Maximum duration|maximum duration in seconds for any irrigation, including any `lead_time`.|
+
+## Available services
+The component provides the following services:
+| Service | Description |
+| --- | --- |
+|`smart_irrigation.reset_bucket`|this service needs to be called after any irrigation so the bucket is reset to 0.|
+|`smart_irrigation.calculate_daily_adjusted_run_time`|calling this service results in the `smart_irrigation.daily_adjusted_run_time` entity and attributes to be updated right away.|
+|`smart_irrigation.calculate_hourly_adjusted_run_time`|calling this service results in the `smart_irrigation.hourly_adjusted_run_time` entity and attributes to be updated right away.|
 
 ## How this works
 [See the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works).

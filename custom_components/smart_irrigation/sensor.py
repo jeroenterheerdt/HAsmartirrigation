@@ -45,6 +45,9 @@ from .const import (
     UNIT_OF_MEASUREMENT_MMS_HOUR,
     UNIT_OF_MEASUREMENT_GPM,
     UNIT_OF_MEASUREMENT_LPM,
+    CONF_LEAD_TIME,
+    CONF_MAXIMUM_DURATION,
+    CONF_ADJUSTED_RUN_TIME_MINUTES,
 )
 from .entity import SmartIrrigationEntity
 
@@ -252,11 +255,17 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 CONF_EVAPOTRANSPIRATION: self.show_mm_or_inch(self.evapotranspiration),
                 CONF_NETTO_PRECIPITATION: self.show_mm_or_inch(self.bucket_delta),
                 CONF_WATER_BUDGET: self.show_percentage(self.water_budget),
+                CONF_ADJUSTED_RUN_TIME_MINUTES: self.show_minutes(self.state),
             }
         else:
             return {
                 CONF_WATER_BUDGET: self.show_percentage(self.water_budget),
                 CONF_BUCKET: self.show_mm_or_inch(self.bucket),
+                CONF_LEAD_TIME: self.show_seconds(self.coordinator.lead_time),
+                CONF_MAXIMUM_DURATION: self.show_seconds(
+                    self.coordinator.maximum_duration
+                ),
+                CONF_ADJUSTED_RUN_TIME_MINUTES: self.show_minutes(self.state),
             }
 
     @property
@@ -435,6 +444,25 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         else:
             return retval
 
+    def show_seconds(self, value, show_unit=True):
+        """Return nicely formatted seconds."""
+        if value is None:
+            return "unknown"
+        if show_unit:
+            return f"{value} s"
+        else:
+            return value
+
+    def show_minutes(self, value, show_unit=True):
+        """Return nicely formatted minutes."""
+        if value is None:
+            return "unknown"
+        retval = round(value / 60, 2)
+        if show_unit:
+            return f"{retval} min"
+        else:
+            return retval
+
     def calculate_water_budget_and_adjusted_run_time(self, bucket_val):
         water_budget = 0
         adjusted_run_time = 0
@@ -446,8 +474,15 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         else:
             # we need to irrigate
             water_budget = abs(bucket_val) / self.coordinator.peak_et
-            # adjusted runtime
-            adjusted_run_time = round(
-                water_budget * self.coordinator.base_schedule_index
+            # adjusted runtime including lead time if set up
+            adjusted_run_time = (
+                round(water_budget * self.coordinator.base_schedule_index)
+                + self.coordinator.lead_time
             )
+            # adjusted run time is capped at maximum duration (if not -1)
+            if (
+                self.coordinator.maximum_duration != -1
+                and adjusted_run_time > self.coordinator.maximum_duration
+            ):
+                adjusted_run_time = self.coordinator.maximum_duration
         return {"wb": water_budget, "art": adjusted_run_time}

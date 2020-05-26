@@ -5,6 +5,7 @@ import json
 import voluptuous as vol
 
 from homeassistant import config_entries, core, exceptions
+from homeassistant.core import callback
 
 from .const import DOMAIN  # pylint:disable=unused-import
 
@@ -33,6 +34,9 @@ from .const import (
     DOMAIN,
     PLATFORMS,
     NAME,
+    CONF_LEAD_TIME,
+    CONF_MAXIMUM_DURATION,
+    CONF_FORCE_MODE_DURATION,
 )
 
 
@@ -201,6 +205,11 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             errors=self._errors,
         )
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        return SmartIrrigationOptionsFlowHandler(config_entry)
+
     async def _test_api_key(self, api_key):
         """Test access to Open Weather Map API here."""
         client = OWMClient(
@@ -246,3 +255,47 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             except ValueError as e:
                 _LOGGER.error("No valid irrigation time specified.")
                 return False
+
+
+class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
+    """Smart Irrigation config flow options handler."""
+
+    def __init__(self, config_entry):
+        """Initialize HACS options flow."""
+        self.config_entry = config_entry
+        self.options = dict(config_entry.options)
+
+    async def async_step_init(self, user_input=None):  # pylint: disable=unused-argument
+        """Manage the options."""
+        return await self.async_step_user()
+
+    async def async_step_user(self, user_input=None):
+        """Handle a flow initialized by the user."""
+        if user_input is not None:
+            self.options.update(user_input)
+            return await self._update_options()
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_LEAD_TIME, default=self.options.get(CONF_LEAD_TIME, 0),
+                    ): int,
+                    vol.Required(
+                        CONF_MAXIMUM_DURATION,
+                        default=self.options.get(CONF_MAXIMUM_DURATION, -1),
+                    ): int,
+                    vol.Required(
+                        CONF_FORCE_MODE_DURATION,
+                        default=self.options.get(CONF_FORCE_MODE_DURATION, 0),
+                    ): int,
+                }
+            ),
+        )
+
+    async def _update_options(self):
+        """Update config entry options."""
+        return self.async_create_entry(
+            title=self.config_entry.data.get(NAME), data=self.options
+        )
