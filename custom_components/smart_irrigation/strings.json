@@ -50,8 +50,8 @@
     "step": {
       "user": {
         "data": {
-          "lead_time": "Number of seconds to add before any irrigation.",
-          "maximum_duration": "Maximum Number of seconds of any irrigation, including any lead time (-1 means no maximum).",
+          "lead_time": "Lead time, time to add to adjusted run time (seconds).",
+          "maximum_duration": "Maximum duration, including any lead time (-1 means no maximum).",
           "force_mode_duration": "Number of seconds to run irrigation when in force mode."
         }
       }
