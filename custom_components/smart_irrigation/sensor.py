@@ -282,8 +282,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             self.snow = float(data["snow"])
         _LOGGER.info("rain: {}, snow: {}".format(self.rain, self.snow))
         retval = self.rain + self.snow
-        if retval.count(".") > 1:
-            retval = retval.split(".")[0] + "." + retval.split(".")[1]
+        if isinstance(retval, str):
+            if retval.count(".") > 1:
+                retval = retval.split(".")[0] + "." + retval.split(".")[1]
         retval = float(retval)
         return retval
 
@@ -357,7 +358,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         )
         return fao56
 
-    def show_liter_or_gallon(self, value, show_unit=True):
+    def show_liter_or_gallon(self, value, show_unit=False):
         """Return nicely formatted liters or gallons."""
         if value is None:
             return "unknown"
@@ -373,7 +374,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 retval = retval + f" {UNIT_OF_MEASUREMENT_GALLONS}"
             return retval
 
-    def show_liter_or_gallon_per_minute(self, value, show_unit=True):
+    def show_liter_or_gallon_per_minute(self, value, show_unit=False):
         """Return nicely formatted liters or gallons."""
         if value is None:
             return "unknown"
@@ -389,7 +390,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 retval = retval + f" {UNIT_OF_MEASUREMENT_GPM}"
             return retval
 
-    def show_mm_or_inch(self, value, show_unit=True):
+    def show_mm_or_inch(self, value, show_unit=False):
         """Return nicely formatted mm or inches."""
         if value is None:
             return "unknown"
@@ -409,7 +410,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 retval = retval + f" {UNIT_OF_MEASUREMENT_INCHES}"
             return retval
 
-    def show_mm_or_inch_per_hour(self, value, show_unit=True):
+    def show_mm_or_inch_per_hour(self, value, show_unit=False):
         """Return nicely formatted mm or inches per hour."""
         if value is None:
             return "unknown"
@@ -428,7 +429,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 retval = retval + f" {UNIT_OF_MEASUREMENT_INCHES_HOUR}"
             return retval
 
-    def show_m2_or_sq_ft(self, value, show_unit=True):
+    def show_m2_or_sq_ft(self, value, show_unit=False):
         """Return nicely formatted m2 or sq ft."""
         if value is None:
             return "unknown"
@@ -444,7 +445,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 retval = retval + f" {UNIT_OF_MEASUREMENT_SQ_FT}"
             return retval
 
-    def show_percentage(self, value, show_unit=True):
+    def show_percentage(self, value, show_unit=False):
         """Return nicely formatted percentages."""
         if value is None:
             return "unknown"
@@ -455,7 +456,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         else:
             return retval
 
-    def show_seconds(self, value, show_unit=True):
+    def show_seconds(self, value, show_unit=False):
         """Return nicely formatted seconds."""
         if value is None:
             return "unknown"
@@ -464,7 +465,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         else:
             return value
 
-    def show_minutes(self, value, show_unit=True):
+    def show_minutes(self, value, show_unit=False):
         """Return nicely formatted minutes."""
         if value is None:
             return "unknown"
