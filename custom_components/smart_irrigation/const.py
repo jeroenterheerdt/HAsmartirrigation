@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.14"
+VERSION = "0.0.15"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -47,6 +47,7 @@ CONF_LEAD_TIME = "lead_time"
 CONF_MAXIMUM_DURATION = "maximum_duration"
 CONF_FORCE_MODE_DURATION = "force_mode_duration"
 CONF_ADJUSTED_RUN_TIME_MINUTES = "adjusted_run_time_minutes"
+CONF_BASE_SCHEDULE_INDEX_MINUTES = "base_schedule_index_minutes"
 
 # Events
 EVENT_BUCKET_UPDATED = "smart_irrigation_bucket_updated_event"

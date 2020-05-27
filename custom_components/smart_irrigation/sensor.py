@@ -49,6 +49,7 @@ from .const import (
     CONF_LEAD_TIME,
     CONF_MAXIMUM_DURATION,
     CONF_ADJUSTED_RUN_TIME_MINUTES,
+    CONF_BASE_SCHEDULE_INDEX_MINUTES,
 )
 from .entity import SmartIrrigationEntity
 
@@ -245,6 +246,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 CONF_PRECIPITATION_RATE: self.show_mm_or_inch_per_hour(
                     self.coordinator.precipitation_rate
                 ),
+                CONF_BASE_SCHEDULE_INDEX_MINUTES: self.show_minutes(self.state),
             }
         elif self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
             return {
