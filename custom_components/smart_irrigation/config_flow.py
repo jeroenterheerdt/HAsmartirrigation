@@ -37,6 +37,7 @@ from .const import (
     CONF_LEAD_TIME,
     CONF_MAXIMUM_DURATION,
     CONF_FORCE_MODE_DURATION,
+    CONF_SHOW_UNITS,
 )
 
 
@@ -290,6 +291,10 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_FORCE_MODE_DURATION,
                         default=self.options.get(CONF_FORCE_MODE_DURATION, 0),
                     ): int,
+                    vol.Required(
+                        CONF_SHOW_UNITS,
+                        default=self.options.get(CONF_SHOW_UNITS, False),
+                    ): bool,
                 }
             ),
         )

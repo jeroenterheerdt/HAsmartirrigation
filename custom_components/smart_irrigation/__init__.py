@@ -59,6 +59,7 @@ from .const import (
     CONF_LEAD_TIME,
     CONF_MAXIMUM_DURATION,
     CONF_FORCE_MODE_DURATION,
+    CONF_SHOW_UNITS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -105,10 +106,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     longitude = hass.config.as_dict().get(CONF_LONGITUDE)
     elevation = hass.config.as_dict().get(CONF_ELEVATION)
 
-    # lead time, max duration, force_mode_duration
+    # handle options: lead time, max duration, force_mode_duration, show units
     lead_time = entry.options.get(CONF_LEAD_TIME, 0)
     maximum_duration = entry.options.get(CONF_MAXIMUM_DURATION, -1)
     force_mode_duration = entry.options.get(CONF_FORCE_MODE_DURATION, 0)
+    show_units = entry.options.get(CONF_SHOW_UNITS, False)
 
     # set up coordinator
     coordinator = SmartIrrigationUpdateCoordinator(
@@ -129,6 +131,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         lead_time=lead_time,
         maximum_duration=maximum_duration,
         force_mode_duration=force_mode_duration,
+        show_units=show_units,
     )
 
     await coordinator.async_refresh()
@@ -208,6 +211,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         lead_time,
         maximum_duration,
         force_mode_duration,
+        show_units,
     ):
         """Initialize."""
         self.api = OWMClient(api_key=api_key, longitude=longitude, latitude=latitude)
@@ -226,6 +230,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.lead_time = lead_time
         self.maximum_duration = maximum_duration
         self.force_mode_duration = force_mode_duration
+        self.show_units = show_units
         self.platforms = []
         self.bucket = 0
         self.hass = hass

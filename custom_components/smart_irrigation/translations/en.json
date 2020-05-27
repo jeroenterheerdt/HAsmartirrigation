@@ -51,7 +51,8 @@
         "data": {
           "lead_time": "Lead time, time to add to adjusted run time (seconds).",
           "maximum_duration": "Maximum duration, including any lead time (-1 means no maximum).",
-          "force_mode_duration": "Number of seconds to run irrigation when in force mode."
+          "force_mode_duration": "Number of seconds to run irrigation when in force mode.",
+          "show_units": "Show units in entity attributes."
         }
       }
     }
