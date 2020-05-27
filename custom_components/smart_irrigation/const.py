@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.13"
+VERSION = "0.0.14"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -83,6 +83,7 @@ TYPE_CURRENT_ADJUSTED_RUN_TIME = "Hourly Adjusted Run Time"
 
 # UNITS
 UNIT_OF_MEASUREMENT_SECONDS = "s"
+UNIT_OF_MEASUREMENT_MINUTES = "min"
 UNIT_OF_MEASUREMENT_UNKNOWN = "unknown"
 UNIT_OF_MEASUREMENT_LITERS = "l"
 UNIT_OF_MEASUREMENT_GALLONS = "gallon"

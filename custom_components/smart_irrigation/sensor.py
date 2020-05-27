@@ -45,6 +45,7 @@ from .const import (
     UNIT_OF_MEASUREMENT_MMS_HOUR,
     UNIT_OF_MEASUREMENT_GPM,
     UNIT_OF_MEASUREMENT_LPM,
+    UNIT_OF_MEASUREMENT_MINUTES,
     CONF_LEAD_TIME,
     CONF_MAXIMUM_DURATION,
     CONF_ADJUSTED_RUN_TIME_MINUTES,
@@ -101,73 +102,69 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             )
 
         state = await self.async_get_last_state()
-        if state is not None:
+        if state is not None and state.state != "unavailable":
             self._state = float(state.state)
-            # _LOGGER.info(
-            #    "async_added_t_hass state: {}, attributes: {}".format(
-            #        state.state, state.attributes
-            #    )
-            # )
-            for a in state.attributes:
-                if a in (
-                    # CONF_AREA,
-                    # CONF_FLOW,
-                    # CONF_NUMBER_OF_SPRINKLERS,
-                    # CONF_PEAK_ET,
-                    # CONF_PRECIPITATION_RATE,
-                    # CONF_REFERENCE_ET,
-                    # CONF_THROUGHPUT,
-                    CONF_EVAPOTRANSPIRATION,
-                    CONF_NETTO_PRECIPITATION,
-                    CONF_PRECIPITATION,
-                    CONF_RAIN,
-                    CONF_SNOW,
-                    CONF_WATER_BUDGET,
-                    CONF_BUCKET,
-                ):
+            _LOGGER.info(
+                "async_added_t_hass type: {} state: {}, attributes: {}".format(
+                    self.type, state.state, state.attributes
+                )
+            )
+            confs = (
+                CONF_EVAPOTRANSPIRATION,
+                CONF_NETTO_PRECIPITATION,
+                CONF_PRECIPITATION,
+                CONF_RAIN,
+                CONF_SNOW,
+                CONF_WATER_BUDGET,
+                CONF_BUCKET,
+                CONF_ADJUSTED_RUN_TIME_MINUTES,
+            )
+            for a in confs:
+                if a in state.attributes:
                     try:
                         a_val = state.attributes[a]
-                        if isinstance(a_val, str) and not a_val.startswith("["):
-                            numeric_part, unit = a_val.split(" ")
-                            # _LOGGER.info(
-                            #    "attr: {}, val: {}, unit: {}".format(
-                            #        a, numeric_part, unit
-                            #    )
-                            # )
-                            numeric_part = float(numeric_part)
-                            if (
-                                unit in ("%", UNIT_OF_MEASUREMENT_SECONDS)
-                                or self.coordinator.system_of_measurement
-                                == SETTING_METRIC
-                            ):
-                                setattr(self, a, numeric_part)
-                            else:
-                                if unit in (
-                                    UNIT_OF_MEASUREMENT_INCHES,
-                                    UNIT_OF_MEASUREMENT_INCHES_HOUR,
-                                ):
-                                    setattr(
-                                        self,
-                                        a,
-                                        round(numeric_part / MM_TO_INCH_FACTOR, 2),
-                                    )
-                                elif unit in (
-                                    UNIT_OF_MEASUREMENT_GALLONS,
-                                    UNIT_OF_MEASUREMENT_GPM,
-                                ):
-                                    setattr(
-                                        self,
-                                        a,
-                                        round(numeric_part / LITER_TO_GALLON_FACTOR, 2),
-                                    )
-                                elif unit in UNIT_OF_MEASUREMENT_SQ_FT:
-                                    setattr(
-                                        self,
-                                        a,
-                                        round(numeric_part / M2_TO_SQ_FT_FACTOR, 2),
-                                    )
-                                else:
-                                    setattr(self, a, numeric_part)
+                        numeric_part, unit = a_val.split(" ")
+                        _LOGGER.info(
+                            "attr: {}, val: {}, unit: {}".format(a, numeric_part, unit)
+                        )
+                        numeric_part = float(numeric_part)
+                        if a in (
+                            CONF_EVAPOTRANSPIRATION,
+                            CONF_NETTO_PRECIPITATION,
+                            CONF_PRECIPITATION,
+                            CONF_RAIN,
+                            CONF_SNOW,
+                            CONF_BUCKET,
+                        ):
+                            if a == CONF_EVAPOTRANSPIRATION:
+                                self.evapotranspiration = numeric_part
+                            elif a == CONF_NETTO_PRECIPITATION:
+                                self.bucket_delta = numeric_part
+                            elif a == CONF_PRECIPITATION:
+                                self.precipitation = numeric_part
+                            elif a == CONF_RAIN:
+                                self.rain = numeric_part
+                            elif a == CONF_SNOW:
+                                self.snow = numeric_part
+                            elif a == CONF_BUCKET:
+                                self.bucket = numeric_part
+                                self.coordinator.bucket = self.bucket
+                            factor = 1
+                            if self.coordinator.system_of_measurement != SETTING_METRIC:
+                                factor = MM_TO_INCH_FACTOR
+                                # unit should be included here as well
+                                setattr(
+                                    self,
+                                    a,
+                                    f"{round(numeric_part / MM_TO_INCH_FACTOR, 2)}",
+                                )
+                        elif a in (CONF_WATER_BUDGET, CONF_ADJUSTED_RUN_TIME_MINUTES):
+                            # no need for conversion here
+                            if a == CONF_WATER_BUDGET:
+                                self.water_budget = numeric_part
+                            # no need to store adjusted run time minutes
+                            setattr(self, a, f"{numeric_part}")
+
                     except Exception as e:
                         _LOGGER.error(e)
 
@@ -197,6 +194,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         """Update the state."""
         if self.type == TYPE_BASE_SCHEDULE_INDEX:
             return round(self.coordinator.base_schedule_index, 1)
+        # hourly adjusted run time
         elif self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
             data = self.coordinator.data["daily"][0]
             # parse precipitation out of the today data
@@ -204,15 +202,16 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             # calculate et out of the today data
             self.evapotranspiration = self.get_evapotranspiration(data)
             # calculate the adjusted runtime!
-
             self.bucket_delta = self.precipitation - self.evapotranspiration
+
             result = self.calculate_water_budget_and_adjusted_run_time(
                 self.bucket_delta
             )
             self.water_budget = result["wb"]
             return result["art"]
         else:
-            # adjusted run time
+            # daily adjusted run time
+            _LOGGER.warning("calling calculate for daily art")
             result = self.calculate_water_budget_and_adjusted_run_time(
                 self.coordinator.bucket
             )
@@ -281,6 +280,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             self.snow = float(data["snow"])
         _LOGGER.info("rain: {}, snow: {}".format(self.rain, self.snow))
         retval = self.rain + self.snow
+        if retval.count(".") > 1:
+            retval = retval.split(".")[0] + "." + retval.split(".")[1]
+        retval = float(retval)
         return retval
 
     def estimate_fao56_daily(
@@ -357,6 +359,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         """Return nicely formatted liters or gallons."""
         if value is None:
             return "unknown"
+        value = float(value)
         if self.coordinator.system_of_measurement == SETTING_METRIC:
             retval = f"{value}"
             if show_unit:
@@ -372,6 +375,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         """Return nicely formatted liters or gallons."""
         if value is None:
             return "unknown"
+        value = float(value)
         if self.coordinator.system_of_measurement == SETTING_METRIC:
             retval = f"{value}"
             if show_unit:
@@ -387,6 +391,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         """Return nicely formatted mm or inches."""
         if value is None:
             return "unknown"
+        if not isinstance(value, list):
+            value = float(value)
         if self.coordinator.system_of_measurement == SETTING_METRIC:
             retval = f"{value}"
             if show_unit:
@@ -405,6 +411,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         """Return nicely formatted mm or inches per hour."""
         if value is None:
             return "unknown"
+        value = float(value)
         if self.coordinator.system_of_measurement == SETTING_METRIC:
             retval = f"{value}"
             if show_unit:
@@ -423,6 +430,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         """Return nicely formatted m2 or sq ft."""
         if value is None:
             return "unknown"
+        value = float(value)
         if self.coordinator.system_of_measurement == SETTING_METRIC:
             retval = f"{value}"
             if show_unit:
@@ -438,6 +446,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         """Return nicely formatted percentages."""
         if value is None:
             return "unknown"
+        value = float(value)
         retval = round(value * 100, 2)
         if show_unit:
             return f"{retval} %"
@@ -457,6 +466,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         """Return nicely formatted minutes."""
         if value is None:
             return "unknown"
+        value = float(value)
         retval = round(value / 60, 2)
         if show_unit:
             return f"{retval} min"
@@ -464,6 +474,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             return retval
 
     def calculate_water_budget_and_adjusted_run_time(self, bucket_val):
+        _LOGGER.warning("calc wb and art called with bucket={}".format(bucket_val))
         water_budget = 0
         adjusted_run_time = 0
         if bucket_val is None or bucket_val >= 0:
