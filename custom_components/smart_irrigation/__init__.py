@@ -62,6 +62,7 @@ from .const import (
     CONF_SHOW_UNITS,
     CONF_AUTO_REFRESH,
     CONF_AUTO_REFRESH_TIME,
+    CONF_NAME,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -108,6 +109,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     longitude = hass.config.as_dict().get(CONF_LONGITUDE)
     elevation = hass.config.as_dict().get(CONF_ELEVATION)
 
+    name = entry.title
+
     # handle options: lead time, max duration, force_mode_duration, show units, auto refresh, auto refresh time
     lead_time = entry.options.get(CONF_LEAD_TIME, 0)
     maximum_duration = entry.options.get(CONF_MAXIMUM_DURATION, -1)
@@ -138,6 +141,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         show_units=show_units,
         auto_refresh=auto_refresh,
         auto_refresh_time=auto_refresh_time,
+        name=name,
     )
 
     await coordinator.async_refresh()
@@ -155,16 +159,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # register the services
     hass.services.async_register(
-        DOMAIN, SERVICE_RESET_BUCKET, coordinator.handle_reset_bucket
+        DOMAIN, f"{name}_{SERVICE_RESET_BUCKET}", coordinator.handle_reset_bucket,
     )
     hass.services.async_register(
         DOMAIN,
-        SERVICE_CALCULATE_HOURLY_ADJUSTED_RUN_TIME,
+        f"{name}_{SERVICE_CALCULATE_HOURLY_ADJUSTED_RUN_TIME}",
         coordinator.handle_calculate_hourly_adjusted_run_time,
     )
     hass.services.async_register(
         DOMAIN,
-        SERVICE_CALCULATE_DAILY_ADJUSTED_RUN_TIME,
+        f"{name}_{SERVICE_CALCULATE_DAILY_ADJUSTED_RUN_TIME}",
         coordinator.handle_calculate_daily_adjusted_run_time,
     )
 
@@ -224,6 +228,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         show_units,
         auto_refresh,
         auto_refresh_time,
+        name,
     ):
         """Initialize."""
         self.api = OWMClient(api_key=api_key, longitude=longitude, latitude=latitude)
@@ -245,11 +250,13 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.show_units = show_units
         self.auto_refresh = auto_refresh
         self.auto_refresh_time = auto_refresh_time
+        self.name = name
         self.platforms = []
         self.bucket = 0
         self.hass = hass
         self.entities = {}
         self.entry_setup_completed = False
+        # should this be name? or domain?
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
 
         # last update of the day happens at specified local time if auto_refresh is on

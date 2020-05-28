@@ -40,6 +40,7 @@ from .const import (
     CONF_SHOW_UNITS,
     CONF_AUTO_REFRESH,
     CONF_AUTO_REFRESH_TIME,
+    CONF_NAME,
 )
 
 
@@ -52,6 +53,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
     def __init__(self):
         """Initialize."""
         self._api_key = None
+        self._name = NAME
         self._reference_et = {}
         self._errors = {}
 
@@ -66,7 +68,8 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         if user_input is not None:
             user_input[CONF_API_KEY] = self._api_key
             user_input[CONF_REFERENCE_ET] = self._reference_et
-            return self.async_create_entry(title=NAME, data=user_input)
+            user_input[CONF_NAME] = self._name
+            return self.async_create_entry(title=self._name, data=user_input)
         return await self._show_config_form(user_input)
 
     async def async_step_step2(self, user_input=None):
@@ -125,6 +128,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             if valid_api:
                 # store values entered
                 self._api_key = user_input[CONF_API_KEY].strip()
+                self._name = user_input[CONF_NAME]
                 # show next step
                 return await self._show_step2(user_input)
             else:
@@ -187,6 +191,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             step_id="user",
             data_schema=vol.Schema(
                 {
+                    vol.Required(CONF_NAME, default=NAME): str,
                     vol.Required(CONF_API_KEY): str,
                     # vol.Required(CONF_REFERENCE_ET_1): vol.Coerce(float),
                     # vol.Required(CONF_REFERENCE_ET_2): vol.Coerce(float),
@@ -249,6 +254,7 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry):
         """Initialize HACS options flow."""
         self.config_entry = config_entry
+        _LOGGER.warning("config_entry: {}".format(config_entry))
         self.options = dict(config_entry.options)
         self._errors = {}
 

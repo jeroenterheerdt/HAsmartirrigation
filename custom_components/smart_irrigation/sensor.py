@@ -125,7 +125,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                     try:
                         a_val = state.attributes[a]
                         # no split needed if we don't show units
-                        if self.coordinator.show_units or " " in a_val:
+                        if self.coordinator.show_units or (
+                            isinstance(a_val, str) and " " in a_val
+                        ):
                             numeric_part = a_val.split(" ")[0]
                         else:
                             numeric_part = float(a_val)
@@ -189,7 +191,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{DEFAULT_NAME} {self.type}"
+        return f"{self.coordinator.name} {self.type}"
 
     def update_state(self):
         """Update the state."""
