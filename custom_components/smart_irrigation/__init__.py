@@ -110,6 +110,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     elevation = hass.config.as_dict().get(CONF_ELEVATION)
 
     name = entry.title
+    name = name.replace(" ", "_")
 
     # handle options: lead time, max duration, force_mode_duration, show units, auto refresh, auto refresh time
     lead_time = entry.options.get(CONF_LEAD_TIME, 0)
