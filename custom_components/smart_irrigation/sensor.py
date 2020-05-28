@@ -125,8 +125,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                     try:
                         a_val = state.attributes[a]
                         # no split needed if we don't show units
-                        if self.coordinator.show_units:
-                            numeric_part, unit = a_val.split(" ")
+                        if self.coordinator.show_units or " " in a_val:
+                            numeric_part = a_val.split(" ")[0]
                         else:
                             numeric_part = float(a_val)
                         if a in (
@@ -478,7 +478,14 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
     def calculate_water_budget_and_adjusted_run_time(self, bucket_val):
         water_budget = 0
         adjusted_run_time = 0
-        if bucket_val is None or bucket_val >= 0:
+        if (
+            bucket_val is None
+            or isinstance(bucket_val, str)
+            or (
+                (isinstance(bucket_val, int) or isinstance(bucket_val, float))
+                and bucket_val >= 0
+            )
+        ):
             # we do not need to irrigate
             water_budget = 0
             # return 0 for adjusted runtime
