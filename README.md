@@ -53,6 +53,7 @@ Attributes:
 |`reference evapotranspiration`|the reference evapotranspiration values provided by the user - one for each month.|`peak evapotranspiration`|the highest value in `reference evapotranspiration`|
 |`area`|the total area the irrigation system reaches in m<sup>2</sup> or sq ft.|
 |`precipitation rate`|the output of the irrigation system across the whole area in mm or inch per hour|
+|`base schedule index minutes`|the value of the entity in minutes instead of seconds|
 
 Sample screenshot:
 
@@ -95,7 +96,7 @@ You will use `sensor.smart_irrigation_daily_adjusted_run_time` to create an auto
 
 The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) describes the entities, the attributes and the calculations
 
-#### Showing other sensors
+#### Showing other attributes as entities (sensors)
 [See the Wiki for more information on how to expose other values this components calculates as sensors](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Showing-other-sensors).
 
 
@@ -136,7 +137,8 @@ After setting up the component, you can use the options flow to configure the fo
 | Option | Description |
 | --- | --- |
 |Lead time|Time in seconds to add to any irrigation. Very useful if your system needs to handle another task first, such as building up pressure.|
-|Maximum duration|maximum duration in seconds for any irrigation, including any `lead_time`.|
+|Maximum duration|maximum duration in seconds for any irrigation, including any `lead_time`. -1 means no maximum.|
+|Show units|If enabled, attributes values will show units. By default units will be hidden for attribute values.|
 
 ## Available services
 The component provides the following services:
