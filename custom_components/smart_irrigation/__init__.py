@@ -60,6 +60,8 @@ from .const import (
     CONF_MAXIMUM_DURATION,
     CONF_FORCE_MODE_DURATION,
     CONF_SHOW_UNITS,
+    CONF_AUTO_REFRESH,
+    CONF_AUTO_REFRESH_TIME,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -106,11 +108,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     longitude = hass.config.as_dict().get(CONF_LONGITUDE)
     elevation = hass.config.as_dict().get(CONF_ELEVATION)
 
-    # handle options: lead time, max duration, force_mode_duration, show units
+    # handle options: lead time, max duration, force_mode_duration, show units, auto refresh, auto refresh time
     lead_time = entry.options.get(CONF_LEAD_TIME, 0)
     maximum_duration = entry.options.get(CONF_MAXIMUM_DURATION, -1)
     force_mode_duration = entry.options.get(CONF_FORCE_MODE_DURATION, 0)
     show_units = entry.options.get(CONF_SHOW_UNITS, False)
+    auto_refresh = entry.options.get(CONF_AUTO_REFRESH, True)
+    auto_refresh_time = entry.options.get(CONF_AUTO_REFRESH_TIME, "23:00")
 
     # set up coordinator
     coordinator = SmartIrrigationUpdateCoordinator(
@@ -132,6 +136,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         maximum_duration=maximum_duration,
         force_mode_duration=force_mode_duration,
         show_units=show_units,
+        auto_refresh=auto_refresh,
+        auto_refresh_time=auto_refresh_time,
     )
 
     await coordinator.async_refresh()
@@ -167,12 +173,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Reload config entry."""
-    await async_unload_entry(hass, entry)
+    _LOGGER.warning("async_reload_entry")
+    coordinator = hass.data[DOMAIN][entry.entry_id]
+    if coordinator.entry_setup_completed:
+        await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Handle removal of an entry."""
+    _LOGGER.warning("async unload entry")
     coordinator = hass.data[DOMAIN][entry.entry_id]
     unloaded = all(
         await asyncio.gather(
@@ -212,6 +222,8 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         maximum_duration,
         force_mode_duration,
         show_units,
+        auto_refresh,
+        auto_refresh_time,
     ):
         """Initialize."""
         self.api = OWMClient(api_key=api_key, longitude=longitude, latitude=latitude)
@@ -231,19 +243,34 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.maximum_duration = maximum_duration
         self.force_mode_duration = force_mode_duration
         self.show_units = show_units
+        self.auto_refresh = auto_refresh
+        self.auto_refresh_time = auto_refresh_time
         self.platforms = []
         self.bucket = 0
         self.hass = hass
         self.entities = {}
+        self.entry_setup_completed = False
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
 
-        # last update of the day happens at 23:00 local time
-        async_track_time_change(
-            hass, self._async_update_last_of_day, hour=23, minute=0, second=0
-        )
+        # last update of the day happens at specified local time if auto_refresh is on
+        if self.auto_refresh:
+            _LOGGER.info(
+                "Auto refresh is enabled. Scheduling for {}".format(
+                    self.auto_refresh_time
+                )
+            )
+            async_track_time_change(
+                hass,
+                self._async_update_last_of_day,
+                hour=self.auto_refresh_time.split(":")[0],
+                minute=self.auto_refresh_time.split(":")[1],
+                second=0,
+            )
+        self.entry_setup_completed = True
 
     def register_entity(self, thetype, entity):
         self.entities[thetype] = entity
+        self.entry_setup_completed = True
 
     def handle_reset_bucket(self, call):
         """Handle the service reset_bucket call."""

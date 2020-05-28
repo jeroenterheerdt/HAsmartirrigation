@@ -38,6 +38,8 @@ from .const import (
     CONF_MAXIMUM_DURATION,
     CONF_FORCE_MODE_DURATION,
     CONF_SHOW_UNITS,
+    CONF_AUTO_REFRESH,
+    CONF_AUTO_REFRESH_TIME,
 )
 
 
@@ -240,23 +242,6 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             _LOGGER.error("Supplied reference Evapotranspiration was not valid.")
             return False
 
-    def _check_irrigation_time(self, itime):
-        """Check irrigation time."""
-        timesplit = itime.split(":")
-        if len(timesplit) != 2:
-            return False
-        else:
-            try:
-                hours = val(timesplit[0])
-                minutes = val(timesplit[1])
-                if hours >= 0 and hours <= 23 and minutes >= 0 and minutes <= 59:
-                    return True
-                else:
-                    return False
-            except ValueError as e:
-                _LOGGER.error("No valid irrigation time specified.")
-                return False
-
 
 class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
     """Smart Irrigation config flow options handler."""
@@ -265,16 +250,39 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
         """Initialize HACS options flow."""
         self.config_entry = config_entry
         self.options = dict(config_entry.options)
+        self._errors = {}
 
     async def async_step_init(self, user_input=None):  # pylint: disable=unused-argument
         """Manage the options."""
         return await self.async_step_user()
 
+    def _check_time(self, itime):
+        """Check time."""
+        timesplit = itime.split(":")
+        if len(timesplit) != 2:
+            return False
+        else:
+            try:
+                hours = int(timesplit[0])
+                minutes = int(timesplit[1])
+                if hours >= 0 and hours <= 23 and minutes >= 0 and minutes <= 59:
+                    return True
+                else:
+                    return False
+            except ValueError as e:
+                _LOGGER.error("No valid time specified.")
+                return False
+
     async def async_step_user(self, user_input=None):
         """Handle a flow initialized by the user."""
+        self._errors = {}
         if user_input is not None:
-            self.options.update(user_input)
-            return await self._update_options()
+            valid_time = self._check_time(user_input[CONF_AUTO_REFRESH_TIME])
+            if not valid_time:
+                self._errors["base"] = "auto_refresh_time_error"
+            else:
+                self.options.update(user_input)
+                return await self._update_options()
 
         return self.async_show_form(
             step_id="user",
@@ -295,8 +303,17 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_SHOW_UNITS,
                         default=self.options.get(CONF_SHOW_UNITS, False),
                     ): bool,
-                }
+                    vol.Required(
+                        CONF_AUTO_REFRESH,
+                        default=self.options.get(CONF_AUTO_REFRESH, True),
+                    ): bool,
+                    vol.Required(
+                        CONF_AUTO_REFRESH_TIME,
+                        default=self.options.get(CONF_AUTO_REFRESH_TIME, "23:00"),
+                    ): str,
+                },
             ),
+            errors=self._errors,
         )
 
     async def _update_options(self):
