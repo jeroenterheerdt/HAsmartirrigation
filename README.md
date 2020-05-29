@@ -17,7 +17,10 @@
 Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
 This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation / evapotranspiration. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required.
 
-The component keeps track of hourly precipitation and at 23:00 (11:00 PM) local time stores it in a daily value. It then calculates the exact runtime in seconds to compensate for the net evaporation. This is all the component does, and this is on purpose to provide maximum flexibility. Users are expected to use the value of `sensor.smart_irrigation.daily_adjusted_run_time` to interact with their irrigation system and afterwards call the `smart_irrigation.reset_bucket` service. [See the example automations below](#step-3-creating-automation).
+The component keeps track of hourly precipitation and at 23:00 (11:00 PM) local time stores it in a daily value.
+It then calculates the exact runtime in seconds to compensate for the net evaporation.
+Note that this is the default behavior and this can be disabled if you want more control. Also, the time auto refresh happens (if not disabled) is configurable.
+This is all the component does, and this is on purpose to provide maximum flexibility. Users are expected to use the value of `sensor.smart_irrigation.daily_adjusted_run_time` to interact with their irrigation system and afterwards call the `smart_irrigation.reset_bucket` service. [See the example automations below](#step-3-creating-automation).
 
 This component uses reference evapotranspiration values and calculates base schedule indexes and water budgets from that. This is an industry-standard approach. Information can be found at https://www.rainbird.com/professionals/irrigation-scheduling-use-et-save-water, amongst others.
 The component uses the [PyETo module to calculate the evapotranspiration value (fao56)](https://pyeto.readthedocs.io/en/latest/fao56_penman_monteith.html). Also, please see the [How this works](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) Wiki page.
@@ -54,6 +57,9 @@ Attributes:
 |`area`|the total area the irrigation system reaches in m<sup>2</sup> or sq ft.|
 |`precipitation rate`|the output of the irrigation system across the whole area in mm or inch per hour|
 |`base schedule index minutes`|the value of the entity in minutes instead of seconds|
+|`auto refresh`|indicates if automatic refresh is enabled.|
+|`auto refresh time`|time that automatic refresh will happen, if enabled.|
+|`force mode duration`|duration of irrigation in force mode (seconds).|
 
 Sample screenshot:
 
@@ -70,7 +76,7 @@ Attributes:
 |`evapotranspiration`|the expected evapotranspiration|
 |`netto precipitation`|the net evapotranspiration in mm or inch, negative values mean more moisture is lost than gets added bu rain/snow, while positive values mean more value is added by rain/snow than evaporates|
 |`water budget`|percentage of expected `evapotranspiration` vs `peak evapotranspiration`|
-|`adjusted_run_time_minutes`|adjusted run time in minutes instead of seconds.|
+|`adjusted run time minutes`|adjusted run time in minutes instead of seconds.|
 
 Sample screenshot:
 
@@ -86,7 +92,7 @@ Attributes:
 |`bucket`|running total of net precipitation. Negative values mean that irrigation is required. Positive values mean that more moisture was added than has evaporated yet, so irrigation is not required. Should be reset to `0` after each irrigation, using the `smart_irrigation.reset_bucket` service|
 |`lead_time`|time in seconds to add to any irrigation. Very useful if your system needs to handle another task first, such as building up pressure.|
 |`maximum_duration`|maximum duration in seconds for any irrigation, including any `lead_time`.|
-|`adjusted_run_time_minutes`|adjusted run time in minutes instead of seconds.|
+|`adjusted run time minutes`|adjusted run time in minutes instead of seconds.|
 
 Sample screenshot:
 
@@ -139,6 +145,9 @@ After setting up the component, you can use the options flow to configure the fo
 |Lead time|Time in seconds to add to any irrigation. Very useful if your system needs to handle another task first, such as building up pressure.|
 |Maximum duration|maximum duration in seconds for any irrigation, including any `lead_time`. -1 means no maximum.|
 |Show units|If enabled, attributes values will show units. By default units will be hidden for attribute values.|
+|Automatic refresh|By default, automatic refresh is enabled. Disabling it will require the user to call `smart_irrigation.calculate_daily_adjusted_run_time` manually.|
+|Automatic refresh time|Specifies when to do the automatic refresh if enabled.|
+
 
 ## Available services
 The component provides the following services:
