@@ -1,7 +1,10 @@
 """SmartIrrigationEntity class"""
 from homeassistant.helpers.restore_state import RestoreEntity
+import logging
 
 from .const import DOMAIN, NAME, VERSION
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class SmartIrrigationEntity(RestoreEntity):
@@ -9,6 +12,7 @@ class SmartIrrigationEntity(RestoreEntity):
         self.coordinator = coordinator
         self.config_entry = config_entry
         self.type = mytype
+        self.entity_id = f"sensor.{coordinator.name}_{mytype.replace(' ','_')}".lower()
 
     @property
     def should_poll(self):
@@ -32,5 +36,5 @@ class SmartIrrigationEntity(RestoreEntity):
         )
 
     async def async_update(self):
-        """Update Brother entity."""
+        """Update Coordinator entity."""
         await self.coordinator.async_request_refresh()

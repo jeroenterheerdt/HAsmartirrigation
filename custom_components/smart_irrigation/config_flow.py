@@ -41,6 +41,13 @@ from .const import (
     CONF_AUTO_REFRESH,
     CONF_AUTO_REFRESH_TIME,
     CONF_NAME,
+    DEFAULT_LEAD_TIME,
+    DEFAULT_MAXIMUM_DURATION,
+    DEFAULT_FORCE_MODE_DURATION,
+    DEFAULT_SHOW_UNITS,
+    DEFAULT_AUTO_REFRESH,
+    DEFAULT_AUTO_REFRESH_TIME,
+    CONF_CONFIG,
 )
 
 
@@ -69,7 +76,11 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             user_input[CONF_API_KEY] = self._api_key
             user_input[CONF_REFERENCE_ET] = self._reference_et
             user_input[CONF_NAME] = self._name
+            await self.async_set_unique_id(self._name)
+            self._abort_if_unique_id_configured()
+
             return self.async_create_entry(title=self._name, data=user_input)
+
         return await self._show_config_form(user_input)
 
     async def async_step_step2(self, user_input=None):
@@ -124,16 +135,24 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         #    return self.async_abort(reason="single_instance_allowed")
 
         if user_input is not None:
-            valid_api = await self._test_api_key(user_input[CONF_API_KEY])
-            if valid_api:
+            try:
+                await self._test_api_key(user_input[CONF_API_KEY])
+                await self._check_unique(user_input[CONF_NAME])
+
                 # store values entered
                 self._api_key = user_input[CONF_API_KEY].strip()
                 self._name = user_input[CONF_NAME]
                 # show next step
                 return await self._show_step2(user_input)
-            else:
+            except InvalidAuth:
                 self._errors["base"] = "auth"
-                return await self._show_config_form(user_input)
+            except CannotConnect:
+                self._errors["base"] = "auth"
+            except NotUnique:
+                _LOGGER.error("Instance name is not unique.")
+                self._errors["base"] = "name"
+
+            return await self._show_config_form(user_input)
             # valid_et = self._check_reference_et(reference_et)
 
             # if valid_api and valid_et:
@@ -223,13 +242,17 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         client = OWMClient(
             api_key=api_key.strip(), latitude=52.353218, longitude=5.0027695
         )
-
         try:
             await self.hass.async_add_executor_job(client.get_data)
-            return True
-        except Exception as Ex:
-            _LOGGER.error(Ex.strerror)
-            return False
+        except OSError:
+            raise InvalidAuth
+        except Exception:
+            raise CannotConnect
+
+    async def _check_unique(self, n):
+        """Test if the specified name is not already claimed."""
+        await self.async_set_unique_id(n)
+        self._abort_if_unique_id_configured()
 
     def _check_reference_et(self, reference_et):
         """Check reference et values here."""
@@ -254,7 +277,6 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry):
         """Initialize HACS options flow."""
         self.config_entry = config_entry
-        _LOGGER.warning("config_entry: {}".format(config_entry))
         self.options = dict(config_entry.options)
         self._errors = {}
 
@@ -279,6 +301,49 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                 _LOGGER.error("No valid time specified.")
                 return False
 
+    async def _show_options_form(self, user_input):
+        """Show the options form to edit info."""
+        return self.async_show_form(
+            step_id="user",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_LEAD_TIME,
+                        default=self.options.get(CONF_LEAD_TIME, DEFAULT_LEAD_TIME),
+                    ): int,
+                    vol.Required(
+                        CONF_MAXIMUM_DURATION,
+                        default=self.options.get(
+                            CONF_MAXIMUM_DURATION, DEFAULT_MAXIMUM_DURATION
+                        ),
+                    ): int,
+                    vol.Required(
+                        CONF_FORCE_MODE_DURATION,
+                        default=self.options.get(
+                            CONF_FORCE_MODE_DURATION, DEFAULT_FORCE_MODE_DURATION
+                        ),
+                    ): int,
+                    vol.Required(
+                        CONF_SHOW_UNITS,
+                        default=self.options.get(CONF_SHOW_UNITS, DEFAULT_SHOW_UNITS),
+                    ): bool,
+                    vol.Required(
+                        CONF_AUTO_REFRESH,
+                        default=self.options.get(
+                            CONF_AUTO_REFRESH, DEFAULT_AUTO_REFRESH
+                        ),
+                    ): bool,
+                    vol.Required(
+                        CONF_AUTO_REFRESH_TIME,
+                        default=self.options.get(
+                            CONF_AUTO_REFRESH_TIME, DEFAULT_AUTO_REFRESH_TIME
+                        ),
+                    ): str,
+                },
+            ),
+            errors=self._errors,
+        )
+
     async def async_step_user(self, user_input=None):
         """Handle a flow initialized by the user."""
         self._errors = {}
@@ -286,45 +351,27 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             valid_time = self._check_time(user_input[CONF_AUTO_REFRESH_TIME])
             if not valid_time:
                 self._errors["base"] = "auto_refresh_time_error"
+                return await self._show_options_form(user_input)
             else:
-                self.options.update(user_input)
-                return await self._update_options()
+                # self.options.update(user_input)
+                return await self._update_options(user_input)
 
-        return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_LEAD_TIME, default=self.options.get(CONF_LEAD_TIME, 0),
-                    ): int,
-                    vol.Required(
-                        CONF_MAXIMUM_DURATION,
-                        default=self.options.get(CONF_MAXIMUM_DURATION, -1),
-                    ): int,
-                    vol.Required(
-                        CONF_FORCE_MODE_DURATION,
-                        default=self.options.get(CONF_FORCE_MODE_DURATION, 0),
-                    ): int,
-                    vol.Required(
-                        CONF_SHOW_UNITS,
-                        default=self.options.get(CONF_SHOW_UNITS, False),
-                    ): bool,
-                    vol.Required(
-                        CONF_AUTO_REFRESH,
-                        default=self.options.get(CONF_AUTO_REFRESH, True),
-                    ): bool,
-                    vol.Required(
-                        CONF_AUTO_REFRESH_TIME,
-                        default=self.options.get(CONF_AUTO_REFRESH_TIME, "23:00"),
-                    ): str,
-                },
-            ),
-            errors=self._errors,
-        )
+        return await self._show_options_form(user_input)
 
-    async def _update_options(self):
+    async def _update_options(self, user_input=None):
         """Update config entry options."""
-        _LOGGER.warning("update_options")
         return self.async_create_entry(
-            title=self.config_entry.data.get(NAME), data=self.options
+            title=self.config_entry.data.get(NAME), data=user_input
         )
+
+
+class CannotConnect(exceptions.HomeAssistantError):
+    """Error to indicate we cannot connect."""
+
+
+class InvalidAuth(exceptions.HomeAssistantError):
+    """Error to indicate there is invalid auth."""
+
+
+class NotUnique(exceptions.HomeAssistantError):
+    """Error to indicate there is invalid auth."""

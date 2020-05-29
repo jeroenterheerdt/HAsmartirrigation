@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.21"
+VERSION = "0.0.22"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -52,6 +52,7 @@ CONF_SHOW_UNITS = "show_units"
 CONF_AUTO_REFRESH = "auto_refresh"
 CONF_AUTO_REFRESH_TIME = "auto_refresh_time"
 CONF_NAME = "name"
+CONF_CONFIG = "config"
 
 # Events
 EVENT_BUCKET_UPDATED = "bucket_updated_event"
@@ -101,6 +102,14 @@ UNIT_OF_MEASUREMENT_INCHES_HOUR = "inch/hour"
 UNIT_OF_MEASUREMENT_MMS_HOUR = "mm/hour"
 UNIT_OF_MEASUREMENT_GPM = "gallon/minute"
 UNIT_OF_MEASUREMENT_LPM = "liter/minute"
+
+# OPTIONS DEFAULTS
+DEFAULT_LEAD_TIME = 0
+DEFAULT_MAXIMUM_DURATION = -1
+DEFAULT_FORCE_MODE_DURATION = 0
+DEFAULT_SHOW_UNITS = False
+DEFAULT_AUTO_REFRESH = True
+DEFAULT_AUTO_REFRESH_TIME = "23:00"
 
 STARTUP_MESSAGE = f"""
 -------------------------------------------------------------------

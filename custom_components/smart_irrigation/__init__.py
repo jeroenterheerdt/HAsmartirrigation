@@ -3,6 +3,7 @@ import asyncio
 from datetime import timedelta
 import logging
 import datetime
+import weakref
 
 import voluptuous as vol
 
@@ -157,7 +158,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         coordinator.platforms.append(p)
         hass.async_add_job(hass.config_entries.async_forward_entry_setup(entry, p))
 
-    entry.add_update_listener(async_reload_entry)
+    # add update listener if not already added.
+    if weakref.ref(async_reload_entry) not in entry.update_listeners:
+        entry.add_update_listener(async_reload_entry)
 
     # register the services
     hass.services.async_register(
@@ -179,7 +182,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Reload config entry."""
-    _LOGGER.warning("async_reload_entry")
     coordinator = hass.data[DOMAIN][entry.entry_id]
     if coordinator.entry_setup_completed:
         await async_unload_entry(hass, entry)
@@ -188,7 +190,6 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Handle removal of an entry."""
-    _LOGGER.warning("async unload entry")
     coordinator = hass.data[DOMAIN][entry.entry_id]
     unloaded = all(
         await asyncio.gather(
@@ -264,8 +265,12 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         if self.auto_refresh:
             hour = int(self.auto_refresh_time.split(":")[0])
             minute = int(self.auto_refresh_time.split(":")[1])
+            if minute < 10:
+                minute_str = f"0{minute}"
+            else:
+                minute_str = minute
             _LOGGER.info(
-                "Auto refresh is enabled. Scheduling for {}:{}".format(hour, minute)
+                "Auto refresh is enabled. Scheduling for {}:{}".format(hour, minute_str)
             )
             async_track_time_change(
                 hass,
@@ -277,7 +282,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.entry_setup_completed = True
 
     def register_entity(self, thetype, entity):
-        _LOGGER.info("registering: type: {}, entity: {}".format(thetype, entity))
+        _LOGGER.warning("registering: type: {}, entity: {}".format(thetype, entity))
         self.entities[thetype] = entity
 
     def handle_reset_bucket(self, call):
@@ -313,6 +318,14 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         bucket_delta = float(cart.attributes[CONF_NETTO_PRECIPITATION].split(" ")[0])
         if self.system_of_measurement != SETTING_METRIC:
             bucket_delta = bucket_delta / MM_TO_INCH_FACTOR
+        # if bucket has a unit, parse it out.
+        if isinstance(self.bucket, str) and " " in self.bucket:
+            self.bucket = float(self.bucket.split(" "[0]))
+        _LOGGER.info(
+            "Updating bucket: {} with netto_precipitation: {}".format(
+                self.bucket, bucket_delta
+            )
+        )
         self.bucket = self.bucket + bucket_delta
 
         # fire an event so the sensor can update itself.

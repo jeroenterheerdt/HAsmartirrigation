@@ -40,6 +40,7 @@
     },
     "error": {
       "auth": "Open Weather API key incorrect",
+      "name": "Specify an unique name for this instance.",
       "reference_evapotranspiration_problem": "Please check your reference evapotranspiration values - they should be decimal",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },

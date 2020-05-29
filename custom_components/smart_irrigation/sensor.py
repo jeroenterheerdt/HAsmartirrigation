@@ -7,6 +7,17 @@ from ..smart_irrigation import pyeto
 from homeassistant.core import callback, Event
 from homeassistant.helpers import entity_registry as er
 
+from .helpers import (
+    show_percentage,
+    show_mm_or_inch,
+    show_seconds,
+    show_minutes,
+    show_mm_or_inch_per_hour,
+    show_liter_or_gallon,
+    show_liter_or_gallon_per_minute,
+    show_m2_or_sq_ft,
+)
+
 from .const import (
     DEFAULT_NAME,
     DOMAIN,
@@ -138,7 +149,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                         if self.coordinator.show_units or (
                             isinstance(a_val, str) and " " in a_val
                         ):
-                            numeric_part = a_val.split(" ")[0]
+                            numeric_part = float(a_val.split(" ")[0])
                         else:
                             numeric_part = float(a_val)
                         if a in (
@@ -149,34 +160,69 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                             CONF_SNOW,
                             CONF_BUCKET,
                         ):
-                            if a == CONF_EVAPOTRANSPIRATION:
-                                self.evapotranspiration = numeric_part
-                            elif a == CONF_NETTO_PRECIPITATION:
-                                self.bucket_delta = numeric_part
-                            elif a == CONF_PRECIPITATION:
-                                self.precipitation = numeric_part
-                            elif a == CONF_RAIN:
-                                self.rain = numeric_part
-                            elif a == CONF_SNOW:
-                                self.snow = numeric_part
-                            elif a == CONF_BUCKET:
-                                self.bucket = numeric_part
-                                self.coordinator.bucket = self.bucket
-                            factor = 1
+                            # we need to convert this back and forth from imperial to metric...
                             if self.coordinator.system_of_measurement != SETTING_METRIC:
-                                factor = MM_TO_INCH_FACTOR
-                                # unit should be included here as well
-                                setattr(
-                                    self,
-                                    a,
-                                    f"{round(numeric_part / MM_TO_INCH_FACTOR, 2)}",
-                                )
+                                numeric_part = numeric_part / MM_TO_INCH_FACTOR
+                            if a == CONF_EVAPOTRANSPIRATION:
+                                if (
+                                    self.coordinator.system_of_measurement
+                                    != SETTING_METRIC
+                                ):
+                                    self.evapotranspiration = (
+                                        numeric_part / MM_TO_INCH_FACTOR
+                                    )
+                                else:
+                                    self.evapotranspiration = numeric_part
+                            elif a == CONF_NETTO_PRECIPITATION:
+                                if (
+                                    self.coordinator.system_of_measurement
+                                    != SETTING_METRIC
+                                ):
+                                    self.bucket_delta = numeric_part / MM_TO_INCH_FACTOR
+                                else:
+                                    self.bucket_delta = numeric_part
+                            elif a == CONF_PRECIPITATION:
+                                if (
+                                    self.coordinator.system_of_measurement
+                                    != SETTING_METRIC
+                                ):
+                                    self.precipitation = (
+                                        numeric_part / MM_TO_INCH_FACTOR
+                                    )
+                                else:
+                                    self.precipitation = numeric_part
+                            elif a == CONF_RAIN:
+                                if (
+                                    self.coordinator.system_of_measurement
+                                    != SETTING_METRIC
+                                ):
+                                    self.rain = numeric_part / MM_TO_INCH_FACTOR
+                                else:
+                                    self.rain = numeric_part
+                            elif a == CONF_SNOW:
+                                if (
+                                    self.coordinator.system_of_measurement
+                                    != SETTING_METRIC
+                                ):
+                                    self.snow = numeric_part / MM_TO_INCH_FACTOR
+                                else:
+                                    self.snow = numeric_part
+                            elif a == CONF_BUCKET:
+                                if (
+                                    self.coordinator.system_of_measurement
+                                    != SETTING_METRIC
+                                ):
+                                    self.bucket = numeric_part / MM_TO_INCH_FACTOR
+                                else:
+                                    self.bucket = numeric_part
+                                self.coordinator.bucket = self.bucket
                         elif a in (CONF_WATER_BUDGET, CONF_ADJUSTED_RUN_TIME_MINUTES):
                             # no need for conversion here
                             if a == CONF_WATER_BUDGET:
                                 self.water_budget = numeric_part
                             # no need to store adjusted run time minutes
-                            setattr(self, a, f"{numeric_part}")
+                        # set the attribute
+                        setattr(self, a, f"{numeric_part}")
 
                     except Exception as e:
                         _LOGGER.error(e)
@@ -200,7 +246,6 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
     def _hourly_data_updated(self, ev: Event):
         """Receive the hourly data updated event."""
         self._state = self.update_state()
-        _LOGGER.warning("new state: {}".format(self._state))
         self.hass.add_job(self.async_update_ha_state)
 
     @property
@@ -211,11 +256,23 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
     def get_attributes_for_daily_adjusted_run_time(self, bucket, water_budget, art):
         """Returns the attributes for daily_adjusted_run_time."""
         return {
-            CONF_WATER_BUDGET: self.show_percentage(water_budget),
-            CONF_BUCKET: self.show_mm_or_inch(bucket),
-            CONF_LEAD_TIME: self.show_seconds(self.coordinator.lead_time),
-            CONF_MAXIMUM_DURATION: self.show_seconds(self.coordinator.maximum_duration),
-            CONF_ADJUSTED_RUN_TIME_MINUTES: self.show_minutes(art),
+            CONF_WATER_BUDGET: show_percentage(
+                water_budget, self.coordinator.show_units
+            ),
+            CONF_BUCKET: show_mm_or_inch(
+                bucket,
+                self.coordinator.system_of_measurement,
+                self.coordinator.show_units,
+            ),
+            CONF_LEAD_TIME: show_seconds(
+                self.coordinator.lead_time, self.coordinator.show_units,
+            ),
+            CONF_MAXIMUM_DURATION: show_seconds(
+                self.coordinator.maximum_duration, self.coordinator.show_units
+            ),
+            CONF_ADJUSTED_RUN_TIME_MINUTES: show_minutes(
+                art, self.coordinator.show_units
+            ),
         }
 
     def update_state(self):
@@ -262,30 +319,76 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         if self.type == TYPE_BASE_SCHEDULE_INDEX:
             return {
                 CONF_NUMBER_OF_SPRINKLERS: self.coordinator.number_of_sprinklers,
-                CONF_FLOW: self.show_liter_or_gallon(self.coordinator.flow),
-                CONF_THROUGHPUT: self.show_liter_or_gallon_per_minute(
-                    self.coordinator.throughput
+                CONF_FLOW: show_liter_or_gallon(
+                    self.coordinator.flow,
+                    self.coordinator.system_of_measurement,
+                    self.coordinator.show_units,
                 ),
-                CONF_REFERENCE_ET: self.show_mm_or_inch(self.coordinator.reference_et),
-                CONF_PEAK_ET: self.show_mm_or_inch(self.coordinator.peak_et),
-                CONF_AREA: self.show_m2_or_sq_ft(self.coordinator.area),
-                CONF_PRECIPITATION_RATE: self.show_mm_or_inch_per_hour(
-                    self.coordinator.precipitation_rate
+                CONF_THROUGHPUT: show_liter_or_gallon_per_minute(
+                    self.coordinator.throughput,
+                    self.coordinator.system_of_measurement,
+                    self.coordinator.show_units,
                 ),
-                CONF_BASE_SCHEDULE_INDEX_MINUTES: self.show_minutes(self.state),
+                CONF_REFERENCE_ET: show_mm_or_inch(
+                    self.coordinator.reference_et,
+                    self.coordinator.system_of_measurement,
+                    self.coordinator.show_units,
+                ),
+                CONF_PEAK_ET: show_mm_or_inch(
+                    self.coordinator.peak_et,
+                    self.coordinator.system_of_measurement,
+                    self.coordinator.show_units,
+                ),
+                CONF_AREA: show_m2_or_sq_ft(
+                    self.coordinator.area,
+                    self.coordinator.system_of_measurement,
+                    self.coordinator.show_units,
+                ),
+                CONF_PRECIPITATION_RATE: show_mm_or_inch_per_hour(
+                    self.coordinator.precipitation_rate,
+                    self.coordinator.system_of_measurement,
+                    self.coordinator.show_units,
+                ),
+                CONF_BASE_SCHEDULE_INDEX_MINUTES: show_minutes(
+                    self.state, self.coordinator.show_units
+                ),
                 CONF_AUTO_REFRESH: self.coordinator.auto_refresh,
                 CONF_AUTO_REFRESH_TIME: self.coordinator.auto_refresh_time,
                 CONF_FORCE_MODE_DURATION: self.coordinator.force_mode_duration,
             }
         elif self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
             return {
-                CONF_RAIN: self.show_mm_or_inch(self.rain),
-                CONF_SNOW: self.show_mm_or_inch(self.snow),
-                CONF_PRECIPITATION: self.show_mm_or_inch(self.precipitation),
-                CONF_EVAPOTRANSPIRATION: self.show_mm_or_inch(self.evapotranspiration),
-                CONF_NETTO_PRECIPITATION: self.show_mm_or_inch(self.bucket_delta),
-                CONF_WATER_BUDGET: self.show_percentage(self.water_budget),
-                CONF_ADJUSTED_RUN_TIME_MINUTES: self.show_minutes(self.state),
+                CONF_RAIN: show_mm_or_inch(
+                    self.rain,
+                    self.coordinator.system_of_measurement,
+                    self.coordinator.show_units,
+                ),
+                CONF_SNOW: show_mm_or_inch(
+                    self.snow,
+                    self.coordinator.system_of_measurement,
+                    self.coordinator.show_units,
+                ),
+                CONF_PRECIPITATION: show_mm_or_inch(
+                    self.precipitation,
+                    self.coordinator.system_of_measurement,
+                    self.coordinator.show_units,
+                ),
+                CONF_EVAPOTRANSPIRATION: show_mm_or_inch(
+                    self.evapotranspiration,
+                    self.coordinator.system_of_measurement,
+                    self.coordinator.show_units,
+                ),
+                CONF_NETTO_PRECIPITATION: show_mm_or_inch(
+                    self.bucket_delta,
+                    self.coordinator.system_of_measurement,
+                    self.coordinator.show_units,
+                ),
+                CONF_WATER_BUDGET: show_percentage(
+                    self.water_budget, self.coordinator.show_units
+                ),
+                CONF_ADJUSTED_RUN_TIME_MINUTES: show_minutes(
+                    self.state, self.coordinator.show_units
+                ),
             }
         else:
             return self.get_attributes_for_daily_adjusted_run_time(
@@ -380,124 +483,6 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             pressure,
         )
         return fao56
-
-    def show_liter_or_gallon(self, value):
-        """Return nicely formatted liters or gallons."""
-        if value is None:
-            return "unknown"
-        value = float(value)
-        if self.coordinator.system_of_measurement == SETTING_METRIC:
-            retval = f"{value}"
-            if self.coordinator.show_units:
-                retval = retval + f" {UNIT_OF_MEASUREMENT_LITERS}"
-            return retval
-        else:
-            retval = f"{round(value * LITER_TO_GALLON_FACTOR,2)}"
-            if self.coordinator.show_units:
-                retval = retval + f" {UNIT_OF_MEASUREMENT_GALLONS}"
-            return retval
-
-    def show_liter_or_gallon_per_minute(self, value):
-        """Return nicely formatted liters or gallons."""
-        if value is None:
-            return "unknown"
-        value = float(value)
-        if self.coordinator.system_of_measurement == SETTING_METRIC:
-            retval = f"{value}"
-            if self.coordinator.show_units:
-                retval = retval + f" {UNIT_OF_MEASUREMENT_LPM}"
-            return retval
-        else:
-            retval = f"{round(value * LITER_TO_GALLON_FACTOR,2)}"
-            if self.coordinator.show_units:
-                retval = retval + f" {UNIT_OF_MEASUREMENT_GPM}"
-            return retval
-
-    def show_mm_or_inch(self, value):
-        """Return nicely formatted mm or inches."""
-        if value is None:
-            return "unknown"
-        if not isinstance(value, list):
-            value = float(value)
-        if self.coordinator.system_of_measurement == SETTING_METRIC:
-            retval = f"{value}"
-            if self.coordinator.show_units:
-                retval = retval + f" {UNIT_OF_MEASUREMENT_MMS}"
-            return retval
-        else:
-            if isinstance(value, list):
-                retval = f"{[round(x * MM_TO_INCH_FACTOR,2) for x in value]}"
-            else:
-                retval = f"{round(value * MM_TO_INCH_FACTOR,2)}"
-            if self.coordinator.show_units:
-                retval = retval + f" {UNIT_OF_MEASUREMENT_INCHES}"
-            return retval
-
-    def show_mm_or_inch_per_hour(self, value):
-        """Return nicely formatted mm or inches per hour."""
-        if value is None:
-            return "unknown"
-        value = float(value)
-        if self.coordinator.system_of_measurement == SETTING_METRIC:
-            retval = f"{value}"
-            if self.coordinator.show_units:
-                retval = retval + f" {UNIT_OF_MEASUREMENT_MMS_HOUR}"
-            return retval
-        else:
-            if isinstance(value, list):
-                retval = f"{[round(x * MM_TO_INCH_FACTOR,2) for x in value]}"
-            else:
-                retval = f"{round(value * MM_TO_INCH_FACTOR,2)}"
-            if self.coordinator.show_units:
-                retval = retval + f" {UNIT_OF_MEASUREMENT_INCHES_HOUR}"
-            return retval
-
-    def show_m2_or_sq_ft(self, value):
-        """Return nicely formatted m2 or sq ft."""
-        if value is None:
-            return "unknown"
-        value = float(value)
-        if self.coordinator.system_of_measurement == SETTING_METRIC:
-            retval = f"{value}"
-            if self.coordinator.show_units:
-                retval = retval + f" {UNIT_OF_MEASUREMENT_M2}"
-            return retval
-        else:
-            retval = f"{round(value * M2_TO_SQ_FT_FACTOR,2)}"
-            if self.coordinator.show_units:
-                retval = retval + f" {UNIT_OF_MEASUREMENT_SQ_FT}"
-            return retval
-
-    def show_percentage(self, value):
-        """Return nicely formatted percentages."""
-        if value is None:
-            return "unknown"
-        value = float(value)
-        retval = round(value * 100, 2)
-        if self.coordinator.show_units:
-            return f"{retval} %"
-        else:
-            return retval
-
-    def show_seconds(self, value):
-        """Return nicely formatted seconds."""
-        if value is None:
-            return "unknown"
-        if self.coordinator.show_units:
-            return f"{value} s"
-        else:
-            return value
-
-    def show_minutes(self, value):
-        """Return nicely formatted minutes."""
-        if value is None:
-            return "unknown"
-        value = float(value)
-        retval = round(value / 60, 2)
-        if self.coordinator.show_units:
-            return f"{retval} min"
-        else:
-            return retval
 
     def calculate_water_budget_and_adjusted_run_time(self, bucket_val):
         water_budget = 0
