@@ -63,6 +63,7 @@ from .const import (
     CONF_AUTO_REFRESH,
     CONF_AUTO_REFRESH_TIME,
     CONF_NAME,
+    EVENT_HOURLY_DATA_UPDATED,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -257,49 +258,52 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.hass = hass
         self.entities = {}
         self.entry_setup_completed = False
-        # should this be name? or domain?
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
+        super().__init__(hass, _LOGGER, name=name, update_interval=SCAN_INTERVAL)
 
         # last update of the day happens at specified local time if auto_refresh is on
         if self.auto_refresh:
+            hour = int(self.auto_refresh_time.split(":")[0])
+            minute = int(self.auto_refresh_time.split(":")[1])
             _LOGGER.info(
-                "Auto refresh is enabled. Scheduling for {}".format(
-                    self.auto_refresh_time
-                )
+                "Auto refresh is enabled. Scheduling for {}:{}".format(hour, minute)
             )
             async_track_time_change(
                 hass,
                 self._async_update_last_of_day,
-                hour=self.auto_refresh_time.split(":")[0],
-                minute=self.auto_refresh_time.split(":")[1],
+                hour=hour,
+                minute=minute,
                 second=0,
             )
         self.entry_setup_completed = True
 
     def register_entity(self, thetype, entity):
+        _LOGGER.info("registering: type: {}, entity: {}".format(thetype, entity))
         self.entities[thetype] = entity
-        self.entry_setup_completed = True
 
     def handle_reset_bucket(self, call):
         """Handle the service reset_bucket call."""
         _LOGGER.info("Reset bucket service called, resetting bucket to 0.")
         self.bucket = 0
         # fire an event so the sensor can update itself.
-        self.hass.bus.fire(EVENT_BUCKET_UPDATED, {CONF_BUCKET: self.bucket})
+        eventToFire = f"{self.name}_{EVENT_BUCKET_UPDATED}"
+        self.hass.bus.fire(eventToFire, {CONF_BUCKET: self.bucket})
 
-    def handle_calculate_daily_adjusted_run_time(self, call):
+    async def handle_calculate_daily_adjusted_run_time(self, call):
         """Handle the service calculate_daily_adjusted_run_time call."""
         _LOGGER.info(
             "Calculate Daily Adjusted Run Time service called, calculating now."
         )
         self._update_last_of_day()
 
-    def handle_calculate_hourly_adjusted_run_time(self, call):
+    async def handle_calculate_hourly_adjusted_run_time(self, call):
         """Handle the service calculate_hourly_adjusted_run_time call."""
         _LOGGER.info(
             "Calculate Hourly Adjusted Run Time service called, calculating now."
         )
-        self._async_update_data()
+        self.data = await self._async_update_data()
+        # fire an event so the sensor can update itself.
+        eventToFire = f"{self.name}_{EVENT_HOURLY_DATA_UPDATED}"
+        self.hass.bus.fire(eventToFire, {})
 
     def _update_last_of_day(self):
         cart_entity_id = self.entities[TYPE_CURRENT_ADJUSTED_RUN_TIME]
@@ -312,7 +316,8 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.bucket = self.bucket + bucket_delta
 
         # fire an event so the sensor can update itself.
-        self.hass.bus.fire(EVENT_BUCKET_UPDATED, {CONF_BUCKET: self.bucket})
+        eventToFire = f"{self.name}_{EVENT_BUCKET_UPDATED}"
+        self.hass.bus.fire(eventToFire, {CONF_BUCKET: self.bucket})
 
     async def _async_update_last_of_day(self, *args):
         _LOGGER.info(

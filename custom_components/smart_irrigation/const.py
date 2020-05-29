@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.20"
+VERSION = "0.0.21"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -54,7 +54,8 @@ CONF_AUTO_REFRESH_TIME = "auto_refresh_time"
 CONF_NAME = "name"
 
 # Events
-EVENT_BUCKET_UPDATED = "smart_irrigation_bucket_updated_event"
+EVENT_BUCKET_UPDATED = "bucket_updated_event"
+EVENT_HOURLY_DATA_UPDATED = "hourly_updated_event"
 
 # Services
 SERVICE_RESET_BUCKET = "reset_bucket"

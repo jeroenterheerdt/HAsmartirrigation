@@ -50,6 +50,10 @@ from .const import (
     CONF_MAXIMUM_DURATION,
     CONF_ADJUSTED_RUN_TIME_MINUTES,
     CONF_BASE_SCHEDULE_INDEX_MINUTES,
+    EVENT_HOURLY_DATA_UPDATED,
+    CONF_AUTO_REFRESH,
+    CONF_AUTO_REFRESH_TIME,
+    CONF_FORCE_MODE_DURATION,
 )
 from .entity import SmartIrrigationEntity
 
@@ -98,10 +102,16 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
         # listen to the bucket update event only for the adjusted run time sensor
         if self.type == TYPE_ADJUSTED_RUN_TIME:
+            eventToListen = f"{self.coordinator.name}_{EVENT_BUCKET_UPDATED}"
             self.hass.bus.async_listen(
-                EVENT_BUCKET_UPDATED, lambda event: self._bucket_updated(event)
+                eventToListen, lambda event: self._bucket_updated(event),
             )
-
+        # listen to the hourly data updated event only for the current adjusted run time sensor
+        if self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
+            eventToListen = f"{self.coordinator.name}_{EVENT_HOURLY_DATA_UPDATED}"
+            self.hass.bus.async_listen(
+                eventToListen, lambda event: self._hourly_data_updated(event),
+            )
         state = await self.async_get_last_state()
         if state is not None and state.state != "unavailable":
             self._state = float(state.state)
@@ -179,19 +189,34 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         self.bucket = float(e["data"][CONF_BUCKET])
         result = self.calculate_water_budget_and_adjusted_run_time(self.bucket)
         art_entity_id = self.coordinator.entities[TYPE_ADJUSTED_RUN_TIME]
-        self.hass.states.set(
-            art_entity_id,
-            result["art"],
-            {
-                CONF_BUCKET: self.show_mm_or_inch(self.bucket),
-                CONF_WATER_BUDGET: self.show_percentage(result["wb"]),
-            },
+        attr = self.get_attributes_for_daily_adjusted_run_time(
+            self.bucket, result["wb"], result["art"]
         )
+        self.hass.states.set(
+            art_entity_id, result["art"], attr,
+        )
+
+    @callback
+    def _hourly_data_updated(self, ev: Event):
+        """Receive the hourly data updated event."""
+        self._state = self.update_state()
+        _LOGGER.warning("new state: {}".format(self._state))
+        self.hass.add_job(self.async_update_ha_state)
 
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{self.coordinator.name} {self.type}"
+        return f"{self.type}"
+
+    def get_attributes_for_daily_adjusted_run_time(self, bucket, water_budget, art):
+        """Returns the attributes for daily_adjusted_run_time."""
+        return {
+            CONF_WATER_BUDGET: self.show_percentage(water_budget),
+            CONF_BUCKET: self.show_mm_or_inch(bucket),
+            CONF_LEAD_TIME: self.show_seconds(self.coordinator.lead_time),
+            CONF_MAXIMUM_DURATION: self.show_seconds(self.coordinator.maximum_duration),
+            CONF_ADJUSTED_RUN_TIME_MINUTES: self.show_minutes(art),
+        }
 
     def update_state(self):
         """Update the state."""
@@ -248,6 +273,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                     self.coordinator.precipitation_rate
                 ),
                 CONF_BASE_SCHEDULE_INDEX_MINUTES: self.show_minutes(self.state),
+                CONF_AUTO_REFRESH: self.coordinator.auto_refresh,
+                CONF_AUTO_REFRESH_TIME: self.coordinator.auto_refresh_time,
+                CONF_FORCE_MODE_DURATION: self.coordinator.force_mode_duration,
             }
         elif self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
             return {
@@ -260,15 +288,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 CONF_ADJUSTED_RUN_TIME_MINUTES: self.show_minutes(self.state),
             }
         else:
-            return {
-                CONF_WATER_BUDGET: self.show_percentage(self.water_budget),
-                CONF_BUCKET: self.show_mm_or_inch(self.bucket),
-                CONF_LEAD_TIME: self.show_seconds(self.coordinator.lead_time),
-                CONF_MAXIMUM_DURATION: self.show_seconds(
-                    self.coordinator.maximum_duration
-                ),
-                CONF_ADJUSTED_RUN_TIME_MINUTES: self.show_minutes(self.state),
-            }
+            return self.get_attributes_for_daily_adjusted_run_time(
+                self.bucket, self.water_budget, self.state
+            )
 
     @property
     def icon(self):
