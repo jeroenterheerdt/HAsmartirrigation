@@ -16,6 +16,7 @@ from .helpers import (
     show_liter_or_gallon,
     show_liter_or_gallon_per_minute,
     show_m2_or_sq_ft,
+    map_source_to_sensor,
 )
 
 from .const import (
@@ -65,6 +66,22 @@ from .const import (
     CONF_AUTO_REFRESH,
     CONF_AUTO_REFRESH_TIME,
     CONF_FORCE_MODE_DURATION,
+    CONF_SWITCH_SOURCE_PRECIPITATION,
+    CONF_SWITCH_SOURCE_DAILY_TEMPERATURE,
+    CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE,
+    CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE,
+    CONF_SWITCH_SOURCE_DEWPOINT,
+    CONF_SWITCH_SOURCE_PRESSURE,
+    CONF_SWITCH_SOURCE_HUMIDITY,
+    CONF_SWITCH_SOURCE_WINDSPEED,
+    CONF_SENSOR_PRECIPITATION,
+    CONF_SENSOR_DAILY_TEMPERATURE,
+    CONF_SENSOR_DEWPOINT,
+    CONF_SENSOR_HUMIDITY,
+    CONF_SENSOR_MAXIMUM_TEMPERATURE,
+    CONF_SENSOR_MINIMUM_TEMPERATE,
+    CONF_SENSOR_PRESSURE,
+    CONF_SENSOR_WINDSPEED,
 )
 from .entity import SmartIrrigationEntity
 
@@ -281,7 +298,67 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             return round(self.coordinator.base_schedule_index, 1)
         # hourly adjusted run time
         elif self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
-            data = self.coordinator.data["daily"][0]
+            data = {}
+            # if we have an api, read the data
+            if self.coordinator.api:
+                data = self.coordinator.data["daily"][0]
+            # retrieve the data from the sensors (if set) and build the data or overwrite what we got from the API
+            if self.coordinator.sources:
+                for s in self.coordinator.sources:
+                    if not self.coordinator.sources[s]:
+                        # this source is configured as a sensor
+                        sensor_setting = map_source_to_sensor(s)
+                        sensor_name = self.coordinator.sensors[sensor_setting]
+
+                        sensor_state = self.hass.states.get(sensor_name)
+                        _LOGGER.debug(
+                            "source: {}, sensor_setting: {}, sensor_name: {}, sensor_state: {}".format(
+                                s, sensor_setting, sensor_name, sensor_state
+                            )
+                        )
+                        if sensor_state is not None:
+                            _LOGGER.debug(
+                                "state value: {}".format(sensor_state.state)
+                            )
+                            # we have the sensor_state - convert it to float
+                            if (
+                                isinstance(sensor_state.state, str)
+                                and sensor_state.state.count(" ") > 0
+                            ):
+                                sensor_state = sensor_state.state.split(" ")[0]
+                            else:
+                                sensor_state = sensor_state.state
+                            if s == CONF_SWITCH_SOURCE_PRECIPITATION:
+                                # get precipitation from sensor, assuming there is no separate snow sensor
+                                data["snow"] = 0.0
+                                data["rain"] = float(sensor_state)
+                            if s == CONF_SWITCH_SOURCE_DEWPOINT:
+                                # get dewpoint from sensor
+                                data["dew_point"] = float(sensor_state)
+                            if s == CONF_SWITCH_SOURCE_DAILY_TEMPERATURE:
+                                # get temperature from sensor
+                                if not "temp" in data:
+                                    data["temp"] = {}
+                                data["temp"]["day"] = float(sensor_state)
+                            if s == CONF_SWITCH_SOURCE_HUMIDITY:
+                                # get humidity from sensor
+                                data["humidity"] = float(sensor_state)
+                            if s == CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE:
+                                # get max temp from sensor
+                                if not "temp" in data:
+                                    data["temp"] = {}
+                                data["temp"]["max"] = float(sensor_state)
+                            if s == CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE:
+                                # get min temp from sensor
+                                if not "temp" in data:
+                                    data["temp"] = {}
+                                data["temp"]["min"] = float(sensor_state)
+                            if s == CONF_SWITCH_SOURCE_PRESSURE:
+                                # get pressure from sensor
+                                data["pressure"] = float(sensor_state)
+                            if s == CONF_SWITCH_SOURCE_WINDSPEED:
+                                # get windspeed from sensor
+                                data["wind_speed"] = float(sensor_state)
             # parse precipitation out of the today data
             self.precipitation = self.get_precipitation(data)
             # calculate et out of the today data
@@ -294,7 +371,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             )
             self.water_budget = result["wb"]
             self.coordinator.hourly_bucket_list.append(self.bucket_delta)
-            _LOGGER.warning(
+            _LOGGER.debug(
                 "just updated hourly_bucket_list: {}".format(
                     self.coordinator.hourly_bucket_list
                 )
@@ -408,21 +485,24 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def get_precipitation(self, data):
         """Parse out precipitation info from OWM data."""
-        if "rain" in data:
-            self.rain = float(data["rain"])
-        if "snow" in data:
-            self.snow = float(data["snow"])
-        _LOGGER.info("rain: {}, snow: {}".format(self.rain, self.snow))
-        if isinstance(self.rain, str):
-            self.rain = 0
-        if isinstance(self.snow, str):
-            self.snow = 0
-        retval = self.rain + self.snow
-        if isinstance(retval, str):
-            if retval.count(".") > 1:
-                retval = retval.split(".")[0] + "." + retval.split(".")[1]
-        retval = float(retval)
-        return retval
+        if not data is None:
+            if "rain" in data:
+                self.rain = float(data["rain"])
+            if "snow" in data:
+                self.snow = float(data["snow"])
+            _LOGGER.info("rain: {}, snow: {}".format(self.rain, self.snow))
+            if isinstance(self.rain, str):
+                self.rain = 0
+            if isinstance(self.snow, str):
+                self.snow = 0
+            retval = self.rain + self.snow
+            if isinstance(retval, str):
+                if retval.count(".") > 1:
+                    retval = retval.split(".")[0] + "." + retval.split(".")[1]
+            retval = float(retval)
+            return retval
+        else:
+            return 0.0
 
     def estimate_fao56_daily(
         self,
@@ -472,27 +552,33 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def get_evapotranspiration(self, d):
         """Calculate Evantranspiration info from OWM data."""
-        day_of_year = datetime.datetime.now().timetuple().tm_yday
-        t_day = d["temp"]["day"]
-        t_min = d["temp"]["min"]
-        t_max = d["temp"]["max"]
-        t_dew = float(d["dew_point"])
-        pressure = d["pressure"]
-        RH_hr = d["humidity"]
-        u_2 = d["wind_speed"]
-        fao56 = self.estimate_fao56_daily(
-            day_of_year,
-            t_day,
-            t_min,
-            t_max,
-            t_dew,
-            self.coordinator.elevation,
-            self.coordinator.latitude,
-            RH_hr,
-            u_2,
-            pressure,
-        )
-        return fao56
+        if d is not None:
+            day_of_year = datetime.datetime.now().timetuple().tm_yday
+            if "temp" in d:
+                t_day = d["temp"]["day"]
+                t_min = d["temp"]["min"]
+                t_max = d["temp"]["max"]
+            else:
+                return 0.0
+            t_dew = float(d["dew_point"])
+            pressure = d["pressure"]
+            RH_hr = d["humidity"]
+            u_2 = d["wind_speed"]
+            fao56 = self.estimate_fao56_daily(
+                day_of_year,
+                t_day,
+                t_min,
+                t_max,
+                t_dew,
+                self.coordinator.elevation,
+                self.coordinator.latitude,
+                RH_hr,
+                u_2,
+                pressure,
+            )
+            return fao56
+        else:
+            return 0.0
 
     def calculate_water_budget_and_adjusted_run_time(self, bucket_val):
         water_budget = 0

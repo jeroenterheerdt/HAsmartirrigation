@@ -65,6 +65,8 @@ from .const import (
     CONF_AUTO_REFRESH_TIME,
     CONF_NAME,
     EVENT_HOURLY_DATA_UPDATED,
+    CONF_SOURCE_SWITCHES,
+    CONF_SENSORS,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -91,6 +93,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     number_of_sprinklers = entry.data.get(CONF_NUMBER_OF_SPRINKLERS)
     reference_et = entry.data.get(CONF_REFERENCE_ET)
     reference_et = [float(x) for x in reference_et]
+    # get settings (true / false depending on need to use owm or sensor)
+    sources = entry.data.get(CONF_SOURCE_SWITCHES)
+    # get sensors - should be empty if full OWM.
+    sensors = entry.data.get(CONF_SENSORS)
 
     # convert values to internal metric representation if required.
     system_of_measurement = SETTING_METRIC
@@ -144,6 +150,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         show_units=show_units,
         auto_refresh=auto_refresh,
         auto_refresh_time=auto_refresh_time,
+        sources=sources,
+        sensors=sensors,
         name=name,
     )
 
@@ -231,10 +239,17 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         show_units,
         auto_refresh,
         auto_refresh_time,
+        sources,
+        sensors,
         name,
     ):
         """Initialize."""
-        self.api = OWMClient(api_key=api_key, longitude=longitude, latitude=latitude)
+        if api_key:
+            self.api = OWMClient(
+                api_key=api_key, longitude=longitude, latitude=latitude
+            )
+        else:
+            self.api = None
         self.longitude = longitude
         self.latitude = latitude
         self.elevation = elevation
@@ -254,6 +269,8 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.auto_refresh = auto_refresh
         self.auto_refresh_time = auto_refresh_time
         self.name = name
+        self.sources = sources
+        self.sensors = sensors
         self.hourly_bucket_list = []
         self.platforms = []
         self.bucket = 0
@@ -283,7 +300,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.entry_setup_completed = True
 
     def register_entity(self, thetype, entity):
-        # _LOGGER.warning("registering: type: {}, entity: {}".format(thetype, entity))
+        # _LOGGER.debug("registering: type: {}, entity: {}".format(thetype, entity))
         self.entities[thetype] = entity
 
     def handle_reset_bucket(self, call):
@@ -347,7 +364,13 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         _LOGGER.info(
             "Updating for last time today, calculating adjusted run time for next irrigation time!"
         )
-        data = await self.hass.async_add_executor_job(self.api.get_data)
+        if self.api:
+            # data comes at least partly from owm
+            data = await self.hass.async_add_executor_job(self.api.get_data)
+        else:
+            # data comes from pure sensors
+            # not sure what to do here.
+            k = 0
         self._update_last_of_day()
         _LOGGER.info("Bucket for today is: {} mm".format(self.bucket))
         return data
@@ -356,7 +379,12 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         """Update data via library."""
         _LOGGER.info("Updating Smart Irrigation Data")
         try:
-            data = await self.hass.async_add_executor_job(self.api.get_data)
-            return data
+            if self.api:
+                # data comes at least partly from owm
+                data = await self.hass.async_add_executor_job(self.api.get_data)
+                return data
+            else:
+                # data comes purely from sensors
+                return None
         except Exception as exception:
             raise UpdateFailed(exception)

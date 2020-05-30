@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.23"
+VERSION = "0.0.24"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -53,6 +53,28 @@ CONF_AUTO_REFRESH = "auto_refresh"
 CONF_AUTO_REFRESH_TIME = "auto_refresh_time"
 CONF_NAME = "name"
 CONF_CONFIG = "config"
+CONF_SOURCE_SWITCHES = "sources"
+CONF_SENSORS = "sensors"
+
+# Settings switches (True = OWM, False is own sensors)
+CONF_SWITCH_SOURCE_PRECIPITATION = "use_owm_precipitation"
+CONF_SWITCH_SOURCE_DAILY_TEMPERATURE = "use_owm_temperature"
+CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE = "use_owm_min_temperature"
+CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE = "use_owm_max_temperature"
+CONF_SWITCH_SOURCE_DEWPOINT = "use_owm_dewpoint"
+CONF_SWITCH_SOURCE_PRESSURE = "use_owm_pressure"
+CONF_SWITCH_SOURCE_HUMIDITY = "use_owm_humidity"
+CONF_SWITCH_SOURCE_WINDSPEED = "use_owm_windspeed"
+
+# Sensors setting labels
+CONF_SENSOR_PRECIPITATION = "sensor_precipitation"
+CONF_SENSOR_DAILY_TEMPERATURE = "sensor_temperature"
+CONF_SENSOR_DEWPOINT = "sensor_dewpoint"
+CONF_SENSOR_HUMIDITY = "sensor_humidity"
+CONF_SENSOR_MAXIMUM_TEMPERATURE = "sensor_max_temperature"
+CONF_SENSOR_MINIMUM_TEMPERATE = "sensor_min_temperature"
+CONF_SENSOR_PRESSURE = "sensor_pressure"
+CONF_SENSOR_WINDSPEED = "sensor_windspeed"
 
 # Events
 EVENT_BUCKET_UPDATED = "bucket_updated_event"
