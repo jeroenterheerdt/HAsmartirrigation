@@ -293,6 +293,12 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 self.bucket_delta
             )
             self.water_budget = result["wb"]
+            self.coordinator.hourly_bucket_list.append(self.bucket_delta)
+            _LOGGER.warning(
+                "just updated hourly_bucket_list: {}".format(
+                    self.coordinator.hourly_bucket_list
+                )
+            )
             return result["art"]
         else:
             # daily adjusted run time
@@ -407,6 +413,10 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         if "snow" in data:
             self.snow = float(data["snow"])
         _LOGGER.info("rain: {}, snow: {}".format(self.rain, self.snow))
+        if isinstance(self.rain, str):
+            self.rain = 0
+        if isinstance(self.snow, str):
+            self.snow = 0
         retval = self.rain + self.snow
         if isinstance(retval, str):
             if retval.count(".") > 1:

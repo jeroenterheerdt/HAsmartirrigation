@@ -52,6 +52,9 @@
     "step": {
       "user": {
         "data": {
+          "number_of_sprinklers": "Number of sprinklers",
+          "flow": "Flow per sprinkler in gpm or lpm",
+          "area": "Area in sq ft or m2",
           "lead_time": "Lead time, time to add to adjusted run time (seconds).",
           "maximum_duration": "Maximum duration, including any lead time (-1 means no maximum).",
           "force_mode_duration": "Number of seconds to run irrigation when in force mode.",

@@ -254,6 +254,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.auto_refresh = auto_refresh
         self.auto_refresh_time = auto_refresh_time
         self.name = name
+        self.hourly_bucket_list = []
         self.platforms = []
         self.bucket = 0
         self.hass = hass
@@ -282,7 +283,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.entry_setup_completed = True
 
     def register_entity(self, thetype, entity):
-        _LOGGER.warning("registering: type: {}, entity: {}".format(thetype, entity))
+        # _LOGGER.warning("registering: type: {}, entity: {}".format(thetype, entity))
         self.entities[thetype] = entity
 
     def handle_reset_bucket(self, call):
@@ -311,16 +312,26 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.hass.bus.fire(eventToFire, {})
 
     def _update_last_of_day(self):
-        cart_entity_id = self.entities[TYPE_CURRENT_ADJUSTED_RUN_TIME]
+        # this is outdated because we store buckets in self.hourly_bucket_list now
+        # cart_entity_id = self.entities[TYPE_CURRENT_ADJUSTED_RUN_TIME]
         # update the bucket based on the current bucket_delta.
-        cart = self.hass.states.get(cart_entity_id)
+        # cart = self.hass.states.get(cart_entity_id)
         # this might be in metric or imperial, we need to convert it to metric.
-        bucket_delta = float(cart.attributes[CONF_NETTO_PRECIPITATION].split(" ")[0])
-        if self.system_of_measurement != SETTING_METRIC:
-            bucket_delta = bucket_delta / MM_TO_INCH_FACTOR
+        # bucket_delta = float(cart.attributes[CONF_NETTO_PRECIPITATION].split(" ")[0])
+        # if self.system_of_measurement != SETTING_METRIC:
+        #    bucket_delta = bucket_delta / MM_TO_INCH_FACTOR
+
         # if bucket has a unit, parse it out.
         if isinstance(self.bucket, str) and " " in self.bucket:
             self.bucket = float(self.bucket.split(" "[0]))
+        if len(self.hourly_bucket_list) > 0:
+            bucket_delta = (sum(self.hourly_bucket_list) * 1.0) / len(
+                self.hourly_bucket_list
+            )
+            # empty the hourly bucket list
+            self.hourly_bucket_list = []
+        else:
+            bucket_delta = 0
         _LOGGER.info(
             "Updating bucket: {} with netto_precipitation: {}".format(
                 self.bucket, bucket_delta
