@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.24"
+VERSION = "0.0.25"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -94,7 +94,9 @@ MM_TO_INCH_FACTOR = 0.03937008
 LITER_TO_GALLON_FACTOR = 0.26417205
 M2_TO_SQ_FT_FACTOR = 10.7639104
 M_TO_FT_FACTOR = 3.2808399
-
+KMH_TO_MS_FACTOR = 3.6
+MILESH_TO_MS_FACTOR = 2.23693629
+PSI_TO_HPA_FACTOR = 0.0145037737796859
 # Defaults
 DEFAULT_NAME = NAME
 

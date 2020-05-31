@@ -157,6 +157,7 @@ def show_minutes(value, show_units):
     else:
         return retval
 
+
 def map_source_to_sensor(source):
     """Returns the sensor setting for the source."""
     if source == CONF_SWITCH_SOURCE_PRECIPITATION:
@@ -177,3 +178,7 @@ def map_source_to_sensor(source):
         return CONF_SENSOR_WINDSPEED
     else:
         return None
+
+
+def convertCtoF(value):
+    return float((float(value) - 32.0) / 1.8)

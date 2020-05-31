@@ -30,14 +30,14 @@
           "title": "Smart Irrigation - Step 2/4: Sensors",
           "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
           "data": {
-            "sensor_precipitation": "Sensor that measures total precipitation (rain/snow)",
-            "sensor_temperature": "Sensor that measures temperature",
-            "sensor_dewpoint": "Sensor that measures dewpoint",
-            "sensor_humidity": "Sensor that measures humidity",
-            "sensor_max_temperature": "Sensor that measures maximum temperature",
-            "sensor_min_temperature": "Sensor that measures minimum temperature",
-            "sensor_pressure": "Sensor that measures pressure",
-            "sensor_windspeed": "Sensor that measures windspeed"
+            "sensor_precipitation": "Sensor that measures total precipitation (rain/snow) (mm, inch)",
+            "sensor_temperature": "Sensor that measures temperature (C, F)",
+            "sensor_dewpoint": "Sensor that measures dewpoint (C, F)",
+            "sensor_humidity": "Sensor that measures humidity (%)",
+            "sensor_max_temperature": "Sensor that measures maximum temperature (C, F)",
+            "sensor_min_temperature": "Sensor that measures minimum temperature (C, F)",
+            "sensor_pressure": "Sensor that measures pressure (mbar, hPa, psi) ",
+            "sensor_windspeed": "Sensor that measures windspeed (km/h, mile/h)"
           }
         },
         "step3": {
