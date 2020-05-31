@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.25"
+VERSION = "0.0.26"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -55,6 +55,7 @@ CONF_NAME = "name"
 CONF_CONFIG = "config"
 CONF_SOURCE_SWITCHES = "sources"
 CONF_SENSORS = "sensors"
+CONF_FORCE_MODE_ENABLED = "force_mode_enabled"
 
 # Settings switches (True = OWM, False is own sensors)
 CONF_SWITCH_SOURCE_PRECIPITATION = "use_owm_precipitation"
@@ -79,11 +80,14 @@ CONF_SENSOR_WINDSPEED = "sensor_windspeed"
 # Events
 EVENT_BUCKET_UPDATED = "bucket_updated_event"
 EVENT_HOURLY_DATA_UPDATED = "hourly_updated_event"
+EVENT_FORCE_MODE_TOGGLED = "force_mode_toggle_event"
 
 # Services
 SERVICE_RESET_BUCKET = "reset_bucket"
 SERVICE_CALCULATE_DAILY_ADJUSTED_RUN_TIME = "calculate_daily_adjusted_run_time"
 SERVICE_CALCULATE_HOURLY_ADJUSTED_RUN_TIME = "calculate_hourly_adjusted_run_time"
+SERVICE_ENABLE_FORCE_MODE = "enable_force_mode"
+SERVICE_DISABLE_FORCE_MODE = "disable_force_mode"
 
 # Systems of measurement
 SETTING_METRIC = "metric"

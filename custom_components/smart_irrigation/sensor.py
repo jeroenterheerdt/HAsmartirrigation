@@ -5,7 +5,8 @@ import logging
 
 from ..smart_irrigation import pyeto
 from homeassistant.core import callback, Event
-from homeassistant.helpers import entity_registry as er
+
+# from homeassistant.helpers import entity_registry as er
 
 from .helpers import (
     show_percentage,
@@ -21,24 +22,20 @@ from .helpers import (
 )
 
 from .const import (
-    DEFAULT_NAME,
     DOMAIN,
     ICON,
     TYPE_BASE_SCHEDULE_INDEX,
     TYPE_CURRENT_ADJUSTED_RUN_TIME,
     TYPE_ADJUSTED_RUN_TIME,
     UNIT_OF_MEASUREMENT_SECONDS,
-    UNIT_OF_MEASUREMENT_UNKNOWN,
     CONF_NUMBER_OF_SPRINKLERS,
     CONF_FLOW,
     CONF_THROUGHPUT,
     SETTING_METRIC,
-    LITER_TO_GALLON_FACTOR,
     CONF_REFERENCE_ET,
     MM_TO_INCH_FACTOR,
     CONF_PEAK_ET,
     CONF_AREA,
-    M2_TO_SQ_FT_FACTOR,
     CONF_PRECIPITATION_RATE,
     CONF_PRECIPITATION,
     CONF_NETTO_PRECIPITATION,
@@ -48,17 +45,6 @@ from .const import (
     CONF_SNOW,
     CONF_BUCKET,
     EVENT_BUCKET_UPDATED,
-    UNIT_OF_MEASUREMENT_LITERS,
-    UNIT_OF_MEASUREMENT_GALLONS,
-    UNIT_OF_MEASUREMENT_SQ_FT,
-    UNIT_OF_MEASUREMENT_M2,
-    UNIT_OF_MEASUREMENT_INCHES,
-    UNIT_OF_MEASUREMENT_MMS,
-    UNIT_OF_MEASUREMENT_INCHES_HOUR,
-    UNIT_OF_MEASUREMENT_MMS_HOUR,
-    UNIT_OF_MEASUREMENT_GPM,
-    UNIT_OF_MEASUREMENT_LPM,
-    UNIT_OF_MEASUREMENT_MINUTES,
     CONF_LEAD_TIME,
     CONF_MAXIMUM_DURATION,
     CONF_ADJUSTED_RUN_TIME_MINUTES,
@@ -75,17 +61,11 @@ from .const import (
     CONF_SWITCH_SOURCE_PRESSURE,
     CONF_SWITCH_SOURCE_HUMIDITY,
     CONF_SWITCH_SOURCE_WINDSPEED,
-    CONF_SENSOR_PRECIPITATION,
-    CONF_SENSOR_DAILY_TEMPERATURE,
-    CONF_SENSOR_DEWPOINT,
-    CONF_SENSOR_HUMIDITY,
-    CONF_SENSOR_MAXIMUM_TEMPERATURE,
-    CONF_SENSOR_MINIMUM_TEMPERATE,
-    CONF_SENSOR_PRESSURE,
-    CONF_SENSOR_WINDSPEED,
     KMH_TO_MS_FACTOR,
     MILESH_TO_MS_FACTOR,
     PSI_TO_HPA_FACTOR,
+    CONF_FORCE_MODE_ENABLED,
+    EVENT_FORCE_MODE_TOGGLED,
 )
 from .entity import SmartIrrigationEntity
 
@@ -132,18 +112,23 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         # register this sensor in the coordinator
         self.coordinator.register_entity(self.type, self.entity_id)
 
-        # listen to the bucket update event only for the adjusted run time sensor
+        # listen to the bucket update event and force mode toggle event only for the adjusted run time sensor
         if self.type == TYPE_ADJUSTED_RUN_TIME:
-            eventToListen = f"{self.coordinator.name}_{EVENT_BUCKET_UPDATED}"
+            event_to_listen = f"{self.coordinator.name}_{EVENT_BUCKET_UPDATED}"
             self.hass.bus.async_listen(
-                eventToListen, lambda event: self._bucket_updated(event),
+                event_to_listen, lambda event: self._bucket_updated(event),
+            )
+            event_to_listen_2 = f"{self.coordinator.name}_{EVENT_FORCE_MODE_TOGGLED}"
+            self.hass.bus.async_listen(
+                event_to_listen_2, lambda event: self._force_mode_toggled(event),
             )
         # listen to the hourly data updated event only for the current adjusted run time sensor
         if self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
-            eventToListen = f"{self.coordinator.name}_{EVENT_HOURLY_DATA_UPDATED}"
+            event_to_listen = f"{self.coordinator.name}_{EVENT_HOURLY_DATA_UPDATED}"
             self.hass.bus.async_listen(
-                eventToListen, lambda event: self._hourly_data_updated(event),
+                event_to_listen, lambda event: self._hourly_data_updated(event),
             )
+
         state = await self.async_get_last_state()
         if state is not None and state.state != "unavailable":
             self._state = float(state.state)
@@ -162,10 +147,10 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 CONF_BUCKET,
                 CONF_ADJUSTED_RUN_TIME_MINUTES,
             )
-            for a in confs:
-                if a in state.attributes:
+            for attr in confs:
+                if attr in state.attributes:
                     try:
-                        a_val = state.attributes[a]
+                        a_val = state.attributes[attr]
                         # no split needed if we don't show units
                         if self.coordinator.show_units or (
                             isinstance(a_val, str) and " " in a_val
@@ -173,7 +158,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                             numeric_part = float(a_val.split(" ")[0])
                         else:
                             numeric_part = float(a_val)
-                        if a in (
+                        if attr in (
                             CONF_EVAPOTRANSPIRATION,
                             CONF_NETTO_PRECIPITATION,
                             CONF_PRECIPITATION,
@@ -184,7 +169,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                             # we need to convert this back and forth from imperial to metric...
                             if self.coordinator.system_of_measurement != SETTING_METRIC:
                                 numeric_part = numeric_part / MM_TO_INCH_FACTOR
-                            if a == CONF_EVAPOTRANSPIRATION:
+                            if attr == CONF_EVAPOTRANSPIRATION:
                                 if (
                                     self.coordinator.system_of_measurement
                                     != SETTING_METRIC
@@ -194,7 +179,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                     )
                                 else:
                                     self.evapotranspiration = numeric_part
-                            elif a == CONF_NETTO_PRECIPITATION:
+                            elif attr == CONF_NETTO_PRECIPITATION:
                                 if (
                                     self.coordinator.system_of_measurement
                                     != SETTING_METRIC
@@ -202,7 +187,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                     self.bucket_delta = numeric_part / MM_TO_INCH_FACTOR
                                 else:
                                     self.bucket_delta = numeric_part
-                            elif a == CONF_PRECIPITATION:
+                            elif attr == CONF_PRECIPITATION:
                                 if (
                                     self.coordinator.system_of_measurement
                                     != SETTING_METRIC
@@ -212,7 +197,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                     )
                                 else:
                                     self.precipitation = numeric_part
-                            elif a == CONF_RAIN:
+                            elif attr == CONF_RAIN:
                                 if (
                                     self.coordinator.system_of_measurement
                                     != SETTING_METRIC
@@ -220,7 +205,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                     self.rain = numeric_part / MM_TO_INCH_FACTOR
                                 else:
                                     self.rain = numeric_part
-                            elif a == CONF_SNOW:
+                            elif attr == CONF_SNOW:
                                 if (
                                     self.coordinator.system_of_measurement
                                     != SETTING_METRIC
@@ -228,7 +213,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                     self.snow = numeric_part / MM_TO_INCH_FACTOR
                                 else:
                                     self.snow = numeric_part
-                            elif a == CONF_BUCKET:
+                            elif attr == CONF_BUCKET:
                                 if (
                                     self.coordinator.system_of_measurement
                                     != SETTING_METRIC
@@ -237,23 +222,22 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                 else:
                                     self.bucket = numeric_part
                                 self.coordinator.bucket = self.bucket
-                        elif a in (CONF_WATER_BUDGET, CONF_ADJUSTED_RUN_TIME_MINUTES):
+                        elif attr in (
+                            CONF_WATER_BUDGET,
+                            CONF_ADJUSTED_RUN_TIME_MINUTES,
+                        ):
                             # no need for conversion here
-                            if a == CONF_WATER_BUDGET:
+                            if attr == CONF_WATER_BUDGET:
                                 self.water_budget = numeric_part
                             # no need to store adjusted run time minutes
                         # set the attribute
-                        setattr(self, a, f"{numeric_part}")
+                        setattr(self, attr, f"{numeric_part}")
 
-                    except Exception as e:
-                        _LOGGER.error(e)
+                    except Exception as ex:
+                        _LOGGER.error(ex)
 
-    @callback
-    def _bucket_updated(self, ev: Event):
-        """Receive the bucket updated event."""
-        # update the sensor status.
-        e = ev.as_dict()
-        self.bucket = float(e["data"][CONF_BUCKET])
+    def update_adjusted_run_time_from_event(self):
+        """Update the adjusted run time. SHould only be called from _bucket_update and _force_mode_toggled event handlers."""
         result = self.calculate_water_budget_and_adjusted_run_time(self.bucket)
         art_entity_id = self.coordinator.entities[TYPE_ADJUSTED_RUN_TIME]
         attr = self.get_attributes_for_daily_adjusted_run_time(
@@ -264,7 +248,20 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         )
 
     @callback
-    def _hourly_data_updated(self, ev: Event):
+    def _bucket_updated(self, event: Event):
+        """Receive the bucket updated event."""
+        # update the sensor status.
+        event_dict = event.as_dict()
+        self.bucket = float(event_dict["data"][CONF_BUCKET])
+        self.update_adjusted_run_time_from_event()
+
+    @callback
+    def _force_mode_toggled(self, event: Event):
+        """Receive the force mode toggle event."""
+        self.update_adjusted_run_time_from_event()
+
+    @callback
+    def _hourly_data_updated(self, event: Event):
         """Receive the hourly data updated event."""
         self._state = self.update_state()
         self.hass.add_job(self.async_update_ha_state)
@@ -294,6 +291,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             CONF_ADJUSTED_RUN_TIME_MINUTES: show_minutes(
                 art, self.coordinator.show_units
             ),
+            CONF_FORCE_MODE_DURATION: self.coordinator.force_mode_duration,
+            CONF_FORCE_MODE_ENABLED: self.coordinator.force_mode,
         }
 
     def update_state(self):
@@ -309,16 +308,16 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
             # retrieve the data from the sensors (if set) and build the data or overwrite what we got from the API
             if self.coordinator.sources:
-                for s in self.coordinator.sources:
-                    if not self.coordinator.sources[s]:
+                for source in self.coordinator.sources:
+                    if not self.coordinator.sources[source]:
                         # this source is configured as a sensor
-                        sensor_setting = map_source_to_sensor(s)
+                        sensor_setting = map_source_to_sensor(source)
                         sensor_name = self.coordinator.sensors[sensor_setting]
 
                         sensor_state = self.hass.states.get(sensor_name)
                         _LOGGER.debug(
                             "source: {}, sensor_setting: {}, sensor_name: {}, sensor_state: {}".format(
-                                s, sensor_setting, sensor_name, sensor_state
+                                source, sensor_setting, sensor_name, sensor_state
                             )
                         )
                         if sensor_state is not None:
@@ -331,7 +330,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                 sensor_state = sensor_state.state.split(" ")[0]
                             else:
                                 sensor_state = sensor_state.state
-                            if s == CONF_SWITCH_SOURCE_PRECIPITATION:
+                            if source == CONF_SWITCH_SOURCE_PRECIPITATION:
                                 # get precipitation from sensor, assuming there is no separate snow sensor
                                 data["snow"] = 0.0
                                 # metric: mm, imperial: inch
@@ -345,7 +344,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                     data["rain"] = float(
                                         float(sensor_state) / MM_TO_INCH_FACTOR
                                     )
-                            if s == CONF_SWITCH_SOURCE_DEWPOINT:
+                            if source == CONF_SWITCH_SOURCE_DEWPOINT:
                                 # get dewpoint from sensor
                                 # metric: C, imperial: F
                                 if (
@@ -356,9 +355,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                 else:
                                     # imperial
                                     data["dew_point"] = convertCtoF(float(sensor_state))
-                            if s == CONF_SWITCH_SOURCE_DAILY_TEMPERATURE:
+                            if source == CONF_SWITCH_SOURCE_DAILY_TEMPERATURE:
                                 # get temperature from sensor
-                                if not "temp" in data:
+                                if "temp" not in data:
                                     data["temp"] = {}
                                 # metric: C, imperial: F
                                 if (
@@ -371,13 +370,13 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                     data["temp"]["day"] = convertCtoF(
                                         float(sensor_state)
                                     )
-                            if s == CONF_SWITCH_SOURCE_HUMIDITY:
+                            if source == CONF_SWITCH_SOURCE_HUMIDITY:
                                 # get humidity from sensor
                                 # %, no conversion necessary
                                 data["humidity"] = float(sensor_state)
-                            if s == CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE:
+                            if source == CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE:
                                 # get max temp from sensor
-                                if not "temp" in data:
+                                if "temp" not in data:
                                     data["temp"] = {}
                                 # metric: C, imperial: F
                                 if (
@@ -390,9 +389,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                     data["temp"]["max"] = convertCtoF(
                                         float(sensor_state)
                                     )
-                            if s == CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE:
+                            if source == CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE:
                                 # get min temp from sensor
-                                if not "temp" in data:
+                                if "temp" not in data:
                                     data["temp"] = {}
                                 # metric: C, imperial: F
                                 if (
@@ -405,7 +404,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                     data["temp"]["min"] = convertCtoF(
                                         float(sensor_state)
                                     )
-                            if s == CONF_SWITCH_SOURCE_PRESSURE:
+                            if source == CONF_SWITCH_SOURCE_PRESSURE:
                                 # get pressure from sensor
                                 # metric: mbar, imperial: psi
                                 # store in hPa (which is 1=1 with with mbar)
@@ -420,7 +419,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                     data["pressure"] = float(
                                         float(sensor_state) / PSI_TO_HPA_FACTOR
                                     )
-                            if s == CONF_SWITCH_SOURCE_WINDSPEED:
+                            if source == CONF_SWITCH_SOURCE_WINDSPEED:
                                 # get windspeed from sensor
                                 # metric: km/h, imperial: m/h
                                 # store in m/s
@@ -514,7 +513,6 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 ),
                 CONF_AUTO_REFRESH: self.coordinator.auto_refresh,
                 CONF_AUTO_REFRESH_TIME: self.coordinator.auto_refresh_time,
-                CONF_FORCE_MODE_DURATION: self.coordinator.force_mode_duration,
             }
         elif self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
             return {
@@ -660,32 +658,38 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             return 0.0
 
     def calculate_water_budget_and_adjusted_run_time(self, bucket_val):
+        """Calculate water budget and adjusted run time based on bucket_val."""
         water_budget = 0
         adjusted_run_time = 0
-        if (
-            bucket_val is None
-            or isinstance(bucket_val, str)
-            or (
-                (isinstance(bucket_val, int) or isinstance(bucket_val, float))
-                and bucket_val >= 0
-            )
-        ):
-            # we do not need to irrigate
-            water_budget = 0
-            # return 0 for adjusted runtime
-            adjusted_run_time = 0
+        # if force_mode is on just return the force mode duration
+        if self.coordinator.force_mode:
+            water_budget = 1
+            adjusted_run_time = self.coordinator.force_mode_duration
         else:
-            # we need to irrigate
-            water_budget = abs(bucket_val) / self.coordinator.peak_et
-            # adjusted runtime including lead time if set up
-            adjusted_run_time = (
-                round(water_budget * self.coordinator.base_schedule_index)
-                + self.coordinator.lead_time
-            )
-            # adjusted run time is capped at maximum duration (if not -1)
             if (
-                self.coordinator.maximum_duration != -1
-                and adjusted_run_time > self.coordinator.maximum_duration
+                bucket_val is None
+                or isinstance(bucket_val, str)
+                or (
+                    (isinstance(bucket_val, int) or isinstance(bucket_val, float))
+                    and bucket_val >= 0
+                )
             ):
-                adjusted_run_time = self.coordinator.maximum_duration
+                # we do not need to irrigate
+                water_budget = 0
+                # return 0 for adjusted runtime
+                adjusted_run_time = 0
+            else:
+                # we need to irrigate
+                water_budget = abs(bucket_val) / self.coordinator.peak_et
+                # adjusted runtime including lead time if set up
+                adjusted_run_time = (
+                    round(water_budget * self.coordinator.base_schedule_index)
+                    + self.coordinator.lead_time
+                )
+                # adjusted run time is capped at maximum duration (if not -1)
+                if (
+                    self.coordinator.maximum_duration != -1
+                    and adjusted_run_time > self.coordinator.maximum_duration
+                ):
+                    adjusted_run_time = self.coordinator.maximum_duration
         return {"wb": water_budget, "art": adjusted_run_time}

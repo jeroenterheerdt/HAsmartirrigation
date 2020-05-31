@@ -4,3 +4,7 @@ calculate_hourly_adjusted_run_time:
   description: Trigger calculation of hourly adjusted run time
 calculate_daily_adjusted_run_time:
   description: Trigger calculation of daily adjusted run time
+enable_force_mode:
+  description: Enables force mode
+disable_force_mode:
+  description: Disables force mode

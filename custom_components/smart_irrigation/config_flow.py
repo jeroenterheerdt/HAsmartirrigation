@@ -1,14 +1,9 @@
 """Config flow for Smart Irrigation integration."""
 import logging
-import requests
-import json
 import voluptuous as vol
-import copy
 
-from homeassistant import config_entries, core, exceptions
+from homeassistant import config_entries, exceptions
 from homeassistant.core import callback
-
-from .const import DOMAIN  # pylint:disable=unused-import
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,8 +27,6 @@ from .const import (
     CONF_NUMBER_OF_SPRINKLERS,
     CONF_FLOW,
     CONF_AREA,
-    DOMAIN,
-    PLATFORMS,
     NAME,
     CONF_LEAD_TIME,
     CONF_MAXIMUM_DURATION,
@@ -48,7 +41,6 @@ from .const import (
     DEFAULT_SHOW_UNITS,
     DEFAULT_AUTO_REFRESH,
     DEFAULT_AUTO_REFRESH_TIME,
-    CONF_CONFIG,
     CONF_SWITCH_SOURCE_PRECIPITATION,
     CONF_SWITCH_SOURCE_DAILY_TEMPERATURE,
     CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE,
@@ -57,16 +49,9 @@ from .const import (
     CONF_SWITCH_SOURCE_PRESSURE,
     CONF_SWITCH_SOURCE_HUMIDITY,
     CONF_SWITCH_SOURCE_WINDSPEED,
-    CONF_SENSOR_PRECIPITATION,
-    CONF_SENSOR_DAILY_TEMPERATURE,
-    CONF_SENSOR_DEWPOINT,
-    CONF_SENSOR_HUMIDITY,
-    CONF_SENSOR_MAXIMUM_TEMPERATURE,
-    CONF_SENSOR_MINIMUM_TEMPERATE,
-    CONF_SENSOR_PRESSURE,
-    CONF_SENSOR_WINDSPEED,
     CONF_SOURCE_SWITCHES,
     CONF_SENSORS,
+    DOMAIN,
 )
 
 
@@ -360,7 +345,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                         all_floats = False
                         break
                 return all_floats
-        except Exception as e:
+        except Exception as ex:
             _LOGGER.error("Supplied reference Evapotranspiration was not valid.")
             return False
 
@@ -391,7 +376,7 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                     return True
                 else:
                     return False
-            except ValueError as e:
+            except ValueError as ex:
                 _LOGGER.error("No valid time specified.")
                 return False
 

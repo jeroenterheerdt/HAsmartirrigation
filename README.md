@@ -166,6 +166,8 @@ The component provides the following services:
 |`smart_irrigation.reset_bucket`|this service needs to be called after any irrigation so the bucket is reset to 0.|
 |`smart_irrigation.calculate_daily_adjusted_run_time`|calling this service results in the `smart_irrigation.daily_adjusted_run_time` entity and attributes to be updated right away.|
 |`smart_irrigation.calculate_hourly_adjusted_run_time`|calling this service results in the `smart_irrigation.hourly_adjusted_run_time` entity and attributes to be updated right away.|
+|`smart_irrigation.enable_force_mode`|Enables force mode. In this mode, `smart_irrigation.daily_adjusted_run_time` will also be set to the configured force mode duration.|
+|`smart_irrigation.disable_force_mode`|Disables force mode. Normal operation resumes.|
 
 ## How this works
 [See the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works).

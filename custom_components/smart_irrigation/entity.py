@@ -2,12 +2,12 @@
 from homeassistant.helpers.restore_state import RestoreEntity
 import logging
 
-from .const import DOMAIN, NAME, VERSION
-
 _LOGGER = logging.getLogger(__name__)
 
 
 class SmartIrrigationEntity(RestoreEntity):
+    """Smart Irrigation Entity."""
+
     def __init__(self, coordinator, config_entry, mytype):
         self.coordinator = coordinator
         self.config_entry = config_entry

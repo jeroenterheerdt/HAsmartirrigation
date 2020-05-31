@@ -67,6 +67,9 @@ from .const import (
     EVENT_HOURLY_DATA_UPDATED,
     CONF_SOURCE_SWITCHES,
     CONF_SENSORS,
+    SERVICE_ENABLE_FORCE_MODE,
+    SERVICE_DISABLE_FORCE_MODE,
+    EVENT_FORCE_MODE_TOGGLED,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -162,9 +165,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
-    for p in PLATFORMS:
-        coordinator.platforms.append(p)
-        hass.async_add_job(hass.config_entries.async_forward_entry_setup(entry, p))
+    for platform in PLATFORMS:
+        coordinator.platforms.append(platform)
+        hass.async_add_job(
+            hass.config_entries.async_forward_entry_setup(entry, platform)
+        )
 
     # add update listener if not already added.
     if weakref.ref(async_reload_entry) not in entry.update_listeners:
@@ -184,7 +189,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         f"{name}_{SERVICE_CALCULATE_DAILY_ADJUSTED_RUN_TIME}",
         coordinator.handle_calculate_daily_adjusted_run_time,
     )
-
+    hass.services.async_register(
+        DOMAIN,
+        f"{name}_{SERVICE_ENABLE_FORCE_MODE}",
+        coordinator.handle_enable_force_mode,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        f"{name}_{SERVICE_DISABLE_FORCE_MODE}",
+        coordinator.handle_disable_force_mode,
+    )
     return True
 
 
@@ -265,6 +279,8 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.lead_time = lead_time
         self.maximum_duration = maximum_duration
         self.force_mode_duration = force_mode_duration
+        # initialize force mode as Off
+        self.force_mode = False
         self.show_units = show_units
         self.auto_refresh = auto_refresh
         self.auto_refresh_time = auto_refresh_time
@@ -288,7 +304,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
             else:
                 minute_str = minute
             _LOGGER.info(
-                "Auto refresh is enabled. Scheduling for {}:{}".format(hour, minute_str)
+                "Auto refresh is enabled. Scheduling for %s:%s.", hour, minute_str
             )
             async_track_time_change(
                 hass,
@@ -300,6 +316,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.entry_setup_completed = True
 
     def register_entity(self, thetype, entity):
+        """Register an entity."""
         # _LOGGER.debug("registering: type: {}, entity: {}".format(thetype, entity))
         self.entities[thetype] = entity
 
@@ -308,8 +325,8 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         _LOGGER.info("Reset bucket service called, resetting bucket to 0.")
         self.bucket = 0
         # fire an event so the sensor can update itself.
-        eventToFire = f"{self.name}_{EVENT_BUCKET_UPDATED}"
-        self.hass.bus.fire(eventToFire, {CONF_BUCKET: self.bucket})
+        event_to_fire = f"{self.name}_{EVENT_BUCKET_UPDATED}"
+        self.hass.bus.fire(event_to_fire, {CONF_BUCKET: self.bucket})
 
     async def handle_calculate_daily_adjusted_run_time(self, call):
         """Handle the service calculate_daily_adjusted_run_time call."""
@@ -325,8 +342,22 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         )
         self.data = await self._async_update_data()
         # fire an event so the sensor can update itself.
-        eventToFire = f"{self.name}_{EVENT_HOURLY_DATA_UPDATED}"
-        self.hass.bus.fire(eventToFire, {})
+        event_to_fire = f"{self.name}_{EVENT_HOURLY_DATA_UPDATED}"
+        self.hass.bus.fire(event_to_fire, {})
+
+    async def handle_enable_force_mode(self, call):
+        """Handle the service enable_force_mode call."""
+        _LOGGER.info("handling enable_force_mode service call.")
+        self.force_mode = True
+        event_to_fire = f"{self.name}_{EVENT_FORCE_MODE_TOGGLED}"
+        self.hass.bus.fire(event_to_fire, {})
+
+    async def handle_disable_force_mode(self, call):
+        """Handle the service disable_force_mode call."""
+        _LOGGER.info("handling disable_force_mode service call.")
+        self.force_mode = False
+        event_to_fire = f"{self.name}_{EVENT_FORCE_MODE_TOGGLED}"
+        self.hass.bus.fire(event_to_fire, {})
 
     def _update_last_of_day(self):
         # this is outdated because we store buckets in self.hourly_bucket_list now
@@ -350,29 +381,26 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         else:
             bucket_delta = 0
         _LOGGER.info(
-            "Updating bucket: {} with netto_precipitation: {}".format(
-                self.bucket, bucket_delta
-            )
+            "Updating bucket: %s with netto_precipitation: %s",
+            self.bucket,
+            bucket_delta,
         )
         self.bucket = self.bucket + bucket_delta
 
         # fire an event so the sensor can update itself.
-        eventToFire = f"{self.name}_{EVENT_BUCKET_UPDATED}"
-        self.hass.bus.fire(eventToFire, {CONF_BUCKET: self.bucket})
+        event_to_fire = f"{self.name}_{EVENT_BUCKET_UPDATED}"
+        self.hass.bus.fire(event_to_fire, {CONF_BUCKET: self.bucket})
 
     async def _async_update_last_of_day(self, *args):
         _LOGGER.info(
             "Updating for last time today, calculating adjusted run time for next irrigation time!"
         )
+        # no need to call the api if we have no api ;)
         if self.api:
             # data comes at least partly from owm
             data = await self.hass.async_add_executor_job(self.api.get_data)
-        else:
-            # data comes from pure sensors
-            # not sure what to do here.
-            k = 0
         self._update_last_of_day()
-        _LOGGER.info("Bucket for today is: {} mm".format(self.bucket))
+        _LOGGER.info("Bucket for today is: %s mm", self.bucket)
         return data
 
     async def _async_update_data(self):
