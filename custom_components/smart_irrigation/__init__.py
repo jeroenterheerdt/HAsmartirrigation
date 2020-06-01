@@ -376,15 +376,17 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
             bucket_delta = (sum(self.hourly_bucket_list) * 1.0) / len(
                 self.hourly_bucket_list
             )
-            # empty the hourly bucket list
-            self.hourly_bucket_list = []
+
         else:
             bucket_delta = 0
+
         _LOGGER.info(
-            "Updating bucket: %s with netto_precipitation: %s",
-            self.bucket,
-            bucket_delta,
+            "Updating bucket: {} with netto_precipitation: {}, which should be average of: {}".format(
+                self.bucket, bucket_delta, self.hourly_bucket_list
+            )
         )
+        # empty the hourly bucket list
+        self.hourly_bucket_list = []
         self.bucket = self.bucket + bucket_delta
 
         # fire an event so the sensor can update itself.
@@ -401,7 +403,8 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
             data = await self.hass.async_add_executor_job(self.api.get_data)
         self._update_last_of_day()
         _LOGGER.info("Bucket for today is: %s mm", self.bucket)
-        return data
+        # don't think this is necessary any more.
+        # return data
 
     async def _async_update_data(self):
         """Update data via library."""
