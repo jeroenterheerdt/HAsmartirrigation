@@ -238,7 +238,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def update_adjusted_run_time_from_event(self):
         """Update the adjusted run time. SHould only be called from _bucket_update and _force_mode_toggled event handlers."""
-        result = self.calculate_water_budget_and_adjusted_run_time(self.bucket,self.type)
+        result = self.calculate_water_budget_and_adjusted_run_time(
+            self.bucket, self.type
+        )
         art_entity_id = self.coordinator.entities[TYPE_ADJUSTED_RUN_TIME]
         attr = self.get_attributes_for_daily_adjusted_run_time(
             self.bucket, result["wb"], result["art"]
@@ -698,16 +700,16 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                         and adjusted_run_time > self.coordinator.maximum_duration
                     ):
                         adjusted_run_time = self.coordinator.maximum_duration
-        _LOGGER.info(
-            "Calculated water_budget = {} and adjusted_run_time: {} for type: {}. Bucket value was: {}, and force mode is: {}, force mode duration is: {}, lead_time is: {}, maximum_duration: {}".format(
-                water_budget,
-                adjusted_run_time,
-                thetype,
-                bucket_val,
-                self.coordinator.force_mode,
-                self.coordinator.force_mode_duration,
-                self.coordinator.lead_time,
-                self.coordinator.maximum_duration,
-            )
-        )
+        # _LOGGER.info(
+        #    "Calculated water_budget = {} and adjusted_run_time: {} for type: {}. Bucket value was: {}, and force mode is: {}, force mode duration is: {}, lead_time is: {}, maximum_duration: {}".format(
+        #        water_budget,
+        #        adjusted_run_time,
+        #        thetype,
+        #        bucket_val,
+        #        self.coordinator.force_mode,
+        #        self.coordinator.force_mode_duration,
+        #        self.coordinator.lead_time,
+        #        self.coordinator.maximum_duration,
+        #    )
+        # )
         return {"wb": water_budget, "art": adjusted_run_time}

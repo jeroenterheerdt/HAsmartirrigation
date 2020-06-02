@@ -74,8 +74,8 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-# SCAN_INTERVAL = timedelta(minutes=58)
-SCAN_INTERVAL = timedelta(minutes=5)
+SCAN_INTERVAL = timedelta(minutes=58)
+# SCAN_INTERVAL = timedelta(minutes=5)
 
 PLATFORMS = ["sensor"]
 
