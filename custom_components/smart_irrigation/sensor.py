@@ -238,7 +238,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def update_adjusted_run_time_from_event(self):
         """Update the adjusted run time. SHould only be called from _bucket_update and _force_mode_toggled event handlers."""
-        result = self.calculate_water_budget_and_adjusted_run_time(self.bucket)
+        result = self.calculate_water_budget_and_adjusted_run_time(self.bucket,self.type)
         art_entity_id = self.coordinator.entities[TYPE_ADJUSTED_RUN_TIME]
         attr = self.get_attributes_for_daily_adjusted_run_time(
             self.bucket, result["wb"], result["art"]
@@ -443,7 +443,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             self.bucket_delta = self.precipitation - self.evapotranspiration
 
             result = self.calculate_water_budget_and_adjusted_run_time(
-                self.bucket_delta
+                self.bucket_delta, self.type
             )
             self.water_budget = result["wb"]
             self.coordinator.hourly_bucket_list.append(self.bucket_delta)
@@ -456,7 +456,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         else:
             # daily adjusted run time
             result = self.calculate_water_budget_and_adjusted_run_time(
-                self.coordinator.bucket
+                self.coordinator.bucket, self.type
             )
             self.water_budget = result["wb"]
             return result["art"]
@@ -657,12 +657,12 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         else:
             return 0.0
 
-    def calculate_water_budget_and_adjusted_run_time(self, bucket_val):
+    def calculate_water_budget_and_adjusted_run_time(self, bucket_val, thetype):
         """Calculate water budget and adjusted run time based on bucket_val."""
         water_budget = 0
         adjusted_run_time = 0
-        # if force_mode is on just return the force mode duration
-        if self.coordinator.force_mode:
+        # if force_mode is on just return the force mode duration but only for the daily adjusted run time
+        if self.coordinator.force_mode and thetype == TYPE_ADJUSTED_RUN_TIME:
             water_budget = 1
             adjusted_run_time = self.coordinator.force_mode_duration
         else:
@@ -681,15 +681,33 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             else:
                 # we need to irrigate
                 water_budget = abs(bucket_val) / self.coordinator.peak_et
-                # adjusted runtime including lead time if set up
-                adjusted_run_time = (
-                    round(water_budget * self.coordinator.base_schedule_index)
-                    + self.coordinator.lead_time
-                )
-                # adjusted run time is capped at maximum duration (if not -1)
-                if (
-                    self.coordinator.maximum_duration != -1
-                    and adjusted_run_time > self.coordinator.maximum_duration
-                ):
-                    adjusted_run_time = self.coordinator.maximum_duration
+                # return adjusted runtime for hourly adjusted run time
+                if thetype == TYPE_CURRENT_ADJUSTED_RUN_TIME:
+                    adjusted_run_time = round(
+                        water_budget * self.coordinator.base_schedule_index
+                    )
+                elif thetype == TYPE_ADJUSTED_RUN_TIME:
+                    # make adjustments just for daily: lead_time and maximum_duration
+                    adjusted_run_time = (
+                        round(water_budget * self.coordinator.base_schedule_index)
+                        + self.coordinator.lead_time
+                    )
+                    # adjusted run time is capped at maximum duration (if not -1)
+                    if (
+                        self.coordinator.maximum_duration != -1
+                        and adjusted_run_time > self.coordinator.maximum_duration
+                    ):
+                        adjusted_run_time = self.coordinator.maximum_duration
+        _LOGGER.info(
+            "Calculated water_budget = {} and adjusted_run_time: {} for type: {}. Bucket value was: {}, and force mode is: {}, force mode duration is: {}, lead_time is: {}, maximum_duration: {}".format(
+                water_budget,
+                adjusted_run_time,
+                thetype,
+                bucket_val,
+                self.coordinator.force_mode,
+                self.coordinator.force_mode_duration,
+                self.coordinator.lead_time,
+                self.coordinator.maximum_duration,
+            )
+        )
         return {"wb": water_budget, "art": adjusted_run_time}

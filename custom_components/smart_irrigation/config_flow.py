@@ -454,6 +454,16 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             else:
                 # commented out for later right now this results in a NoneType object is not subscriptable in core/homeassistant/data_entry_flow.py (#214)
                 # store num_sprinklers, flow, area in data settings as well!
+                # data = {**self.config_entry.data}
+                # data[CONF_NUMBER_OF_SPRINKLERS] = float(
+                #    user_input[CONF_NUMBER_OF_SPRINKLERS]
+                # )
+                # data[CONF_FLOW] = float(user_input[CONF_FLOW])
+                # data[CONF_AREA] = float(user_input[CONF_AREA])
+                # _LOGGER.debug("data: {}".format(data))
+                # self.hass.config_entries.async_update_entry(
+                #    self.config_entry, data=data
+                # )
                 # settings = {}
                 # for x in self.config_entry.data:
                 #    settings[x] = self.config_entry.data[x]
