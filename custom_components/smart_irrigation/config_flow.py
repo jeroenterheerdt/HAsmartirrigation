@@ -371,7 +371,7 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(
                         CONF_INCREASE_PERCENT,
                         default=self.options.get(
-                            CONF_INCREASE_PERCENT, DEFAULT_INCREASE_PERCENT
+                            CONF_INCREASE_PERCENT * 100, DEFAULT_INCREASE_PERCENT
                         ),
                     ): vol.Coerce(float),
                     vol.Required(

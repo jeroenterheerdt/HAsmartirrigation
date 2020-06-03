@@ -672,7 +672,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                     )
                     # increase_percent
                     if self.coordinator.increase_percent != 0:
-                        adjusted_run_time = adjusted_run_time * float(
+                        adjusted_run_time = adjusted_run_time * float(1.0 +
                             self.coordinator.increase_percent
                         )
                     # adjusted run time is capped at maximum duration (if not -1)

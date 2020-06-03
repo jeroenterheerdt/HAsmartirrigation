@@ -153,10 +153,12 @@ After setting up the component, you can use the options flow to configure the fo
 | Option | Description |
 | --- | --- |
 |Lead time|Time in seconds to add to any irrigation. Very useful if your system needs to handle another task first, such as building up pressure.|
+|Increase percentage|Percentage to increase adjusted run time by. If not 0 this percentage will be added to daily adjusted run time.|
 |Maximum duration|maximum duration in seconds for any irrigation, including any `lead_time`. -1 means no maximum.|
 |Show units|If enabled, attributes values will show units. By default units will be hidden for attribute values.|
 |Automatic refresh|By default, automatic refresh is enabled. Disabling it will require the user to call `smart_irrigation.calculate_daily_adjusted_run_time` manually.|
 |Automatic refresh time|Specifies when to do the automatic refresh if enabled.|
+|Initial update delay|Delay before first sensor update after reboot. This is useful if using sensors that do not have a status right after reboot.|
 
 
 ## Available services
