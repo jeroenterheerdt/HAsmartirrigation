@@ -1,14 +1,6 @@
 """Config flow for Smart Irrigation integration."""
-import logging
-import voluptuous as vol
-
-from homeassistant import config_entries, exceptions
-from homeassistant.core import callback
-
-_LOGGER = logging.getLogger(__name__)
-
 from .OWMClient import OWMClient
-from .helpers import map_source_to_sensor
+from .helpers import map_source_to_sensor, check_all, check_reference_et, check_time
 from .const import (
     CONF_API_KEY,
     CONF_REFERENCE_ET,
@@ -51,8 +43,20 @@ from .const import (
     CONF_SWITCH_SOURCE_WINDSPEED,
     CONF_SOURCE_SWITCHES,
     CONF_SENSORS,
+    CONF_INCREASE_PERCENT,
+    DEFAULT_INCREASE_PERCENT,
+    CONF_INITIAL_UPDATE_DELAY,
+    DEFAULT_INITIAL_UPDATE_DELAY,
     DOMAIN,
 )
+
+import logging
+import voluptuous as vol
+
+from homeassistant import config_entries, exceptions
+from homeassistant.core import callback
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
@@ -117,10 +121,9 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                 # - if none of the bools are true we can skip step2a and show step2b with all the textboxes to enter sensor names. validation needs to happen in this form as well.
                 # - in case of a mix we need to show step2a but also step2b but then with part of the textboxes
                 # show next step
-                if self.check_all(self.owm_source_settings, True):
+                if check_all(self.owm_source_settings, True):
                     return await self._show_step3(user_input)  # pure OWM
-                else:
-                    return await self._show_step2(user_input)  # mix or pure sensors
+                return await self._show_step2(user_input)  # mix or pure sensors
 
             except NotUnique:
                 _LOGGER.error("Instance name is not unique.")
@@ -156,25 +159,16 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             errors=self._errors,
         )
 
-    def check_all(self, settings, b):
-        """Returns true if all of the elements in the dictionary are equal to b (true/false)."""
-        retval = True
-        for a in settings:
-            if settings[a] != b:
-                retval = False
-                break
-        return retval
-
     async def _show_step2(self, user_input):
         """Show the configuration form step 2: Sensors."""
         # build the schema based on which values are false - they need text boxes.
         data_schema = vol.Schema({})
-        for a in self.owm_source_settings:
-            if not self.owm_source_settings[a]:
+        for aval in self.owm_source_settings:
+            if not self.owm_source_settings[aval]:
                 # we need textbox for this setting
-                b = map_source_to_sensor(a)
-                if not b is None:
-                    data_schema = data_schema.extend({vol.Required(b): str})
+                bval = map_source_to_sensor(aval)
+                if not bval is None:
+                    data_schema = data_schema.extend({vol.Required(bval): str})
         return self.async_show_form(
             step_id="step2", data_schema=data_schema, errors=self._errors,
         )
@@ -186,8 +180,8 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         if user_input is not None:
             try:
                 # test sensors to make sure they are valid! raise exceptions (below)
-                for s in user_input:
-                    entity = user_input[s]
+                for sensor in user_input:
+                    entity = user_input[sensor]
                     status = self.hass.states.get(entity)
                     if status is None:
                         raise SensorNotFound
@@ -195,11 +189,10 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                 # store the values
                 self._sensors = user_input
                 # show next step (step3 if not all values are false in the settings, otherwise skip step3 and show step4)
-                if self.check_all(self.owm_source_settings, False):
+                if check_all(self.owm_source_settings, False):
                     # all values were set to false, so we do not need to show the OWM api step
                     return await self._show_step4(user_input)
-                else:
-                    return await self._show_step3(user_input)
+                return await self._show_step3(user_input)
             except SensorNotFound:
                 self._errors["base"] = "sensornotfound"
         return await self._show_step2(user_input)
@@ -269,14 +262,13 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                 user_input[CONF_REFERENCE_ET_11],
                 user_input[CONF_REFERENCE_ET_12],
             ]
-            valid_et = self._check_reference_et(reference_et)
+            valid_et = check_reference_et(reference_et)
             if valid_et:
                 # store entered values
                 self._reference_et = reference_et
                 # show next step
                 return await self._show_step5(user_input)
-            else:
-                self._errors["base"] = "reference_evapotranspiration_problem"
+            self._errors["base"] = "reference_evapotranspiration_problem"
         return await self._show_step4(user_input)
 
     async def async_step_step5(self, user_input=None):
@@ -328,26 +320,10 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         except Exception:
             raise CannotConnect
 
-    async def _check_unique(self, n):
+    async def _check_unique(self, thename):
         """Test if the specified name is not already claimed."""
-        await self.async_set_unique_id(n)
+        await self.async_set_unique_id(thename)
         self._abort_if_unique_id_configured()
-
-    def _check_reference_et(self, reference_et):
-        """Check reference et values here."""
-        try:
-            if len(reference_et) != 12:
-                return False
-            else:
-                all_floats = True
-                for r in reference_et:
-                    if not isinstance(r, float):
-                        all_floats = False
-                        break
-                return all_floats
-        except Exception as ex:
-            _LOGGER.error("Supplied reference Evapotranspiration was not valid.")
-            return False
 
 
 class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
@@ -362,23 +338,6 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):  # pylint: disable=unused-argument
         """Manage the options."""
         return await self.async_step_user()
-
-    def _check_time(self, itime):
-        """Check time."""
-        timesplit = itime.split(":")
-        if len(timesplit) != 2:
-            return False
-        else:
-            try:
-                hours = int(timesplit[0])
-                minutes = int(timesplit[1])
-                if hours >= 0 and hours <= 23 and minutes >= 0 and minutes <= 59:
-                    return True
-                else:
-                    return False
-            except ValueError as ex:
-                _LOGGER.error("No valid time specified.")
-                return False
 
     async def _show_options_form(self, user_input):
         """Show the options form to edit info."""
@@ -410,6 +369,12 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                         default=self.options.get(CONF_LEAD_TIME, DEFAULT_LEAD_TIME),
                     ): int,
                     vol.Required(
+                        CONF_INCREASE_PERCENT,
+                        default=self.options.get(
+                            CONF_INCREASE_PERCENT, DEFAULT_INCREASE_PERCENT
+                        ),
+                    ): vol.Coerce(float),
+                    vol.Required(
                         CONF_MAXIMUM_DURATION,
                         default=self.options.get(
                             CONF_MAXIMUM_DURATION, DEFAULT_MAXIMUM_DURATION
@@ -437,6 +402,12 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_AUTO_REFRESH_TIME, DEFAULT_AUTO_REFRESH_TIME
                         ),
                     ): str,
+                    vol.Required(
+                        CONF_INITIAL_UPDATE_DELAY,
+                        default=self.options.get(
+                            CONF_INITIAL_UPDATE_DELAY, DEFAULT_INITIAL_UPDATE_DELAY
+                        ),
+                    ): int,
                 },
             ),
             errors=self._errors,
@@ -447,45 +418,53 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
         self._errors = {}
         if user_input is not None:
 
-            valid_time = self._check_time(user_input[CONF_AUTO_REFRESH_TIME])
+            valid_time = check_time(user_input[CONF_AUTO_REFRESH_TIME])
             if not valid_time:
                 self._errors["base"] = "auto_refresh_time_error"
                 return await self._show_options_form(user_input)
-            else:
-                # commented out for later right now this results in a NoneType object is not subscriptable in core/homeassistant/data_entry_flow.py (#214)
-                # store num_sprinklers, flow, area in data settings as well!
-                # data = {**self.config_entry.data}
-                # data[CONF_NUMBER_OF_SPRINKLERS] = float(
-                #    user_input[CONF_NUMBER_OF_SPRINKLERS]
-                # )
-                # data[CONF_FLOW] = float(user_input[CONF_FLOW])
-                # data[CONF_AREA] = float(user_input[CONF_AREA])
-                # _LOGGER.debug("data: {}".format(data))
-                # self.hass.config_entries.async_update_entry(
-                #    self.config_entry, data=data
-                # )
-                # settings = {}
-                # for x in self.config_entry.data:
-                #    settings[x] = self.config_entry.data[x]
+            if int(user_input[CONF_MAXIMUM_DURATION]) < -1:
+                self._errors["base"] = "maximum_duration_error"
+                return await self._show_options_form(user_input)
+            if int(user_input[CONF_INITIAL_UPDATE_DELAY]) < 0:
+                self._errors["base"] = "initial_update_delay_error"
+                return await self._show_options_form(user_input)
+            # commented out for later right now this results in a NoneType object is not subscriptable in core/homeassistant/data_entry_flow.py (#214)
+            # store num_sprinklers, flow, area in data settings as well!
+            # data = {**self.config_entry.data}
+            # data[CONF_NUMBER_OF_SPRINKLERS] = float(
+            #    user_input[CONF_NUMBER_OF_SPRINKLERS]
+            # )
+            # data[CONF_FLOW] = float(user_input[CONF_FLOW])
+            # data[CONF_AREA] = float(user_input[CONF_AREA])
+            # _LOGGER.debug("data: {}".format(data))
+            # self.hass.config_entries.async_update_entry(
+            #    self.config_entry, data=data
+            # )
+            # settings = {}
+            # for x in self.config_entry.data:
+            #    settings[x] = self.config_entry.data[x]
+            # settings[CONF_NUMBER_OF_SPRINKLERS] = user_input[
+            #    CONF_NUMBER_OF_SPRINKLERS
+            # ]
+            # settings[CONF_FLOW] = user_input[CONF_FLOW]
+            # settings[CONF_AREA] = user_input[CONF_AREA]
+            # _LOGGER.debug("settings: {}".format(settings))
+            # _LOGGER.debug("unique id: {}".format(self.config_entry.unique_id))
+            # LOGGER.warning("name: {}".format(settings[CONF_NAME]))
+            # await self._update_options(user_input)
+            # return self.hass.config_entries.async_update_entry(
+            #    self.config_entry,
+            #    # unique_id=self.config_entry.unique_id,
+            #    title=settings[CONF_NAME],
+            #    data=settings,
+            #    options=user_input,
+            # )
 
-                # settings[CONF_NUMBER_OF_SPRINKLERS] = user_input[
-                #    CONF_NUMBER_OF_SPRINKLERS
-                # ]
-                # settings[CONF_FLOW] = user_input[CONF_FLOW]
-                # settings[CONF_AREA] = user_input[CONF_AREA]
-                # _LOGGER.debug("settings: {}".format(settings))
-                # _LOGGER.debug("unique id: {}".format(self.config_entry.unique_id))
-                # LOGGER.warning("name: {}".format(settings[CONF_NAME]))
-                # await self._update_options(user_input)
-                # return self.hass.config_entries.async_update_entry(
-                #    self.config_entry,
-                #    # unique_id=self.config_entry.unique_id,
-                #    title=settings[CONF_NAME],
-                #    data=settings,
-                #    options=user_input,
-                # )
-
-                return await self._update_options(user_input)
+            # assuming people enter 50% or so
+            user_input[CONF_INCREASE_PERCENT] = (
+                user_input[CONF_INCREASE_PERCENT] / 100.0
+            )
+            return await self._update_options(user_input)
 
         return await self._show_options_form(user_input)
 

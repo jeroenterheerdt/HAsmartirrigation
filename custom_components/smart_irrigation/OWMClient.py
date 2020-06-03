@@ -1,3 +1,5 @@
+"""Client to talk to Open Weather Map API."""
+
 import requests
 import json
 import logging
@@ -8,7 +10,7 @@ _LOGGER = logging.getLogger(__name__)
 OWM_URL = "https://api.openweathermap.org/data/2.5/onecall?units=metric&lat={}&lon={}&appid={}"
 
 
-class OWMClient:
+class OWMClient:  # pylint: disable=invalid-name
     """Open Weather Map Client"""
 
     def __init__(self, api_key, latitude, longitude):
@@ -21,18 +23,19 @@ class OWMClient:
     def get_data(self):
         """Return data."""
         try:
-            r = requests.get(self.url)
-            d = json.loads(r.text)
-            if "cod" in d:
-                if d["cod"] != 200:
+            req = requests.get(self.url)
+            doc = json.loads(req.text)
+            if "cod" in doc:
+                if doc["cod"] != 200:
                     ex = IOError()
                     ex.strerror = "Cannot talk to OWM API, check API key."
                     raise ex
-                else:
-                    return d
-            else:
-                return d
-        except Exception as Ex:
-            _LOGGER.error("Failed to get OWM URL {}".format(r.text))
-            _LOGGER.error(Ex.strerror)
-            raise Ex
+                return doc
+            return doc
+        except Exception as ex:
+            _LOGGER.error(
+                "Failed to get OWM URL {}".format(
+                    req.text
+                )  # pylint: disable=logging-format-interpolation
+            )
+            raise ex

@@ -11,7 +11,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from homeassistant.helpers.event import async_track_time_change
+import homeassistant.util.dt as dt
+from homeassistant.helpers.event import (
+    async_track_time_change,
+    async_track_point_in_time,
+)
 
 from homeassistant.const import (
     CONF_UNIT_OF_MEASUREMENT,
@@ -70,6 +74,16 @@ from .const import (
     SERVICE_ENABLE_FORCE_MODE,
     SERVICE_DISABLE_FORCE_MODE,
     EVENT_FORCE_MODE_TOGGLED,
+    CONF_INCREASE_PERCENT,
+    DEFAULT_LEAD_TIME,
+    DEFAULT_MAXIMUM_DURATION,
+    DEFAULT_FORCE_MODE_DURATION,
+    DEFAULT_SHOW_UNITS,
+    DEFAULT_AUTO_REFRESH,
+    DEFAULT_AUTO_REFRESH_TIME,
+    DEFAULT_INCREASE_PERCENT,
+    CONF_INITIAL_UPDATE_DELAY,
+    DEFAULT_INITIAL_UPDATE_DELAY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -123,13 +137,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     name = entry.title
     name = name.replace(" ", "_")
 
-    # handle options: lead time, max duration, force_mode_duration, show units, auto refresh, auto refresh time
-    lead_time = entry.options.get(CONF_LEAD_TIME, 0)
-    maximum_duration = entry.options.get(CONF_MAXIMUM_DURATION, -1)
-    force_mode_duration = entry.options.get(CONF_FORCE_MODE_DURATION, 0)
-    show_units = entry.options.get(CONF_SHOW_UNITS, False)
-    auto_refresh = entry.options.get(CONF_AUTO_REFRESH, True)
-    auto_refresh_time = entry.options.get(CONF_AUTO_REFRESH_TIME, "23:00")
+    # handle options: lead time, increase_percent, max duration, force_mode_duration, show units, auto refresh, auto refresh time
+    lead_time = entry.options.get(CONF_LEAD_TIME, DEFAULT_LEAD_TIME)
+    increase_percent = entry.options.get(
+        CONF_INCREASE_PERCENT, DEFAULT_INCREASE_PERCENT
+    )
+    maximum_duration = entry.options.get(
+        CONF_MAXIMUM_DURATION, DEFAULT_MAXIMUM_DURATION
+    )
+    force_mode_duration = entry.options.get(
+        CONF_FORCE_MODE_DURATION, DEFAULT_FORCE_MODE_DURATION
+    )
+    show_units = entry.options.get(CONF_SHOW_UNITS, DEFAULT_SHOW_UNITS)
+    auto_refresh = entry.options.get(CONF_AUTO_REFRESH, DEFAULT_AUTO_REFRESH)
+    auto_refresh_time = entry.options.get(
+        CONF_AUTO_REFRESH_TIME, DEFAULT_AUTO_REFRESH_TIME
+    )
+    initial_update_delay = entry.options.get(
+        CONF_INITIAL_UPDATE_DELAY, DEFAULT_INITIAL_UPDATE_DELAY
+    )
 
     # set up coordinator
     coordinator = SmartIrrigationUpdateCoordinator(
@@ -155,6 +181,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         auto_refresh_time=auto_refresh_time,
         sources=sources,
         sensors=sensors,
+        increase_percent=increase_percent,
+        initial_update_delay=initial_update_delay,
         name=name,
     )
 
@@ -255,6 +283,8 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         auto_refresh_time,
         sources,
         sensors,
+        increase_percent,
+        initial_update_delay,
         name,
     ):
         """Initialize."""
@@ -277,6 +307,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.precipitation_rate = precipitation_rate
         self.base_schedule_index = base_schedule_index
         self.lead_time = lead_time
+        self.increase_percent = float(increase_percent)
         self.maximum_duration = maximum_duration
         self.force_mode_duration = force_mode_duration
         # initialize force mode as Off
@@ -284,6 +315,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.show_units = show_units
         self.auto_refresh = auto_refresh
         self.auto_refresh_time = auto_refresh_time
+        self.initial_update_delay = int(initial_update_delay)
         self.name = name
         self.sources = sources
         self.sensors = sensors
@@ -312,6 +344,21 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
                 hour=hour,
                 minute=minute,
                 second=0,
+            )
+        # initial_update_delay only when > 0
+        if self.initial_update_delay > 0:
+            # get current time
+            initial_update_time = dt.now() + datetime.timedelta(
+                seconds=self.initial_update_delay
+            )
+            _LOGGER.info(
+                "Initial update scheduled for {}".format(  # pylint: disable=logging-format-interpolation
+                    initial_update_time
+                )  # pylint: disable=logging-format-interpolation
+            )
+
+            async_track_point_in_time(
+                hass, self._async_initial_update, point_in_time=initial_update_time
             )
         self.entry_setup_completed = True
 
@@ -381,9 +428,9 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
             bucket_delta = 0
 
         _LOGGER.info(
-            "Updating bucket: {} with netto_precipitation: {}, which should be average of: {}".format(
+            "Updating bucket: {} with netto_precipitation: {}, which should be average of: {}".format(  # pylint: disable=logging-format-interpolation
                 self.bucket, bucket_delta, self.hourly_bucket_list
-            )
+            )  # pylint: disable=logging-format-interpolation
         )
         # empty the hourly bucket list
         self.hourly_bucket_list = []
@@ -400,11 +447,19 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         # no need to call the api if we have no api ;)
         if self.api:
             # data comes at least partly from owm
-            data = await self.hass.async_add_executor_job(self.api.get_data)
+            await self.hass.async_add_executor_job(self.api.get_data)
         self._update_last_of_day()
         _LOGGER.info("Bucket for today is: %s mm", self.bucket)
         # don't think this is necessary any more.
         # return data
+
+    async def _async_initial_update(self, *args):
+        """Start initial update."""
+        # update just once
+        _LOGGER.info(
+            "Initial update triggered - calling calculate hourly adjusted run time now."
+        )
+        await self.handle_calculate_hourly_adjusted_run_time(call=None)
 
     async def _async_update_data(self):
         """Update data via library."""
@@ -414,8 +469,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
                 # data comes at least partly from owm
                 data = await self.hass.async_add_executor_job(self.api.get_data)
                 return data
-            else:
-                # data comes purely from sensors
-                return None
+            # data comes purely from sensors
+            return None
         except Exception as exception:
             raise UpdateFailed(exception)

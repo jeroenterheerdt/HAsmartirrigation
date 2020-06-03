@@ -85,16 +85,20 @@
           "flow": "Flow per sprinkler in gpm or lpm",
           "area": "Area in sq ft or m2",
           "lead_time": "Lead time, time to add to adjusted run time (seconds).",
-          "maximum_duration": "Maximum duration, including any lead time (-1 means no maximum).",
+          "increase_percent": "Percentage to increase adjusted run time by.",
+          "maximum_duration": "Maximum duration, including any lead time (-1 means no maximum) (seconds).",
           "force_mode_duration": "Number of seconds to run irrigation when in force mode.",
           "show_units": "Show units in entity attributes.",
           "auto_refresh": "Enable or disable automatic refresh at time configured below.",
-          "auto_refresh_time": "Local time to schedule automatic refresh (if enabled)."
+          "auto_refresh_time": "Local time to schedule automatic refresh (if enabled).",
+          "initial_update_delay": "Delay before first sensor update after reboot (seconds)."
         }
       }
     },
     "error": {
-      "auto_refresh_time_error": "Invalid time specified for auto refresh time."
+      "auto_refresh_time_error": "Invalid time specified for auto refresh time.",
+      "maximum_duration_error": "Maximum duration should be >=-1.",
+      "initial_update_delay_error": "Initial update delay should be >=0."
     }
   }
 }
