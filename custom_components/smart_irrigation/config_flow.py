@@ -43,8 +43,8 @@ from .const import (
     CONF_SWITCH_SOURCE_WINDSPEED,
     CONF_SOURCE_SWITCHES,
     CONF_SENSORS,
-    CONF_INCREASE_PERCENT,
-    DEFAULT_INCREASE_PERCENT,
+    CONF_CHANGE_PERCENT,
+    DEFAULT_CHANGE_PERCENT,
     CONF_INITIAL_UPDATE_DELAY,
     DEFAULT_INITIAL_UPDATE_DELAY,
     DOMAIN,
@@ -369,9 +369,9 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                         default=self.options.get(CONF_LEAD_TIME, DEFAULT_LEAD_TIME),
                     ): int,
                     vol.Required(
-                        CONF_INCREASE_PERCENT,
+                        CONF_CHANGE_PERCENT,
                         default=self.options.get(
-                            CONF_INCREASE_PERCENT * 100, DEFAULT_INCREASE_PERCENT
+                            CONF_CHANGE_PERCENT * 100, DEFAULT_CHANGE_PERCENT
                         ),
                     ): vol.Coerce(float),
                     vol.Required(
@@ -461,8 +461,8 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             # )
 
             # assuming people enter 50% or so
-            user_input[CONF_INCREASE_PERCENT] = (
-                user_input[CONF_INCREASE_PERCENT] / 100.0
+            user_input[CONF_CHANGE_PERCENT] = (
+                user_input[CONF_CHANGE_PERCENT] / 100.0
             )
             return await self._update_options(user_input)
 

@@ -84,7 +84,7 @@
         "flow": "Flow per sprinkler in gpm or lpm",
         "area": "Area in sq ft or m2",
         "lead_time": "Lead time, time to add to adjusted run time (seconds).",
-        "increase_percent": "Percentage to increase adjusted run time by.",
+        "change_percent": "Percentage to change adjusted run time by (100 means no change).",
         "maximum_duration": "Maximum duration, including any lead time (-1 means no maximum) (seconds).",
         "force_mode_duration": "Number of seconds to run irrigation when in force mode.",
         "show_units": "Show units in entity attributes.",

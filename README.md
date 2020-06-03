@@ -150,15 +150,15 @@ Here is an example automation that run everyday at 6 AM local time. It checks if
 
 ### Step 4: configuring optional settings
 After setting up the component, you can use the options flow to configure the following:
-| Option | Description |
-| --- | --- |
-|Lead time|Time in seconds to add to any irrigation. Very useful if your system needs to handle another task first, such as building up pressure.|
-|Increase percentage|Percentage to increase adjusted run time by. If not 0 this percentage will be added to daily adjusted run time.|
-|Maximum duration|maximum duration in seconds for any irrigation, including any `lead_time`. -1 means no maximum.|
-|Show units|If enabled, attributes values will show units. By default units will be hidden for attribute values.|
-|Automatic refresh|By default, automatic refresh is enabled. Disabling it will require the user to call `smart_irrigation.calculate_daily_adjusted_run_time` manually.|
-|Automatic refresh time|Specifies when to do the automatic refresh if enabled.|
-|Initial update delay|Delay before first sensor update after reboot. This is useful if using sensors that do not have a status right after reboot.|
+| Option | Description | Default |
+| --- | --- | --- |
+|Lead time|Time in seconds to add to any irrigation. Very useful if your system needs to handle another task first, such as building up pressure.| 0|
+|Change percentage|Percentage to change adjusted run time by. For example, you want to run 80% of the calculated adjusted run time, enter 80 here. Or, if you want to run 150% of the calculated adjusted run time, enter 150. |100|
+|Maximum duration| Maximum duration in seconds for any irrigation, including any `lead_time`. -1 means no maximum.|-1|
+|Show units|If enabled, attributes values will show units. By default units will be hidden for attribute values.|False|
+|Automatic refresh|By default, automatic refresh is enabled. Disabling it will require the user to call `smart_irrigation.calculate_daily_adjusted_run_time` manually.|True|
+|Automatic refresh time|Specifies when to do the automatic refresh if enabled.|23:00|
+|Initial update delay|Delay before first sensor update after reboot. This is useful if using sensors that do not have a status right after reboot.|300|
 
 
 ## Available services

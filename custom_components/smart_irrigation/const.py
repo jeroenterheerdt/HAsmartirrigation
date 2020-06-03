@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.30"
+VERSION = "0.0.31"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -56,7 +56,7 @@ CONF_CONFIG = "config"
 CONF_SOURCE_SWITCHES = "sources"
 CONF_SENSORS = "sensors"
 CONF_FORCE_MODE_ENABLED = "force_mode_enabled"
-CONF_INCREASE_PERCENT = "increase_percent"
+CONF_CHANGE_PERCENT = "change_percent"
 CONF_INITIAL_UPDATE_DELAY = "initial_update_delay"
 
 # Settings switches (True = OWM, False is own sensors)
@@ -140,7 +140,7 @@ DEFAULT_FORCE_MODE_DURATION = 0  # seconds
 DEFAULT_SHOW_UNITS = False  # bool
 DEFAULT_AUTO_REFRESH = True  # bool
 DEFAULT_AUTO_REFRESH_TIME = "23:00"  # time
-DEFAULT_INCREASE_PERCENT = 0  #%
+DEFAULT_CHANGE_PERCENT = 100  #%
 DEFAULT_INITIAL_UPDATE_DELAY = 300  # seconds, 5 minutes
 
 STARTUP_MESSAGE = f"""

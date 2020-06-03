@@ -66,7 +66,7 @@ from .const import (
     PSI_TO_HPA_FACTOR,
     CONF_FORCE_MODE_ENABLED,
     EVENT_FORCE_MODE_TOGGLED,
-    CONF_INCREASE_PERCENT,
+    CONF_CHANGE_PERCENT,
     CONF_INITIAL_UPDATE_DELAY,
 )
 from .entity import SmartIrrigationEntity
@@ -300,8 +300,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             CONF_LEAD_TIME: show_seconds(
                 self.coordinator.lead_time, self.coordinator.show_units,
             ),
-            CONF_INCREASE_PERCENT: show_percentage(
-                self.coordinator.increase_percent, self.coordinator.show_units,
+            CONF_CHANGE_PERCENT: show_percentage(
+                self.coordinator.change_percent, self.coordinator.show_units,
             ),
             CONF_MAXIMUM_DURATION: show_seconds(
                 self.coordinator.maximum_duration, self.coordinator.show_units
@@ -538,7 +538,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 ),
                 CONF_AUTO_REFRESH: self.coordinator.auto_refresh,
                 CONF_AUTO_REFRESH_TIME: self.coordinator.auto_refresh_time,
-                CONF_INITIAL_UPDATE_DELAY: show_percentage(
+                CONF_INITIAL_UPDATE_DELAY: show_seconds(
                     self.coordinator.initial_update_delay, self.coordinator.show_units
                 ),
             }
@@ -665,16 +665,15 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                         water_budget * self.coordinator.base_schedule_index
                     )
                 elif thetype == TYPE_ADJUSTED_RUN_TIME:
-                    # make adjustments just for daily: lead_time, increase percent and maximum_duration
+                    # make adjustments just for daily: lead_time, change percent and maximum_duration
                     adjusted_run_time = (
                         round(water_budget * self.coordinator.base_schedule_index)
                         + self.coordinator.lead_time
                     )
-                    # increase_percent
-                    if self.coordinator.increase_percent != 0:
-                        adjusted_run_time = adjusted_run_time * float(1.0 +
-                            self.coordinator.increase_percent
-                        )
+                    # change_percent. default == 1, so this will have no effect.
+                    adjusted_run_time = float(
+                        adjusted_run_time * self.coordinator.change_percent
+                    )
                     # adjusted run time is capped at maximum duration (if not -1)
                     if (
                         self.coordinator.maximum_duration != -1

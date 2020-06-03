@@ -74,14 +74,14 @@ from .const import (
     SERVICE_ENABLE_FORCE_MODE,
     SERVICE_DISABLE_FORCE_MODE,
     EVENT_FORCE_MODE_TOGGLED,
-    CONF_INCREASE_PERCENT,
+    CONF_CHANGE_PERCENT,
     DEFAULT_LEAD_TIME,
     DEFAULT_MAXIMUM_DURATION,
     DEFAULT_FORCE_MODE_DURATION,
     DEFAULT_SHOW_UNITS,
     DEFAULT_AUTO_REFRESH,
     DEFAULT_AUTO_REFRESH_TIME,
-    DEFAULT_INCREASE_PERCENT,
+    DEFAULT_CHANGE_PERCENT,
     CONF_INITIAL_UPDATE_DELAY,
     DEFAULT_INITIAL_UPDATE_DELAY,
 )
@@ -137,11 +137,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     name = entry.title
     name = name.replace(" ", "_")
 
-    # handle options: lead time, increase_percent, max duration, force_mode_duration, show units, auto refresh, auto refresh time
+    # handle options: lead time, change_percent, max duration, force_mode_duration, show units, auto refresh, auto refresh time
     lead_time = entry.options.get(CONF_LEAD_TIME, DEFAULT_LEAD_TIME)
-    increase_percent = entry.options.get(
-        CONF_INCREASE_PERCENT, DEFAULT_INCREASE_PERCENT
-    )
+    change_percent = entry.options.get(CONF_CHANGE_PERCENT, DEFAULT_CHANGE_PERCENT)
     maximum_duration = entry.options.get(
         CONF_MAXIMUM_DURATION, DEFAULT_MAXIMUM_DURATION
     )
@@ -181,7 +179,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         auto_refresh_time=auto_refresh_time,
         sources=sources,
         sensors=sensors,
-        increase_percent=increase_percent,
+        change_percent=change_percent,
         initial_update_delay=initial_update_delay,
         name=name,
     )
@@ -283,7 +281,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         auto_refresh_time,
         sources,
         sensors,
-        increase_percent,
+        change_percent,
         initial_update_delay,
         name,
     ):
@@ -307,7 +305,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.precipitation_rate = precipitation_rate
         self.base_schedule_index = base_schedule_index
         self.lead_time = lead_time
-        self.increase_percent = float(increase_percent)
+        self.change_percent = float(change_percent)
         self.maximum_duration = maximum_duration
         self.force_mode_duration = force_mode_duration
         # initialize force mode as Off
