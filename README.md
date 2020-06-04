@@ -160,7 +160,8 @@ After setting up the component, you can use the options flow to configure the fo
 |Automatic refresh time|Specifies when to do the automatic refresh if enabled.|23:00|
 |Initial update delay|Delay before first sensor update after reboot. This is useful if using sensors that do not have a status right after reboot.|300|
 
-
+## Example behavior in a week
+This [Wiki page[(https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week) provides insight into how this component should behave in certain weather conditions. With this you should be able to do a sanity check against your configuration and make sure everything is working correctly.
 ## Available services
 The component provides the following services:
 | Service | Description |
