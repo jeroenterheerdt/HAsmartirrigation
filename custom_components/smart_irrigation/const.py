@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.31"
+VERSION = "0.0.32"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -140,8 +140,9 @@ DEFAULT_FORCE_MODE_DURATION = 0  # seconds
 DEFAULT_SHOW_UNITS = False  # bool
 DEFAULT_AUTO_REFRESH = True  # bool
 DEFAULT_AUTO_REFRESH_TIME = "23:00"  # time
-DEFAULT_CHANGE_PERCENT = 100  #%
+DEFAULT_CHANGE_PERCENT = 1  #% so this really represents 100%
 DEFAULT_INITIAL_UPDATE_DELAY = 300  # seconds, 5 minutes
+DEFAULT_REFERENCE_ET = 0.0
 
 STARTUP_MESSAGE = f"""
 -------------------------------------------------------------------

@@ -6,7 +6,7 @@
       "error": {
           "auth": "Open Weather API key incorrect",
           "name": "Specify an unique name for this instance.",
-          "reference_evapotranspiration_problem": "Please check your reference evapotranspiration values - they should be decimal",
+          "reference_evapotranspiration_problem": "Please check your reference evapotranspiration values - they should be decimal and at least one should be non-zero.",
           "sensornotfound": "One or more of the sensors specified do not exist"
       },
       "title": "Smart Irrigation",

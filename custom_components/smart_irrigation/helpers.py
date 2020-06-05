@@ -200,6 +200,9 @@ def check_reference_et(reference_et):
             if not isinstance(ref, float):
                 all_floats = False
                 break
+        # test that max > 0
+        if all_floats and max(reference_et) == 0:
+            return False
         return all_floats
     except Exception:  # pylint: disable=broad-except
         return False

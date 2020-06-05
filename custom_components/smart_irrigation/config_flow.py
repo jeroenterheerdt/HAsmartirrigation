@@ -48,6 +48,7 @@ from .const import (
     CONF_INITIAL_UPDATE_DELAY,
     DEFAULT_INITIAL_UPDATE_DELAY,
     DOMAIN,
+    DEFAULT_REFERENCE_ET,
 )
 
 import logging
@@ -226,18 +227,42 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             step_id="step4",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_REFERENCE_ET_1): vol.Coerce(float),
-                    vol.Required(CONF_REFERENCE_ET_2): vol.Coerce(float),
-                    vol.Required(CONF_REFERENCE_ET_3): vol.Coerce(float),
-                    vol.Required(CONF_REFERENCE_ET_4): vol.Coerce(float),
-                    vol.Required(CONF_REFERENCE_ET_5): vol.Coerce(float),
-                    vol.Required(CONF_REFERENCE_ET_6): vol.Coerce(float),
-                    vol.Required(CONF_REFERENCE_ET_7): vol.Coerce(float),
-                    vol.Required(CONF_REFERENCE_ET_8): vol.Coerce(float),
-                    vol.Required(CONF_REFERENCE_ET_9): vol.Coerce(float),
-                    vol.Required(CONF_REFERENCE_ET_10): vol.Coerce(float),
-                    vol.Required(CONF_REFERENCE_ET_11): vol.Coerce(float),
-                    vol.Required(CONF_REFERENCE_ET_12): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_1, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_2, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_3, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_4, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_5, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_6, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_7, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_8, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_9, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_10, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_11, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
+                    vol.Required(
+                        CONF_REFERENCE_ET_12, default=DEFAULT_REFERENCE_ET
+                    ): vol.Coerce(float),
                 }
             ),
             errors=self._errors,
@@ -371,7 +396,7 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(
                         CONF_CHANGE_PERCENT,
                         default=self.options.get(
-                            CONF_CHANGE_PERCENT * 100, DEFAULT_CHANGE_PERCENT
+                            CONF_CHANGE_PERCENT * 100.0, DEFAULT_CHANGE_PERCENT * 100.0
                         ),
                     ): vol.Coerce(float),
                     vol.Required(
@@ -461,9 +486,7 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             # )
 
             # assuming people enter 50% or so
-            user_input[CONF_CHANGE_PERCENT] = (
-                user_input[CONF_CHANGE_PERCENT] / 100.0
-            )
+            user_input[CONF_CHANGE_PERCENT] = user_input[CONF_CHANGE_PERCENT] / 100.0
             return await self._update_options(user_input)
 
         return await self._show_options_form(user_input)
