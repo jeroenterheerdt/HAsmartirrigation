@@ -680,16 +680,18 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                         and adjusted_run_time > self.coordinator.maximum_duration
                     ):
                         adjusted_run_time = self.coordinator.maximum_duration
-        # _LOGGER.info(
-        #    "Calculated water_budget = {} and adjusted_run_time: {} for type: {}. Bucket value was: {}, and force mode is: {}, force mode duration is: {}, lead_time is: {}, maximum_duration: {}".format(
-        #        water_budget,
-        #        adjusted_run_time,
-        #        thetype,
-        #        bucket_val,
-        #        self.coordinator.force_mode,
-        #        self.coordinator.force_mode_duration,
-        #        self.coordinator.lead_time,
-        #        self.coordinator.maximum_duration,
-        #    )
-        # )
+        _LOGGER.info(
+            "Calculated water_budget = {} and adjusted_run_time: {} for type: {}. Bucket value was: {}, and base schedule index is: {}, force mode is: {}, force mode duration is: {}, lead_time is: {}, maximum_duration: {}, change percentage: {}".format(
+                water_budget,
+                adjusted_run_time,
+                thetype,
+                bucket_val,
+                self.coordinator.base_schedule_index,
+                self.coordinator.force_mode,
+                self.coordinator.force_mode_duration,
+                self.coordinator.lead_time,
+                self.coordinator.maximum_duration,
+                self.coordinator.change_percent,
+            )
+        )
         return {"wb": water_budget, "art": adjusted_run_time}
