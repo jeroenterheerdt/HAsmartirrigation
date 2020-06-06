@@ -160,7 +160,7 @@ After setting up the component, you can use the options flow to configure the fo
 |Show units|If enabled, attributes values will show units. By default units will be hidden for attribute values.|False|
 |Automatic refresh|By default, automatic refresh is enabled. Disabling it will require the user to call `smart_irrigation.calculate_daily_adjusted_run_time` manually.|True|
 |Automatic refresh time|Specifies when to do the automatic refresh if enabled.|23:00|
-|~~Initial update delay~~|~~Delay before first sensor update after reboot. This is useful if using sensors that do not have a status right after reboot.~~|~~300~~|
+|Initial update delay|Delay before first sensor update after reboot. This is useful if using sensors that do not have a status right after reboot.|30|
 
 ## Example behavior in a week
 This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week) provides insight into how this component should behave in certain weather conditions. With this you should be able to do a sanity check against your configuration and make sure everything is working correctly.
