@@ -21,7 +21,7 @@ from .helpers import (
     estimate_fao56_daily,
 )
 
-from .const import (
+from .const import (  # pylint: disable=unused-import
     DOMAIN,
     ICON,
     TYPE_BASE_SCHEDULE_INDEX,
@@ -300,9 +300,10 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             CONF_LEAD_TIME: show_seconds(
                 self.coordinator.lead_time, self.coordinator.show_units,
             ),
-            CONF_CHANGE_PERCENT: show_percentage(
-                self.coordinator.change_percent, self.coordinator.show_units,
-            ),
+            # DISABLED : CHANGE_PERCENT has been disabled in v0.0.40 onwards since it introduced bugs.
+            # CONF_CHANGE_PERCENT: show_percentage(
+            #     self.coordinator.change_percent, self.coordinator.show_units,
+            # ),
             CONF_MAXIMUM_DURATION: show_seconds(
                 self.coordinator.maximum_duration, self.coordinator.show_units
             ),
@@ -670,10 +671,11 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                         round(water_budget * self.coordinator.base_schedule_index)
                         + self.coordinator.lead_time
                     )
-                    # change_percent. default == 1, so this will have no effect.
-                    adjusted_run_time = float(
-                        adjusted_run_time * self.coordinator.change_percent
-                    )
+                    # DISABLED : CHANGE_PERCENT has been disabled in v0.0.40 onwards since it introduced bugs.
+                    # # change_percent. default == 1, so this will have no effect.
+                    # adjusted_run_time = float(
+                    #     adjusted_run_time * self.coordinator.change_percent
+                    # )
                     # adjusted run time is capped at maximum duration (if not -1)
                     if (
                         self.coordinator.maximum_duration != -1
@@ -681,7 +683,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                     ):
                         adjusted_run_time = self.coordinator.maximum_duration
         _LOGGER.info(
-            "Calculated water_budget = {} and adjusted_run_time: {} for type: {}. Bucket value was: {}, and base schedule index is: {}, force mode is: {}, force mode duration is: {}, lead_time is: {}, maximum_duration: {}, change percentage: {}".format(
+            "Calculated water_budget = {} and adjusted_run_time: {} for type: {}. Bucket value was: {}, and base schedule index is: {}, force mode is: {}, force mode duration is: {}, lead_time is: {}, maximum_duration: {}, change percentage: {}".format(  # pylint: disable=logging-format-interpolation
                 water_budget,
                 adjusted_run_time,
                 thetype,

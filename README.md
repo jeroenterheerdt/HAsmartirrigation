@@ -14,6 +14,8 @@
 # Smart Irrigation
 ![](logo.png?raw=true)
 
+> **Versions since v0.0.30 introduced a number of bugs. As a result we have reverted back to v0.0.29 and implemented bug fixes only from there. Versions from v0.0.40 onwards should work correctly. Change percentage feature has been removed while we work on bringing it back later. You will see references to it in the code as it has been temporarily removed from the options screen and any calculations. We apologize for any inconvenience caused.**
+
 Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
 This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation / evapotranspiration. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required. By adding multiple instances of this component multiple zones can be supported as each zone will have its own sprinkler and flow configuration. 
 
@@ -153,12 +155,12 @@ After setting up the component, you can use the options flow to configure the fo
 | Option | Description | Default |
 | --- | --- | --- |
 |Lead time|Time in seconds to add to any irrigation. Very useful if your system needs to handle another task first, such as building up pressure.| 0|
-|Change percentage|Percentage to change adjusted run time by. For example, you want to run 80% of the calculated adjusted run time, enter 80 here. Or, if you want to run 150% of the calculated adjusted run time, enter 150. |100|
+|~~Change percentage~~|~~Percentage to change adjusted run time by. For example, you want to run 80% of the calculated adjusted run time, enter 80 here. Or, if you want to run 150% of the calculated adjusted run time, enter 150.~~|~~100~~|
 |Maximum duration| Maximum duration in seconds for any irrigation, including any `lead_time`. -1 means no maximum.|-1|
 |Show units|If enabled, attributes values will show units. By default units will be hidden for attribute values.|False|
 |Automatic refresh|By default, automatic refresh is enabled. Disabling it will require the user to call `smart_irrigation.calculate_daily_adjusted_run_time` manually.|True|
 |Automatic refresh time|Specifies when to do the automatic refresh if enabled.|23:00|
-|Initial update delay|Delay before first sensor update after reboot. This is useful if using sensors that do not have a status right after reboot.|300|
+|~~Initial update delay~~|~~Delay before first sensor update after reboot. This is useful if using sensors that do not have a status right after reboot.~~|~~300~~|
 
 ## Example behavior in a week
 This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week) provides insight into how this component should behave in certain weather conditions. With this you should be able to do a sanity check against your configuration and make sure everything is working correctly.

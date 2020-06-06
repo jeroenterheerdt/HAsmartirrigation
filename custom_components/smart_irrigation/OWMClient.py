@@ -1,4 +1,4 @@
-"""Client to talk to Open Weather Map API."""
+"""Client to talk to Open Weather Map API."""  # pylint: disable=invalid-name
 
 import requests
 import json
@@ -34,8 +34,8 @@ class OWMClient:  # pylint: disable=invalid-name
             return doc
         except Exception as ex:
             _LOGGER.error(
-                "Failed to get OWM URL {}".format(
+                "Failed to get OWM URL {}".format(  # pylint: disable=logging-format-interpolation
                     req.text
-                )  # pylint: disable=logging-format-interpolation
+                )
             )
             raise ex

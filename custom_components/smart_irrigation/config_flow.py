@@ -1,7 +1,7 @@
 """Config flow for Smart Irrigation integration."""
 from .OWMClient import OWMClient
 from .helpers import map_source_to_sensor, check_all, check_reference_et, check_time
-from .const import (
+from .const import (  # pylint: disable=unused-import
     CONF_API_KEY,
     CONF_REFERENCE_ET,
     CONF_REFERENCE_ET_1,
@@ -393,15 +393,16 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_LEAD_TIME,
                         default=self.options.get(CONF_LEAD_TIME, DEFAULT_LEAD_TIME),
                     ): int,
-                    vol.Required(
-                        CONF_CHANGE_PERCENT,
-                        default=float(
-                            self.options.get(
-                                CONF_CHANGE_PERCENT, DEFAULT_CHANGE_PERCENT
-                            )
-                            * 100.0
-                        ),
-                    ): vol.Coerce(float),
+                    # DISABLED : CHANGE_PERCENT has been disabled in v0.0.40 onwards since it introduced bugs.
+                    # vol.Required(
+                    #     CONF_CHANGE_PERCENT,
+                    #     default=float(
+                    #         self.options.get(
+                    #             CONF_CHANGE_PERCENT, DEFAULT_CHANGE_PERCENT
+                    #         )
+                    #         * 100.0
+                    #     ),
+                    # ): vol.Coerce(float),
                     vol.Required(
                         CONF_MAXIMUM_DURATION,
                         default=self.options.get(
@@ -456,6 +457,7 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             if int(user_input[CONF_INITIAL_UPDATE_DELAY]) < 0:
                 self._errors["base"] = "initial_update_delay_error"
                 return await self._show_options_form(user_input)
+
             # commented out for later right now this results in a NoneType object is not subscriptable in core/homeassistant/data_entry_flow.py (#214)
             # store num_sprinklers, flow, area in data settings as well!
             # data = {**self.config_entry.data}
@@ -489,7 +491,8 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             # )
 
             # assuming people enter 50% or so
-            user_input[CONF_CHANGE_PERCENT] = user_input[CONF_CHANGE_PERCENT] / 100.0
+            # DISABLED : CHANGE_PERCENT has been disabled in v0.0.40 onwards since it introduced bugs.
+            # user_input[CONF_CHANGE_PERCENT] = user_input[CONF_CHANGE_PERCENT] / 100.0
             return await self._update_options(user_input)
 
         return await self._show_options_form(user_input)
