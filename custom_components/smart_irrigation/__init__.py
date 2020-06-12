@@ -116,10 +116,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     sensors = entry.data.get(CONF_SENSORS)
 
     # convert values to internal metric representation if required.
-    system_of_measurement = SETTING_METRIC
     # depending on this we need to convert to metric internally or not
-    if hass.config.as_dict().get("unit_system").get("length") == "mi":
-        system_of_measurement = SETTING_US
+
+    system_of_measurement = (
+        SETTING_METRIC if hass.config.units.is_metric else SETTING_US
+    )
     # unit conversion
     if system_of_measurement == SETTING_US:
         flow = flow / LITER_TO_GALLON_FACTOR
