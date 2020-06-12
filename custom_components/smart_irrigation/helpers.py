@@ -225,6 +225,14 @@ def check_time(itime):
         return False
 
 
+def convert_to_float(float_value):
+    """Tries to convert to float, otherwise returns 0."""
+    try:
+        return float(float_value)
+    except ValueError:
+        return 0
+
+
 def estimate_fao56_daily(  # pylint: disable=invalid-name
     day_of_year,
     temp_c,
