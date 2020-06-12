@@ -28,7 +28,7 @@
           "sensor_max_temperature": "Sensor that measures maximum temperature (C, F)",
           "sensor_min_temperature": "Sensor that measures minimum temperature (C, F)",
           "sensor_pressure": "Sensor that measures pressure (mbar, hPa, psi) ",
-          "sensor_windspeed": "Sensor that measures windspeed (km/h, mile/h)"
+          "sensor_windspeed": "Sensor that measures windspeed (km/h, mph)"
         }
       },
       "step3": {
