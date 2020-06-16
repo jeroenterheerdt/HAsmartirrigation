@@ -105,7 +105,11 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             self.evapotranspiration = 0.0
             self.water_budget = 0.0
             self.bucket_delta = 0
+            _LOGGER.info(
+                "sensor __init__ for current_adjusted_run_time. bucket_delta=0"
+            )
         if self.type == TYPE_ADJUSTED_RUN_TIME:
+            _LOGGER.info("sensor __init__ for adjusted_run_time. bucket=0")
             self.bucket = 0
 
     @asyncio.coroutine
@@ -146,11 +150,11 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             state is not None and state.state != "unavailable"
         ):
             self._state = float(state.state)
-            # _LOGGER.info(
-            #    "async_added_t_hass type: {} state: {}, attributes: {}".format(
-            #        self.type, state.state, state.attributes
-            #    )
-            # )
+            _LOGGER.info(
+                "async_added_t_hass type: {} state: {}, attributes: {}".format(
+                    self.type, state.state, state.attributes
+                )
+            )
             confs = (
                 CONF_EVAPOTRANSPIRATION,
                 CONF_NETTO_PRECIPITATION,
@@ -201,6 +205,11 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                     self.bucket_delta = numeric_part / MM_TO_INCH_FACTOR
                                 else:
                                     self.bucket_delta = numeric_part
+                                _LOGGER.info(
+                                    "async_added_to_hass restoring state, settting netto precipitation / bucket_delta to: {}".format(
+                                        self.bucket_delta
+                                    )
+                                )
                             elif attr == CONF_PRECIPITATION:
                                 if (
                                     self.coordinator.system_of_measurement
@@ -236,6 +245,11 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                 else:
                                     self.bucket = numeric_part
                                 self.coordinator.bucket = self.bucket
+                                _LOGGER.info(
+                                    "async_added_to_hass restoring state, settting bucket to: {}".format(
+                                        self.bucket
+                                    )
+                                )
                         elif attr in (
                             CONF_WATER_BUDGET,
                             CONF_ADJUSTED_RUN_TIME_MINUTES,
@@ -252,8 +266,14 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def update_adjusted_run_time_from_event(self):
         """Update the adjusted run time. SHould only be called from _bucket_update and _force_mode_toggled event handlers."""
+        _LOGGER.info("updated_adjusted_run_time_from_event called.")
         result = self.calculate_water_budget_and_adjusted_run_time(
             self.bucket, self.type
+        )
+        _LOGGER.info(
+            "updated_adjusted_run_time_from_event: got result: {}. Setting attributes of daily adjusted run time (including result['wb']) and state == result['art']".format(
+                result
+            )
         )
         art_entity_id = self.coordinator.entities[TYPE_ADJUSTED_RUN_TIME]
         attr = self.get_attributes_for_daily_adjusted_run_time(
@@ -269,6 +289,11 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         # update the sensor status.
         event_dict = event.as_dict()
         self.bucket = float(event_dict["data"][CONF_BUCKET])
+        _LOGGER.info(
+            "_bucket_updated, received bucket value {} from event_dict: {}".format(
+                self.bucket, event_dict
+            )
+        )
         self.update_adjusted_run_time_from_event()
 
     @callback
@@ -279,6 +304,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
     @callback
     def _hourly_data_updated(self, event: Event):
         """Receive the hourly data updated event."""
+        _LOGGER.info(
+            "_hourly_data_updated, calling update_state for type {}".format(self.type)
+        )
         self._state = self.update_state()
         self.hass.add_job(self.async_update_ha_state)
 
@@ -317,6 +345,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def update_state(self):
         """Update the state."""
+        _LOGGER.info("update_state for type: {}".format(self.type))
         if self.type == TYPE_BASE_SCHEDULE_INDEX:
             return round(self.coordinator.base_schedule_index, 1)
         # hourly adjusted run time
@@ -337,14 +366,18 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                         sensor_name = self.coordinator.sensors[sensor_setting]
 
                         sensor_state = self.hass.states.get(sensor_name)
-                        _LOGGER.debug(
-                            "source: {}, sensor_setting: {}, sensor_name: {}, sensor_state: {}".format(  # pylint: disable=logging-format-interpolation
-                                source, sensor_setting, sensor_name, sensor_state
+                        _LOGGER.info(
+                            "update_state for type: {}, source: {}, sensor_setting: {}, sensor_name: {}, sensor_state: {}".format(  # pylint: disable=logging-format-interpolation
+                                self.type,
+                                source,
+                                sensor_setting,
+                                sensor_name,
+                                sensor_state,
                             )
                         )
                         if sensor_state is not None:
-                            _LOGGER.debug(
-                                "state value: {}".format(  # pylint: disable=logging-format-interpolation
+                            _LOGGER.info(
+                                "update_state state value: {}".format(  # pylint: disable=logging-format-interpolation
                                     sensor_state.state
                                 )
                             )
@@ -479,15 +512,21 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             )
             self.water_budget = result["wb"]
             self.coordinator.hourly_bucket_list.append(self.bucket_delta)
-            _LOGGER.debug(
-                "just updated hourly_bucket_list: {}".format(  # pylint: disable=logging-format-interpolation
+            _LOGGER.info(
+                "update_state: just updated hourly_bucket_list: {}".format(  # pylint: disable=logging-format-interpolation
                     self.coordinator.hourly_bucket_list
                 )
             )
             return result["art"]
         # daily adjusted run time
+
         result = self.calculate_water_budget_and_adjusted_run_time(
             self.coordinator.bucket, self.type
+        )
+        _LOGGER.info(
+            "calculating wb and art for daily adjusted run time, result: {}".format(
+                result
+            )
         )
         self.water_budget = result["wb"]
         return result["art"]
@@ -688,7 +727,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                     ):
                         adjusted_run_time = self.coordinator.maximum_duration
         _LOGGER.info(
-            "Calculated water_budget = {} and adjusted_run_time: {} for type: {}. Bucket value was: {}, and base schedule index is: {}, force mode is: {}, force mode duration is: {}, lead_time is: {}, maximum_duration: {}, change percentage: {}".format(  # pylint: disable=logging-format-interpolation
+            "Calculated water_budget = {} and adjusted_run_time: {} for type: {}. Bucket value was: {}, and base schedule index is: {}, force mode is: {}, force mode duration is: {}, lead_time is: {}, maximum_duration: {}, change percentage: {}, type: {}".format(  # pylint: disable=logging-format-interpolation
                 water_budget,
                 adjusted_run_time,
                 thetype,
@@ -699,6 +738,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 self.coordinator.lead_time,
                 self.coordinator.maximum_duration,
                 self.coordinator.change_percent,
+                self.type,
             )
         )
         return {"wb": water_budget, "art": adjusted_run_time}

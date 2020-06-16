@@ -84,6 +84,7 @@ from .const import (
     DEFAULT_CHANGE_PERCENT,
     CONF_INITIAL_UPDATE_DELAY,
     DEFAULT_INITIAL_UPDATE_DELAY,
+    CONF_SWITCH_SOURCE_PRECIPITATION,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -363,7 +364,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
 
     def register_entity(self, thetype, entity):
         """Register an entity."""
-        # _LOGGER.debug("registering: type: {}, entity: {}".format(thetype, entity))
+        _LOGGER.info("registering: type: {}, entity: {}".format(thetype, entity))
         self.entities[thetype] = entity
 
     def handle_reset_bucket(self, call):
@@ -414,27 +415,39 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         # bucket_delta = float(cart.attributes[CONF_NETTO_PRECIPITATION].split(" ")[0])
         # if self.system_of_measurement != SETTING_METRIC:
         #    bucket_delta = bucket_delta / MM_TO_INCH_FACTOR
+        _LOGGER.info("ENTERING _update_last_of_day. bucket is {}".format(self.bucket))
 
-        # if bucket has a unit, parse it out.
+        # if bucket has a unit, parse it out
         if isinstance(self.bucket, str) and " " in self.bucket:
             self.bucket = float(self.bucket.split(" "[0]))
+            _LOGGER.info("parsed out unit, bucket is {}".format(self.bucket))
         if len(self.hourly_bucket_list) > 0:
-            bucket_delta = (sum(self.hourly_bucket_list) * 1.0) / len(
-                self.hourly_bucket_list
-            )
 
+            _LOGGER.info("using OWM for precipitation: {}".format(self.sources[CONF_SWITCH_SOURCE_PRECIPITATION]))
+            # are we using OWM for precipitation?
+            if self.sources[CONF_SWITCH_SOURCE_PRECIPITATION]:
+                # this is applicable when using OWM (average)
+                bucket_delta = (sum(self.hourly_bucket_list) * 1.0) / len(
+                    self.hourly_bucket_list
+                )
+                _LOGGER.info("bucket_delta set to {}, which is average of hourly_bucket_list: {}".format(bucket_delta,self.hourly_bucket_list))
+            else:
+                # when using a sensor just take the most recent (last item in the list) because we assume it is a daily actual value (cumulative)
+                bucket_delta = self.hourly_bucket_list[len(self.hourly_bucket_list) - 1]
+                _LOGGER.info("bucket_delta set to {}, which is the last item in the hourly bucket list: {}".format(bucket_delta, self.hourly_bucket_list))
         else:
             bucket_delta = 0
+            _LOGGER.info("setting bucket_delta to 0 because there is no hourly_bucket_list.")
 
         _LOGGER.info(
-            "Updating bucket: {} with netto_precipitation: {}, which should be average of: {}".format(  # pylint: disable=logging-format-interpolation
+            "Updating bucket: {} with netto_precipitation: {}, which should be average or last value of: {}".format(  # pylint: disable=logging-format-interpolation
                 self.bucket, bucket_delta, self.hourly_bucket_list
             )  # pylint: disable=logging-format-interpolation
         )
         # empty the hourly bucket list
         self.hourly_bucket_list = []
         self.bucket = self.bucket + bucket_delta
-
+        _LOGGER.info("hourly_bucket_list is now empty, bucket is {}".format(self.bucket))
         # fire an event so the sensor can update itself.
         event_to_fire = f"{self.name}_{EVENT_BUCKET_UPDATED}"
         self.hass.bus.fire(event_to_fire, {CONF_BUCKET: self.bucket})
