@@ -341,7 +341,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
                         sensor_state = self.hass.states.get(sensor_name)
                         _LOGGER.info(
-                            "update_state for type: {}, source: {}, sensor_setting: {}, sensor_name: {}, sensor_state: {}".format(  # pylint: disable=logging-format-interpolation
+                            "update_state USING A SENSOR for type: {}, source: {}, sensor_setting: {}, sensor_name: {}, sensor_state: {}".format(  # pylint: disable=logging-format-interpolation
                                 self.type,
                                 source,
                                 sensor_setting,
