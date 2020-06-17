@@ -169,6 +169,7 @@ The component provides the following services:
 | Service | Description |
 | --- | --- |
 |`smart_irrigation.reset_bucket`|this service needs to be called after any irrigation so the bucket is reset to 0.|
+|`smart_irrigation.set_bucket`|call this service to set the bucket to the `value` you provide. This service should only be used for debugging purposes.|
 |`smart_irrigation.calculate_daily_adjusted_run_time`|calling this service results in the `smart_irrigation.daily_adjusted_run_time` entity and attributes to be updated right away.|
 |`smart_irrigation.calculate_hourly_adjusted_run_time`|calling this service results in the `smart_irrigation.hourly_adjusted_run_time` entity and attributes to be updated right away.|
 |`smart_irrigation.enable_force_mode`|Enables force mode. In this mode, `smart_irrigation.daily_adjusted_run_time` will also be set to the configured force mode duration.|

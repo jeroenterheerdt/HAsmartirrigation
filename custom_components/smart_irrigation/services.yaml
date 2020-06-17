@@ -1,5 +1,11 @@
 reset_bucket:
   description: Reset the bucket to 0
+set_bucket:
+  description: Set the bucket to the specified value. Should only be used for debugging purposes.
+  fields:
+    value:
+      description: The new value of the bucket in inch or mm depending on your system of measurement configured in Home Assistant.
+      example: -0.1
 calculate_hourly_adjusted_run_time:
   description: Trigger calculation of hourly adjusted run time
 calculate_daily_adjusted_run_time:

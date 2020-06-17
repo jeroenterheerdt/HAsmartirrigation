@@ -58,6 +58,7 @@ from .const import (
     CONF_WATER_BUDGET,
     EVENT_BUCKET_UPDATED,
     SERVICE_RESET_BUCKET,
+    SERVICE_SET_BUCKET,
     SERVICE_CALCULATE_DAILY_ADJUSTED_RUN_TIME,
     SERVICE_CALCULATE_HOURLY_ADJUSTED_RUN_TIME,
     TYPE_CURRENT_ADJUSTED_RUN_TIME,
@@ -206,6 +207,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # register the services
     hass.services.async_register(
         DOMAIN, f"{name}_{SERVICE_RESET_BUCKET}", coordinator.handle_reset_bucket,
+    )
+    hass.services.async_register(
+        DOMAIN, f"{name}_{SERVICE_SET_BUCKET}", coordinator.handle_set_bucket,
     )
     hass.services.async_register(
         DOMAIN,
@@ -367,13 +371,34 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         _LOGGER.info("registering: type: {}, entity: {}".format(thetype, entity))
         self.entities[thetype] = entity
 
+    def fire_bucket_updated_event(self):
+        """Fire bucket_updated event so the sensor can update itself."""
+        event_to_fire = f"{self.name}_{EVENT_BUCKET_UPDATED}"
+        self.hass.bus.fire(event_to_fire, {CONF_BUCKET: self.bucket})
+
     def handle_reset_bucket(self, call):
         """Handle the service reset_bucket call."""
         _LOGGER.info("Reset bucket service called, resetting bucket to 0.")
         self.bucket = 0
-        # fire an event so the sensor can update itself.
-        event_to_fire = f"{self.name}_{EVENT_BUCKET_UPDATED}"
-        self.hass.bus.fire(event_to_fire, {CONF_BUCKET: self.bucket})
+        self.fire_bucket_updated_event()
+
+    def handle_set_bucket(self, call):
+        """Handle the service set_bucket call."""
+        if "value" in call.data:
+            value = float(call.data.get("value"))
+            if self.system_of_measurement != SETTING_METRIC:
+                value = value / MM_TO_INCH_FACTOR
+            _LOGGER.info(
+                "Set bucket service called, resetting bucket to provided value {}, converted to metric: {}".format(
+                    call.data.get("value"), value
+                )
+            )
+            self.bucket = value
+            self.fire_bucket_updated_event()
+        else:
+            _LOGGER.info(
+                "ignoring call of set_bucket service, no new value specified. specify a value like this: value: 1"
+            )
 
     async def handle_calculate_daily_adjusted_run_time(self, call):
         """Handle the service calculate_daily_adjusted_run_time call."""
@@ -423,21 +448,35 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.info("parsed out unit, bucket is {}".format(self.bucket))
         if len(self.hourly_bucket_list) > 0:
 
-            _LOGGER.info("using OWM for precipitation: {}".format(self.sources[CONF_SWITCH_SOURCE_PRECIPITATION]))
+            _LOGGER.info(
+                "using OWM for precipitation: {}".format(
+                    self.sources[CONF_SWITCH_SOURCE_PRECIPITATION]
+                )
+            )
             # are we using OWM for precipitation?
             if self.sources[CONF_SWITCH_SOURCE_PRECIPITATION]:
                 # this is applicable when using OWM (average)
                 bucket_delta = (sum(self.hourly_bucket_list) * 1.0) / len(
                     self.hourly_bucket_list
                 )
-                _LOGGER.info("bucket_delta set to {}, which is average of hourly_bucket_list: {}".format(bucket_delta,self.hourly_bucket_list))
+                _LOGGER.info(
+                    "bucket_delta set to {}, which is average of hourly_bucket_list: {}".format(
+                        bucket_delta, self.hourly_bucket_list
+                    )
+                )
             else:
                 # when using a sensor just take the most recent (last item in the list) because we assume it is a daily actual value (cumulative)
                 bucket_delta = self.hourly_bucket_list[len(self.hourly_bucket_list) - 1]
-                _LOGGER.info("bucket_delta set to {}, which is the last item in the hourly bucket list: {}".format(bucket_delta, self.hourly_bucket_list))
+                _LOGGER.info(
+                    "bucket_delta set to {}, which is the last item in the hourly bucket list: {}".format(
+                        bucket_delta, self.hourly_bucket_list
+                    )
+                )
         else:
             bucket_delta = 0
-            _LOGGER.info("setting bucket_delta to 0 because there is no hourly_bucket_list.")
+            _LOGGER.info(
+                "setting bucket_delta to 0 because there is no hourly_bucket_list."
+            )
 
         _LOGGER.info(
             "Updating bucket: {} with netto_precipitation: {}, which should be average or last value of: {}".format(  # pylint: disable=logging-format-interpolation
@@ -447,7 +486,9 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         # empty the hourly bucket list
         self.hourly_bucket_list = []
         self.bucket = self.bucket + bucket_delta
-        _LOGGER.info("hourly_bucket_list is now empty, bucket is {}".format(self.bucket))
+        _LOGGER.info(
+            "hourly_bucket_list is now empty, bucket is {}".format(self.bucket)
+        )
         # fire an event so the sensor can update itself.
         event_to_fire = f"{self.name}_{EVENT_BUCKET_UPDATED}"
         self.hass.bus.fire(event_to_fire, {CONF_BUCKET: self.bucket})

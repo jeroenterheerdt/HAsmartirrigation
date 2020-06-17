@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.47"
+VERSION = "0.0.48"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -86,6 +86,7 @@ EVENT_FORCE_MODE_TOGGLED = "forceModeTog"
 
 # Services
 SERVICE_RESET_BUCKET = "reset_bucket"
+SERVICE_SET_BUCKET = "set_bucket"
 SERVICE_CALCULATE_DAILY_ADJUSTED_RUN_TIME = "calculate_daily_adjusted_run_time"
 SERVICE_CALCULATE_HOURLY_ADJUSTED_RUN_TIME = "calculate_hourly_adjusted_run_time"
 SERVICE_ENABLE_FORCE_MODE = "enable_force_mode"
