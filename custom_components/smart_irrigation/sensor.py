@@ -69,6 +69,9 @@ from .const import (  # pylint: disable=unused-import
     EVENT_FORCE_MODE_TOGGLED,
     CONF_CHANGE_PERCENT,
     CONF_INITIAL_UPDATE_DELAY,
+    CONF_UNIT_OF_MEASUREMENT,
+    CONF_ICON,
+    CONF_SPRINKLER_ICON,
 )
 from .entity import SmartIrrigationEntity
 
@@ -239,7 +242,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                         _LOGGER.error(ex)
 
     def update_adjusted_run_time_from_event(self):
-        """Update the adjusted run time. SHould only be called from _bucket_update and _force_mode_toggled event handlers."""
+        """Update the adjusted run time. Should only be called from _bucket_update and _force_mode_toggled event handlers."""
         _LOGGER.info("updated_adjusted_run_time_from_event called.")
         result = self.calculate_water_budget_and_adjusted_run_time(
             self.bucket, self.type
@@ -315,6 +318,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             ),
             CONF_FORCE_MODE_DURATION: self.coordinator.force_mode_duration,
             CONF_FORCE_MODE_ENABLED: self.coordinator.force_mode,
+            CONF_UNIT_OF_MEASUREMENT: UNIT_OF_MEASUREMENT_SECONDS,
+            CONF_ICON: CONF_SPRINKLER_ICON,
         }
 
     def update_state(self):

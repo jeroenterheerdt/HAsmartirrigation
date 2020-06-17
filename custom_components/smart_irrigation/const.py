@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.48"
+VERSION = "0.0.49"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -58,6 +58,11 @@ CONF_SENSORS = "sensors"
 CONF_FORCE_MODE_ENABLED = "force_mode_enabled"
 CONF_CHANGE_PERCENT = "change_percent"
 CONF_INITIAL_UPDATE_DELAY = "initial_update_delay"
+CONF_UNIT_OF_MEASUREMENT = (
+    "unit_of_measurement"  # used to set attributes on entities in events
+)
+CONF_ICON = "icon"  # used to set attributes on entities in events
+CONF_SPRINKLER_ICON = "mdi:sprinkler"
 
 # Settings switches (True = OWM, False is own sensors)
 CONF_SWITCH_SOURCE_PRECIPITATION = "use_owm_precipitation"
