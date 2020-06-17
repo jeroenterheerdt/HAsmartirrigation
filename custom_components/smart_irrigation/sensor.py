@@ -169,13 +169,27 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 if attr in state.attributes:
                     try:
                         a_val = state.attributes[attr]
+
                         # no split needed if we don't show units
+                        # ifstr is only temporary for debugging purposes
+                        ifstr = False
                         if self.coordinator.show_units or (
                             isinstance(a_val, str) and " " in a_val
                         ):
                             numeric_part = float(a_val.split(" ")[0])
+                            ifstr = True
                         else:
                             numeric_part = float(a_val)
+                        _LOGGER.info(
+                            "async_added_t_hass type: {}, attribute: {}, attribute_value: {}, numeric_part: {}, show_units: {}, a_val was str or contained ' ': {}".format(
+                                self.type,
+                                attr,
+                                a_val,
+                                numeric_part,
+                                self.coordinator.show_units,
+                                ifstr,
+                            )
+                        )
                         if attr in (
                             CONF_EVAPOTRANSPIRATION,
                             CONF_NETTO_PRECIPITATION,
@@ -188,62 +202,22 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                             if self.coordinator.system_of_measurement != SETTING_METRIC:
                                 numeric_part = numeric_part / MM_TO_INCH_FACTOR
                             if attr == CONF_EVAPOTRANSPIRATION:
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    != SETTING_METRIC
-                                ):
-                                    self.evapotranspiration = (
-                                        numeric_part / MM_TO_INCH_FACTOR
-                                    )
-                                else:
-                                    self.evapotranspiration = numeric_part
+                                self.evapotranspiration = numeric_part
                             elif attr == CONF_NETTO_PRECIPITATION:
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    != SETTING_METRIC
-                                ):
-                                    self.bucket_delta = numeric_part / MM_TO_INCH_FACTOR
-                                else:
-                                    self.bucket_delta = numeric_part
+                                self.bucket_delta = numeric_part
                                 _LOGGER.info(
-                                    "async_added_to_hass restoring state, settting netto precipitation / bucket_delta to: {}".format(
+                                    "async_added_to_hass restoring state, setting netto precipitation / bucket_delta to: {}".format(
                                         self.bucket_delta
                                     )
                                 )
                             elif attr == CONF_PRECIPITATION:
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    != SETTING_METRIC
-                                ):
-                                    self.precipitation = (
-                                        numeric_part / MM_TO_INCH_FACTOR
-                                    )
-                                else:
-                                    self.precipitation = numeric_part
+                                self.precipitation = numeric_part
                             elif attr == CONF_RAIN:
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    != SETTING_METRIC
-                                ):
-                                    self.rain = numeric_part / MM_TO_INCH_FACTOR
-                                else:
-                                    self.rain = numeric_part
+                                self.rain = numeric_part
                             elif attr == CONF_SNOW:
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    != SETTING_METRIC
-                                ):
-                                    self.snow = numeric_part / MM_TO_INCH_FACTOR
-                                else:
-                                    self.snow = numeric_part
+                                self.snow = numeric_part
                             elif attr == CONF_BUCKET:
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    != SETTING_METRIC
-                                ):
-                                    self.bucket = numeric_part / MM_TO_INCH_FACTOR
-                                else:
-                                    self.bucket = numeric_part
+                                self.bucket = numeric_part
                                 self.coordinator.bucket = self.bucket
                                 _LOGGER.info(
                                     "async_added_to_hass restoring state, settting bucket to: {}".format(
