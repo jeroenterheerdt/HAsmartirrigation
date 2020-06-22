@@ -90,7 +90,9 @@
         "show_units": "Show units in entity attributes.",
         "auto_refresh": "Enable or disable automatic refresh at time configured below.",
         "auto_refresh_time": "Local time to schedule automatic refresh (if enabled).",
-        "initial_update_delay": "Delay before first sensor update after reboot (seconds)."
+        "initial_update_delay": "Delay before first sensor update after reboot (seconds).",
+        "coastal": "Coastal (air masses are influenced by a nearby water body)",
+        "estimate_solrad_from_temp": "Estimate solar radiation from temperature."
             }
     }
   },

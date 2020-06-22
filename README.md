@@ -161,6 +161,8 @@ After setting up the component, you can use the options flow to configure the fo
 |Automatic refresh|By default, automatic refresh is enabled. Disabling it will require the user to call `smart_irrigation.calculate_daily_adjusted_run_time` manually.|True|
 |Automatic refresh time|Specifies when to do the automatic refresh if enabled.|23:00|
 |Initial update delay|Delay before first sensor update after reboot. This is useful if using sensors that do not have a status right after reboot.|30|
+|Coastal|If the location you are tracking is situated on or adjacent to coast of a large land mass or anywhere else where air masses are influenced by a nearby water body, enable this setting.|False|
+|Solar Radiation calculation|From v0.0.50 onwards, the component estimates solar radiation using temperature, which seems to be more accurate. If for whatever reason you wanted to revert back to the pre v0.0.50 behavior (which used a estimation of sun hours) disable this.|True|
 
 ## Example behavior in a week
 This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week) provides insight into how this component should behave in certain weather conditions. With this you should be able to do a sanity check against your configuration and make sure everything is working correctly.

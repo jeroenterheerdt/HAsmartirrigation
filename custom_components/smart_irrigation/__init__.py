@@ -86,6 +86,10 @@ from .const import (
     CONF_INITIAL_UPDATE_DELAY,
     DEFAULT_INITIAL_UPDATE_DELAY,
     CONF_SWITCH_SOURCE_PRECIPITATION,
+    CONF_COASTAL,
+    DEFAULT_COASTAL,
+    CONF_ESTIMATE_SOLRAD_FROM_TEMP,
+    DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -157,6 +161,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     initial_update_delay = entry.options.get(
         CONF_INITIAL_UPDATE_DELAY, DEFAULT_INITIAL_UPDATE_DELAY
     )
+    coastal = entry.options.get(CONF_COASTAL, DEFAULT_COASTAL)
+    estimate_solrad_from_temp = entry.options.get(
+        CONF_ESTIMATE_SOLRAD_FROM_TEMP, DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP
+    )
 
     # set up coordinator
     coordinator = SmartIrrigationUpdateCoordinator(
@@ -184,6 +192,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         sensors=sensors,
         change_percent=change_percent,
         initial_update_delay=initial_update_delay,
+        coastal=coastal,
+        estimate_solrad_from_temp=estimate_solrad_from_temp,
         name=name,
     )
 
@@ -289,6 +299,8 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         sensors,
         change_percent,
         initial_update_delay,
+        coastal,
+        estimate_solrad_from_temp,
         name,
     ):
         """Initialize."""
@@ -320,6 +332,8 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.auto_refresh = auto_refresh
         self.auto_refresh_time = auto_refresh_time
         self.initial_update_delay = int(initial_update_delay)
+        self.coastal = coastal
+        self.estimate_solrad_from_temp = estimate_solrad_from_temp
         self.name = name
         self.sources = sources
         self.sensors = sensors

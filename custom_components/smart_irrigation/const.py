@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.49"
+VERSION = "0.0.50"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -63,6 +63,8 @@ CONF_UNIT_OF_MEASUREMENT = (
 )
 CONF_ICON = "icon"  # used to set attributes on entities in events
 CONF_SPRINKLER_ICON = "mdi:sprinkler"
+CONF_COASTAL = "coastal"
+CONF_ESTIMATE_SOLRAD_FROM_TEMP = "estimate_solrad_from_temp"
 
 # Settings switches (True = OWM, False is own sensors)
 CONF_SWITCH_SOURCE_PRECIPITATION = "use_owm_precipitation"
@@ -149,6 +151,8 @@ DEFAULT_AUTO_REFRESH_TIME = "23:00"  # time
 DEFAULT_CHANGE_PERCENT = 1  #% so this really represents 100%
 DEFAULT_INITIAL_UPDATE_DELAY = 300  # seconds, 5 minutes
 DEFAULT_REFERENCE_ET = 0.0
+DEFAULT_COASTAL = False  # bool
+DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP = True  # bool
 
 STARTUP_MESSAGE = f"""
 -------------------------------------------------------------------

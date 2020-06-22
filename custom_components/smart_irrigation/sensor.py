@@ -647,6 +647,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             pressure = data["pressure"]
             RH_hr = data["humidity"]  # pylint: disable=invalid-name
             u_2 = data["wind_speed"]
+            coastal = self.coordinator.coastal
+            estimate_solrad_from_temp = self.coordinator.estimate_solrad_from_temp
             fao56 = estimate_fao56_daily(
                 day_of_year,
                 t_day,  # in celcius, will be converted to kelvin later
@@ -658,6 +660,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 RH_hr,  #%
                 u_2,  # in m/s
                 pressure,  # in hPa, will be converted to kPa later
+                coastal,  # bool, defaults to False
+                estimate_solrad_from_temp,  # bool, defaults to True
             )
             return fao56
         return 0.0

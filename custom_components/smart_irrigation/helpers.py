@@ -244,16 +244,25 @@ def estimate_fao56_daily(  # pylint: disable=invalid-name
     rh,
     wind_m_s,
     atmos_pres,
+    coastal=False,
+    estimate_solrad_from_temp=True,
 ):
     """ Estimate fao56 from weather """
     sha = pyeto.sunset_hour_angle(pyeto.deg2rad(latitude), pyeto.sol_dec(day_of_year))
     daylight_hours = pyeto.daylight_hours(sha)
-    sunshine_hours = 0.8 * daylight_hours
+
     ird = pyeto.inv_rel_dist_earth_sun(day_of_year)
     et_rad = pyeto.et_rad(pyeto.deg2rad(latitude), pyeto.sol_dec(day_of_year), sha, ird)
-    sol_rad = pyeto.sol_rad_from_sun_hours(daylight_hours, sunshine_hours, et_rad)
-    net_in_sol_rad = pyeto.net_in_sol_rad(sol_rad=sol_rad, albedo=0.23)
+
     cs_rad = pyeto.cs_rad(elevation, et_rad)
+    if estimate_solrad_from_temp:
+        sol_rad = pyeto.sol_rad_from_t(et_rad, cs_rad, temp_c_min, temp_c_max, coastal)
+    else:
+        # this is the default behavior for version < 0.0.50
+        sol_rad = pyeto.sol_rad_from_sun_hours(
+            daylight_hours, 0.8 * daylight_hours, et_rad
+        )
+    net_in_sol_rad = pyeto.net_in_sol_rad(sol_rad=sol_rad, albedo=0.23)
     avp = pyeto.avp_from_tdew(tdew)
     net_out_lw_rad = pyeto.net_out_lw_rad(
         pyeto.convert.celsius2kelvin(temp_c_min),

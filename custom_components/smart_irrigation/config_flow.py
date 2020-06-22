@@ -49,6 +49,10 @@ from .const import (  # pylint: disable=unused-import
     DEFAULT_INITIAL_UPDATE_DELAY,
     DOMAIN,
     DEFAULT_REFERENCE_ET,
+    CONF_COASTAL,
+    DEFAULT_COASTAL,
+    CONF_ESTIMATE_SOLRAD_FROM_TEMP,
+    DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP
 )
 
 import logging
@@ -437,6 +441,11 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                             CONF_INITIAL_UPDATE_DELAY, DEFAULT_INITIAL_UPDATE_DELAY
                         ),
                     ): int,
+                    vol.Required(
+                        CONF_COASTAL,
+                        default=self.options.get(CONF_COASTAL, DEFAULT_COASTAL),
+                    ): bool,
+                    vol.Required(CONF_ESTIMATE_SOLRAD_FROM_TEMP, default=self.options.get(CONF_ESTIMATE_SOLRAD_FROM_TEMP,DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP),): bool,
                 },
             ),
             errors=self._errors,
