@@ -72,6 +72,8 @@ from .const import (  # pylint: disable=unused-import
     CONF_UNIT_OF_MEASUREMENT,
     CONF_ICON,
     CONF_SPRINKLER_ICON,
+    CONF_COASTAL,
+    CONF_ESTIMATE_SOLRAD_FROM_TEMP,
 )
 from .entity import SmartIrrigationEntity
 
@@ -565,6 +567,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 CONF_INITIAL_UPDATE_DELAY: show_seconds(
                     self.coordinator.initial_update_delay, self.coordinator.show_units
                 ),
+                CONF_COASTAL: self.coordinator.coastal,
+                CONF_ESTIMATE_SOLRAD_FROM_TEMP: self.coordinator.estimate_solrad_from_temp,
             }
         if self.type == TYPE_CURRENT_ADJUSTED_RUN_TIME:
             return {
