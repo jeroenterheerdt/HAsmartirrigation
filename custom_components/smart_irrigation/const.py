@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.50"
+VERSION = "0.0.55"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -75,6 +75,8 @@ CONF_SWITCH_SOURCE_DEWPOINT = "use_owm_dewpoint"
 CONF_SWITCH_SOURCE_PRESSURE = "use_owm_pressure"
 CONF_SWITCH_SOURCE_HUMIDITY = "use_owm_humidity"
 CONF_SWITCH_SOURCE_WINDSPEED = "use_owm_windspeed"
+CONF_SWITCH_SOURCE_SOLAR_RADIATION = "calculate_solar_radiation"
+CONF_SWITCH_CALCULATE_ET = "calculate_ET_value"
 
 # Sensors setting labels
 CONF_SENSOR_PRECIPITATION = "sensor_precipitation"
@@ -85,6 +87,8 @@ CONF_SENSOR_MAXIMUM_TEMPERATURE = "sensor_max_temperature"
 CONF_SENSOR_MINIMUM_TEMPERATE = "sensor_min_temperature"
 CONF_SENSOR_PRESSURE = "sensor_pressure"
 CONF_SENSOR_WINDSPEED = "sensor_windspeed"
+CONF_SENSOR_SOLAR_RADIATION = "sensor_solar_radiation"
+CONF_SENSOR_ET = "sensor_et"
 
 # Events
 EVENT_BUCKET_UPDATED = "bucketUpd"
@@ -111,6 +115,8 @@ M_TO_FT_FACTOR = 3.2808399
 KMH_TO_MS_FACTOR = 3.6
 MILESH_TO_MS_FACTOR = 2.23693629
 PSI_TO_HPA_FACTOR = 0.0145037737796859
+W_TO_J_DAY_FACTOR = 86400
+J_TO_MJ_FACTOR = 1000000
 # Defaults
 DEFAULT_NAME = NAME
 
@@ -148,7 +154,7 @@ DEFAULT_FORCE_MODE_DURATION = 0  # seconds
 DEFAULT_SHOW_UNITS = False  # bool
 DEFAULT_AUTO_REFRESH = True  # bool
 DEFAULT_AUTO_REFRESH_TIME = "23:00"  # time
-DEFAULT_CHANGE_PERCENT = 1  #% so this really represents 100%
+DEFAULT_CHANGE_PERCENT = 1  # % so this really represents 100%
 DEFAULT_INITIAL_UPDATE_DELAY = 300  # seconds, 5 minutes
 DEFAULT_REFERENCE_ET = 0.0
 DEFAULT_COASTAL = False  # bool

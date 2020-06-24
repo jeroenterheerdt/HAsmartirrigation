@@ -5,8 +5,6 @@ import logging
 import datetime
 import weakref
 
-import voluptuous as vol
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -18,7 +16,6 @@ from homeassistant.helpers.event import (
 )
 
 from homeassistant.const import (
-    CONF_UNIT_OF_MEASUREMENT,
     CONF_LATITUDE,
     CONF_ELEVATION,
     CONF_LONGITUDE,
@@ -28,47 +25,29 @@ from .OWMClient import OWMClient
 from .const import (
     CONF_API_KEY,
     CONF_REFERENCE_ET,
-    CONF_REFERENCE_ET_1,
-    CONF_REFERENCE_ET_2,
-    CONF_REFERENCE_ET_3,
-    CONF_REFERENCE_ET_4,
-    CONF_REFERENCE_ET_5,
-    CONF_REFERENCE_ET_6,
-    CONF_REFERENCE_ET_7,
-    CONF_REFERENCE_ET_8,
-    CONF_REFERENCE_ET_9,
-    CONF_REFERENCE_ET_10,
-    CONF_REFERENCE_ET_11,
-    CONF_REFERENCE_ET_12,
     CONF_NUMBER_OF_SPRINKLERS,
     CONF_FLOW,
     CONF_AREA,
     DOMAIN,
     PLATFORMS,
-    NAME,
     STARTUP_MESSAGE,
     SETTING_METRIC,
     SETTING_US,
     MM_TO_INCH_FACTOR,
     LITER_TO_GALLON_FACTOR,
     M2_TO_SQ_FT_FACTOR,
-    M_TO_FT_FACTOR,
-    CONF_NETTO_PRECIPITATION,
     CONF_BUCKET,
-    CONF_WATER_BUDGET,
     EVENT_BUCKET_UPDATED,
     SERVICE_RESET_BUCKET,
     SERVICE_SET_BUCKET,
     SERVICE_CALCULATE_DAILY_ADJUSTED_RUN_TIME,
     SERVICE_CALCULATE_HOURLY_ADJUSTED_RUN_TIME,
-    TYPE_CURRENT_ADJUSTED_RUN_TIME,
     CONF_LEAD_TIME,
     CONF_MAXIMUM_DURATION,
     CONF_FORCE_MODE_DURATION,
     CONF_SHOW_UNITS,
     CONF_AUTO_REFRESH,
     CONF_AUTO_REFRESH_TIME,
-    CONF_NAME,
     EVENT_HOURLY_DATA_UPDATED,
     CONF_SOURCE_SWITCHES,
     CONF_SENSORS,
@@ -90,6 +69,7 @@ from .const import (
     DEFAULT_COASTAL,
     CONF_ESTIMATE_SOLRAD_FROM_TEMP,
     DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP,
+    CONF_SWITCH_CALCULATE_ET,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -118,9 +98,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     reference_et = [float(x) for x in reference_et]
     # get settings (true / false depending on need to use owm or sensor)
     sources = entry.data.get(CONF_SOURCE_SWITCHES)
+    # add et_sensor if set
+    if entry.data.get(CONF_SWITCH_CALCULATE_ET):
+        sources.update({CONF_SWITCH_CALCULATE_ET: True})
     # get sensors - should be empty if full OWM.
     sensors = entry.data.get(CONF_SENSORS)
-
+    _LOGGER.warning("sources: {}".format(sources))
+    _LOGGER.warning("sensors: {}".format(sensors))
     # convert values to internal metric representation if required.
     # depending on this we need to convert to metric internally or not
 

@@ -1,4 +1,4 @@
-"""SmartIrrigationEntity class"""
+"""SmartIrrigationEntity class."""
 from homeassistant.helpers.restore_state import RestoreEntity
 import logging
 
@@ -9,6 +9,7 @@ class SmartIrrigationEntity(RestoreEntity):
     """Smart Irrigation Entity."""
 
     def __init__(self, coordinator, config_entry, mytype):
+        """Initialize the entity."""
         self.coordinator = coordinator
         self.config_entry = config_entry
         self.type = mytype

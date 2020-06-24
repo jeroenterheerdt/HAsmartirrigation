@@ -31,6 +31,10 @@ from .const import (
     CONF_SENSOR_MINIMUM_TEMPERATE,
     CONF_SENSOR_PRESSURE,
     CONF_SENSOR_WINDSPEED,
+    CONF_SENSOR_SOLAR_RADIATION,
+    CONF_SWITCH_SOURCE_SOLAR_RADIATION,
+    CONF_SWITCH_CALCULATE_ET,
+    CONF_SENSOR_ET,
 )
 
 from ..smart_irrigation import pyeto
@@ -172,6 +176,10 @@ def map_source_to_sensor(source):
         return CONF_SENSOR_PRESSURE
     if source == CONF_SWITCH_SOURCE_WINDSPEED:
         return CONF_SENSOR_WINDSPEED
+    if source == CONF_SWITCH_SOURCE_SOLAR_RADIATION:
+        return CONF_SENSOR_SOLAR_RADIATION
+    if source == CONF_SWITCH_CALCULATE_ET:
+        return CONF_SENSOR_ET
     return None
 
 
@@ -188,6 +196,13 @@ def check_all(settings, boolval):
             retval = False
             break
     return retval
+
+
+def reset_to(settings, boolval):
+    """Resets all values in the dictionary to the specified bool value."""
+    for setting in settings:
+        settings[setting] = boolval
+    return settings
 
 
 def check_reference_et(reference_et):
@@ -245,9 +260,11 @@ def estimate_fao56_daily(  # pylint: disable=invalid-name
     wind_m_s,
     atmos_pres,
     coastal=False,
+    calculate_solar_radiation=True,
     estimate_solrad_from_temp=True,
+    sol_rad=None,
 ):
-    """ Estimate fao56 from weather """
+    """Estimate fao56 from weather."""
     sha = pyeto.sunset_hour_angle(pyeto.deg2rad(latitude), pyeto.sol_dec(day_of_year))
     daylight_hours = pyeto.daylight_hours(sha)
 
@@ -255,13 +272,20 @@ def estimate_fao56_daily(  # pylint: disable=invalid-name
     et_rad = pyeto.et_rad(pyeto.deg2rad(latitude), pyeto.sol_dec(day_of_year), sha, ird)
 
     cs_rad = pyeto.cs_rad(elevation, et_rad)
-    if estimate_solrad_from_temp:
-        sol_rad = pyeto.sol_rad_from_t(et_rad, cs_rad, temp_c_min, temp_c_max, coastal)
-    else:
-        # this is the default behavior for version < 0.0.50
-        sol_rad = pyeto.sol_rad_from_sun_hours(
-            daylight_hours, 0.8 * daylight_hours, et_rad
-        )
+
+    # if we need to calculate solar_radiation we need to override the value passed in.
+    print("sol_rad before: {}".format(sol_rad))
+    if calculate_solar_radiation or sol_rad is None:
+        if estimate_solrad_from_temp:
+            sol_rad = pyeto.sol_rad_from_t(
+                et_rad, cs_rad, temp_c_min, temp_c_max, coastal
+            )
+        else:
+            # this is the default behavior for version < 0.0.50
+            sol_rad = pyeto.sol_rad_from_sun_hours(
+                daylight_hours, 0.8 * daylight_hours, et_rad
+            )
+    print("sol_rad after: {}".format(sol_rad))
     net_in_sol_rad = pyeto.net_in_sol_rad(sol_rad=sol_rad, albedo=0.23)
     avp = pyeto.avp_from_tdew(tdew)
     net_out_lw_rad = pyeto.net_out_lw_rad(

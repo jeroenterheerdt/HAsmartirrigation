@@ -62,18 +62,22 @@ from .const import (  # pylint: disable=unused-import
     CONF_SWITCH_SOURCE_PRESSURE,
     CONF_SWITCH_SOURCE_HUMIDITY,
     CONF_SWITCH_SOURCE_WINDSPEED,
+    CONF_SWITCH_SOURCE_SOLAR_RADIATION,
     KMH_TO_MS_FACTOR,
     MILESH_TO_MS_FACTOR,
     PSI_TO_HPA_FACTOR,
     CONF_FORCE_MODE_ENABLED,
     EVENT_FORCE_MODE_TOGGLED,
-    CONF_CHANGE_PERCENT,
     CONF_INITIAL_UPDATE_DELAY,
     CONF_UNIT_OF_MEASUREMENT,
     CONF_ICON,
     CONF_SPRINKLER_ICON,
     CONF_COASTAL,
     CONF_ESTIMATE_SOLRAD_FROM_TEMP,
+    W_TO_J_DAY_FACTOR,
+    J_TO_MJ_FACTOR,
+    M2_TO_SQ_FT_FACTOR,
+    CONF_SWITCH_CALCULATE_ET,
 )
 from .entity import SmartIrrigationEntity
 
@@ -385,6 +389,22 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                         convert_to_float(sensor_state)
                                         / MM_TO_INCH_FACTOR
                                     )
+                            if source == CONF_SWITCH_CALCULATE_ET:
+                                # get et from sensor
+                                # metric: mm, imperial: inch
+                                if (
+                                    self.coordinator.system_of_measurement
+                                    == SETTING_METRIC
+                                ):
+                                    self.evapotranspiration = convert_to_float(
+                                        sensor_state
+                                    )
+                                else:
+                                    # imperial
+                                    self.evapotranspiration = float(
+                                        convert_to_float(sensor_state)
+                                        / MM_TO_INCH_FACTOR
+                                    )
                             if source == CONF_SWITCH_SOURCE_DEWPOINT:
                                 # get dewpoint from sensor
                                 # metric: C, imperial: F
@@ -481,11 +501,42 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                         convert_to_float(sensor_state)
                                         / MILESH_TO_MS_FACTOR
                                     )
+                            if source == CONF_SWITCH_SOURCE_SOLAR_RADIATION:
+                                # get the solar radiation from sensor
+                                # metric: W/m2, imperial: W/sq ft
+                                # store in: MJ/m2
+                                solrad = float(
+                                    convert_to_float(sensor_state) * W_TO_J_DAY_FACTOR
+                                )
+                                solrad = float(
+                                    convert_to_float(solrad) / J_TO_MJ_FACTOR
+                                )
+                                if (
+                                    self.coordinator.system_of_measurement
+                                    == SETTING_METRIC
+                                ):
+                                    data["solar_radiation"] = solrad
+                                else:
+                                    data["solar_radiation"] = float(
+                                        convert_to_float(solrad) / M2_TO_SQ_FT_FACTOR
+                                    )
             # parse precipitation out of the today data
             self.precipitation = self.get_precipitation(data)
-            # calculate et out of the today data
-            self.evapotranspiration = self.get_evapotranspiration(data)
+            # calculate et out of the today data or from sensor if that is the configuration
+            if self.coordinator.sources.get(CONF_SWITCH_CALCULATE_ET):
+                self.evapotranspiration = self.get_evapotranspiration(data)
+                _LOGGER.info(
+                    "calculated evapotranspiration: {}".format(self.evapotranspiration)
+                )
+            else:
+                _LOGGER.info(
+                    "skipped calculating evapotranspiration, got the following value from a sensor: {}".format(
+                        self.evapotranspiration
+                    )
+                )
             # calculate the adjusted runtime!
+            self.precipitation = float(self.precipitation)
+            self.evapotranspiration = float(self.evapotranspiration)
             self.bucket_delta = self.precipitation - self.evapotranspiration
 
             result = self.calculate_water_budget_and_adjusted_run_time(
@@ -615,7 +666,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     def get_precipitation(self, data):
         """Parse out precipitation info from OWM data."""
-        if not data is None:
+        if data is not None:
             if "rain" in data:
                 self.rain = float(data["rain"])
             if "snow" in data:
@@ -652,7 +703,12 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             RH_hr = data["humidity"]  # pylint: disable=invalid-name
             u_2 = data["wind_speed"]
             coastal = self.coordinator.coastal
+
+            calculate_solar_radiation = self.coordinator.sources.get(
+                CONF_SWITCH_SOURCE_SOLAR_RADIATION, True
+            )
             estimate_solrad_from_temp = self.coordinator.estimate_solrad_from_temp
+            solrad = data.get("solar_radiation", None)
             fao56 = estimate_fao56_daily(
                 day_of_year,
                 t_day,  # in celcius, will be converted to kelvin later
@@ -661,11 +717,13 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 t_dew,  # in celcius, no need for conversion
                 self.coordinator.elevation,  # in meters
                 self.coordinator.latitude,
-                RH_hr,  #%
+                RH_hr,  # %
                 u_2,  # in m/s
                 pressure,  # in hPa, will be converted to kPa later
                 coastal,  # bool, defaults to False
+                calculate_solar_radiation,  # bool, defaults to True
                 estimate_solrad_from_temp,  # bool, defaults to True
+                solrad,  # solar radiation value, only set if calculate_solar_radiation == False
             )
             return fao56
         return 0.0

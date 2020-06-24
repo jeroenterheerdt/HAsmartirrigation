@@ -1,6 +1,11 @@
 """Config flow for Smart Irrigation integration."""
 from .OWMClient import OWMClient
-from .helpers import map_source_to_sensor, check_all, check_reference_et, check_time
+from .helpers import (
+    map_source_to_sensor,
+    check_all,
+    check_reference_et,
+    check_time,
+)
 from .const import (  # pylint: disable=unused-import
     CONF_API_KEY,
     CONF_REFERENCE_ET,
@@ -41,10 +46,9 @@ from .const import (  # pylint: disable=unused-import
     CONF_SWITCH_SOURCE_PRESSURE,
     CONF_SWITCH_SOURCE_HUMIDITY,
     CONF_SWITCH_SOURCE_WINDSPEED,
+    CONF_SWITCH_SOURCE_SOLAR_RADIATION,
     CONF_SOURCE_SWITCHES,
     CONF_SENSORS,
-    CONF_CHANGE_PERCENT,
-    DEFAULT_CHANGE_PERCENT,
     CONF_INITIAL_UPDATE_DELAY,
     DEFAULT_INITIAL_UPDATE_DELAY,
     DOMAIN,
@@ -52,7 +56,9 @@ from .const import (  # pylint: disable=unused-import
     CONF_COASTAL,
     DEFAULT_COASTAL,
     CONF_ESTIMATE_SOLRAD_FROM_TEMP,
-    DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP
+    DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP,
+    CONF_SWITCH_CALCULATE_ET,
+    CONF_SENSOR_ET,
 )
 
 import logging
@@ -74,6 +80,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         """Initialize."""
         self._api_key = None
         self._name = NAME
+        self._calculate_ET = True
         self._reference_et = {}
         self._errors = {}
         self._sensors = {}
@@ -86,6 +93,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             CONF_SWITCH_SOURCE_PRESSURE: True,
             CONF_SWITCH_SOURCE_HUMIDITY: True,
             CONF_SWITCH_SOURCE_WINDSPEED: True,
+            CONF_SWITCH_SOURCE_SOLAR_RADIATION: True,
         }
 
     async def async_step_user(self, user_input=None):
@@ -97,38 +105,15 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                 await self._check_unique(user_input[CONF_NAME])
                 # store values entered
                 self._name = user_input[CONF_NAME]
-                self.owm_source_settings[CONF_SWITCH_SOURCE_PRECIPITATION] = bool(
-                    user_input.get(CONF_SWITCH_SOURCE_PRECIPITATION, True)
-                )
-                self.owm_source_settings[CONF_SWITCH_SOURCE_DAILY_TEMPERATURE] = bool(
-                    user_input.get(CONF_SWITCH_SOURCE_DAILY_TEMPERATURE, True)
-                )
-                self.owm_source_settings[CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE] = bool(
-                    user_input.get(CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE, True)
-                )
-                self.owm_source_settings[CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE] = bool(
-                    user_input.get(CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE, True)
-                )
-                self.owm_source_settings[CONF_SWITCH_SOURCE_DEWPOINT] = bool(
-                    user_input.get(CONF_SWITCH_SOURCE_DEWPOINT, True)
-                )
-                self.owm_source_settings[CONF_SWITCH_SOURCE_PRESSURE] = bool(
-                    user_input.get(CONF_SWITCH_SOURCE_PRESSURE, True)
-                )
-                self.owm_source_settings[CONF_SWITCH_SOURCE_HUMIDITY] = bool(
-                    user_input.get(CONF_SWITCH_SOURCE_HUMIDITY, True)
-                )
-                self.owm_source_settings[CONF_SWITCH_SOURCE_WINDSPEED] = bool(
-                    user_input.get(CONF_SWITCH_SOURCE_WINDSPEED, True)
-                )
-                # here is where it gets interesting:
-                # - if all of the bools are true then we need to show step2a
-                # - if none of the bools are true we can skip step2a and show step2b with all the textboxes to enter sensor names. validation needs to happen in this form as well.
-                # - in case of a mix we need to show step2a but also step2b but then with part of the textboxes
-                # show next step
-                if check_all(self.owm_source_settings, True):
-                    return await self._show_step3(user_input)  # pure OWM
-                return await self._show_step2(user_input)  # mix or pure sensors
+
+                # if it is true, skip step 0, else show step 0
+                self.owm_source_settings[CONF_SWITCH_CALCULATE_ET] = user_input[
+                    CONF_SWITCH_CALCULATE_ET
+                ]
+                if self.owm_source_settings[CONF_SWITCH_CALCULATE_ET]:
+                    return await self._show_step_1(user_input)
+
+                return await self._show_step_0(user_input)
 
             except NotUnique:
                 _LOGGER.error("Instance name is not unique.")
@@ -138,12 +123,96 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         return await self._show_config_form(user_input)
 
     async def _show_config_form(self, user_input):
-        """Show the configuration form to edit info."""
+        """Show config form."""
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_NAME, default=NAME): str,
+                    vol.Required(CONF_SWITCH_CALCULATE_ET, default=True): bool,
+                }
+            ),
+            errors=self._errors,
+        )
+
+    async def async_step_step0(self, user_input=None):
+        """Handle step 0."""
+        self._errors = {}
+
+        if user_input is not None:
+            try:
+                entity = user_input[CONF_SENSOR_ET]
+                status = self.hass.states.get(entity)
+                if status is None:
+                    raise SensorNotFound
+                # store values entered
+                self._sensors = user_input
+
+                # we can skip directly to step4 because we don't need all the other info if we are not calculating...
+                return await self._show_step4(user_input)
+
+            except SensorNotFound:
+                self._errors["base"] = "sensornotfound"
+
+            return await self._show_step_0(user_input)
+
+    async def _show_step_0(self, user_input):
+        """Show step 0."""
+        return self.async_show_form(
+            step_id="step0",
+            data_schema=vol.Schema({vol.Required(CONF_SENSOR_ET): str,}),
+            errors=self._errors,
+        )
+
+    async def async_step_step1(self, user_input=None):
+        """Handle step 1."""
+        self._errors = {}
+
+        if user_input is not None:
+            self.owm_source_settings[CONF_SWITCH_SOURCE_PRECIPITATION] = bool(
+                user_input.get(CONF_SWITCH_SOURCE_PRECIPITATION, True)
+            )
+            self.owm_source_settings[CONF_SWITCH_SOURCE_DAILY_TEMPERATURE] = bool(
+                user_input.get(CONF_SWITCH_SOURCE_DAILY_TEMPERATURE, True)
+            )
+            self.owm_source_settings[CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE] = bool(
+                user_input.get(CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE, True)
+            )
+            self.owm_source_settings[CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE] = bool(
+                user_input.get(CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE, True)
+            )
+            self.owm_source_settings[CONF_SWITCH_SOURCE_DEWPOINT] = bool(
+                user_input.get(CONF_SWITCH_SOURCE_DEWPOINT, True)
+            )
+            self.owm_source_settings[CONF_SWITCH_SOURCE_PRESSURE] = bool(
+                user_input.get(CONF_SWITCH_SOURCE_PRESSURE, True)
+            )
+            self.owm_source_settings[CONF_SWITCH_SOURCE_HUMIDITY] = bool(
+                user_input.get(CONF_SWITCH_SOURCE_HUMIDITY, True)
+            )
+            self.owm_source_settings[CONF_SWITCH_SOURCE_WINDSPEED] = bool(
+                user_input.get(CONF_SWITCH_SOURCE_WINDSPEED, True)
+            )
+            self.owm_source_settings[CONF_SWITCH_SOURCE_SOLAR_RADIATION] = bool(
+                user_input.get(CONF_SWITCH_SOURCE_SOLAR_RADIATION, True)
+            )
+            # here is where it gets interesting:
+            # - if all of the bools are true then we need to show step2a
+            # - if none of the bools are true we can skip step2a and show step2b with all the textboxes to enter sensor names. validation needs to happen in this form as well.
+            # - in case of a mix we need to show step2a but also step2b but then with part of the textboxes
+            # show next step
+            if check_all(self.owm_source_settings, True):
+                return await self._show_step3(user_input)  # pure OWM
+            return await self._show_step2(user_input)  # mix or pure sensors
+
+        return await self._show_step_1(user_input)
+
+    async def _show_step_1(self, user_input):
+        """Show the configuration form to edit info."""
+        return self.async_show_form(
+            step_id="step1",
+            data_schema=vol.Schema(
+                {
                     # switches for owm or own sensors (true = owm, false = own sensor)
                     vol.Required(CONF_SWITCH_SOURCE_PRECIPITATION, default=True): bool,
                     vol.Required(
@@ -159,6 +228,9 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                     vol.Required(CONF_SWITCH_SOURCE_PRESSURE, default=True): bool,
                     vol.Required(CONF_SWITCH_SOURCE_HUMIDITY, default=True): bool,
                     vol.Required(CONF_SWITCH_SOURCE_WINDSPEED, default=True): bool,
+                    vol.Required(
+                        CONF_SWITCH_SOURCE_SOLAR_RADIATION, default=True
+                    ): bool,
                 }
             ),
             errors=self._errors,
@@ -172,7 +244,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
             if not self.owm_source_settings[aval]:
                 # we need textbox for this setting
                 bval = map_source_to_sensor(aval)
-                if not bval is None:
+                if bval is not None:
                     data_schema = data_schema.extend({vol.Required(bval): str})
         return self.async_show_form(
             step_id="step2", data_schema=data_schema, errors=self._errors,
@@ -192,9 +264,16 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                         raise SensorNotFound
 
                 # store the values
-                self._sensors = user_input
-                # show next step (step3 if not all values are false in the settings, otherwise skip step3 and show step4)
-                if check_all(self.owm_source_settings, False):
+                self._sensors.update(user_input)
+                # show next step (step3 if not all values are false in the settings (except for radiation calculation), otherwise skip step3 and show step4)
+                settings_for_check = self.owm_source_settings
+                [
+                    settings_for_check.pop(k)
+                    for k in list(settings_for_check.keys())
+                    if k == CONF_SWITCH_SOURCE_SOLAR_RADIATION
+                    or k == CONF_SWITCH_CALCULATE_ET
+                ]
+                if check_all(settings_for_check, False):
                     # all values were set to false, so we do not need to show the OWM api step
                     return await self._show_step4(user_input)
                 return await self._show_step3(user_input)
@@ -335,6 +414,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
+        """Get options flow."""
         return SmartIrrigationOptionsFlowHandler(config_entry)
 
     async def _test_api_key(self, api_key):
@@ -445,7 +525,13 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_COASTAL,
                         default=self.options.get(CONF_COASTAL, DEFAULT_COASTAL),
                     ): bool,
-                    vol.Required(CONF_ESTIMATE_SOLRAD_FROM_TEMP, default=self.options.get(CONF_ESTIMATE_SOLRAD_FROM_TEMP,DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP),): bool,
+                    vol.Required(
+                        CONF_ESTIMATE_SOLRAD_FROM_TEMP,
+                        default=self.options.get(
+                            CONF_ESTIMATE_SOLRAD_FROM_TEMP,
+                            DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP,
+                        ),
+                    ): bool,
                 },
             ),
             errors=self._errors,

@@ -1,12 +1,35 @@
 {
-  "title": "Smart Irrigation",
   "config": {
+    "abort": {
+      "single_instance_allowed": "Only a single configuration of Smart Irrigation is allowed."
+    },
+    "error": {
+      "auth": "Open Weather API key incorrect",
+      "name": "Specify an unique name for this instance.",
+      "reference_evapotranspiration_problem": "Please check your reference evapotranspiration values - they should be decimal and at least one should be non-zero.",
+      "sensornotfound": "One or more of the sensors specified do not exist"
+    },
+    "title": "Smart Irrigation",
     "step": {
       "user": {
-        "title": "Smart Irrigation - Step 1/4: Name and sources",
+        "title": "Smart Irrigation - Step 1/7: Name and evapotranspiration calculation",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Unique name of the instance",
+          "calculate_ET_value": "Calculate evapotranspiration (ET) value (disable to specify a sensor instead)."
+        }
+      },
+      "step0": {
+        "title": "Smart Irrigation - Step 2/7: Evapotranspiration sensor",
+        "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "sensor_et": "Sensor that measures evapotranspiration (ET) (mm, inch)"
+        }
+      },
+      "step1": {
+        "title": "Smart Irrigation - Step 3/7: Sources",
+        "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
           "use_owm_precipitation": "Use OpenWeatherMap for precipitation",
           "use_owm_temperature": "Use OpenWeatherMap for temperature",
           "use_owm_min_temperature": "Use OpenWeatherMap for minimum temperature",
@@ -14,11 +37,12 @@
           "use_owm_dewpoint": "Use OpenWeatherMap for dewpoint",
           "use_owm_pressure": "Use OpenWeatherMap for pressure",
           "use_owm_humidity": "Use OpenWeatherMap for humidity",
-          "use_owm_windspeed": "Use OpenWeatherMap for windspeed"
+          "use_owm_windspeed": "Use OpenWeatherMap for windspeed",
+          "calculate_solar_radiation": "Calculate Solar Radiation (disable to specify a sensor)"
         }
       },
       "step2": {
-        "title": "Smart Irrigation - Step 2/4: Sensors",
+        "title": "Smart Irrigation - Step 4/7: Sensors",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "sensor_precipitation": "Sensor that measures total precipitation (rain/snow) (mm, inch)",
@@ -28,18 +52,19 @@
           "sensor_max_temperature": "Sensor that measures maximum temperature (C, F)",
           "sensor_min_temperature": "Sensor that measures minimum temperature (C, F)",
           "sensor_pressure": "Sensor that measures pressure (mbar, hPa, psi) ",
-          "sensor_windspeed": "Sensor that measures windspeed (km/h, mph)"
+          "sensor_windspeed": "Sensor that measures windspeed (km/h, mph)",
+          "sensor_solar_radiation": "Sensor that measures solar radiation (W/m2, W/sq ft)"
         }
       },
       "step3": {
-        "title": "Smart Irrigation - Step 3/4: Open Weather Map API",
+        "title": "Smart Irrigation - Step 5/7: Open Weather Map API",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "api_key": "API key for Open Weather Map"
         }
       },
       "step4": {
-        "title": "Smart Irrigation - Step 4/5: Reference evapotranspiration values",
+        "title": "Smart Irrigation - Step 6/7: Reference evapotranspiration values",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "reference_evapotranspiration_1": "Reference evapotranspiration for January",
@@ -57,7 +82,7 @@
         }
       },
       "step5": {
-        "title": "Smart Irrigation - Step 5/5: Irrigation system configuration",
+        "title": "Smart Irrigation - Step 7/7: Irrigation system configuration",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "number_of_sprinklers": "Number of sprinklers",
@@ -65,16 +90,6 @@
           "area": "Area in sq ft or m2"
         }
       }
-    },
-    "error": {
-      "auth": "Open Weather API key incorrect",
-      "name": "Specify an unique name for this instance.",
-      "reference_evapotranspiration_problem": "Please check your reference evapotranspiration values - they should be decimal and at least one should be non-zero.",
-      "sensornotfound": "One or more of the sensors specified do not exist",
-      "unknown": "[%key:common::config_flow::error::unknown%]"
-    },
-    "abort": {
-      "single_instance_allowed": "Only a single configuration of Smart Irrigation is allowed."
     }
   },
   "options": {
@@ -102,5 +117,6 @@
       "maximum_duration_error": "Maximum duration should be >=-1.",
       "initial_update_delay_error": "Initial update delay should be >=0."
     }
-  }
+  },
+  "title": "Smart Irrigation"
 }

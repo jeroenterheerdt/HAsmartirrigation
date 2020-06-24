@@ -32,8 +32,9 @@ You can use this component in various modes:
 1. **Full Open Weather Map**. In this mode all data comes from the Open Weather Map service. You will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions.
 2. **Full Sensors**. Using sensors. In this mode all data comes from sensors such as a weather station. Open Weather Map is not used and you do not need an API key.
 3. **Mixed**. A combination of 1) and 2). In this mode part of the data is supplied by sensors and part by Open Weather Map. In this mode you will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions.
+4. **Not calculating**. This mode allows you to skip the calculations of evapotranspiration all together and instead rely on a sensor to provide this value.
 
-When planning to set up mode 2) (Full Sensors) or 3) (Mixed), see [Measurements and Units](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Measurements-and-Units) for more information on the measurements and units expected by this component.
+When planning to set up mode 2) (Full Sensors), 3) (Mixed) or 4) (Not Calculating) see [Measurements and Units](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Measurements-and-Units) for more information on the measurements and units expected by this component.
 
 ## Configuration
 
