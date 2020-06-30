@@ -63,6 +63,7 @@ from .const import (  # pylint: disable=unused-import
 
 import logging
 import voluptuous as vol
+import copy
 
 from homeassistant import config_entries, exceptions
 from homeassistant.core import callback
@@ -266,12 +267,12 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                 # store the values
                 self._sensors.update(user_input)
                 # show next step (step3 if not all values are false in the settings (except for radiation calculation), otherwise skip step3 and show step4)
-                settings_for_check = self.owm_source_settings
+                settings_for_check = copy.deepcopy(self.owm_source_settings)
                 [
                     settings_for_check.pop(k)
                     for k in list(settings_for_check.keys())
-                    if k == CONF_SWITCH_SOURCE_SOLAR_RADIATION
-                    or k == CONF_SWITCH_CALCULATE_ET
+                    if k
+                    in (CONF_SWITCH_SOURCE_SOLAR_RADIATION, CONF_SWITCH_CALCULATE_ET)
                 ]
                 if check_all(settings_for_check, False):
                     # all values were set to false, so we do not need to show the OWM api step
@@ -575,7 +576,7 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             # settings[CONF_AREA] = user_input[CONF_AREA]
             # _LOGGER.debug("settings: {}".format(settings))
             # _LOGGER.debug("unique id: {}".format(self.config_entry.unique_id))
-            # LOGGER.warning("name: {}".format(settings[CONF_NAME]))
+            # LOGGER.info("name: {}".format(settings[CONF_NAME]))
             # await self._update_options(user_input)
             # return self.hass.config_entries.async_update_entry(
             #    self.config_entry,

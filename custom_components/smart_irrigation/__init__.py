@@ -103,8 +103,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         sources.update({CONF_SWITCH_CALCULATE_ET: True})
     # get sensors - should be empty if full OWM.
     sensors = entry.data.get(CONF_SENSORS)
-    _LOGGER.warning("sources: {}".format(sources))
-    _LOGGER.warning("sensors: {}".format(sensors))
+    _LOGGER.info("{} sources: {}".format(entry.title, sources))
+    _LOGGER.info("{} sensors: {}".format(entry.title, sensors))
     # convert values to internal metric representation if required.
     # depending on this we need to convert to metric internally or not
 
