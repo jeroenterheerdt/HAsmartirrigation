@@ -23,7 +23,8 @@
         "title": "Smart Irrigation - Step 2/7: Evapotranspiration sensor",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "sensor_et": "Sensor that measures evapotranspiration (ET) (mm, inch)"
+          "sensor_et": "Sensor that measures evapotranspiration (ET) (mm, inch)",
+          "sensor_precipitation": "Sensor that measures total precipitation (rain/snow) (mm, inch)"
         }
       },
       "step1": {

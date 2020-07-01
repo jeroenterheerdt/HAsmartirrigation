@@ -59,6 +59,7 @@ from .const import (  # pylint: disable=unused-import
     DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP,
     CONF_SWITCH_CALCULATE_ET,
     CONF_SENSOR_ET,
+    CONF_SENSOR_PRECIPITATION,
 )
 
 import logging
@@ -142,13 +143,16 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
 
         if user_input is not None:
             try:
-                entity = user_input[CONF_SENSOR_ET]
-                status = self.hass.states.get(entity)
-                if status is None:
+                et_entity = user_input[CONF_SENSOR_ET]
+                et_status = self.hass.states.get(et_entity)
+                precip_entity = user_input[CONF_SENSOR_PRECIPITATION]
+                precip_status = self.hass.states.get(precip_entity)
+                if et_status is None or precip_status is None:
                     raise SensorNotFound
                 # store values entered
                 # self._sensors = user_input
-                self._sensors[CONF_SENSOR_ET] = entity
+                self._sensors[CONF_SENSOR_ET] = et_entity
+                self._sensors[CONF_SENSOR_PRECIPITATION] = precip_entity
 
                 # we can skip directly to step4 because we don't need all the other info if we are not calculating...
                 return await self._show_step4(user_input)
@@ -162,7 +166,12 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         """Show step 0."""
         return self.async_show_form(
             step_id="step0",
-            data_schema=vol.Schema({vol.Required(CONF_SENSOR_ET): str}),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_SENSOR_ET): str,
+                    vol.Required(CONF_SENSOR_PRECIPITATION): str,
+                }
+            ),
             errors=self._errors,
         )
 
