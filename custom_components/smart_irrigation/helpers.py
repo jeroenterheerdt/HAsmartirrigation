@@ -28,7 +28,7 @@ from .const import (
     CONF_SENSOR_DEWPOINT,
     CONF_SENSOR_HUMIDITY,
     CONF_SENSOR_MAXIMUM_TEMPERATURE,
-    CONF_SENSOR_MINIMUM_TEMPERATE,
+    CONF_SENSOR_MINIMUM_TEMPERATURE,
     CONF_SENSOR_PRESSURE,
     CONF_SENSOR_WINDSPEED,
     CONF_SENSOR_SOLAR_RADIATION,
@@ -159,7 +159,7 @@ def show_minutes(value, show_units):
 
 
 def map_source_to_sensor(source):
-    """Returns the sensor setting for the source."""
+    """Return the sensor setting for the source."""
     if source == CONF_SWITCH_SOURCE_PRECIPITATION:
         return CONF_SENSOR_PRECIPITATION
     if source == CONF_SWITCH_SOURCE_DAILY_TEMPERATURE:
@@ -171,7 +171,7 @@ def map_source_to_sensor(source):
     if source == CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE:
         return CONF_SENSOR_MAXIMUM_TEMPERATURE
     if source == CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE:
-        return CONF_SENSOR_MINIMUM_TEMPERATE
+        return CONF_SENSOR_MINIMUM_TEMPERATURE
     if source == CONF_SWITCH_SOURCE_PRESSURE:
         return CONF_SENSOR_PRESSURE
     if source == CONF_SWITCH_SOURCE_WINDSPEED:
@@ -189,7 +189,7 @@ def convert_F_to_C(value):  # pylint: disable=invalid-name
 
 
 def check_all(settings, boolval):
-    """Returns true if all of the elements in the dictionary are equal to b (true/false)."""
+    """Return true if all of the elements in the dictionary are equal to b (true/false)."""
     retval = True
     for aval in settings:
         if settings[aval] != boolval:
@@ -199,7 +199,7 @@ def check_all(settings, boolval):
 
 
 def reset_to(settings, boolval):
-    """Resets all values in the dictionary to the specified bool value."""
+    """Reset all values in the dictionary to the specified bool value."""
     for setting in settings:
         settings[setting] = boolval
     return settings
@@ -241,7 +241,7 @@ def check_time(itime):
 
 
 def convert_to_float(float_value):
-    """Tries to convert to float, otherwise returns 0."""
+    """Try to convert to float, otherwise returns 0."""
     try:
         return float(float_value)
     except ValueError:
@@ -274,7 +274,6 @@ def estimate_fao56_daily(  # pylint: disable=invalid-name
     cs_rad = pyeto.cs_rad(elevation, et_rad)
 
     # if we need to calculate solar_radiation we need to override the value passed in.
-    print("sol_rad before: {}".format(sol_rad))
     if calculate_solar_radiation or sol_rad is None:
         if estimate_solrad_from_temp:
             sol_rad = pyeto.sol_rad_from_t(
@@ -285,7 +284,6 @@ def estimate_fao56_daily(  # pylint: disable=invalid-name
             sol_rad = pyeto.sol_rad_from_sun_hours(
                 daylight_hours, 0.8 * daylight_hours, et_rad
             )
-    print("sol_rad after: {}".format(sol_rad))
     net_in_sol_rad = pyeto.net_in_sol_rad(sol_rad=sol_rad, albedo=0.23)
     avp = pyeto.avp_from_tdew(tdew)
     net_out_lw_rad = pyeto.net_out_lw_rad(

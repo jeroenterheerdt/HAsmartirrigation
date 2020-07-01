@@ -16,7 +16,6 @@ from .helpers import (
     show_liter_or_gallon,
     show_liter_or_gallon_per_minute,
     show_m2_or_sq_ft,
-    map_source_to_sensor,
     convert_F_to_C,
     estimate_fao56_daily,
     convert_to_float,
@@ -54,15 +53,6 @@ from .const import (  # pylint: disable=unused-import
     CONF_AUTO_REFRESH,
     CONF_AUTO_REFRESH_TIME,
     CONF_FORCE_MODE_DURATION,
-    CONF_SWITCH_SOURCE_PRECIPITATION,
-    CONF_SWITCH_SOURCE_DAILY_TEMPERATURE,
-    CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE,
-    CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE,
-    CONF_SWITCH_SOURCE_DEWPOINT,
-    CONF_SWITCH_SOURCE_PRESSURE,
-    CONF_SWITCH_SOURCE_HUMIDITY,
-    CONF_SWITCH_SOURCE_WINDSPEED,
-    CONF_SWITCH_SOURCE_SOLAR_RADIATION,
     KMH_TO_MS_FACTOR,
     MILESH_TO_MS_FACTOR,
     PSI_TO_HPA_FACTOR,
@@ -77,7 +67,16 @@ from .const import (  # pylint: disable=unused-import
     W_TO_J_DAY_FACTOR,
     J_TO_MJ_FACTOR,
     M2_TO_SQ_FT_FACTOR,
-    CONF_SWITCH_CALCULATE_ET,
+    CONF_SENSOR_PRECIPITATION,
+    CONF_SENSOR_DAILY_TEMPERATURE,
+    CONF_SENSOR_DEWPOINT,
+    CONF_SENSOR_HUMIDITY,
+    CONF_SENSOR_MAXIMUM_TEMPERATURE,
+    CONF_SENSOR_MINIMUM_TEMPERATURE,
+    CONF_SENSOR_PRESSURE,
+    CONF_SENSOR_WINDSPEED,
+    CONF_SENSOR_SOLAR_RADIATION,
+    CONF_SENSOR_ET,
 )
 from .entity import SmartIrrigationEntity
 
@@ -85,7 +84,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
-    """Setup sensor platform."""
+    """Set up the sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
 
     # async_add_devices([SmartIrrigationSensor(coordinator, entry)])
@@ -104,6 +103,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
     """SmartIrrigation Sensor class."""
 
     def __init__(self, hass, coordinator, entity, thetype):
+        """Initialize SmartIrrigation Sensor."""
         super(SmartIrrigationSensor, self).__init__(coordinator, entity, thetype)
         self._unit_of_measurement = UNIT_OF_MEASUREMENT_SECONDS
         self._state = 0.0
@@ -299,7 +299,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         return f"{self.type}"
 
     def get_attributes_for_daily_adjusted_run_time(self, bucket, water_budget, art):
-        """Returns the attributes for daily_adjusted_run_time."""
+        """Return the attributes for daily_adjusted_run_time."""
         return {
             CONF_WATER_BUDGET: show_percentage(
                 water_budget, self.coordinator.show_units
@@ -343,198 +343,156 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 data = self.coordinator.data["daily"][0]
 
             # retrieve the data from the sensors (if set) and build the data or overwrite what we got from the API
-            if self.coordinator.sources:
-                for source in self.coordinator.sources:
-                    if not self.coordinator.sources[source]:
-                        # this source is configured as a sensor
-                        sensor_setting = map_source_to_sensor(source)
-                        sensor_name = self.coordinator.sensors[sensor_setting]
-
-                        sensor_state = self.hass.states.get(sensor_name)
-                        _LOGGER.info(
-                            "update_state USING A SENSOR for instance {}, type: {}, source: {}, sensor_setting: {}, sensor_name: {}, sensor_state: {}".format(  # pylint: disable=logging-format-interpolation
-                                self.coordinator.name,
-                                self.type,
-                                source,
-                                sensor_setting,
-                                sensor_name,
-                                sensor_state,
-                            )
+            if self.coordinator.sensors:
+                for sensor, entity in self.coordinator.sensors.items():
+                    # this is a sensor we will need to use.
+                    sensor_state = self.hass.states.get(entity)
+                    _LOGGER.info(
+                        "update_state USING A SENSOR for instance {}, type: {}, sensor: {}, entity: {}, sensor_state: {}".format(  # pylint: disable=logging-format-interpolation
+                            self.coordinator.name,
+                            self.type,
+                            sensor,
+                            entity,
+                            sensor_state,
                         )
-                        if sensor_state is not None:
-                            _LOGGER.info(
-                                "update_state state value: {}".format(  # pylint: disable=logging-format-interpolation
-                                    sensor_state.state
-                                )
-                            )
-                            # we have the sensor_state - convert it to float
-                            if (
-                                isinstance(sensor_state.state, str)
-                                and sensor_state.state.count(" ") > 0
-                            ):
-                                sensor_state = sensor_state.state.split(" ")[0]
+                    )
+                    if sensor_state is not None:
+                        # we have the sensor_state - convert it to float
+                        if (
+                            isinstance(sensor_state.state, str)
+                            and sensor_state.state.count(" ") > 0
+                        ):
+                            sensor_state = sensor_state.state.split(" ")[0]
+                        else:
+                            sensor_state = sensor_state.state
+
+                        if sensor == CONF_SENSOR_PRECIPITATION:
+                            # get precipitation from sensor, assuming there is no separate snow sensor
+                            data["snow"] = 0.0
+                            # metric: mm, imperial: inch
+                            if self.coordinator.system_of_measurement == SETTING_METRIC:
+                                data["rain"] = convert_to_float(sensor_state)
                             else:
-                                sensor_state = sensor_state.state
-                            if source == CONF_SWITCH_SOURCE_PRECIPITATION:
-                                # get precipitation from sensor, assuming there is no separate snow sensor
-                                data["snow"] = 0.0
-                                # metric: mm, imperial: inch
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    == SETTING_METRIC
-                                ):
-                                    data["rain"] = convert_to_float(sensor_state)
-                                else:
-                                    # imperial
-                                    data["rain"] = float(
-                                        convert_to_float(sensor_state)
-                                        / MM_TO_INCH_FACTOR
-                                    )
-                            if source == CONF_SWITCH_CALCULATE_ET:
-                                # get et from sensor
-                                # metric: mm, imperial: inch
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    == SETTING_METRIC
-                                ):
-                                    self.evapotranspiration = convert_to_float(
-                                        sensor_state
-                                    )
-                                else:
-                                    # imperial
-                                    self.evapotranspiration = float(
-                                        convert_to_float(sensor_state)
-                                        / MM_TO_INCH_FACTOR
-                                    )
-                            if source == CONF_SWITCH_SOURCE_DEWPOINT:
-                                # get dewpoint from sensor
-                                # metric: C, imperial: F
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    == SETTING_METRIC
-                                ):
-                                    data["dew_point"] = convert_to_float(sensor_state)
-                                else:
-                                    # imperial
-                                    data["dew_point"] = convert_F_to_C(
-                                        convert_to_float(sensor_state)
-                                    )
-                            if source == CONF_SWITCH_SOURCE_DAILY_TEMPERATURE:
-                                # get temperature from sensor
-                                if "temp" not in data:
-                                    data["temp"] = {}
-                                # metric: C, imperial: F
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    == SETTING_METRIC
-                                ):
-                                    data["temp"]["day"] = convert_to_float(sensor_state)
-                                else:
-                                    # imperial
-                                    data["temp"]["day"] = convert_F_to_C(
-                                        convert_to_float(sensor_state)
-                                    )
-                            if source == CONF_SWITCH_SOURCE_HUMIDITY:
-                                # get humidity from sensor
-                                # %, no conversion necessary
-                                data["humidity"] = convert_to_float(sensor_state)
-                            if source == CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE:
-                                # get max temp from sensor
-                                if "temp" not in data:
-                                    data["temp"] = {}
-                                # metric: C, imperial: F
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    == SETTING_METRIC
-                                ):
-                                    data["temp"]["max"] = convert_to_float(sensor_state)
-                                else:
-                                    # imperial
-                                    data["temp"]["max"] = convert_F_to_C(
-                                        convert_to_float(sensor_state)
-                                    )
-                            if source == CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE:
-                                # get min temp from sensor
-                                if "temp" not in data:
-                                    data["temp"] = {}
-                                # metric: C, imperial: F
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    == SETTING_METRIC
-                                ):
-                                    data["temp"]["min"] = convert_to_float(sensor_state)
-                                else:
-                                    # imperial
-                                    data["temp"]["min"] = convert_F_to_C(
-                                        convert_to_float(sensor_state)
-                                    )
-                            if source == CONF_SWITCH_SOURCE_PRESSURE:
-                                # get pressure from sensor
-                                # metric: mbar, imperial: psi
-                                # store in hPa (which is 1=1 with with mbar)
-                                # we will convert it to kPa for the calculations.
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    == SETTING_METRIC
-                                ):
-                                    data["pressure"] = convert_to_float(sensor_state)
-                                else:
-                                    # imperial
-                                    data["pressure"] = float(
-                                        convert_to_float(sensor_state)
-                                        / PSI_TO_HPA_FACTOR
-                                    )
-                            if source == CONF_SWITCH_SOURCE_WINDSPEED:
-                                # get windspeed from sensor
-                                # metric: km/h, imperial: m/h
-                                # store in m/s
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    == SETTING_METRIC
-                                ):
-                                    data["wind_speed"] = float(
-                                        convert_to_float(sensor_state)
-                                        / KMH_TO_MS_FACTOR
-                                    )
-                                else:
-                                    # imperial: miles/h --> meter/s
-                                    data["wind_speed"] = float(
-                                        convert_to_float(sensor_state)
-                                        / MILESH_TO_MS_FACTOR
-                                    )
-                            if source == CONF_SWITCH_SOURCE_SOLAR_RADIATION:
-                                # get the solar radiation from sensor
-                                # metric: W/m2, imperial: W/sq ft
-                                # store in: MJ/m2
-                                solrad = float(
-                                    convert_to_float(sensor_state) * W_TO_J_DAY_FACTOR
+                                # imperial
+                                data["rain"] = float(
+                                    convert_to_float(sensor_state) / MM_TO_INCH_FACTOR
                                 )
-                                solrad = float(
-                                    convert_to_float(solrad) / J_TO_MJ_FACTOR
+                        if sensor == CONF_SENSOR_ET:
+                            # get et from sensor
+                            # metric: mm, imperial: inch
+                            if self.coordinator.system_of_measurement == SETTING_METRIC:
+                                self.evapotranspiration = convert_to_float(sensor_state)
+                            else:
+                                # imperial
+                                self.evapotranspiration = float(
+                                    convert_to_float(sensor_state) / MM_TO_INCH_FACTOR
                                 )
-                                if (
-                                    self.coordinator.system_of_measurement
-                                    == SETTING_METRIC
-                                ):
-                                    data["solar_radiation"] = solrad
-                                else:
-                                    data["solar_radiation"] = float(
-                                        convert_to_float(solrad) / M2_TO_SQ_FT_FACTOR
-                                    )
+                        if sensor == CONF_SENSOR_DEWPOINT:
+                            # get dewpoint from sensor
+                            # metric: C, imperial: F
+                            if self.coordinator.system_of_measurement == SETTING_METRIC:
+                                data["dew_point"] = convert_to_float(sensor_state)
+                            else:
+                                # imperial
+                                data["dew_point"] = convert_F_to_C(
+                                    convert_to_float(sensor_state)
+                                )
+                        if sensor == CONF_SENSOR_DAILY_TEMPERATURE:
+                            # get temperature from sensor
+                            if "temp" not in data:
+                                data["temp"] = {}
+                            # metric: C, imperial: F
+                            if self.coordinator.system_of_measurement == SETTING_METRIC:
+                                data["temp"]["day"] = convert_to_float(sensor_state)
+                            else:
+                                # imperial
+                                data["temp"]["day"] = convert_F_to_C(
+                                    convert_to_float(sensor_state)
+                                )
+                        if sensor == CONF_SENSOR_HUMIDITY:
+                            # get humidity from sensor
+                            # %, no conversion necessary
+                            data["humidity"] = convert_to_float(sensor_state)
+                        if sensor == CONF_SENSOR_MAXIMUM_TEMPERATURE:
+                            # get max temp from sensor
+                            if "temp" not in data:
+                                data["temp"] = {}
+                            # metric: C, imperial: F
+                            if self.coordinator.system_of_measurement == SETTING_METRIC:
+                                data["temp"]["max"] = convert_to_float(sensor_state)
+                            else:
+                                # imperial
+                                data["temp"]["max"] = convert_F_to_C(
+                                    convert_to_float(sensor_state)
+                                )
+                        if sensor == CONF_SENSOR_MINIMUM_TEMPERATURE:
+                            # get min temp from sensor
+                            if "temp" not in data:
+                                data["temp"] = {}
+                            # metric: C, imperial: F
+                            if self.coordinator.system_of_measurement == SETTING_METRIC:
+                                data["temp"]["min"] = convert_to_float(sensor_state)
+                            else:
+                                # imperial
+                                data["temp"]["min"] = convert_F_to_C(
+                                    convert_to_float(sensor_state)
+                                )
+                        if sensor == CONF_SENSOR_PRESSURE:
+                            # get pressure from sensor
+                            # metric: mbar, imperial: psi
+                            # store in hPa (which is 1=1 with with mbar)
+                            # we will convert it to kPa for the calculations.
+                            if self.coordinator.system_of_measurement == SETTING_METRIC:
+                                data["pressure"] = convert_to_float(sensor_state)
+                            else:
+                                # imperial
+                                data["pressure"] = float(
+                                    convert_to_float(sensor_state) / PSI_TO_HPA_FACTOR
+                                )
+                        if sensor == CONF_SENSOR_WINDSPEED:
+                            # get windspeed from sensor
+                            # metric: km/h, imperial: m/h
+                            # store in m/s
+                            if self.coordinator.system_of_measurement == SETTING_METRIC:
+                                data["wind_speed"] = float(
+                                    convert_to_float(sensor_state) / KMH_TO_MS_FACTOR
+                                )
+                            else:
+                                # imperial: miles/h --> meter/s
+                                data["wind_speed"] = float(
+                                    convert_to_float(sensor_state) / MILESH_TO_MS_FACTOR
+                                )
+                        if sensor == CONF_SENSOR_SOLAR_RADIATION:
+                            # get the solar radiation from sensor
+                            # metric: W/m2, imperial: W/sq ft
+                            # store in: MJ/m2
+                            solrad = float(
+                                convert_to_float(sensor_state) * W_TO_J_DAY_FACTOR
+                            )
+                            solrad = float(convert_to_float(solrad) / J_TO_MJ_FACTOR)
+                            if self.coordinator.system_of_measurement == SETTING_METRIC:
+                                data["solar_radiation"] = solrad
+                            else:
+                                data["solar_radiation"] = float(
+                                    convert_to_float(solrad) / M2_TO_SQ_FT_FACTOR
+                                )
+
             # parse precipitation out of the today data
             self.precipitation = self.get_precipitation(data)
             # calculate et out of the today data or from sensor if that is the configuration
-            if self.coordinator.sources.get(CONF_SWITCH_CALCULATE_ET):
-                self.evapotranspiration = self.get_evapotranspiration(data)
-                _LOGGER.info(
-                    "calculated evapotranspiration: {}".format(self.evapotranspiration)
-                )
-            else:
+            _LOGGER.warning(self.coordinator.sensors)
+            if CONF_SENSOR_ET in self.coordinator.sensors:
                 _LOGGER.info(
                     "skipped calculating evapotranspiration, got the following value from a sensor: {}".format(
                         self.evapotranspiration
                     )
                 )
+            else:
+                self.evapotranspiration = self.get_evapotranspiration(data)
+                _LOGGER.info(
+                    "calculated evapotranspiration: {}".format(self.evapotranspiration)
+                )
+
             # calculate the adjusted runtime!
             self.precipitation = float(self.precipitation)
             self.evapotranspiration = float(self.evapotranspiration)
@@ -705,9 +663,9 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             u_2 = data["wind_speed"]
             coastal = self.coordinator.coastal
 
-            calculate_solar_radiation = self.coordinator.sources.get(
-                CONF_SWITCH_SOURCE_SOLAR_RADIATION, True
-            )
+            calculate_solar_radiation = True
+            if CONF_SENSOR_SOLAR_RADIATION in self.coordinator.sensors:
+                calculate_solar_radiation = False
             estimate_solrad_from_temp = self.coordinator.estimate_solrad_from_temp
             solrad = data.get("solar_radiation", None)
             fao56 = estimate_fao56_daily(

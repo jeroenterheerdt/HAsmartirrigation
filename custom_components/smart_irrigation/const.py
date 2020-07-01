@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.56"
+VERSION = "0.0.57"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -84,7 +84,7 @@ CONF_SENSOR_DAILY_TEMPERATURE = "sensor_temperature"
 CONF_SENSOR_DEWPOINT = "sensor_dewpoint"
 CONF_SENSOR_HUMIDITY = "sensor_humidity"
 CONF_SENSOR_MAXIMUM_TEMPERATURE = "sensor_max_temperature"
-CONF_SENSOR_MINIMUM_TEMPERATE = "sensor_min_temperature"
+CONF_SENSOR_MINIMUM_TEMPERATURE = "sensor_min_temperature"
 CONF_SENSOR_PRESSURE = "sensor_pressure"
 CONF_SENSOR_WINDSPEED = "sensor_windspeed"
 CONF_SENSOR_SOLAR_RADIATION = "sensor_solar_radiation"

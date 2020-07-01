@@ -29,7 +29,6 @@ from .const import (
     CONF_FLOW,
     CONF_AREA,
     DOMAIN,
-    PLATFORMS,
     STARTUP_MESSAGE,
     SETTING_METRIC,
     SETTING_US,
@@ -49,7 +48,6 @@ from .const import (
     CONF_AUTO_REFRESH,
     CONF_AUTO_REFRESH_TIME,
     EVENT_HOURLY_DATA_UPDATED,
-    CONF_SOURCE_SWITCHES,
     CONF_SENSORS,
     SERVICE_ENABLE_FORCE_MODE,
     SERVICE_DISABLE_FORCE_MODE,
@@ -64,12 +62,11 @@ from .const import (
     DEFAULT_CHANGE_PERCENT,
     CONF_INITIAL_UPDATE_DELAY,
     DEFAULT_INITIAL_UPDATE_DELAY,
-    CONF_SWITCH_SOURCE_PRECIPITATION,
     CONF_COASTAL,
     DEFAULT_COASTAL,
     CONF_ESTIMATE_SOLRAD_FROM_TEMP,
     DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP,
-    CONF_SWITCH_CALCULATE_ET,
+    CONF_SENSOR_PRECIPITATION,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -96,14 +93,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     number_of_sprinklers = entry.data.get(CONF_NUMBER_OF_SPRINKLERS)
     reference_et = entry.data.get(CONF_REFERENCE_ET)
     reference_et = [float(x) for x in reference_et]
-    # get settings (true / false depending on need to use owm or sensor)
-    sources = entry.data.get(CONF_SOURCE_SWITCHES)
-    # add et_sensor if set
-    if entry.data.get(CONF_SWITCH_CALCULATE_ET):
-        sources.update({CONF_SWITCH_CALCULATE_ET: True})
-    # get sensors - should be empty if full OWM.
     sensors = entry.data.get(CONF_SENSORS)
-    _LOGGER.info("{} sources: {}".format(entry.title, sources))
     _LOGGER.info("{} sensors: {}".format(entry.title, sensors))
     # convert values to internal metric representation if required.
     # depending on this we need to convert to metric internally or not
@@ -172,7 +162,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         show_units=show_units,
         auto_refresh=auto_refresh,
         auto_refresh_time=auto_refresh_time,
-        sources=sources,
         sensors=sensors,
         change_percent=change_percent,
         initial_update_delay=initial_update_delay,
@@ -279,7 +268,6 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         show_units,
         auto_refresh,
         auto_refresh_time,
-        sources,
         sensors,
         change_percent,
         initial_update_delay,
@@ -319,7 +307,6 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.coastal = coastal
         self.estimate_solrad_from_temp = estimate_solrad_from_temp
         self.name = name
-        self.sources = sources
         self.sensors = sensors
         self.hourly_bucket_list = []
         self.platforms = []
@@ -446,13 +433,12 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
             _LOGGER.info("parsed out unit, bucket is {}".format(self.bucket))
         if len(self.hourly_bucket_list) > 0:
 
-            _LOGGER.info(
-                "using OWM for precipitation: {}".format(
-                    self.sources[CONF_SWITCH_SOURCE_PRECIPITATION]
-                )
-            )
+            use_owm = True
+            if CONF_SENSOR_PRECIPITATION in self.sensors:
+                use_owm = False
+            _LOGGER.info("using OWM for precipitation: {}".format(use_owm))
             # are we using OWM for precipitation?
-            if self.sources[CONF_SWITCH_SOURCE_PRECIPITATION]:
+            if use_owm:
                 # this is applicable when using OWM (average)
                 bucket_delta = (sum(self.hourly_bucket_list) * 1.0) / len(
                     self.hourly_bucket_list

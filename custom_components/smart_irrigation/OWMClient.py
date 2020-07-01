@@ -11,7 +11,7 @@ OWM_URL = "https://api.openweathermap.org/data/2.5/onecall?units=metric&lat={}&l
 
 
 class OWMClient:  # pylint: disable=invalid-name
-    """Open Weather Map Client"""
+    """Open Weather Map Client."""
 
     def __init__(self, api_key, latitude, longitude):
         """Init."""

@@ -147,7 +147,8 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                 if status is None:
                     raise SensorNotFound
                 # store values entered
-                self._sensors = user_input
+                # self._sensors = user_input
+                self._sensors[CONF_SENSOR_ET] = entity
 
                 # we can skip directly to step4 because we don't need all the other info if we are not calculating...
                 return await self._show_step4(user_input)
@@ -161,7 +162,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         """Show step 0."""
         return self.async_show_form(
             step_id="step0",
-            data_schema=vol.Schema({vol.Required(CONF_SENSOR_ET): str,}),
+            data_schema=vol.Schema({vol.Required(CONF_SENSOR_ET): str}),
             errors=self._errors,
         )
 
@@ -263,9 +264,10 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                     status = self.hass.states.get(entity)
                     if status is None:
                         raise SensorNotFound
-
+                    # store the value
+                    self._sensors[sensor] = entity
                 # store the values
-                self._sensors.update(user_input)
+                # self._sensors.update(user_input)
                 # show next step (step3 if not all values are false in the settings (except for radiation calculation), otherwise skip step3 and show step4)
                 settings_for_check = copy.deepcopy(self.owm_source_settings)
                 [
@@ -286,7 +288,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         """Show the configuration form step 3: OWM API Key."""
         return self.async_show_form(
             step_id="step3",
-            data_schema=vol.Schema({vol.Required(CONF_API_KEY): str,}),
+            data_schema=vol.Schema({vol.Required(CONF_API_KEY): str}),
             errors=self._errors,
         )
 
