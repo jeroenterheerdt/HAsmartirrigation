@@ -480,7 +480,6 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             # parse precipitation out of the today data
             self.precipitation = self.get_precipitation(data)
             # calculate et out of the today data or from sensor if that is the configuration
-            _LOGGER.warning(self.coordinator.sensors)
             if CONF_SENSOR_ET in self.coordinator.sensors:
                 _LOGGER.info(
                     "skipped calculating evapotranspiration, got the following value from a sensor: {}".format(
