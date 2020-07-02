@@ -87,7 +87,7 @@
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "number_of_sprinklers": "Number of sprinklers",
-          "flow": "Flow per sprinkler in gpm or lpm",
+          "flow": "Flow per sprinkler in gpm or l/min",
           "area": "Area in sq ft or m2"
         }
       }
@@ -98,7 +98,7 @@
       "user": {
         "data": {
           "number_of_sprinklers": "Number of sprinklers",
-          "flow": "Flow per sprinkler in gpm or lpm",
+          "flow": "Flow per sprinkler in gpm or l/min",
           "area": "Area in sq ft or m2",
           "lead_time": "Lead time, time to add to adjusted run time (seconds).",
           "change_percent": "Percentage to change adjusted run time by (100 means no change).",

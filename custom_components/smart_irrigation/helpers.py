@@ -46,7 +46,7 @@ def show_liter_or_gallon(value, som, show_units):
         return "unknown"
     value = float(value)
     if som == SETTING_METRIC:
-        retval = f"{value}"
+        retval = f"{round(value,2)}"
         if show_units:
             retval = retval + f" {UNIT_OF_MEASUREMENT_LITERS}"
         return retval
@@ -62,7 +62,7 @@ def show_liter_or_gallon_per_minute(value, som, show_units):
         return "unknown"
     value = float(value)
     if som == SETTING_METRIC:
-        retval = f"{value}"
+        retval = f"{round(value,2)}"
         if show_units:
             retval = retval + f" {UNIT_OF_MEASUREMENT_LPM}"
         return retval
@@ -79,7 +79,7 @@ def show_mm_or_inch(value, som, show_units):
     if not isinstance(value, list):
         value = float(value)
     if som == SETTING_METRIC:
-        retval = f"{value}"
+        retval = f"{round(value,2)}"
         if show_units:
             retval = retval + f" {UNIT_OF_MEASUREMENT_MMS}"
         return retval
@@ -98,7 +98,7 @@ def show_mm_or_inch_per_hour(value, som, show_units):
         return "unknown"
     value = float(value)
     if som == SETTING_METRIC:
-        retval = f"{value}"
+        retval = f"{round(value,2)}"
         if show_units:
             retval = retval + f" {UNIT_OF_MEASUREMENT_MMS_HOUR}"
         return retval
@@ -117,7 +117,7 @@ def show_m2_or_sq_ft(value, som, show_units):
         return "unknown"
     value = float(value)
     if som == SETTING_METRIC:
-        retval = f"{value}"
+        retval = f"{round(value,2)}"
         if show_units:
             retval = retval + f" {UNIT_OF_MEASUREMENT_M2}"
         return retval

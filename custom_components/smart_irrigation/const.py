@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.59"
+VERSION = "0.0.60"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -142,10 +142,10 @@ UNIT_OF_MEASUREMENT_MMS = "mm"
 UNIT_OF_MEASUREMENT_INCHES = "inch"
 UNIT_OF_MEASUREMENT_M2 = "m2"
 UNIT_OF_MEASUREMENT_SQ_FT = "sq ft"
-UNIT_OF_MEASUREMENT_INCHES_HOUR = "inch/hour"
-UNIT_OF_MEASUREMENT_MMS_HOUR = "mm/hour"
-UNIT_OF_MEASUREMENT_GPM = "gallon/minute"
-UNIT_OF_MEASUREMENT_LPM = "liter/minute"
+UNIT_OF_MEASUREMENT_INCHES_HOUR = "inch/h"
+UNIT_OF_MEASUREMENT_MMS_HOUR = "mm/hr"
+UNIT_OF_MEASUREMENT_GPM = "gpm"
+UNIT_OF_MEASUREMENT_LPM = "l/min"
 
 # OPTIONS DEFAULTS
 DEFAULT_LEAD_TIME = 0  # seconds
