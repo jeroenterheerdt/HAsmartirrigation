@@ -4,8 +4,7 @@ import asyncio
 import logging
 
 from homeassistant.core import callback, Event
-
-# from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.event import async_track_point_in_time
 
 from .helpers import (
     show_percentage,
@@ -77,6 +76,7 @@ from .const import (  # pylint: disable=unused-import
     CONF_SENSOR_WINDSPEED,
     CONF_SENSOR_SOLAR_RADIATION,
     CONF_SENSOR_ET,
+    EVENT_IRRIGATE_START,
 )
 from .entity import SmartIrrigationEntity
 
@@ -265,6 +265,25 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         self.hass.states.set(
             art_entity_id, result["art"], attr,
         )
+
+        # make sure to fire the 'we need to start irrigation now' event in time so we finish just before sunrise
+        sun_state = self.hass.states.get("sun.sun")
+        if sun_state is not None:
+            sun_rise = sun_state.attributes.get("next_rising")
+            if sun_rise is not None:
+                sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S%z")
+                _LOGGER.info("sun_rise: {}".format(sun_rise))
+                async_track_point_in_time(
+                    self.hass, self._fire_start_event, point_in_time=sun_rise
+                )
+                time_to_fire = sun_rise - datetime.timedelta(seconds=result["art"])
+                event_to_fire = f"{self.name}_{EVENT_IRRIGATE_START}"
+                _LOGGER.info("{} will fire at {}".format(event_to_fire, time_to_fire))
+
+    async def _fire_start_event(self, *args):
+        """Fire the irrigation start event.."""
+        event_to_fire = f"{self.name}_{EVENT_IRRIGATE_START}"
+        self.hass.bus.fire(event_to_fire, {})
 
     @callback
     def _bucket_updated(self, event: Event):

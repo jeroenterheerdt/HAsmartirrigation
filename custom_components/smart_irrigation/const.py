@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.60"
+VERSION = "0.0.61"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -94,6 +94,7 @@ CONF_SENSOR_ET = "sensor_et"
 EVENT_BUCKET_UPDATED = "bucketUpd"
 EVENT_HOURLY_DATA_UPDATED = "hourlyUpd"
 EVENT_FORCE_MODE_TOGGLED = "forceModeTog"
+EVENT_IRRIGATE_START = "start"
 
 # Services
 SERVICE_RESET_BUCKET = "reset_bucket"
