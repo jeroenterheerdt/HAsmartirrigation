@@ -282,7 +282,8 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
 
     async def _fire_start_event(self, *args):
         """Fire the irrigation start event.."""
-        event_to_fire = f"{self.name}_{EVENT_IRRIGATE_START}"
+        event_to_fire = f"{self.coordinator.name}_{EVENT_IRRIGATE_START}"
+        _LOGGER.info("firing start event: {}".format(event_to_fire))
         self.hass.bus.fire(event_to_fire, {})
 
     @callback
