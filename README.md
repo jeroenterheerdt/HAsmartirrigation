@@ -45,7 +45,7 @@ In order to get the most accurate results using sensors is preferable either fro
 
 In this section:
 - [One-time set up](#step-1-configuration-of-component)
-- [List of entities and attributes created](#step-2-checking-entities)
+- [List of events, services entities and attributes created](#step-2-checking-entities)
 - [Example automation](#step-3-creating-automation)
 - [Optional settings](#step-4-configuring-optional-settings)
 ### Step 1: configuration of component
@@ -61,8 +61,30 @@ You will need to specify the following:
  > **When entering any values in the configuration of this component, keep in mind that the component will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).
 For sensor configuration take care to make sure the unit the component expects is the same as your sensor provides.**
 
-### Step 2: checking entities
+### Step 2: checking services, events and entities
 After successful configuration, you should end up with three entities and their attributes, listed below as well as [three services](#available-services).
+
+#### Services
+For each instance of the component the following services will be available:
+| Service | Description|
+| --- | --- |
+|`smart_irrigation.[instance]_calculate_daily_adjusted_run_time`|Triggers the calculation of daily adjusted run time. Use only if you disabled automatic refresh in the options.|
+|`smart_irrigation.[instance]_calculate_hourly_adjusted_run_time`|Triggers the calculation of hourly adjusted run time. Use for debugging only.|
+|`smart_irrigation.[instance]_enable_force_mode`|Enables force mode.|
+|`smart_irrigation.[instance]_disable_force_mode`|Disables force mode.|
+|`smart_irrigation.]instance]_reset_bucket`|Resets the bucket to 0. Needs to be called after done irrigating (see below).|
+|`smart_irrigation.[instance]_set_bucket`|Sets the bucket to the provided `value`. Use for debugging only.|
+
+#### Events
+The component uses a number of events internally that you do not need to pay attention to unless you need to debug things. The exception is the `_start` event.
+| Event | Description|
+| --- | --- |
+|`[instance]_start`|Fires depending on `daily_adjusted_run_time` value and sunrise. You can listen to this event to optimize the moment you irrigate so your irrigation starts just before sunrise and is completed at sunrise. See below for examples on how to use this.|
+|`[instance]_bucketUpd`|Fired when the bucket is calculated. Happens at automatic refresh time or as a result of the `reset_bucket`, `set_bucket` or `calculate_daily_adjusted_run_time` service.|
+|`[instance]_forceModeTog`|Fired when the force mode is disabled or enabled. Result of calling `enable_force_mode` or `disable_force_mode`|
+|`[instance]_hourlyUpd`|Fired when the hourly adjusted run time is calculated. Happens approximately every hour and when `calculate_hourly_adjusted_run_time` service is called.|
+
+#### Entities
 #### `sensor.smart_irrigation_base_schedule_index`
 The number of seconds the irrigation system needs to run assuming maximum evapotranspiration and no rain / snow. This value and the attributes are static for your configuration.
 Attributes:
@@ -118,7 +140,9 @@ Sample screenshot:
 
 You will use `sensor.smart_irrigation_daily_adjusted_run_time` to create an automation (see step 3, below).
 
-The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) describes the entities, the attributes and the calculations
+The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) describes the entities, the attributes and the calculations.
+
+
 
 #### Showing other attributes as entities (sensors)
 [See the Wiki for more information on how to expose other values this components calculates as sensors](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Showing-other-sensors).
@@ -130,13 +154,14 @@ Since this component does not interface with your irrigation system directly, yo
 > **The last step in any automation is very important, since you will need to let the component know you have finished irrigating and the evaporation counter can be reset by calling the `smart_irrigation.reset_bucket` service**
 
 #### Example automation 1: one valve, potentially daily irrigation
-Here is an example automation that run everyday at 6 AM local time. It checks if `sensor.smart_irrigation_daily_adjusted_run_time` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service:
+Here is an example automation that runs when the `smart_irrigation_start` event is fired. It checks if `sensor.smart_irrigation_daily_adjusted_run_time` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service. If you have multiple instances you will need to adjust the event, entities and service names accordingly.
 ```
 - alias: Smart Irrigation
   description: 'Start Smart Irrigation at 06:00 and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
   trigger:
-  - at: 06:00
-    platform: time
+   - event_data: {}
+     event_type: smart_irrigation_start
+     platform: event
   condition:
   - above: '0'
     condition: numeric_state

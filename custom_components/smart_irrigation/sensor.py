@@ -277,14 +277,14 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                     self.hass, self._fire_start_event, point_in_time=sun_rise
                 )
                 time_to_fire = sun_rise - datetime.timedelta(seconds=result["art"])
-                event_to_fire = f"{self.name}_{EVENT_IRRIGATE_START}"
+                event_to_fire = f"{self.coordinator.name}_{EVENT_IRRIGATE_START}"
                 _LOGGER.info("{} will fire at {}".format(event_to_fire, time_to_fire))
 
     async def _fire_start_event(self, *args):
         """Fire the irrigation start event.."""
         event_to_fire = f"{self.coordinator.name}_{EVENT_IRRIGATE_START}"
-        _LOGGER.info("firing start event: {}".format(event_to_fire))
-        self.hass.bus.fire(event_to_fire, {})
+        self.coordinator.hass.bus.fire(event_to_fire, {})
+        _LOGGER.info("fired start event: {}".format(event_to_fire))
 
     @callback
     def _bucket_updated(self, event: Event):
