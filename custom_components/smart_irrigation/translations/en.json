@@ -46,7 +46,7 @@
         "title": "Smart Irrigation - Step 4/7: Sensors",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "sensor_precipitation": "Sensor that measures total precipitation (rain/snow) (mm, inch)",
+          "sensor_precipitation": "Sensor that measures total daily precipitation (rain/snow) (mm, inch)",
           "sensor_temperature": "Sensor that measures temperature (C, F)",
           "sensor_dewpoint": "Sensor that measures dewpoint (C, F)",
           "sensor_humidity": "Sensor that measures humidity (%)",

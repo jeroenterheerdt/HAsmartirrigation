@@ -240,6 +240,18 @@ def convert_to_float(float_value):
         return 0
 
 
+def average_of_list(the_list):
+    """Return average of provided list."""
+    if len(the_list) == 0:
+        return 0
+    return (sum(the_list) * 1.0) / len(the_list)
+
+def last_of_list(the_list):
+    """Return the last item of the provided list."""
+    if len(the_list) == 0:
+        return None
+    return the_list[len(the_list) - 1]
+
 def estimate_fao56_daily(  # pylint: disable=invalid-name
     day_of_year,
     temp_c,
