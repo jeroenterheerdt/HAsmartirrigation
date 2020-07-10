@@ -41,6 +41,14 @@ When planning to set up mode 2) (Full Sensors), 3) (Mixed) or 4) (Not Calculatin
 ## Getting the best results
 In order to get the most accurate results using sensors is preferable either from your own weather station or from another, from example through [Weatherflow Smart Weather](https://github.com/briis/smartweather). If you have a weather station that provides evapotranspiration (ET) values, use that (mode 4). If you do not have that, use sensors including solar radiation (mode 3). If you do not have access to a sensor that provides solar radiation, let this component estimate it but use sensors for the other inputs (modified mode 3). If you do have access to limited amount of sensors (say only temperature) use that and use Open Weather Map for the rest (mode 2). If you do not have access to any sensors at all use Open Weather Map (mode 1).
 
+Since this component provides multiple configuration options it might get confusing about in which scenario what behavior can be expected and what input is required. In the table below we summarize the configuration modes, their accuracy, the required input and how daily adjusted run time is calculated. Keep in mind that daily adjusted run time is based on the netto precipitation (precipitation - evapotranspiration) and the bucket value for previous days.
+|Mode|Accuracy|Input|How adjusted run time is calculated|
+|---|---|---|---|
+|Mode 1 - Full Open Weather Map|Low|No sensor input required, just an API key for Open Weather Map|Average of precipitation and evapotranspiration.|
+|Mode 2 - Full Sensor, but calculating evapotranspiration|High|Sensors are required for all inputs. All inputs are expected to be point-in-time, *except precipitation*. That sensor is normally provided by a weather station or weather service as a daily accumulative / 'total precipitation today' sensor and that is what is expected by the component|Most recent value for precipitation and average of evapotranspiration.
+|Mode 3 - Mixed|Medium|API key is required for any inputs that have not been provided sensors. All inputs are expected to be point-in-time, *except precipitation*. That sensor is normally provided by a weather station or weather service as a 'total precipitation today' sensor and that is what is expected by the component|If a sensor is provided for precipitation, most recent value for precipitation is used. Otherwise the average of both precipitation and evapotranspiration.|
+|Mode 4 -Not calculating|Very high|In this mode, just two sensors are required: one for precipitation and one for evapotranspiration. Both are expected to be daily accumulative sensors ('total today'), as is normally the case when provided by a weather service or weather station.|Most recent value of both precipitation and evapotranspiration.|
+
 ## Configuration
 
 In this section:
