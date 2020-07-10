@@ -32,9 +32,9 @@ The component uses the [PyETo module to calculate the evapotranspiration value (
 ## Operation modes
 You can use this component in various modes:
 1. **Full Open Weather Map**. In this mode all data comes from the Open Weather Map service. You will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions.
-2. **Full Sensors**. Using sensors. In this mode all data comes from sensors such as a weather station. Open Weather Map is not used and you do not need an API key.
-3. **Mixed**. A combination of 1) and 2). In this mode part of the data is supplied by sensors and part by Open Weather Map. In this mode you will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions.
-4. **Not calculating**. This mode allows you to skip the calculations of evapotranspiration all together and instead rely on a sensor to provide this value. In this mode, you will need to specify a precipitation sensor as well.
+2. **Full Sensors**. Using sensors. In this mode all data comes from sensors such as a weather station. When specificying a sensor for precipitation, note that it needs to be a cumulative daily sensor. Open Weather Map is not used and you do not need an API key.
+3. **Mixed**. A combination of 1) and 2). In this mode part of the data is supplied by sensors and part by Open Weather Map. In this mode you will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions. When specificying a sensor for precipitation, note that it needs to be a cumulative daily sensor.
+4. **Not calculating**. This mode allows you to skip the calculations of evapotranspiration all together and instead rely on a sensor to provide this value. In this mode, you will need to specify a precipitation sensor as well. Both of these need to be a cumulative daily sensor.
 
 When planning to set up mode 2) (Full Sensors), 3) (Mixed) or 4) (Not Calculating) see [Measurements and Units](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Measurements-and-Units) for more information on the measurements and units expected by this component.
 
