@@ -118,11 +118,11 @@ The adjusted run time in seconds to compensate for any net moisture lost. Update
 Attributes:
 | Attribute | Description |
 | --- | --- |
-|`rain`|the predicted rainfall in mm or inch|
-|`snow`|the predicted snowfall in mm or inch|
-|`precipitation`|the total predicted precipitation in mm or inch|
+|`rain`|the predicted (when using Open Weather Map) or cumulative daily (when using a sensor) rainfall in mm or inch|
+|`snow`|the predicted (when using Open Weather Map, will be 0 when using a sensor) snowfall in mm or inch|
+|`precipitation`|the total precipitation (which is the sum of `rain` and `snow` in mm or inch|
 |`evapotranspiration`|the expected evapotranspiration|
-|`netto precipitation`|the net evapotranspiration in mm or inch, negative values mean more moisture is lost than gets added bu rain/snow, while positive values mean more value is added by rain/snow than evaporates|
+|`netto precipitation`|the net evapotranspiration in mm or inch, negative values mean more moisture is lost than gets added bu rain/snow, while positive values mean more value is added by rain/snow than evaporates, equal to `precipitation - evapotranspiration`|
 |`water budget`|percentage of expected `evapotranspiration` vs `peak evapotranspiration`|
 |`adjusted run time minutes`|adjusted run time in minutes instead of seconds.|
 
