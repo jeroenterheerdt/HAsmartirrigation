@@ -1,0 +1,123 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Bare en enkelt konfigurasjon av Smart Irrigation er tillatt."
+    },
+    "error": {
+      "auth": "OpenWeather API-nøkkel er feil",
+      "name": "Angi et unikt navn for denne forekomsten.",
+      "reference_evapotranspiration_problem": "Sjekk referanseverdiene for fordampningstranspirasjon - de skal være desimal og minst én skal være null.",
+      "sensornotfound": "En eller flere av sensorene som er spesifisert, eksisterer ikke"
+    },
+    "title": "Smart Irrigation",
+    "step": {
+      "user": {
+        "title": "Smart Irrigation - Trinn 1/7: Beregning av navn og fordampning",
+        "description": "Hvis du trenger hjelp med konfigurasjonen, kan du se https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "name": "Unikt navn på forekomsten",
+          "calculate_ET_value": "Beregn evapotranspiration (ET) -verdi (deaktiver for å spesifisere en sensor i stedet)."
+        }
+      },
+      "step0": {
+        "title": "Smart Irrigation - Trinn 2/7: Evapotranspirasjonssensor",
+        "description": "Hvis du trenger hjelp med konfigurasjonen, kan du se https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "sensor_et": "Sensor som måler fordampning (ET) (mm, tomme)",
+          "sensor_precipitation": "Sensor som måler total nedbør (regn/snø) (mm, tomme)"
+        }
+      },
+      "step1": {
+        "title": "Smart Irrigation - Trinn 3/7: Kilder",
+        "description": "Hvis du trenger hjelp med konfigurasjonen, kan du se https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "use_owm_precipitation": "Bruk OpenWeatherMap for nedbør",
+          "use_owm_temperature": "Bruk OpenWeatherMap for temperatur",
+          "use_owm_min_temperature": "Bruk OpenWeatherMap for minimumstemperatur",
+          "use_owm_max_temperature": "Bruk OpenWeatherMap for maksimal temperatur",
+          "use_owm_dewpoint": "Bruk OpenWeatherMap for duggpunk",
+          "use_owm_pressure": "Bruk OpenWeatherMap for trykk",
+          "use_owm_humidity": "Bruk OpenWeatherMap for fuktighet",
+          "use_owm_windspeed": "Bruk OpenWeatherMap for vindhastighe",
+          "calculate_solar_radiation": "Beregn solstråling (deaktiver for å spesifisere en sensor)"
+        }
+      },
+      "step2": {
+        "title": "Smart Irrigation - Trinn 4/7: Sensorer",
+        "description": "Hvis du trenger hjelp med konfigurasjonen, kan du se https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "sensor_precipitation": "Sensor som måler total daglig nedbør (regn/snø) (mm, tomme)",
+          "sensor_temperature": "Sensor som måler temperatur (C, F)",
+          "sensor_dewpoint": "Sensor som måler duggpunkt (C, F)",
+          "sensor_humidity": "Sensor som måler fuktighet (%)",
+          "sensor_max_temperature": "Sensor som måler maks temperatur (C, F)",
+          "sensor_min_temperature": "Sensor som måler minimumstemperatur (C, F)",
+          "sensor_pressure": "Sensor som måler trykk (mbar, hPa, psi)",
+          "sensor_windspeed": "Sensor som måler vindhastighet (km / t, mph)",
+          "sensor_solar_radiation": "Sensor som måler solstråling (W/m2, W/sq ft)"
+        }
+      },
+      "step3": {
+        "title": "Smart Irrigation - Step 5/7: OpenWeather Map API",
+        "description": "Hvis du trenger hjelp med konfigurasjonen, kan du se https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "api_key": "API-nøkkel for OpenWeather Map"
+        }
+      },
+      "step4": {
+        "title": "Smart Irrigation - Step 6/7: Referanse evapotranspirasjonsverdier",
+        "description": "Hvis du trenger hjelp med konfigurasjonen, kan du se https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "reference_evapotranspiration_1": "Referanse evapotranspirasjon for januar",
+          "reference_evapotranspiration_2": "Referanse evapotranspirasjon for februar",
+          "reference_evapotranspiration_3": "Referanse evapotranspirasjon for mars",
+          "reference_evapotranspiration_4": "Referanse evapotranspirasjon for april",
+          "reference_evapotranspiration_5": "Referanse evapotranspirasjon for mai",
+          "reference_evapotranspiration_6": "Referanse evapotranspirasjon for juni",
+          "reference_evapotranspiration_7": "Referanse evapotranspirasjon for juli",
+          "reference_evapotranspiration_8": "Referanse evapotranspirasjon for august",
+          "reference_evapotranspiration_9": "Referanse evapotranspirasjon for september",
+          "reference_evapotranspiration_10": "Referanse evapotranspirasjon for oktober",
+          "reference_evapotranspiration_11": "Referanse evapotranspirasjon for november",
+          "reference_evapotranspiration_12": "Referanse evapotranspirasjon for desember"
+        }
+      },
+      "step5": {
+        "title": "Smart Irrigation - Step 7/7: Vanningssystemkonfigurasjon",
+        "description": "Hvis du trenger hjelp med konfigurasjonen, kan du se https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "number_of_sprinklers": "Antall sprinklere",
+          "flow": "Strøm per sprinkler i gpm eller l/min",
+          "area": "Areal i sq ft eller m2"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "data": {
+          "number_of_sprinklers": "Antall sprinklere",
+          "flow": "Strøm per sprinkler i gpm eller l/min",
+          "area": "Areal i sq ft eller m2",
+          "lead_time": "Ledetid, tid for å legge til justert kjøretid (sekunder).",
+          "change_percent": "Prosentandel for å endre justert kjøretid med (100 betyr ingen endring).",
+          "maximum_duration": "Maksimal varighet, inkludert ledetid (-1 betyr ikke maksimalt) (sekunder).",
+          "force_mode_duration": "Antall sekunder for å kjøre vanning i kraftmodus.",
+          "show_units": "Vis enheter i enhetsattributter.",
+          "auto_refresh": "Aktiver eller deaktiver automatisk oppdatering på tidspunktet konfigurert nedenfor.",
+          "auto_refresh_time": "Lokal tid for å planlegge automatisk oppdatering (hvis aktivert).",
+          "initial_update_delay": "Forsinkelse før første sensoroppdatering etter omstart (sekunder).",
+          "coastal": "Kyst (luftmasser er påvirket av en nærliggende vannlegeme)",
+          "estimate_solrad_from_temp": "Beregn solstråling fra temperatur."
+        }
+      }
+    },
+    "error": {
+      "auto_refresh_time_error": "Ugyldig tid spesifisert for automatisk oppdateringstid.",
+      "maximum_duration_error": "Maksimal varighet skal være >=-1.",
+      "initial_update_delay_error": "Innledende oppdateringsforsinkelse bør være >=0."
+    }
+  },
+  "title": "Smart Irrigation"
+}
