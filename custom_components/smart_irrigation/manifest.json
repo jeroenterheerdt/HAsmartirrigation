@@ -9,5 +9,6 @@
   "zeroconf": [],
   "homekit": {},
   "dependencies": [],
-  "codeowners": ["@jeroenterheerdt"]
+  "codeowners": ["@jeroenterheerdt"],
+  "version": "0.0.64"
 }
