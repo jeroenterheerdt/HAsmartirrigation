@@ -29,6 +29,16 @@ This is all the component does, and this is on purpose to provide maximum flexib
 This component uses reference evapotranspiration values and calculates base schedule indexes and water budgets from that. This is an industry-standard approach. Information can be found at https://www.rainbird.com/professionals/irrigation-scheduling-use-et-save-water, amongst others.
 The component uses the [PyETo module to calculate the evapotranspiration value (fao56)](https://pyeto.readthedocs.io/en/latest/fao56_penman_monteith.html). Also, please see the [How this works](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) Wiki page.
 
+## Visual representation of what this component does
+![](images/smart_irrigation_diagram.png?raw=true)
+1. Snow and rain fall on the ground add moisture. This is tracked /predicted hourly depending on the [operation mode](#operation-mode) by the `rain` and `snow` attributes Together, this makes up the `precipitation`.
+2. Sunshine, temperature, wind speed, place on earth and other factors influence the amount of moisture lost from the ground(`evapotranspiration`). This is tracked / predicted hourly depending on the [operation mode](#operation-mode).
+3. The difference between `precipitation` and `evapotranspiration` is the `netto precipitation`: negative values mean more moisture is lost than gets added by rain/snow, while positive values mean more moisture is added by rain/snow than what evaporates.
+4. Once a day (time is configurable) the `netto precipitation` is added/substracted from the `bucket,` which starts as empty. If the `bucket` is below zero, irrigation is required. 
+5. Irrigation should be run for `daily_adjusted_run_time` amount of time (which is 0 is `bucket`>=0). Afterwards, the `bucket` needs to be reset (using `reset_bucket`). It's up to the user of the component to build the automation for this final step.
+
+There are many more options available, see below. To understand how `precipitation`, `netto precipitation`, the `bucket` and irrigation interact, see [example behavior on the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week).
+
 ## Operation modes
 You can use this component in various modes:
 1. **Full Open Weather Map**. In this mode all data comes from the Open Weather Map service. You will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions.
@@ -120,9 +130,9 @@ Attributes:
 | --- | --- |
 |`rain`|the predicted (when using Open Weather Map) or cumulative daily (when using a sensor) rainfall in mm or inch|
 |`snow`|the predicted (when using Open Weather Map, will be 0 when using a sensor) snowfall in mm or inch|
-|`precipitation`|the total precipitation (which is the sum of `rain` and `snow` in mm or inch|
+|`precipitation`|the total precipitation (which is the sum of `rain` and `snow` in mm or inch)|
 |`evapotranspiration`|the expected evapotranspiration|
-|`netto precipitation`|the net evapotranspiration in mm or inch, negative values mean more moisture is lost than gets added bu rain/snow, while positive values mean more value is added by rain/snow than evaporates, equal to `precipitation - evapotranspiration`|
+|`netto precipitation`|the net evapotranspiration in mm or inch, negative values mean more moisture is lost than gets added by rain/snow, while positive values mean more moisture is added by rain/snow than what evaporates, equal to `precipitation - evapotranspiration`|
 |`water budget`|percentage of expected `evapotranspiration` vs `peak evapotranspiration`|
 |`adjusted run time minutes`|adjusted run time in minutes instead of seconds.|
 
