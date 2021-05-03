@@ -76,6 +76,8 @@ You will need to specify the following:
 - Flow per spinkler in gallons per minute or liters per minute. Refer to your sprinkler's manual for this information.
 - Area that the sprinklers cover in square feet or m<sup>2</sup>
  
+**Multi-zone support**: For irrigation systems that have multiple zones which you want to run in series (one after the other), you need to add an instance of this integration *for each zone*. Of course, the configuration should be done for each zone, including the area the zone covers and the sprinkler settings.
+
  > **When entering any values in the configuration of this component, keep in mind that the component will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).
 For sensor configuration take care to make sure the unit the component expects is the same as your sensor provides.**
 
