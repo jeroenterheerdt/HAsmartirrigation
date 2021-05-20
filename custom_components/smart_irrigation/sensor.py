@@ -272,7 +272,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         if sun_state is not None:
             sun_rise = sun_state.attributes.get("next_rising")
             if sun_rise is not None:
-                sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S%z")
+                sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S.%f%z")
                 _LOGGER.info("sun_rise: {}".format(sun_rise))
                 async_track_point_in_time(
                     self.hass, self._fire_start_event, point_in_time=sun_rise
