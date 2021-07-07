@@ -81,6 +81,8 @@ You will need to specify the following:
  > **When entering any values in the configuration of this component, keep in mind that the component will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).
 For sensor configuration take care to make sure the unit the component expects is the same as your sensor provides.**
 
+> **If you want to go back and change your settings afterwards, you can either delete the instance and re-create it or edit the entity registry under `config/.storage` at your own risk.**
+
 ### Step 2: checking services, events and entities
 After successful configuration, you should end up with three entities and their attributes, listed below as well as [three services](#available-services).
 
