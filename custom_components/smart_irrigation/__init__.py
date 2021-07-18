@@ -2,6 +2,7 @@
 import asyncio
 from datetime import timedelta
 import logging
+import os
 import datetime
 import weakref
 
@@ -14,6 +15,7 @@ from homeassistant.helpers.event import (
     async_track_time_change,
     async_track_point_in_time,
 )
+from homeassistant.util.json import load_json, save_json
 
 from homeassistant.const import (
     CONF_LATITUDE,
@@ -28,6 +30,9 @@ from .const import (
     CONF_NUMBER_OF_SPRINKLERS,
     CONF_FLOW,
     CONF_AREA,
+    DATA_FILE_PREFIX,
+    DATA_FILE_SUFFIX,
+    DATA_PROPERTY_NAMES,
     DOMAIN,
     STARTUP_MESSAGE,
     SETTING_METRIC,
@@ -173,6 +178,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         coastal=coastal,
         estimate_solrad_from_temp=estimate_solrad_from_temp,
         name=name,
+        data_file=hass.config.path(DATA_FILE_PREFIX + name.lower()
+                                   + DATA_FILE_SUFFIX),
     )
 
     await coordinator.async_refresh()
@@ -279,6 +286,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         coastal,
         estimate_solrad_from_temp,
         name,
+        data_file,
     ):
         """Initialize."""
         if api_key:
@@ -312,14 +320,15 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self.coastal = coastal
         self.estimate_solrad_from_temp = estimate_solrad_from_temp
         self.name = name
+        self.data_file = data_file
         self.sensors = sensors
-        self.hourly_precipitation_list = []
-        self.hourly_evapotranspiration_list = []
         self.platforms = []
         self.bucket = 0
         self.hass = hass
         self.entities = {}
         self.entry_setup_completed = False
+        self._hourly_precipitation_list = []
+        self._hourly_evapotranspiration_list = []
         super().__init__(hass, _LOGGER, name=name, update_interval=SCAN_INTERVAL)
 
         # last update of the day happens at specified local time if auto_refresh is on
@@ -340,6 +349,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
                 minute=minute,
                 second=0,
             )
+            self._load_saved_data(minute, hour)
         # initial_update_delay only when > 0
         if self.initial_update_delay > 0:
             # get current time
@@ -429,7 +439,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         if isinstance(self.bucket, str) and " " in self.bucket:
             self.bucket = float(self.bucket.split(" "[0]))
             _LOGGER.info("parsed out unit, bucket is {}".format(self.bucket))
-        if len(self.hourly_precipitation_list) > 0:
+        if len(self._hourly_precipitation_list) > 0:
 
             use_owm = True
             if CONF_SENSOR_PRECIPITATION in self.sensors:
@@ -438,46 +448,46 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
             # are we using OWM for precipitation?
             if use_owm:
                 # this is applicable when using OWM (average)
-                average_precip = average_of_list(self.hourly_precipitation_list)
+                average_precip = average_of_list(self._hourly_precipitation_list)
                 _LOGGER.info(
                     "average_precip set to {}, which is average of hourly_precipitation_list: {}".format(
-                        average_precip, self.hourly_precipitation_list
+                        average_precip, self._hourly_precipitation_list
                     )
                 )
                 average_evapotranspiration = average_of_list(
-                    self.hourly_evapotranspiration_list
+                    self._hourly_evapotranspiration_list
                 )
                 _LOGGER.info(
                     "average_evapotranspiration set to {}, which is average of hourly_evapotranspiration_list: {}".format(
-                        average_evapotranspiration, self.hourly_evapotranspiration_list
+                        average_evapotranspiration, self._hourly_evapotranspiration_list
                     )
                 )
                 bucket_delta = average_precip - average_evapotranspiration
             else:
                 # when using a sensor for precipitation just take the most recent (last item in the list) because we assume it is a daily actual value (cumulative)
-                precip = last_of_list(self.hourly_precipitation_list)
+                precip = last_of_list(self._hourly_precipitation_list)
                 _LOGGER.info(
                     "precip set to {}, which is last item of hourly_precipitation_list: {}".format(
-                        precip, self.hourly_precipitation_list
+                        precip, self._hourly_precipitation_list
                     )
                 )
                 # when using a sensor for evapotranspiration take the most recent value (last item in the list) because we assume it is a daily actual value (cumulative)
                 if CONF_SENSOR_ET in self.sensors:
                     evapotranspiration = last_of_list(
-                        self.hourly_evapotranspiration_list
+                        self._hourly_evapotranspiration_list
                     )
                     _LOGGER.info(
                         "since we use a sensor, evapotranspiration set to {}, which is last item of hourly_evapotranspiration_list: {}".format(
-                            evapotranspiration, self.hourly_evapotranspiration_list
+                            evapotranspiration, self._hourly_evapotranspiration_list
                         )
                     )
                 else:
                     evapotranspiration = average_of_list(
-                        self.hourly_evapotranspiration_list
+                        self._hourly_evapotranspiration_list
                     )
                     _LOGGER.info(
                         "since we are calculating, evapotranspiration set to {}, which is average of hourly_evapotranspiration_list: {}".format(
-                            evapotranspiration, self.hourly_evapotranspiration_list
+                            evapotranspiration, self._hourly_evapotranspiration_list
                         )
                     )
                 bucket_delta = precip - evapotranspiration
@@ -499,8 +509,8 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
             )  # pylint: disable=logging-format-interpolation
         )
         # empty the hourly precipitation list
-        self.hourly_precipitation_list = []
-        self.hourly_evapotranspiration_list = []
+        self.clear_data_property("hourly_precipitation")
+        self.clear_data_property("hourly_evapotranspiration")
         self.bucket = self.bucket + bucket_delta
         _LOGGER.info(
             "hourly_precipitation_list and hourly_evapotranspiration_list are now empty, bucket is {}".format(
@@ -544,3 +554,100 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
             return None
         except Exception as exception:
             raise UpdateFailed(exception)
+
+    def update_data_property(self, prop, value):
+        """Update a data property and persist the update to the data file."""
+        _LOGGER.debug(f"Updating data for {prop} to {value}")
+        if prop not in DATA_PROPERTY_NAMES:
+            raise ValueError(f"Got invalid value for prop: '{prop}'")
+
+        # Update object property
+        self.__dict__["_" + prop + "_list"].append(value)
+
+        # Update data file
+        try:
+            jsondata = load_json(self.data_file)
+        except HomeAssistantError:
+            _LOGGER.exception("Could not load data from data file")
+            return None
+
+        if prop in jsondata and type(jsondata[prop]) is list:
+            jsondata[prop].append(value)
+        else:
+            jsondata[prop] = [value]
+
+        jsondata["last_updated"] = int(dt.as_timestamp(dt.now()))
+
+        try:
+            save_json(self.data_file, jsondata)
+        except Exception:
+            _LOGGER.exception("Could not save data to data file")
+            return None
+
+        return jsondata.get(prop)
+
+    def clear_data_property(self, prop):
+        """Clear data stored for a given property."""
+        _LOGGER.debug(f"Clearing data for {prop}")
+        if prop not in DATA_PROPERTY_NAMES:
+            raise ValueError(f"Got invalid value for prop: '{prop}'")
+
+        # Update object property
+        self.__dict__["_" + prop + "_list"] = []
+
+        # Update data file
+        try:
+            jsondata = load_json(self.data_file)
+        except HomeAssistantError:
+            _LOGGER.exception("Could not load data from data file")
+            return False
+
+        jsondata[prop] = []
+
+        try:
+            save_json(self.data_file, jsondata)
+        except Exception:
+            _LOGGER.exception("Could not save data to data file")
+            return False
+
+        return True
+
+    def _load_saved_data(self, art_minute, art_hour):
+        """Load saved data from the data file"""
+        try:
+            jsondata = load_json(self.data_file)
+        except HomeAssistantError:
+            _LOGGER.exception("Could not load data from data file")
+            return None
+
+        if "last_updated" not in jsondata:
+            return False
+
+        last_updated = dt.as_local(dt.utc_from_timestamp(jsondata["last_updated"]))
+        # The saved data is only loaded if we have not crossed over the
+        # "auto refresh time" (default 23:00h) that ocurred on the same day
+        # as "last_updated". The auto refresh time could be crossed if, for
+        # some reason, HA is off during the auto refresh time. During auto
+        # refresh, the hourly data is cleared so if the auto refresh time has
+        # been crossed, we discard the saved data to align with the auto
+        # refresh behavior.
+        lu_auto_run_time = last_updated.replace(hour=art_hour,
+                                                minute=art_minute,
+                                                second=0)
+        now = dt.as_local(dt.now())
+
+        if (not ((last_updated < lu_auto_run_time and now >= lu_auto_run_time)
+                or (now - lu_auto_run_time) > datetime.timedelta(hours=24))):
+            # Load the data.
+            for prop in DATA_PROPERTY_NAMES:
+                if prop in jsondata and type(jsondata[prop]) is list:
+                    setattr(self, "_" + prop + "_list", jsondata[prop])
+                    _LOGGER.info("Loaded saved data for {}: {}".format(prop,
+                                                                       jsondata[prop]))
+            return True
+        else:
+            # We've crossed an auto refresh time. Do not load the data, but do
+            # clear the data from the data file.
+            for p in DATA_PROPERTY_NAMES:
+                self.clear_data_property(p)
+            return False
