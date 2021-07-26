@@ -21,6 +21,8 @@ This component calculates the time to run your irrigation system to compensate f
 
 > **Note - use this component at your own risk - we do not assume responsibility for any inconvience caused by using this component. Always use common sense before deciding to irrigate using the calculations this component provides. For example, irrigating during excessive rainfall might cause flooding. Again - we assume no responsibility for any inconvience caused.**
 
+> **Note If you want to go back and change your settings afterwards, you can either delete the instance and re-create it or edit the entity registry under config/.storage at your own risk.**
+
 The component keeps track of hourly precipitation and at 23:00 (11:00 PM) local time stores it in a daily value.
 It then calculates the exact runtime in seconds to compensate for the net evaporation.
 Note that this is the default behavior and this can be disabled if you want more control. Also, the time auto refresh happens (if not disabled) is configurable.
