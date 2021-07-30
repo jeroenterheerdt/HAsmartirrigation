@@ -366,7 +366,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             if self.coordinator.api:
                 data = self.coordinator.data["daily"][0]
                 #OWM reports wind speed at 10m height, so need to convert to 2m:
-                data["wind_speed"] = data["wind_speed"] * (4.87 / math.((67.8 * 10) - 5.42))
+                data["wind_speed"] = data["wind_speed"] * (4.87 / math.log((67.8 * 10) - 5.42))
 
             # retrieve the data from the sensors (if set) and build the data or overwrite what we got from the API
             if self.coordinator.sensors:
