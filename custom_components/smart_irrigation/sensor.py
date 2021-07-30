@@ -272,7 +272,10 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
         if sun_state is not None:
             sun_rise = sun_state.attributes.get("next_rising")
             if sun_rise is not None:
-                sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S.%f%z")
+                try:
+                    sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S.%f%z")
+                except(ValueError):
+                    sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S%z")
                 _LOGGER.info("sun_rise: {}".format(sun_rise))
                 async_track_point_in_time(
                     self.hass, self._fire_start_event, point_in_time=sun_rise
@@ -363,7 +366,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             if self.coordinator.api:
                 data = self.coordinator.data["daily"][0]
                 #OWM reports wind speed at 10m height, so need to convert to 2m:
-                data["wind_speed"] = data["wind_speed"] * (4.87 / math.log((67.8 * 10) - 5.42))
+                data["wind_speed"] = data["wind_speed"] * (4.87 / math.((67.8 * 10) - 5.42))
 
             # retrieve the data from the sensors (if set) and build the data or overwrite what we got from the API
             if self.coordinator.sensors:
