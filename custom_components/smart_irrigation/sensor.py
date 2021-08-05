@@ -2,7 +2,6 @@
 import datetime
 import asyncio
 import logging
-import math
 
 from homeassistant.core import callback, Event
 from homeassistant.helpers.event import async_track_point_in_time
@@ -365,9 +364,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             # if we have an api we're reading at least part of the data from OWM, so read the data
             if self.coordinator.api:
                 data = self.coordinator.data["daily"][0]
-                #OWM reports wind speed at 10m height, so need to convert to 2m:
-                data["wind_speed"] = data["wind_speed"] * (4.87 / math.log((67.8 * 10) - 5.42))
-
+                
             # retrieve the data from the sensors (if set) and build the data or overwrite what we got from the API
             if self.coordinator.sensors:
                 for sensor, entity in self.coordinator.sensors.items():

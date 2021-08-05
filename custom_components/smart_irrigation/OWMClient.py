@@ -3,6 +3,7 @@
 import requests
 import json
 import logging
+import math
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -11,6 +12,7 @@ OWM_URL = "https://api.openweathermap.org/data/2.5/onecall?units=metric&lat={}&l
 
 # Required OWM keys for validation
 OWM_temp_key_name = "temp"
+OWM_wind_speed_key_name = "wind_speed"
 OWM_required_keys = {"wind_speed", "dew_point",OWM_temp_key_name,"humidity","pressure"}
 OWM_required_key_temp = {"day","min","max"}
 
@@ -57,6 +59,9 @@ class OWMClient:  # pylint: disable=invalid-name
                         if k is not OWM_temp_key_name:
                             if data[k]<OWM_validators[k]["min"] or data[k]>OWM_validators[k]["max"]:
                                 self.validationError(k,data[k],OWM_validators[k]["min"],OWM_validators[k]["max"])
+                        if k == OWM_wind_speed_key_name:
+                            #OWM reports wind speed at 10m height, so need to convert to 2m:
+                            doc["daily"][0][OWM_wind_speed_key_name] = doc["daily"][0][OWM_wind_speed_key_name] * (4.87 / math.log((67.8 * 10) - 5.42))
                 if OWM_temp_key_name in data:
                     for kt in OWM_required_key_temp:
                         if kt not in data[OWM_temp_key_name]:
@@ -67,7 +72,7 @@ class OWMClient:  # pylint: disable=invalid-name
                                 self.validationError(kt,data[OWM_temp_key_name][kt],OWM_validators["temp"]["min"],OWM_validators["temp"]["max"])
             else:
                 raise IOError("Missing required key 'daily' in OWM API return.")
-            
+
             return doc
         except Exception as ex:
             raise ex

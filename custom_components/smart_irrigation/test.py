@@ -282,7 +282,7 @@ class Smart_Irrigation_Test():
     def update(self):
 
         d = self.get_data()
-        #print(d)
+        print("OWM daily data: {0}".format(d["daily"][0]))
 
         #hour-based
         #print("HOUR-BASED")
