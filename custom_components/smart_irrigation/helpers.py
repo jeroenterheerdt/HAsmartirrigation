@@ -298,6 +298,11 @@ def estimate_fao56_daily(  # pylint: disable=invalid-name
         avp,
     )
     net_rad = pyeto.net_rad(net_in_sol_rad, net_out_lw_rad)
+
+    # experiment in v0.0.71: do not pass in day temperature (temp_c) but instead the average of temp_max and temp_min
+    # see https://github.com/jeroenterheerdt/HAsmartirrigation/issues/70
+    temp_c = (temp_c_min + temp_c_max) / 2.0
+
     eto = pyeto.fao56_penman_monteith(
         net_rad=net_rad,
         t=pyeto.convert.celsius2kelvin(temp_c),
