@@ -247,7 +247,7 @@ Go to http://www.rainmaster.com/historicET.aspx and enter your 5-digit zipcode a
 ![](images/rainmaster.png?raw=true)
 
 ### World Water & Climate Institute (International)
-Unfortunately the atlas linked below seems to be offline. Please refer to this wiki page for country specific information and feel free to reach out to add your country specific info!
+Unfortunately the atlas linked below seems to be offline. Please refer to [this wiki page for country specific information](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Country-specific-Evapotranspiration-info) and feel free to reach out to add your country specific info!
 Go to http://wcatlas.iwmi.org/ and create an account. Once logged in, enter the locations you are interested in and click 'Submit'. Be sure to select N/S and E/W according to your coordinates:
 ![](images/iwmi1.PNG?raw=true)
 
