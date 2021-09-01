@@ -246,8 +246,8 @@ To get the monthly ET values use Rainmaster (US only), World Water & Climate Ins
 Go to http://www.rainmaster.com/historicET.aspx and enter your 5-digit zipcode and click 'Find'. The values you are looking for are listed for each month in inch/day:
 ![](images/rainmaster.png?raw=true)
 
-
 ### World Water & Climate Institute (International)
+Unfortunately the atlas linked below seems to be offline. Please refer to this wiki page for country specific information and feel free to reach out to add your country specific info!
 Go to http://wcatlas.iwmi.org/ and create an account. Once logged in, enter the locations you are interested in and click 'Submit'. Be sure to select N/S and E/W according to your coordinates:
 ![](images/iwmi1.PNG?raw=true)
 
