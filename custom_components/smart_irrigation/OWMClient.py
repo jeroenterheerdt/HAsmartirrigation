@@ -22,7 +22,7 @@ OWM_validators = {
         {"max": 135,
         "min":0},
     "dew_point":
-        {"max":35,"min":0},
+        {"max":35,"min":-21},
     "temp":
         {"max": 56.7, "min": -89.2},
     "humidity":
