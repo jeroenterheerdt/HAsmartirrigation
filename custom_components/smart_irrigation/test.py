@@ -282,67 +282,68 @@ class Smart_Irrigation_Test():
     def update(self):
 
         d = self.get_data()
-        print("OWM daily data: {0}".format(d["daily"][0]))
+        if d is not None and d["daily"] is not None:
+            print("OWM daily data: {0}".format(d["daily"][0]))
 
-        #hour-based
-        #print("HOUR-BASED")
-        # update the precipitation based on current situation
-        #self.update_precipitation_current(d["current"])
+            #hour-based
+            #print("HOUR-BASED")
+            # update the precipitation based on current situation
+            #self.update_precipitation_current(d["current"])
 
-        # update the EV FAO56 value
-        # divide by # hours to get the average value for the day
-        #self.update_ev(d["current"])
-        #print("END OF HOUR BASED")
+            # update the EV FAO56 value
+            # divide by # hours to get the average value for the day
+            #self.update_ev(d["current"])
+            #print("END OF HOUR BASED")
 
-        # calculations on day-basis
-        #print("DAY BASED")
-        self.calculate_precipitation(d["daily"][0])
-        self.calculate_ev(d["daily"][0])
-        #print("END OF DAY BASED")
+            # calculations on day-basis
+            #print("DAY BASED")
+            self.calculate_precipitation(d["daily"][0])
+            self.calculate_ev(d["daily"][0])
+            #print("END OF DAY BASED")
 
-        #test hargreaves equation
-        #lat_rad = pyeto.deg2rad(LAT)
-        #day_of_year = datetime.datetime.now().timetuple().tm_yday
-        #sol_dec = pyeto.sol_dec(day_of_year)
-        #sha = pyeto.sunset_hour_angle(lat_rad, sol_dec)
-        #ird = pyeto.inv_rel_dist_earth_sun(day_of_year)
-        #et_rad = pyeto.et_rad(lat_rad, sol_dec, sha, ird)
-        #t_min = d["daily"][0]["temp"]["min"]
-        #t_max = d["daily"][0]["temp"]["max"]
-        #t_mean = (t_min+t_max)/2.0
-        #et_hargreaves = pyeto.hargreaves(t_min, t_max, t_mean, et_rad)
-        #print("hargreaves: {}".format(et_hargreaves))
+            #test hargreaves equation
+            #lat_rad = pyeto.deg2rad(LAT)
+            #day_of_year = datetime.datetime.now().timetuple().tm_yday
+            #sol_dec = pyeto.sol_dec(day_of_year)
+            #sha = pyeto.sunset_hour_angle(lat_rad, sol_dec)
+            #ird = pyeto.inv_rel_dist_earth_sun(day_of_year)
+            #et_rad = pyeto.et_rad(lat_rad, sol_dec, sha, ird)
+            #t_min = d["daily"][0]["temp"]["min"]
+            #t_max = d["daily"][0]["temp"]["max"]
+            #t_mean = (t_min+t_max)/2.0
+            #et_hargreaves = pyeto.hargreaves(t_min, t_max, t_mean, et_rad)
+            #print("hargreaves: {}".format(et_hargreaves))
 
-        #test thornthwaite equation
-        #lat_rad = pyeto.deg2rad(LAT)
-        #current_year = datetime.datetime.now().year
-        #mmdlh = pyeto.monthly_mean_daylight_hours(lat_rad, current_year)
-        #monthly_t = [4.5,5.5,7.5,9.5,13.0,15.5,17.5,18.5,15.0,11.0,6.5,4.0]
-        #et_thornthwaite = pyeto.thornthwaite(monthly_t, mmdlh)
-        #print("thornthwaite: {}".format(et_thornthwaite))
+            #test thornthwaite equation
+            #lat_rad = pyeto.deg2rad(LAT)
+            #current_year = datetime.datetime.now().year
+            #mmdlh = pyeto.monthly_mean_daylight_hours(lat_rad, current_year)
+            #monthly_t = [4.5,5.5,7.5,9.5,13.0,15.5,17.5,18.5,15.0,11.0,6.5,4.0]
+            #et_thornthwaite = pyeto.thornthwaite(monthly_t, mmdlh)
+            #print("thornthwaite: {}".format(et_thornthwaite))
 
-        self.bucketDelta = self.rain_day + self.snow_day - self.fao56_day
+            self.bucketDelta = self.rain_day + self.snow_day - self.fao56_day
 
-        # calculate adjusted run time (minutes per day)
-        #self.adjusted_run_time = [round(x * self.base_schedule_index) for x in self.water_budgets]
+            # calculate adjusted run time (minutes per day)
+            #self.adjusted_run_time = [round(x * self.base_schedule_index) for x in self.water_budgets]
 
-        print("FAO56_day: {}".format(self.show_value(self.fao56_day, "mm")))
-        print("RAIN TODAY: {}".format(self.show_value(self.rain_day, "mm")))
-        print("SNOW TODAY: {}".format(self.show_value(self.snow_day, "mm")))
-        print("Bucket Delta: {}".format(self.show_value(self.bucketDelta,
-                                                        "mm")))
-        if(self.bucketDelta >= 0):
-            #no need to irrigate
-            print("BucketDelta >= 0, no need to irrigate")
-        else:
+            print("FAO56_day: {}".format(self.show_value(self.fao56_day, "mm")))
+            print("RAIN TODAY: {}".format(self.show_value(self.rain_day, "mm")))
+            print("SNOW TODAY: {}".format(self.show_value(self.snow_day, "mm")))
+            print("Bucket Delta: {}".format(self.show_value(self.bucketDelta,
+                                                            "mm")))
+            if(self.bucketDelta >= 0):
+                #no need to irrigate
+                print("BucketDelta >= 0, no need to irrigate")
+            else:
 
-            # calculate water budget for today (%)
-            self.water_budget = abs(self.bucketDelta) / self.peak_ET
-            # calculate the adjusted run time for today (minutes)
-            self.adjusted_run_time = round(self.water_budget * self.base_schedule_index)
-            print("BucketDelta < 0, irrigating for {} minutes!".format(self.adjusted_run_time))
+                # calculate water budget for today (%)
+                self.water_budget = abs(self.bucketDelta) / self.peak_ET
+                # calculate the adjusted run time for today (minutes)
+                self.adjusted_run_time = round(self.water_budget * self.base_schedule_index)
+                print("BucketDelta < 0, irrigating for {} minutes!".format(self.adjusted_run_time))
 
-            #open the irrigation valve for self.adjusted_run_time minutes.
+                #open the irrigation valve for self.adjusted_run_time minutes.
 
 if len(sys.argv) < 10:
     print("test.py [apikey for OpenWeatherMap] [Latitude] [Longitude] [Elevation] [metric|US] [JAN_ET,FEB_ET,MAR_ET,APR_ET,MAY_ET,JUN_ET,JUL_ET,AUG_ET,SEP_ET,OCT_ET,NOV_ET,DEC_ET] [number of sprinklers] [flow per sprinkler (gallon or liter per minute] [area (m2 or sq ft)]")

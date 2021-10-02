@@ -71,11 +71,12 @@ class OWMClient:  # pylint: disable=invalid-name
                             if data[OWM_temp_key_name][kt]<OWM_validators["temp"]["min"] or data[OWM_temp_key_name][kt]>OWM_validators["temp"]["max"]:
                                 self.validationError(kt,data[OWM_temp_key_name][kt],OWM_validators["temp"]["min"],OWM_validators["temp"]["max"])
             else:
-                raise IOError("Missing required key 'daily' in OWM API return.")
-
+                _LOGGER.warning("Ignoring OWM input: missing required key 'daily' in OWM API return.")
+                return None
             return doc
         except Exception as ex:
             _LOGGER.warning(ex)
+            return None
 
     def raiseIOError(self, key):
         raise IOError("Missing required key {0} in OWM API return".format(key))
