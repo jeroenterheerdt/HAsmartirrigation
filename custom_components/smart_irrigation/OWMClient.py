@@ -75,7 +75,7 @@ class OWMClient:  # pylint: disable=invalid-name
 
             return doc
         except Exception as ex:
-            raise ex
+            _LOGGER.warning(ex)
 
     def raiseIOError(self, key):
         raise IOError("Missing required key {0} in OWM API return".format(key))
