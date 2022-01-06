@@ -10,5 +10,5 @@
   "homekit": {},
   "dependencies": [],
   "codeowners": ["@jeroenterheerdt"],
-  "version": "0.0.76b"
+  "version": "0.0.76"
 }
