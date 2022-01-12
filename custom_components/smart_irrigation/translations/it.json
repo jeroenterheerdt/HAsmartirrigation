@@ -1,13 +1,13 @@
 {
   "config": {
     "abort": {
-      "single_instance_allowed": "È consentita una sola configurazione di Smart Irrigation."
+      "single_instance_allowed": "E' consentita una sola configurazione di Smart Irrigation."
     },
     "error": {
       "auth": "Open Weather API key non valida",
       "name": "Specificare un nome univoco per questa istanza.",
       "reference_evapotranspiration_problem": "Si prega di controllare i valori di riferimento dell'evapotraspirazione: dovrebbero essere decimali e almeno uno dovrebbe essere diverso da zero.",
-      "sensornotfound": "Uno o più sensori specificati non esistono "
+      "sensornotfound": "Uno o piu' sensori specificati non esistono "
     },
     "title": "Smart Irrigation",
     "step": {
@@ -37,9 +37,9 @@
           "use_owm_max_temperature": "Usa OpenWeatherMap per la temperatura massima",
           "use_owm_dewpoint": "Usa OpenWeatherMap per il punto di rugiada",
           "use_owm_pressure": "Usa OpenWeatherMap per la pressione atmosferica",
-          "use_owm_humidity": "Usa OpenWeatherMap per l'umidità",
-          "use_owm_windspeed": "UUsa OpenWeatherMap per la velocità del vento",
-          "calculate_solar_radiation": "Calcola l'irraggiamento solare (disabilita per specificare un sensore)"
+          "use_owm_humidity": "Usa OpenWeatherMap per l'umiditia'",
+          "use_owm_windspeed": "Usa OpenWeatherMap per la velocita' del vento",
+          "calculate_solar_radiation": "Calcola la radiazione solare (disabilita per specificare un sensore)"
         }
       },
       "step2": {
@@ -49,12 +49,12 @@
           "sensor_precipitation": "Sensore che misura le precipitazioni giornaliere totali (pioggia/neve) (mm, pollici)",
           "sensor_temperature": "Sensore che misura la temperatura (C, F)",
           "sensor_dewpoint": "Sensore che misura il punto di rugiada (C, F)",
-          "sensor_humidity": "Sensore che misura l'umidità (%)",
+          "sensor_humidity": "Sensore che misura l'umidita')",
           "sensor_max_temperature": "Sensore che misura la temperatura massima (C, F)",
           "sensor_min_temperature": "Sensore che misura la temperatura minima (C, F)",
           "sensor_pressure": "Sensore che misura la pressione atmosferica (mbar, hPa, psi)",
-          "sensor_windspeed": "Sensore che misura la velocità del vento (km/h, mph)",
-          "sensor_solar_radiation": "Sensore che misura l'irraggiamento solare (W/m2, W/sq ft)"
+          "sensor_windspeed": "Sensore che misura la velocita' del vento (km/h, mph)",
+          "sensor_solar_radiation": "Sensore che misura la radiazione solare (W/m2, W/sq ft)"
         }
       },
       "step3": {
@@ -103,13 +103,13 @@
           "lead_time": "Lead time, tempo da aggiungere al tempo di esecuzione calcolato (secondi).",
           "change_percent": "Percentuale di modifica del tempo di esecuzione calcolato (100 = nessuna modifica).",
           "maximum_duration": "Durata massima, compreso lead time (secondi) (-1 = nessun massimo).",
-          "force_mode_duration": "Numero di secondi per avviare l'irrigazione in modalità forzata.",
-          "show_units": "Mostra le unità negli attributi dell'entità.",
+          "force_mode_duration": "Numero di secondi per avviare l'irrigazione in modalita' forzata.",
+          "show_units": "Mostra le unitàegli attributi dell'entita'",
           "auto_refresh": "Abilita o disabilita l'aggiornamento automatico all'ora configurata di seguito.",
           "auto_refresh_time": "Ora locale per programmare l'aggiornamento automatico (se abilitato).",
           "initial_update_delay": "Ritardo prima del primo aggiornamento del sensore dopo il riavvio (secondi).",
           "coastal": "Costiera (le masse d'aria sono influenzate da un corpo idrico vicino).",
-          "estimate_solrad_from_temp": "Stimare l'irraggiamento solare dalla temperatura."
+          "estimate_solrad_from_temp": "Stimare la radiazione solare dalla temperatura."
         }
       }
     },
