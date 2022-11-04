@@ -21,6 +21,10 @@ from homeassistant.const import (
     CONF_LONGITUDE,
 )
 
+from homeassistant.util.unit_system import (
+    METRIC_SYSTEM,
+)
+
 from .OWMClient import OWMClient
 from .const import (
     CONF_API_KEY,
@@ -104,7 +108,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # depending on this we need to convert to metric internally or not
 
     system_of_measurement = (
-        SETTING_METRIC if hass.config.units.is_metric else SETTING_US
+        SETTING_METRIC if hass.config.units is METRIC_SYSTEM else SETTING_US
     )
     # unit conversion
     if system_of_measurement == SETTING_US:
