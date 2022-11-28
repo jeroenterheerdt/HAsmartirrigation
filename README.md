@@ -130,7 +130,7 @@ Sample screenshot:
 ![](images/bsi_entity.png?raw=true)
 
 #### `sensor.smart_irrigation_hourly_adjusted_run_time`
-The adjusted run time in seconds to compensate for any net moisture lost. Updated approx. every 60 minutes.
+The adjusted run time in seconds to compensate for any net moisture losses that are not compensated by rain. Updated approx. every 60 minutes. In contrast to the daily adjusted run time, no lead time is added and no capping to any maximum is applied.
 Attributes:
 | Attribute | Description |
 | --- | --- |
