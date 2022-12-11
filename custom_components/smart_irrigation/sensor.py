@@ -527,14 +527,14 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 self.bucket_delta, self.type
             )
             self.water_budget = result["wb"]
-            self.coordinator.hourly_precipitation_list.append(self.precipitation)
-            self.coordinator.hourly_evapotranspiration_list.append(
-                self.evapotranspiration
-            )
+            precip_list = self.coordinator.update_data_property("hourly_precipitation",
+                                                                self.precipitation)
+            evapo_list = self.coordinator.update_data_property("hourly_evapotranspiration",
+                                                               self.evapotranspiration)
             _LOGGER.info(
                 "update_state: just updated hourly_precipitation_list: {} and hourly_evapotranspiration_list: {}".format(  # pylint: disable=logging-format-interpolation
-                    self.coordinator.hourly_precipitation_list,
-                    self.coordinator.hourly_evapotranspiration_list,
+                    precip_list,
+                    evapo_list
                 )
             )
             return result["art"]

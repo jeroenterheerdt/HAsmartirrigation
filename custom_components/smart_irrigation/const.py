@@ -14,6 +14,11 @@ ICON = "mdi:sprinkler"
 SENSOR = "sensor"
 PLATFORMS = [SENSOR]
 
+# Data file
+DATA_FILE_PREFIX = DOMAIN + "_"
+DATA_FILE_SUFFIX = ".json"
+DATA_PROPERTY_NAMES = ("hourly_precipitation", "hourly_evapotranspiration")
+
 # Configuration and options
 CONF_API_KEY = "api_key"
 CONF_REFERENCE_ET = "reference_evapotranspiration"
