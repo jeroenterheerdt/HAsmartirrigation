@@ -8,7 +8,8 @@ import math
 _LOGGER = logging.getLogger(__name__)
 
 # Open Weather Map URL
-OWM_URL = "https://api.openweathermap.org/data/2.5/onecall?units=metric&lat={}&lon={}&appid={}"
+# OWM_URL = "https://api.openweathermap.org/data/2.5/onecall?units=metric&lat={}&lon={}&appid={}"
+OWM_URL = "https://api.openweathermap.org/data/3.0/onecall?lat={}&lon={}&appid={}"
 
 # Required OWM keys for validation
 OWM_temp_key_name = "temp"
