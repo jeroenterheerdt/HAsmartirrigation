@@ -1,5 +1,5 @@
 {
-    "name": "Smart Irrigation OWM API v3.0",
+    "name": "Smart Irrigation",
     "render_readme": true,
     "domains": ["sensor"]
   }

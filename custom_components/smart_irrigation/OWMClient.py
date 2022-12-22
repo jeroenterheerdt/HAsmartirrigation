@@ -8,8 +8,8 @@ import math
 _LOGGER = logging.getLogger(__name__)
 
 # Open Weather Map URL
-# OWM_URL = "https://api.openweathermap.org/data/2.5/onecall?units=metric&lat={}&lon={}&appid={}"
-OWM_URL = "https://api.openweathermap.org/data/3.0/onecall?lat={}&lon={}&appid={}"
+OWM_URL = "https://api.openweathermap.org/data/3.0/onecall?lat={}&lon={}&appid={}&units={}"
+UNITS = "metric"
 
 # Required OWM keys for validation
 OWM_temp_key_name = "temp"
@@ -40,7 +40,7 @@ class OWMClient:  # pylint: disable=invalid-name
         self.api_key = api_key.strip()
         self.longitude = longitude
         self.latitude = latitude
-        self.url = OWM_URL.format(latitude, longitude, api_key)
+        self.url = OWM_URL.format(latitude, longitude, api_key, UNITS)
 
     def get_data(self):
         """Validate and return data."""
