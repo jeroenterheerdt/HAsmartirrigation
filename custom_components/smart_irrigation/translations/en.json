@@ -9,7 +9,6 @@
       "reference_evapotranspiration_problem": "Please check your reference evapotranspiration values - they should be decimal and at least one should be non-zero.",
       "sensornotfound": "One or more of the sensors specified do not exist"
     },
-    "title": "Smart Irrigation",
     "step": {
       "user": {
         "title": "Smart Irrigation - Step 1/7: Name and evapotranspiration calculation",
@@ -118,6 +117,5 @@
       "maximum_duration_error": "Maximum duration should be >=-1.",
       "initial_update_delay_error": "Initial update delay should be >=0."
     }
-  },
-  "title": "Smart Irrigation"
+  }
 }
