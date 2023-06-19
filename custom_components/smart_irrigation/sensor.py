@@ -313,7 +313,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             "_hourly_data_updated, calling update_state for type {}".format(self.type)
         )
         self._state = self.update_state()
-        self.hass.add_job(self.async_update_ha_state)
+        self.hass.add_job(self.async_write_ha_state)
 
     @property
     def name(self):
