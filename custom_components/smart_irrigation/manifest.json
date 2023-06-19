@@ -1,14 +1,18 @@
 {
   "domain": "smart_irrigation",
   "name": "Smart Irrigation",
+  "codeowners": [
+    "@jeroenterheerdt"
+  ],
   "config_flow": true,
+  "dependencies": [],
   "documentation": "https://github.com/jeroenterheerdt/HASmartIrrigation",
+  "homekit": {},
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/jeroenterheerdt/HASmartIrrigation/issues",
   "requirements": [],
   "ssdp": [],
-  "zeroconf": [],
-  "homekit": {},
-  "dependencies": [],
-  "codeowners": ["@jeroenterheerdt"],
-  "version": "0.0.78"
+  "version": "0.0.78",
+  "zeroconf": []
 }

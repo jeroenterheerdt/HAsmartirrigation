@@ -362,6 +362,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             data = {}
             # if we have an api we're reading at least part of the data from OWM, so read the data
             if self.coordinator.api:
+                print(self.coordinator)
                 data = self.coordinator.data["daily"][0]
                 
             # retrieve the data from the sensors (if set) and build the data or overwrite what we got from the API
