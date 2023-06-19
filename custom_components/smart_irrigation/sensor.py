@@ -121,7 +121,6 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
             _LOGGER.info("sensor __init__ for adjusted_run_time. bucket=0")
             self.bucket = 0
 
-    @asyncio.coroutine
     async def async_added_to_hass(self):
         """Complete the initialization."""
         await super().async_added_to_hass()
