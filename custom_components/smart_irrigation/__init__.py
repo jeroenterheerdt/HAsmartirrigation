@@ -98,7 +98,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.data.setdefault(DOMAIN, {})
         _LOGGER.info(STARTUP_MESSAGE)
     api_key = entry.data.get(CONF_API_KEY)
-    api_version = entry.data.get(CONF_API_VERSION)
+    # backwards compatibility for existing installs that didnot configure the API version
+    if entry.data.get(CONF_API_VERSION) is None:
+        api_version = "2.5"
+    else:
+        api_version = entry.data.get(CONF_API_VERSION)
     area = entry.data.get(CONF_AREA)
     flow = entry.data.get(CONF_FLOW)
     number_of_sprinklers = entry.data.get(CONF_NUMBER_OF_SPRINKLERS)
