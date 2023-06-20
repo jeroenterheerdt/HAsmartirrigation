@@ -3,7 +3,7 @@
 DOMAIN = "smart_irrigation"
 NAME = "Smart Irrigation"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.79"
+VERSION = "0.0.80"
 
 ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
 
@@ -16,6 +16,7 @@ PLATFORMS = [SENSOR]
 
 # Configuration and options
 CONF_API_KEY = "api_key"
+CONF_API_VERSION = "api_version"
 CONF_REFERENCE_ET = "reference_evapotranspiration"
 CONF_REFERENCE_ET_1 = "reference_evapotranspiration_1"
 CONF_REFERENCE_ET_2 = "reference_evapotranspiration_2"

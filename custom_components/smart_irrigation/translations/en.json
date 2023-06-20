@@ -60,7 +60,8 @@
         "title": "Smart Irrigation - Step 5/7: Open Weather Map API",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "api_key": "API key for Open Weather Map"
+          "api_key": "API key for Open Weather Map",
+          "api_version": "Open Weather Map API version (select 3.0 for new configurations)"
         }
       },
       "step4": {

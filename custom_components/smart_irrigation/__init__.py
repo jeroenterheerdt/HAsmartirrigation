@@ -28,6 +28,7 @@ from homeassistant.util.unit_system import (
 from .OWMClient import OWMClient
 from .const import (
     CONF_API_KEY,
+    CONF_API_VERSION,
     CONF_REFERENCE_ET,
     CONF_NUMBER_OF_SPRINKLERS,
     CONF_FLOW,
@@ -97,6 +98,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.data.setdefault(DOMAIN, {})
         _LOGGER.info(STARTUP_MESSAGE)
     api_key = entry.data.get(CONF_API_KEY)
+    api_version = entry.data.get(CONF_API_VERSION)
     area = entry.data.get(CONF_AREA)
     flow = entry.data.get(CONF_FLOW)
     number_of_sprinklers = entry.data.get(CONF_NUMBER_OF_SPRINKLERS)
@@ -153,6 +155,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     coordinator = SmartIrrigationUpdateCoordinator(
         hass,
         api_key=api_key,
+        api_version=api_version,
         longitude=longitude,
         latitude=latitude,
         elevation=elevation,
@@ -198,10 +201,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # register the services
     hass.services.async_register(
-        DOMAIN, f"{name}_{SERVICE_RESET_BUCKET}", coordinator.handle_reset_bucket,
+        DOMAIN,
+        f"{name}_{SERVICE_RESET_BUCKET}",
+        coordinator.handle_reset_bucket,
     )
     hass.services.async_register(
-        DOMAIN, f"{name}_{SERVICE_SET_BUCKET}", coordinator.handle_set_bucket,
+        DOMAIN,
+        f"{name}_{SERVICE_SET_BUCKET}",
+        coordinator.handle_set_bucket,
     )
     hass.services.async_register(
         DOMAIN,
@@ -259,6 +266,7 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         self,
         hass,
         api_key,
+        api_version,
         longitude,
         latitude,
         elevation,
@@ -287,7 +295,10 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
         """Initialize."""
         if api_key:
             self.api = OWMClient(
-                api_key=api_key, longitude=longitude, latitude=latitude
+                api_key=api_key,
+                longitude=longitude,
+                latitude=latitude,
+                api_version=api_version,
             )
         else:
             self.api = None
@@ -434,7 +445,6 @@ class SmartIrrigationUpdateCoordinator(DataUpdateCoordinator):
             self.bucket = float(self.bucket.split(" "[0]))
             _LOGGER.info("parsed out unit, bucket is {}".format(self.bucket))
         if len(self.hourly_precipitation_list) > 0:
-
             use_owm = True
             if CONF_SENSOR_PRECIPITATION in self.sensors:
                 use_owm = False

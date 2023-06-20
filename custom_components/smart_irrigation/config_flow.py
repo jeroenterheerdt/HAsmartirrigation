@@ -6,8 +6,11 @@ from .helpers import (
     check_reference_et,
     check_time,
 )
+from homeassistant.helpers.selector import selector
+
 from .const import (  # pylint: disable=unused-import
     CONF_API_KEY,
+    CONF_API_VERSION,
     CONF_REFERENCE_ET,
     CONF_REFERENCE_ET_1,
     CONF_REFERENCE_ET_2,
@@ -81,6 +84,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
     def __init__(self):
         """Initialize."""
         self._api_key = None
+        self._api_version = None
         self._name = NAME
         self._calculate_ET = True
         self._reference_et = {}
@@ -258,7 +262,9 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
                 if bval is not None:
                     data_schema = data_schema.extend({vol.Required(bval): str})
         return self.async_show_form(
-            step_id="step2", data_schema=data_schema, errors=self._errors,
+            step_id="step2",
+            data_schema=data_schema,
+            errors=self._errors,
         )
 
     async def async_step_step2(self, user_input=None):
@@ -297,7 +303,14 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         """Show the configuration form step 3: OWM API Key."""
         return self.async_show_form(
             step_id="step3",
-            data_schema=vol.Schema({vol.Required(CONF_API_KEY): str}),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_API_KEY): str,
+                    vol.Required(CONF_API_VERSION, default="3.0"): selector(
+                        {"select": {"options": ["2.5", "3.0"]}}
+                    ),
+                }
+            ),
             errors=self._errors,
         )
 
@@ -307,8 +320,11 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
 
         if user_input is not None:
             try:
-                await self._test_api_key(user_input[CONF_API_KEY])
+                await self._test_api_key(
+                    user_input[CONF_API_KEY], user_input[CONF_API_VERSION]
+                )
                 self._api_key = user_input[CONF_API_KEY].strip()
+                self._api_version = user_input[CONF_API_VERSION].strip()
                 return await self._show_step4(user_input)
             except InvalidAuth:
                 self._errors["base"] = "auth"
@@ -397,6 +413,7 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
 
         if user_input is not None:
             user_input[CONF_API_KEY] = self._api_key
+            user_input[CONF_API_VERSION] = self._api_version
             user_input[CONF_REFERENCE_ET] = self._reference_et
             user_input[CONF_NAME] = self._name
             # store the other settings in user_input here as well!
@@ -429,10 +446,13 @@ class SmartIrrigationConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN)
         """Get options flow."""
         return SmartIrrigationOptionsFlowHandler(config_entry)
 
-    async def _test_api_key(self, api_key):
+    async def _test_api_key(self, api_key, api_version):
         """Test access to Open Weather Map API here."""
         client = OWMClient(
-            api_key=api_key.strip(), latitude=52.353218, longitude=5.0027695
+            api_key=api_key.strip(),
+            api_version=api_version.strip(),
+            latitude=52.353218,
+            longitude=5.0027695,
         )
         try:
             await self.hass.async_add_executor_job(client.get_data)
@@ -553,7 +573,6 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
         """Handle a flow initialized by the user."""
         self._errors = {}
         if user_input is not None:
-
             valid_time = check_time(user_input[CONF_AUTO_REFRESH_TIME])
             if not valid_time:
                 self._errors["base"] = "auto_refresh_time_error"
