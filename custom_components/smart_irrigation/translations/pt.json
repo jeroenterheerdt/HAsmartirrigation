@@ -4,8 +4,8 @@
       "single_instance_allowed": "Apenas é permitida uma configuração de Smart Irrigation."
     },
     "error": {
-      "auth": "Open Weather API key incorreta",
-      "name": "Especifique um nome unico para esta instância.",
+      "auth": "A chave da API do Open Weather é incorreta",
+      "name": "Especifique um nome único para esta instância.",
       "reference_evapotranspiration_problem": "Por favor verifique os valores de referência de evotranspiração - estes devem ser decimais e pelo menos um diferente de zero.",
       "sensornotfound": "Um ou mais dos sensores especificados não existem."
     },
@@ -38,7 +38,7 @@
           "use_owm_pressure": "Use OpenWeatherMap para pressão",
           "use_owm_humidity": "Use OpenWeatherMap para humidade",
           "use_owm_windspeed": "Use OpenWeatherMap para velocidade do vento",
-          "calculate_solar_radiation": "Calcular Radiation Solar (desabilite para especificar um sensor)"
+          "calculate_solar_radiation": "Calcular Radiação solar (desative para especificar um sensor)"
         }
       },
       "step2": {
@@ -49,7 +49,7 @@
           "sensor_temperature": "Sensor que mede temperatura (C, F)",
           "sensor_dewpoint": "Sensor que mede ponto de condensação (C, F)",
           "sensor_humidity": "Sensor que mede humidade (%)",
-          "sensor_max_temperature": "Sensor que mede temperatura maxima (C, F)",
+          "sensor_max_temperature": "Sensor que mede temperatura máxima (C, F)",
           "sensor_min_temperature": "Sensor que mede temperatura minima (C, F)",
           "sensor_pressure": "Sensor que mede pressão (mbar, hPa, psi) ",
           "sensor_windspeed": "Sensor que mede velocidade do vento (km/h, mph)",
@@ -85,7 +85,7 @@
         "title": "Smart Irrigation - Passo 7/7: Configuração do sistema de irrigação",
         "description": "Se necessitar de ajuda com a configuração, por favor leia https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "number_of_sprinklers": "Numbro de aspersores",
+          "number_of_sprinklers": "Número de aspersores",
           "flow": "Fluxo por aspersor em gpm ou l/min",
           "area": "Area em sq ft ou m2"
         }
@@ -96,13 +96,13 @@
     "step": {
       "user": {
         "data": {
-          "number_of_sprinklers": "Numbro de aspersores",
+          "number_of_sprinklers": "Número de aspersores",
           "flow": "Fluxo por aspersor em gpm ou l/min",
           "area": "Area em sq ft ou m2",
           "lead_time": "Tempo de espera, tempo para adicionar ao tempo ajustado de execução(segundos).",
           "change_percent": "Percentagem para ajustar o tempo de execução (100 significa nenhuma mudança).",
           "maximum_duration": "Duração maxima, incluindo tempo de espera (-1 significa nenhum maximo) (segundos).",
-          "force_mode_duration": "Numero de segundos para correr a rega quando em modo forçado.",
+          "force_mode_duration": "Número de segundos para correr a rega quando em modo forçado.",
           "show_units": "Mostrar unidades nos atributos das entidades.",
           "auto_refresh": "Ativar ou desativar atualização automatica no tempo configurado abaixo.",
           "auto_refresh_time": "Tempo local para planear atualização automatica (se ativado).",
