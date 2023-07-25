@@ -691,34 +691,41 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                 t_max = data["temp"]["max"]
             else:
                 return 0.0
-            t_dew = float(data["dew_point"])
-            pressure = data["pressure"]
-            RH_hr = data["humidity"]  # pylint: disable=invalid-name
-            u_2 = data["wind_speed"]
-            coastal = self.coordinator.coastal
+            
+            try:
+                t_dew = float(data["dew_point"])
+                pressure = data["pressure"]
+                RH_hr = data["humidity"]  # pylint: disable=invalid-name
+                u_2 = data["wind_speed"]
+                coastal = self.coordinator.coastal
 
-            calculate_solar_radiation = True
-            if CONF_SENSOR_SOLAR_RADIATION in self.coordinator.sensors:
-                calculate_solar_radiation = False
-            estimate_solrad_from_temp = self.coordinator.estimate_solrad_from_temp
-            solrad = data.get("solar_radiation", None)
-            fao56 = estimate_fao56_daily(
-                day_of_year,
-                t_day,  # in celcius, will be converted to kelvin later
-                t_min,  # in celcius, will be converted to kelvin later
-                t_max,  # in celcius, will be converted to kelvin later
-                t_dew,  # in celcius, no need for conversion
-                self.coordinator.elevation,  # in meters
-                self.coordinator.latitude,
-                RH_hr,  # %
-                u_2,  # in m/s
-                pressure,  # in hPa, will be converted to kPa later
-                coastal,  # bool, defaults to False
-                calculate_solar_radiation,  # bool, defaults to True
-                estimate_solrad_from_temp,  # bool, defaults to True
-                solrad,  # solar radiation value, only set if calculate_solar_radiation == False
-            )
-            return fao56
+                calculate_solar_radiation = True
+                if CONF_SENSOR_SOLAR_RADIATION in self.coordinator.sensors:
+                    calculate_solar_radiation = False
+                estimate_solrad_from_temp = self.coordinator.estimate_solrad_from_temp
+                solrad = data.get("solar_radiation", None)
+                fao56 = estimate_fao56_daily(
+                    day_of_year,
+                    t_day,  # in celcius, will be converted to kelvin later
+                    t_min,  # in celcius, will be converted to kelvin later
+                    t_max,  # in celcius, will be converted to kelvin later
+                    t_dew,  # in celcius, no need for conversion
+                    self.coordinator.elevation,  # in meters
+                    self.coordinator.latitude,
+                    RH_hr,  # %
+                    u_2,  # in m/s
+                    pressure,  # in hPa, will be converted to kPa later
+                    coastal,  # bool, defaults to False
+                    calculate_solar_radiation,  # bool, defaults to True
+                    estimate_solrad_from_temp,  # bool, defaults to True
+                    solrad,  # solar radiation value, only set if calculate_solar_radiation == False
+                )
+                return fao56
+            except (KeyError, ValueError, TypeError) as err:
+                _LOGGER.warning(
+                    "could not calculate evapotranspiration because %s",
+                    err,
+                )
         return 0.0
 
     def calculate_water_budget_and_adjusted_run_time(self, bucket_val, thetype):
