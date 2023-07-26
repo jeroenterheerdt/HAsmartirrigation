@@ -500,7 +500,7 @@ class SmartIrrigationSensor(SmartIrrigationEntity):
                                 data["solar_radiation"] = solrad
                             else:
                                 data["solar_radiation"] = float(
-                                    convert_to_float(solrad) / M2_TO_SQ_FT_FACTOR
+                                    convert_to_float(solrad) * M2_TO_SQ_FT_FACTOR
                                 )
 
             # parse precipitation out of the today data
