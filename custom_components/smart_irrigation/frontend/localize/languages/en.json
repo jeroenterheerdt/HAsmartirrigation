@@ -1,0 +1,169 @@
+{
+  "common": {
+    "labels": {
+      "yes": "Yes",
+      "no": "No",
+      "module": "Module"
+    },
+    "actions": {
+      "delete": "Delete"
+    }
+  },
+  "title": "Smart Irrigation",
+  "panels": {
+    "general": {
+      "title": "General",
+      "description": "This page provides global settings.",
+      "cards": {
+        "automatic-duration-calculation": {
+          "header": "Automatic duration calculation",
+          "labels": {
+            "auto-calc-enabled": "Automatically calculate zone durations",
+            "auto-calc-time": "Calculate at"
+          }
+        },
+        "automatic-update": {
+          "header": "Automatic weather data update",
+          "labels": {
+            "auto-update-enabled": "Automatically update weather data",
+            "auto-update-interval": "Update sensor data every",
+            "auto-update-first-update": "(First) Update at"
+          },
+          "options": {
+            "minutes": "minutes",
+            "hours": "hours",
+            "days": "days"
+          },
+          "errors": {
+            "warning-update-time-on-or-after-calc-time": "Warning: weatherdata update time on or after calculation time"
+          }
+        }
+      }
+    },
+    "modules": {
+      "title": "Modules",
+      "description": "Add one or more modules that calculate irrigation duration. Each module comes with its own configuration and can be used to calculate duration for one or more zones",
+      "no_items": "There are no modules defined yet.",
+      "cards": {
+        "add-module": {
+          "header": "Add module",
+          "actions": {
+            "add": "Add module"
+          }
+        },
+        "module": {
+          "labels": {
+            "configuration": "Configuration",
+            "required": "indicates a required field"
+          },
+          "translated-options": {
+            "EstimateFromTemp": "Estimate from temperature",
+            "EstimateFromSunHours": "Estimate from sun hours",
+            "DontEstimate": "Do not estimate"
+          },
+          "errors": {
+            "cannot-delete-module-because-zones-use-it": "You cannot delete this module because there is at least one zone using it"
+          }
+        }
+      }
+    },
+    "mappings": {
+      "title": "Mappings",
+      "description": "Add one or more mappings that retrieve weather data from OpenWeatherMap, from sensors or a combination of these. You can map each mapping to one or more zones",
+      "no_items": "There are no mappings defined yet.",
+      "cards": {
+        "add-mapping": {
+          "header": "Add mapping",
+          "actions": {
+            "add": "Add mapping"
+          }
+        },
+        "mapping": {
+          "source": "Source",
+          "sources": {
+            "openweathermap": "OpenWeatherMap",
+            "sensor": "Sensor",
+            "none": "None"
+          },
+          "items": {
+            "dewpoint": "Dewpoint",
+            "evapotranspiration": "Evapotranspiration",
+            "humidity": "Humidity",
+            "maximum temperature": "Maximum temperature",
+            "minimum temperature": "Minimum temperature",
+            "precipitation": "Precipitation",
+            "pressure": "Pressure",
+            "solar radiation": "Solar radiation",
+            "temperature": "Temperature",
+            "windspeed": "Wind speed"
+          },
+          "sensor-entity": "Sensor entity",
+          "sensor-units": "Sensor provides values in",
+          "sensor-aggregate-use-the": "Use the",
+          "sensor-aggregate-of-sensor-values-to-calculate": "of sensor values to calculate duration",
+          "aggregates": {
+            "average": "Average",
+            "minimum": "Minimum",
+            "maximum": "Maximum",
+            "first": "First",
+            "last": "Last",
+            "median": "Median",
+            "sum": "Sum"
+          },
+          "errors": {
+            "cannot-delete-mapping-because-zones-use-it": "You cannot delete this mapping because there is at least one zone using it"
+          }
+        }
+      },
+      "labels": {
+        "mapping-name": "Name"
+      }
+    },
+    "zones": {
+      "title": "Zones",
+      "description": "Specify one or more irrigation zones here. The component calculates irrigation duration per zone, depending on size, throughput, state, module and mapping.",
+      "no_items": "There are no zones defined yet.",
+      "cards": {
+        "add-zone": {
+          "header": "Add zone",
+          "actions": {
+            "add": "Add zone"
+          }
+        },
+        "zone-actions": {
+          "header": "Actions on all zones",
+          "actions": {
+            "update-all": "Update all zones",
+            "calculate-all": "Calculate all zones"
+          }
+        }
+      },
+      "labels": {
+        "name": "Name",
+        "size": "Size",
+        "throughput": "Throughput",
+        "state": "State",
+        "states": {
+          "disabled": "Disabled",
+          "manual": "Manual",
+          "automatic": "Automatic"
+        },
+
+        "mapping": "Mapping",
+        "bucket": "Bucket",
+        "lead-time": "Lead time",
+        "multiplier": "Multiplier",
+        "duration": "Duration"
+      },
+      "actions": {
+        "add": "Add",
+        "calculate": "Calculate",
+        "update": "Update",
+        "information": "Information"
+      }
+    },
+    "help": {
+      "title": "Help"
+    }
+  }
+}

@@ -1,16 +1,38 @@
-reset_bucket:
-  description: Reset the bucket to 0
+calculate_all_zones:
+  description: Calculate all zones in automatic mode
+calculate_zone:
+  description: Calculate specified zone
+  target:
+    entity:
+      domain: sensor
+update_all_zones:
+  description: Update weatherdata for all zones in automatic mode
+update_zone:
+  description: Update weatherdata for specified zone
+  target:
+    entity:
+      domain: sensor
 set_bucket:
-  description: Set the bucket to the specified value. Should only be used for debugging purposes.
+  description: Set bucket for a zone to a specific value
+  target:
+    entity:
+      domain: sensor
   fields:
-    value:
-      description: The new value of the bucket in inch or mm depending on your system of measurement configured in Home Assistant.
-      example: -0.1
-calculate_hourly_adjusted_run_time:
-  description: Trigger calculation of hourly adjusted run time
-calculate_daily_adjusted_run_time:
-  description: Trigger calculation of daily adjusted run time
-enable_force_mode:
-  description: Enables force mode
-disable_force_mode:
-  description: Disables force mode
+    new_bucket_value:
+      required: true
+      example: -10
+      default: 0
+set_all_buckets:
+  description: Set buckets for all zones to a specific value
+  fields:
+    new_bucket_value:
+      required: true
+      example: -10
+      default: 0
+reset_bucket:
+  description: Reset bucket for a zone to 0
+  target:
+    entity:
+      domain: sensor
+reset_all_buckets:
+  descripiton: Reset bucket for all zones to 0

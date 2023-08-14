@@ -37,9 +37,9 @@ OWM_validators = {
 class OWMClient:  # pylint: disable=invalid-name
     """Open Weather Map Client."""
 
-    def __init__(self, api_key, api_version, latitude, longitude):
+    def __init__(self,api_key, api_version, latitude, longitude):
         """Init."""
-        self.api_key = api_key.strip()
+        self.api_key = api_key.strip().replace(" ","")
         self.api_version = api_version.strip()
         self.longitude = longitude
         self.latitude = latitude
@@ -96,13 +96,13 @@ class OWMClient:  # pylint: disable=invalid-name
                                 )
             else:
                 _LOGGER.warning(
-                    "Ignoring OWM input: missing required key 'daily' in OWM API return."
+                    "Ignoring OWM input: missing required key 'daily' in OWM API return"
                 )
                 return None
             return doc
         except Exception as ex:
             _LOGGER.warning(ex)
-            return None
+            raise ex
 
     def raiseIOError(self, key):
         raise IOError("Missing required key {0} in OWM API return".format(key))
@@ -113,3 +113,32 @@ class OWMClient:  # pylint: disable=invalid-name
                 value, key, minval, maxval
             )
         )
+
+    def get_precipitation(self,data):
+        """Parse out precipitation info from OWM data."""
+        if data is not None:
+            # if rain or snow are missing from the OWM data set them to 0
+            if "rain" in data:
+                self.rain = float(data["rain"])
+            else:
+                self.rain = 0
+            if "snow" in data:
+                self.snow = float(data["snow"])
+            else:
+                self.snow = 0
+            #_LOGGER.info(
+            #    "rain: {}, snow: {}".format(  # pylint: disable=logging-format-interpolation
+            #        self.rain, self.snow
+            #    )
+            #)
+            if isinstance(self.rain, str):
+                self.rain = 0
+            if isinstance(self.snow, str):
+                self.snow = 0
+            retval = self.rain + self.snow
+            if isinstance(retval, str):
+                if retval.count(".") > 1:
+                    retval = retval.split(".")[0] + "." + retval.split(".")[1]
+            retval = float(retval)
+            return retval
+        return 0.0

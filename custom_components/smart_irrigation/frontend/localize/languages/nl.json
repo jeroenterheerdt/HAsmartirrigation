@@ -1,0 +1,169 @@
+{
+  "common": {
+    "labels": {
+      "yes": "Ja",
+      "no": "Nee",
+      "module": "Module"
+    },
+    "actions": {
+      "delete": "Verwijderen"
+    }
+  },
+  "title": "Smart Irrigation",
+  "panels": {
+    "general": {
+      "title": "Algemeen",
+      "description": "Dit zijn de algemene instellingen.",
+      "cards": {
+        "automatic-duration-calculation": {
+          "header": "Automatische berekening van irrigatietijd",
+          "labels": {
+            "auto-calc-enabled": "Automatisch irrigatietijd berekening voor elke zone",
+            "auto-calc-time": "Berekenen op"
+          }
+        },
+        "automatic-update": {
+          "header": "Automatisch bijwerken van weer gegevens",
+          "labels": {
+            "auto-update-enabled": "Automatisch weergegevens bijwerken",
+            "auto-update-interval": "Sensor data bijwerken elke",
+            "auto-update-first-update": "(Eerste keer) Bijwerken op "
+          },
+          "options": {
+            "minutes": "minuten",
+            "hours": "uren",
+            "days": "dagen"
+          },
+          "errors": {
+            "warning-update-time-on-or-after-calc-time": "Let op: het automatisch bijwerken van weer gegevens vind plaats op of na de automatische berekening van irrigatietijd"
+          }
+        }
+      }
+    },
+    "modules": {
+      "title": "Modules",
+      "description": "Voeg een of meerdere modules toe. Modules berekenen irrigatietijd. Elke module heeft zijn eigen configuratie and kan worden gebruikt voor het berekening van irrigatietijd voor een of meerdere zones",
+      "no_items": "Er zijn nog geen modules.",
+      "cards": {
+        "add-module": {
+          "header": "Voeg module toe",
+          "actions": {
+            "add": "Toevoegen"
+          }
+        },
+        "module": {
+          "labels": {
+            "configuration": "Instellingen",
+            "required": "verplicht veld"
+          },
+          "translated-options": {
+            "EstimateFromTemp": "Gebaseerd op temperatuur",
+            "EstimateFromSunHours": "Gebaseerd op zon uren",
+            "DontEstimate": "Niet berekenen"
+          },
+          "errors": {
+            "cannot-delete-module-because-zones-use-it": "Deze module kan niet worden verwijderd omdat er minimaal een zone gebruik van maakt"
+          }
+        }
+      }
+    },
+    "mappings": {
+      "title": "Links",
+      "description": "Voeg een of meer links toe die weergegevens ophalen van OpenWeatherMap, van sensoren of een combinatie. Elke link kan worden gebruikt voor een of meerdere zones",
+      "no_items": "Er zijn nog geen links.",
+      "cards": {
+        "add-mapping": {
+          "header": "Voeg link toe",
+          "actions": {
+            "add": "Toevoegen"
+          }
+        },
+        "mapping": {
+          "source": "Bron",
+          "sources": {
+            "openweathermap": "OpenWeatherMap",
+            "sensor": "Sensor",
+            "none": "Geen"
+          },
+          "items": {
+            "dewpoint": "Dauwpunt",
+            "evapotranspiration": "Verdamping",
+            "humidity": "Vochtigheid",
+            "maximum temperature": "Maximum temperatuur",
+            "minimum temperature": "Minimum temperatuur",
+            "precipitation": "Neerslag",
+            "pressure": "Druk",
+            "solar radiation": "Zonnestraling",
+            "temperature": "Temperatuur",
+            "windspeed": "Wind snelheid"
+          },
+          "sensor-entity": "Sensor entiteit",
+          "sensor-units": "Sensor geeft waardes in",
+          "sensor-aggregate-use-the": "Gebruik de/het",
+          "sensor-aggregate-of-sensor-values-to-calculate": "van de sensor waardes om irrigatietijd te berekenen",
+          "aggregates": {
+            "average": "Gemiddelde",
+            "minimum": "Minimum",
+            "maximum": "Maximum",
+            "first": "Eerste",
+            "last": "Laatste",
+            "median": "Mediaan",
+            "sum": "Totaal"
+          },
+          "errors": {
+            "cannot-delete-mapping-because-zones-use-it": "Deze link kan niet worden verwijderd omdat er minimaal een zone gebruik van maakt"
+          }
+        }
+      },
+      "labels": {
+        "mapping-name": "Name"
+      }
+    },
+    "zones": {
+      "title": "Zones",
+      "description": "Voeg een of meerdere zones toe. Per zone wordt de irrigatietijd berekend, afhankelijk van de afmeting, doorvoer, status, module en link.",
+      "no_items": "Er zijn nog geen zones.",
+      "cards": {
+        "add-zone": {
+          "header": "Voeg zone toe",
+          "actions": {
+            "add": "Toevoegen"
+          }
+        },
+        "zone-actions": {
+          "header": "Acties voor alle zones",
+          "actions": {
+            "update-all": "Werk alle zone data bij",
+            "calculate-all": "Bereken alle zones"
+          }
+        }
+      },
+      "labels": {
+        "name": "Naam",
+        "size": "Afmeting",
+        "throughput": "Doorvoer",
+        "state": "Status",
+        "states": {
+          "disabled": "Uit",
+          "manual": "Manueel",
+          "automatic": "Automatisch"
+        },
+
+        "mapping": "Link",
+        "bucket": "Voorraad",
+        "lead-time": "Aanlooptijd",
+        "multiplier": "Vermenigvuldiger",
+        "duration": "Irrigatieduur"
+      },
+      "actions": {
+        "add": "Toevoegen",
+        "calculate": "Bereken",
+        "update": "Bijwerken",
+        "information": "Informatie"
+      }
+    },
+    "help": {
+      "title": "Hulp"
+    }
+  }
+}
