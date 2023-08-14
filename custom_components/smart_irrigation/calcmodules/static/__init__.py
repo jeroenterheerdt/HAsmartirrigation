@@ -18,7 +18,7 @@ SCHEMA = vol.Schema(
 
 class Static(SmartIrrigationCalculationModule):
     def __init__(self, hass, config: {}) -> None:
-        super().__init__(name=localize("calcmodules.static.name",hass.config.language), description=localize("calcmodules.static.description",hass.config.language)+".", config=config, schema=SCHEMA)
+        super().__init__(name="Static", description=localize("calcmodules.static.description",hass.config.language)+".", config=config, schema=SCHEMA)
         self._delta = DEFAULT_DELTA
         if config:
             self._delta = config.get(CONF_DELTA, DEFAULT_DELTA)

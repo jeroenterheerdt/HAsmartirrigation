@@ -52,6 +52,7 @@ from .const import (
     MODULE_ID,
     MODULE_NAME,
     MODULE_DESCRIPTION,
+    MODULE_SCHEMA,
     ZONE_BUCKET,
     ZONE_ID,
     ZONE_LEAD_TIME,
@@ -238,23 +239,30 @@ class SmartIrrigationStorage:
         self.async_schedule_save()
 
     async def async_factory_default_modules(self):
+
+        schema_from_code = None
+        module0schema = None
+        module1schema = None
+        mods = loadModules(MODULE_DIR)
+        for mod in mods:
+            if mods[mod]["class"] in ["PyETO","Static"]:
+                m = getattr(mods[mod]["module"], mods[mod]["class"])
+                inst = m(self.hass, {})
+                schema_from_code = inst.schema_serialized()
+                if mods[mod]["class"] == "PyETO":
+                    module0schema = schema_from_code
+                elif mods[mod]["class"] == "Static":
+                    module1schema = schema_from_code
         module0 = ModuleEntry(
-            **{MODULE_ID: 0, MODULE_NAME: localize("calcmodules.pyeto.name", self.hass.config.language), MODULE_DESCRIPTION:localize("calcmodules.pyeto.description",self.hass.config.language)+"."}
+            **{MODULE_ID: 0, MODULE_NAME: "PyETO", MODULE_DESCRIPTION:localize("calcmodules.pyeto.description",self.hass.config.language)+".",
+               MODULE_SCHEMA: module0schema
+               }
         )
-        '''
-        ,"config": {
-                "coastal": "False",
-                 "solrad_behavior": "SOLRAD_behavior.1",
-                 "forecast_days":0
-                 }
-            '''
         module1 = ModuleEntry(
-            **{MODULE_ID: 1, MODULE_NAME: localize("calcmodules.static.name", self.hass.config.language),MODULE_DESCRIPTION:localize("calcmodules.static.description", self.hass.config.language)+"."}
+            **{MODULE_ID: 1, MODULE_NAME: "Static", MODULE_DESCRIPTION:localize("calcmodules.static.description", self.hass.config.language)+".",
+               MODULE_SCHEMA: module1schema
+               }
         )
-        '''
-        ,"config": {
-                "delta": -20
-            }'''
         self.modules[0] = module0
         self.modules[1] = module1
         self.async_schedule_save()

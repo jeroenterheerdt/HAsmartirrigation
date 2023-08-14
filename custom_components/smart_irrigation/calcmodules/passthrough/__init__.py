@@ -13,7 +13,7 @@ SCHEMA = vol.Schema(
 )
 class Passthrough(SmartIrrigationCalculationModule):
     def __init__(self, hass, config={}) -> None:
-        super().__init__(name=localize("calcmodules.passthrough.name",hass.config.language), description=localize("calcmodules.passthrough.description", hass.config.language)+".", schema=SCHEMA, config=config)
+        super().__init__(name="Passthrough", description=localize("calcmodules.passthrough.description", hass.config.language)+".", schema=SCHEMA, config=config)
         self._hass = hass
 
     def calculate(self, et_data=None):

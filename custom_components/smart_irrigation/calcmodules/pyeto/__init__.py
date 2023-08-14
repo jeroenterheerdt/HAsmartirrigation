@@ -42,7 +42,7 @@ SCHEMA = vol.Schema(
 
 class PyETO(SmartIrrigationCalculationModule):
     def __init__(self, hass, config: {}) -> None:
-        super().__init__(name=localize("calcmodules.pyeto.name",hass.config.language), description=localize("calcmodules.pyeto.description",hass.config.language)+".", schema=SCHEMA, config=config)
+        super().__init__(name="PyETO", description=localize("calcmodules.pyeto.description",hass.config.language)+".", schema=SCHEMA, config=config)
         self._hass = hass
         self._latitude = hass.config.as_dict().get(CONF_LATITUDE)
         self._elevation = hass.config.as_dict().get(CONF_ELEVATION)

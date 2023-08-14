@@ -45,7 +45,7 @@ export class SmartIrrigationPanel extends LitElement {
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${localize("title", this.hass.language)}</div>
-          <div class="version">v${VERSION}</div>
+          <div class="version">${VERSION}</div>
         </div>
 
         <ha-tabs
