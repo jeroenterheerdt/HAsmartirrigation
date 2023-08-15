@@ -1,0 +1,13 @@
+{
+  "calcmodules": {
+    "pyeto": {
+      "description": "Bereken duur op basis van de FAU56 formule en de PyETO library"
+    },
+    "static": {
+      "description": "Module met instelbare duur"
+    },
+    "passthrough": {
+      "description": "Geeft waarde van ET sensor as verandering terug"
+    }
+  }
+}

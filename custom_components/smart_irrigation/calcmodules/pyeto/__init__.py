@@ -64,30 +64,8 @@ class PyETO(SmartIrrigationCalculationModule):
                 #loop over the forecast days, ending at forecast days +1, so if forecast_days=0, we get one day
                 for x in range(self._forecast_days+1):
                     delta+=self.calculate_et_for_day(weather_data,precip,sol_rad,x) #calculate et for x's weather (0 is today, 1 is tomorrow, etc) and update delta
-                #no
-        #new_bucket = round(bucket + delta,1)
-        #explanation = "We calculated Evapotranspiration deficiency of {}. Bucket was {}.<br/>New bucket value is [old_bucket]-[delta]={}-{}={}.<br/>".format(delta,bucket,bucket,delta,new_bucket)
-        #if new_bucket < 0:
-            #calculate duration
-        #    if self._maximum_et != 0:
-        #        water_budget = round(abs(new_bucket)/self._maximum_et,2)
-        #    else:
-        #        water_budget = 1
-        #    precipitation_rate = (throughput * 60) / size
-        #    base_schedule_index = (self._maximum_et / precipitation_rate * 60) * 60
-        #    duration = round(water_budget * base_schedule_index)
 
-        #    explanation += "Since bucket < 0, irrigation is necessary.<br/>To calculate the exact duration, the following steps were taken:<br/>"
-        #    explanation += "<ol><li>Water budget is defined as abs([bucket])/max(ET)={}</li>".format(water_budget)
-        #    explanation += "<li>The precipitation rate is defined as [throughput]*60/[size]={}*60/{}={}</li>".format(throughput,size,precipitation_rate)
-        #    explanation += "<li>The base schedule index is defined as (max(ET)/[precipitation rate]*60)*60=({}/{}*60)*60={}</li>".format(self._maximum_et,precipitation_rate,base_schedule_index)
-        #    explanation += "<li>Finally, the duration is calculated as [water_budget]*[base_schedule_index]={}*{}={}</li></ol>".format(water_budget,base_schedule_index,duration)
-        #else:
-            # no need to irrigate, set duration to 0
-        #    duration = 0
-        #    explanation += "Since bucket >= 0, no irrigation is necessary and duration is set to {}".format(duration)
-
-        return delta#, duration, explanation
+        return delta
 
     def calculate_et_for_day(self,weather_data, precip,sol_rad=None,index=0):
         if len(weather_data["daily"])-1 >= index:

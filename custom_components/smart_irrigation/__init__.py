@@ -435,6 +435,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     precip = precip_from_sensor
             if m[const.MODULE_NAME] == "PyETO":
                  delta = modinst.calculate(weather_data=weatherdata, precip=precip, sol_rad=sol_rad_from_sensor)
+            elif m[const.MODULE_NAME] == "Penmon":
+                delta = modinst.calculate(weather_data=weatherdata, sol_rad=sol_rad_from_sensor)
             elif m[const.MODULE_NAME] == "Static":
                 delta = modinst.calculate()
             elif m[const.MODULE_NAME] == "Passthrough":
@@ -736,12 +738,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             s = m(self.hass, {})
             res.append({"name": s.name, "description":s.description,"config":s._config,"schema":s.schema_serialized()})
 
-        #s = Static(self.hass,{})
-        #res.append({"name": s.name, "description":s.description,"config":s._config,"schema":s.schema_serialized()})
-        #p = PyETO(self.hass,{})
-        #res.append({"name": p.name, "description": p.description, "config": p._config, "schema": p.schema_serialized()})
-        #p2 = Passthrough(self.hass,{})
-        #res.append({"name": p2.name, "description": p2.description, "config": p2._config, "schema": p2.schema_serialized()})
         return res
 
     async def async_remove_entity(self, zone_id: str):

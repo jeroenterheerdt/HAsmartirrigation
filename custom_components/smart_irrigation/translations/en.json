@@ -73,19 +73,5 @@
         "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Since bucket >= 0, no irrigation is necessary and duration is set to"
       }
     }
-  },
-  "calcmodules": {
-    "pyeto": {
-      "name": "PyETO",
-      "description": "Calculate duration based on the FAO56 calculation from the PyETO library"
-    },
-    "static": {
-      "name": "Static",
-      "description": "'Dummy' module with a static configurable duration"
-    },
-    "passthrough": {
-      "name": "Passthrough",
-      "description": "Passthrough module that returns the value of an Evapotranspiration sensor as delta"
-    }
   }
 }

@@ -1,0 +1,77 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Maar een installatie van Smart Irrigation is toegestaan."
+    },
+    "error": {
+      "auth": "Open Weather API sleutel of geselecteerde versie onjuist",
+      "name": "Geef de installatie een unieke naam."
+    },
+    "step": {
+      "user": {
+        "title": "Algemeen",
+        "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "name": "Unieke naam",
+          "use_owm": "Gebruik Open Weather Map voor weerinformatie? Zet dit uit als je alleen een andere bronnen, zoals je eigen weerstation wilt gebruiken. Laat dit aan als je van plan bent Open Weather Map in ieder geval deels als bron te gebruiken."
+        }
+      },
+      "step1": {
+        "title": "Open Weather Map API configuratie",
+        "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigationn",
+        "data": {
+          "owm_api_key": "API sleutel voor Open Weather Map",
+          "owm_api_version": "Open Weather Map API versie (kies 3.0 voor nieuwe installaties)"
+        }
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "auth": "Open Weather API sleutel of geselecteerde versie onjuist"
+    },
+    "step": {
+      "init": {
+        "title": "Open Weather Map API configuratie",
+        "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "owm_api_key": "API sleutel voor Open Weather Map",
+          "owm_api_version": "Open Weather Map API versie (kies 3.0 voor nieuwe installaties)"
+        }
+      }
+    }
+  },
+  "common": {
+    "attributes": {
+      "size": "afmeting",
+      "throughput": "doorvoer",
+      "state": "status"
+    }
+  },
+  "defaults": {
+    "default-zone": "Standaard zone",
+    "default-mapping": "Standaard mapping"
+  },
+  "module": {
+    "calculation": {
+      "explanation": {
+        "module-returned-evapotranspiration-deficiency": "Module berekende ET waarde van",
+        "bucket-was": "Voorraad was",
+        "new-bucket-values-is": "Nieuwe voorraad is",
+        "old-bucket-variable": "oude_voorraad",
+        "delta": "verandering",
+        "bucket-less-than-zero-irrigation-necessary": "Omdat de voorraad < 0 is, is irrigatie nodig",
+        "steps-taken-to-calculate-duration": "On de exacte duur te berekenen werd het volgende gedaan",
+        "precipitation-rate-defined-as": "De neerslag is",
+        "duration-is-calculated-as": "De duur is",
+        "bucket": "voorraad",
+        "precipitation-rate-variable": "neerslag",
+        "multiplier-is-applied": "De vermenigvuldiger wordt toegepast. Deze is",
+        "duration-after-multiplier-is": "dus de duur is",
+        "lead-time-is-applied": "As laatste wordt de aanlooptijd toegepast. Deze is",
+        "duration-after-lead-time-is": "dus de uiteindelijke duur is",
+        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Omdat de voorraad >= 0 is er geen irrigatie nodig en is de duur gelijk aan"
+      }
+    }
+  }
+}

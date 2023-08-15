@@ -287,6 +287,8 @@ def loadModules(moduleDir=None):
         # load the detected modules
 
         for d in thedir:
+            if moduleDirFullPath+os.sep+d not in sys.path:
+                sys.path.append(moduleDirFullPath+os.sep+d)
             mod = importlib.import_module("."+d,package=CUSTOM_COMPONENTS+"."+DOMAIN+"."+moduleDir)
             if mod:
                 theclasses = [mod.__dict__[c] for c in mod.__dict__ if (isinstance(mod.__dict__[c], type) and mod.__dict__[c].__module__ == mod.__name__)]
