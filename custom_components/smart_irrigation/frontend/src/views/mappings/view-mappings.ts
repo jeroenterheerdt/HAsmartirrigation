@@ -216,7 +216,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         >
       </div>`;
 
-    if (value == MAPPING_EVAPOTRANSPIRATION) {
+    if (value == MAPPING_EVAPOTRANSPIRATION || value == MAPPING_SOLRAD) {
       //this can not come from OWM!
       r = html`${r}
         <input

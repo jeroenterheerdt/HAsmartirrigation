@@ -733,7 +733,7 @@ function ge(e,t){return(({finisher:e,descriptor:t})=>(i,a)=>{var s;if(void 0===a
         <label for="${t+e+Ue}"
           >${Ii("panels.mappings.cards.mapping.source",this.hass.language)}:</label
         >
-      </div>`,t==Se)o=G`${o}
+      </div>`,t==Se||t==Ie)o=G`${o}
         <input
           type="radio"
           id="${t+e+ke}"
@@ -862,7 +862,7 @@ function ge(e,t){return(({finisher:e,descriptor:t})=>(i,a)=>{var s;if(void 0===a
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${Ii("title",this.hass.language)}</div>
-          <div class="version">${"v2023.8.0-beta4"}</div>
+          <div class="version">${"v2023.8.0-beta5"}</div>
         </div>
 
         <ha-tabs

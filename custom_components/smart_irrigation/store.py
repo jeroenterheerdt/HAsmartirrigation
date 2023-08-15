@@ -80,7 +80,7 @@ SAVE_DELAY = 10
 class ZoneEntry:
     """Zone storage Entry."""
 
-    id = attr.ib(type=str, default=None)
+    id = attr.ib(type=int, default=None)
     name = attr.ib(type=str, default=None)
     size = attr.ib(type=float, default=0.0)
     throughput = attr.ib(type=float, default=0.0)
@@ -99,7 +99,7 @@ class ZoneEntry:
 class ModuleEntry:
     """Module storage Entry."""
 
-    id = attr.ib(type=str, default=None)
+    id = attr.ib(type=int, default=None)
     name = attr.ib(type=str, default=None)
     description = attr.ib(type=str, default=None)
     config = attr.ib(type=str, default=None)
@@ -109,7 +109,7 @@ class ModuleEntry:
 class MappingEntry:
     """Mapping storage Entry."""
 
-    id = attr.ib(type=str, default=None)
+    id = attr.ib(type=int, default=None)
     name = attr.ib(type=str, default=None)
     mappings = attr.ib(type=str,default=None)
     data = attr.ib(type=str,default="[]")
@@ -280,8 +280,8 @@ class SmartIrrigationStorage:
         conf = {}
         for map in mappings:
             map_source = mapping_source
-            #evapotranspiration can only come from a sensor or none
-            if map == MAPPING_EVAPOTRANSPIRATION:
+            #evapotranspiration and solrad can only come from a sensor or none
+            if map in [MAPPING_EVAPOTRANSPIRATION, MAPPING_SOLRAD]:
                 if self.config.use_owm:
                     map_source = MAPPING_CONF_SOURCE_NONE
                 else:
@@ -368,7 +368,7 @@ class SmartIrrigationStorage:
         #zone_id = str(int(time.time()))
         #new_zone = ZoneEntry(**data, id=zone_id)
         new_zone = ZoneEntry(**data)
-        self.zones[new_zone.id] = new_zone
+        self.zones[int(new_zone.id)] = new_zone
         self.async_schedule_save()
         return attr.asdict(new_zone)
 
@@ -428,14 +428,14 @@ class SmartIrrigationStorage:
         #module_id = str(int(time.time()))
         #new_module = moduleEntry(**data, id=module_id)
         new_module = ModuleEntry(**data)
-        self.modules[new_module.id] = new_module
+        self.modules[int(new_module.id)] = new_module
         self.async_schedule_save()
         return attr.asdict(new_module)
 
     @callback
     def async_delete_module(self, module_id: int) -> None:
         """Delete ModuleEntry."""
-        if module_id in self.modules:
+        if int(module_id) in self.modules:
             del self.modules[int(module_id)]
             self.async_schedule_save()
             return True
@@ -474,13 +474,14 @@ class SmartIrrigationStorage:
     def async_create_mapping(self, data: dict) -> MappingEntry:
         """Create a new MappingEntry."""
         new_mapping = MappingEntry(**data)
-        self.mappings[new_mapping.id] = new_mapping
+        self.mappings[int(new_mapping.id)] = new_mapping
         self.async_schedule_save()
         return attr.asdict(new_mapping)
 
     @callback
     def async_delete_mapping(self, mapping_id: str) -> None:
         """Delete MappingEntry."""
+        mapping_id = int(mapping_id)
         if mapping_id in self.mappings:
             del self.mappings[mapping_id]
             self.async_schedule_save()
