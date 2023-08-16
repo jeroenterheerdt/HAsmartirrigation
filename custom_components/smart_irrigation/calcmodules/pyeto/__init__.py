@@ -36,7 +36,7 @@ SCHEMA = vol.Schema(
     {
         vol.Required(CONF_COASTAL, default=DEFAULT_COASTAL): vol.Coerce(bool),
         vol.Required(CONF_SOLRAD_BEHAVIOR, default=DEFAULT_SOLRAD_BEHAVIOR): vol.Coerce(SOLRAD_behavior),
-        vol.Required(CONF_FORECAST_DAYS, default=DEFAULT_FORECAST_DAYS): vol.All(int),
+        vol.Required(CONF_FORECAST_DAYS, default=DEFAULT_FORECAST_DAYS): vol.Coerce(int),
     }
 )
 
@@ -52,7 +52,7 @@ class PyETO(SmartIrrigationCalculationModule):
         if config:
             self._coastal = config.get(CONF_COASTAL,DEFAULT_COASTAL)
             self._solrad_behavior = config.get(CONF_SOLRAD_BEHAVIOR,DEFAULT_SOLRAD_BEHAVIOR)
-            self._forecast_days = config.get(CONF_FORECAST_DAYS,DEFAULT_FORECAST_DAYS)
+            self._forecast_days = int(config.get(CONF_FORECAST_DAYS,DEFAULT_FORECAST_DAYS))
 
 
 

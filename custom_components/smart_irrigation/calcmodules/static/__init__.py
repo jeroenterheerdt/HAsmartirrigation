@@ -21,7 +21,7 @@ class Static(SmartIrrigationCalculationModule):
         super().__init__(name="Static", description=localize("calcmodules.static.description",hass.config.language)+".", config=config, schema=SCHEMA)
         self._delta = DEFAULT_DELTA
         if config:
-            self._delta = config.get(CONF_DELTA, DEFAULT_DELTA)
+            self._delta = float(config.get(CONF_DELTA, DEFAULT_DELTA))
 
     def calculate(self):
         return self._delta
