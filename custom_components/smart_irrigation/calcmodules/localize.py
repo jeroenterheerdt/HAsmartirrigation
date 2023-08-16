@@ -5,6 +5,8 @@ import os
 _LOGGER = logging.getLogger(__name__)
 LANGUAGE_FILES_DIR = "translations"
 
+SUPPORTED_LANGUAGES = ["en","nl"]
+
 def localize(string, language):
     #try opening language file
     language = language.lower()
@@ -12,12 +14,13 @@ def localize(string, language):
     main_path = os.path.dirname(__file__)
     stringpath = string.split(".")
     try:
-        if language != "en":
+        #if the language is not english and the language is supported
+        if language != "en" and language in SUPPORTED_LANGUAGES:
             with open(os.path.join(main_path,LANGUAGE_FILES_DIR+os.sep+language+".json")) as f:
                 data = json.load(f)
                 translated_string = get_string_from_data(stringpath,data)
         #fallback to english in case string wasn't found
-        if not translated_string:
+        if language == "en" or not translated_string:
             with open(os.path.join(main_path, LANGUAGE_FILES_DIR+os.sep+"en.json")) as f:
                 data = json.load(f)
                 translated_string = get_string_from_data(stringpath,data)
