@@ -61,8 +61,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     #store OWM info in hass.data
     hass.data.setdefault(const.DOMAIN, {})
     hass.data[const.DOMAIN][const.CONF_USE_OWM]= entry.data.get(const.CONF_USE_OWM)
-    hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = entry.data.get(const.CONF_OWM_API_KEY).strip()
-    hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = entry.data.get(const.CONF_OWM_API_VERSION)
+    if entry.data.get(const.CONF_USE_OWM):
+        hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = entry.data.get(const.CONF_OWM_API_KEY).strip()
+        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = entry.data.get(const.CONF_OWM_API_VERSION)
     coordinator = SmartIrrigationCoordinator(hass, session, entry, store)
 
     device_registry = dr.async_get(hass)
@@ -184,8 +185,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     @callback
     def setup_SmartIrrigation_entities(self):
         zones = self.store.async_get_zones()
-        self.store.async_get_modules()
-        self.store.async_get_config()
+        #self.store.async_get_modules()
+        #self.store.async_get_config()
 
         for zone in zones:
             # self.async_create_zone(zone)

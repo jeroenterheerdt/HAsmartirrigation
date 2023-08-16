@@ -5,7 +5,7 @@ from .const import LANGUAGE_FILES_DIR
 
 _LOGGER = logging.getLogger(__name__)
 
-SUPPORTED_LANGUAGES = ["en"]
+SUPPORTED_LANGUAGES = ["en","nl"]
 
 def localize(string, language):
     #try opening language file
