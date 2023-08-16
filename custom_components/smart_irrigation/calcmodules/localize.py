@@ -3,15 +3,14 @@ import json
 import os
 
 _LOGGER = logging.getLogger(__name__)
-LANGUAGE_FILES_DIR = "translations"
-
-SUPPORTED_LANGUAGES = ["en","nl"]
+from ..const import LANGUAGE_FILES_DIR, SUPPORTED_LANGUAGES
 
 def localize(string, language):
     #try opening language file
     language = language.lower()
     translated_string = None
     main_path = os.path.dirname(__file__)
+    main_path = main_path.replace("calcmodules","")
     stringpath = string.split(".")
     try:
         #if the language is not english and the language is supported
@@ -31,6 +30,7 @@ def localize(string, language):
             return string
     except OSError:
         _LOGGER.error("Couldn't load translations language file for {}".format(language))
+        return string
 
 def get_string_from_data(stringpath, data):
     data_to_walk = data

@@ -1,11 +1,11 @@
 import logging
 import json
 import os
-from .const import LANGUAGE_FILES_DIR
+from .const import LANGUAGE_FILES_DIR, SUPPORTED_LANGUAGES
 
 _LOGGER = logging.getLogger(__name__)
 
-SUPPORTED_LANGUAGES = ["en","nl"]
+
 
 def localize(string, language):
     #try opening language file

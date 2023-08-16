@@ -862,7 +862,7 @@ function ge(e,t){return(({finisher:e,descriptor:t})=>(i,a)=>{var s;if(void 0===a
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${Ii("title",this.hass.language)}</div>
-          <div class="version">${"v2023.8.0-beta7"}</div>
+          <div class="version">${"v2023.8.0-beta8"}</div>
         </div>
 
         <ha-tabs

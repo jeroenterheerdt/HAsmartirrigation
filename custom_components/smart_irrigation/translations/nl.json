@@ -73,5 +73,16 @@
         "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Omdat de voorraad >= 0 is er geen irrigatie nodig en is de duur gelijk aan"
       }
     }
+  },
+  "calcmodules": {
+    "pyeto": {
+      "description": "Bereken duur op basis van de FAU56 formule en de PyETO library"
+    },
+    "static": {
+      "description": "Module met instelbare duur"
+    },
+    "passthrough": {
+      "description": "Geeft waarde van ET sensor as verandering terug"
+    }
   }
 }
