@@ -78,7 +78,7 @@ class SmartIrrigationModuleView(HomeAssistantView):
     @RequestDataValidator(
         vol.Schema(
             {
-                vol.Optional(const.MODULE_ID): cv.string,
+                vol.Optional(const.MODULE_ID): vol.Coerce(int),
                 vol.Optional(const.MODULE_NAME): cv.string,
                 vol.Optional(const.MODULE_DESCRIPTION): cv.string,
                 vol.Optional(const.MODULE_CONFIG): vol.Coerce(dict),
@@ -92,7 +92,7 @@ class SmartIrrigationModuleView(HomeAssistantView):
         hass = request.app["hass"]
         coordinator = hass.data[const.DOMAIN]["coordinator"]
         if const.MODULE_ID in data:
-            module = data[const.MODULE_ID]
+            module = int(data[const.MODULE_ID])
             # del data[const.ZONE_ID]
         else:
             module = None
@@ -112,7 +112,7 @@ class SmartIrrigationMappingView(HomeAssistantView):
     @RequestDataValidator(
         vol.Schema(
             {
-                vol.Optional(const.MAPPING_ID): cv.string,
+                vol.Optional(const.MAPPING_ID): vol.Coerce(int),
                 vol.Optional(const.MAPPING_NAME): cv.string,
                 vol.Optional(const.MAPPING_MAPPINGS): vol.Coerce(dict),
                 vol.Optional(const.ATTR_REMOVE): cv.boolean,
@@ -125,7 +125,7 @@ class SmartIrrigationMappingView(HomeAssistantView):
         hass = request.app["hass"]
         coordinator = hass.data[const.DOMAIN]["coordinator"]
         if const.MAPPING_ID in data:
-            mapping = data[const.MAPPING_ID]
+            mapping = int(data[const.MAPPING_ID])
             # del data[const.ZONE_ID]
         else:
             mapping = None
@@ -140,7 +140,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
     @RequestDataValidator(
         vol.Schema(
             {
-                vol.Optional(const.ZONE_ID): cv.string,
+                vol.Optional(const.ZONE_ID): vol.Coerce(int),
                 vol.Optional(const.ZONE_NAME): cv.string,
                 vol.Optional(const.ZONE_SIZE): cv.positive_float,
                 vol.Optional(const.ZONE_THROUGHPUT): cv.positive_float,
@@ -167,7 +167,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
         hass = request.app["hass"]
         coordinator = hass.data[const.DOMAIN]["coordinator"]
         if const.ZONE_ID in data:
-            zone = data[const.ZONE_ID]
+            zone = int(data[const.ZONE_ID])
             # del data[const.ZONE_ID]
         else:
             zone = None

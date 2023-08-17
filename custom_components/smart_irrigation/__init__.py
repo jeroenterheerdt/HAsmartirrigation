@@ -194,13 +194,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def async_update_config(self, data):
         #handle auto calc changes
-        if const.CONF_AUTO_CALC_ENABLED in data:
-            #check if auto_calc is enabled or not.
-            await self.set_up_auto_calc_time(data)
+        await self.set_up_auto_calc_time(data)
         #handle auto update changes
-        if const.CONF_AUTO_UPDATE_ENABLED in data:
-            #check if auto update is enabled or not:
-            await self.set_up_auto_update_time(data)
+        await self.set_up_auto_update_time(data)
+        self.store.async_update_config(data)
         async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated")
 
     async def set_up_auto_update_time(self,data):
@@ -211,9 +208,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if check_time(data[const.CONF_AUTO_UPDATE_TIME]):
                 #first auto update time is valid
                 #update only the actual changed value: auto update time
-                data_changed = {}
-                data_changed[const.CONF_AUTO_UPDATE_TIME] = data[const.CONF_AUTO_UPDATE_TIME]
-                self.store.async_update_config(data_changed)
                 timesplit = data[const.CONF_AUTO_UPDATE_TIME].split(":")
                 if self._track_auto_update_time_unsub:
                     self._track_auto_update_time_unsub()
@@ -238,10 +232,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         if data[const.CONF_AUTO_CALC_ENABLED]:
             #make sure to unsub any existing and add for calc time
             if check_time(data[const.CONF_CALC_TIME]):
-                #update only the actual changed value: calc time
-                data_changed = {}
-                data_changed[const.CONF_CALC_TIME] = data[const.CONF_CALC_TIME]
-                self.store.async_update_config(data_changed)
                 #make sure we track this time and at that moment trigger the refresh of all modules of all zones that are on automatic
                 timesplit = data[const.CONF_CALC_TIME].split(":")
                 #unsubscribe from any existing track_time_changes
@@ -488,7 +478,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         data[const.ZONE_EXPLANATION] = explanation
         return data
 
-    async def async_update_module_config(self, module_id: str=None, data: dict= {}):
+    async def async_update_module_config(self, module_id: int=None, data: dict= {}):
+        module_id = int(module_id)
         if const.ATTR_REMOVE in data:
             #delete a module
             res = self.store.async_get_module(module_id)
@@ -506,7 +497,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self.store.async_create_module(data)
             self.store.async_get_config()
 
-    async def async_update_mapping_config(self, mapping_id: str=None, data: dict= {}):
+    async def async_update_mapping_config(self, mapping_id: int=None, data: dict= {}):
+        mapping_id = int(mapping_id)
         if const.ATTR_REMOVE in data:
             #delete a mapping
             res = self.store.async_get_mapping(mapping_id)
@@ -582,7 +574,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 weatherdata["daily"][0]["wind_speed"] = convert_mapping_to_metric(val,s,unit,ha_config_is_metric)
         return weatherdata, precip_from_sensor, sol_rad_from_sensor,et_from_sensor
 
-    async def async_update_zone_config(self, zone_id: str = None, data: dict = {}):
+    async def async_update_zone_config(self, zone_id: int = None, data: dict = {}):
+        zone_id = int(zone_id)
         if const.ATTR_REMOVE in data:
             # delete a zone
             res = self.store.async_get_zone(zone_id)

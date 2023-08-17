@@ -100,7 +100,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       [MAPPING_WINDSPEED]: "",
     };
     const newMapping: SmartIrrigationMapping = {
-      id: this.mappings.length.toString(),
+      id: this.mappings.length,
       name: this.mappingNameInput.value,
       mappings: the_mappings,
     };
@@ -142,7 +142,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       return html``;
     } else {
       const numberofzonesusingthismapping = this.zones.filter(
-        (o) => parseInt(o.mapping) === parseInt(mapping.id)
+        (o) => o.mapping === mapping.id
       ).length;
       //below here we should go over all the mappings on the mapping object
       return html`
@@ -497,7 +497,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         </ha-card>
 
         ${Object.entries(this.mappings).map(([key, value]) =>
-          this.renderMapping(value, parseInt(value["id"]))
+          this.renderMapping(value, value["id"])
         )}
       `;
     }
