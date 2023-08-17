@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2023.8.0-beta9"
+VERSION = "v2023.8.0-beta10"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -47,7 +47,7 @@ CONF_DEFAULT_AUTO_UPDATED_ENABLED = True
 CONF_AUTO_UPDATE_TIME = "autoupdatefirsttime"
 CONF_DEFAULT_AUTO_UPDATE_TIME = "0:00"
 CONF_AUTO_UPDATE_INTERVAL = "autoupdateinterval"
-CONF_DEFAULT_AUTO_UPDATE_INTERVAL = "24"
+CONF_DEFAULT_AUTO_UPDATE_INTERVAL = "1"
 CONF_UNITS = "units"
 CONF_IMPERIAL = "imperial"
 CONF_METRIC = "metric"

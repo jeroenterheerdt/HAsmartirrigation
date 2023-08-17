@@ -5,7 +5,7 @@
     },
     "error": {
       "auth": "Open Weather API sleutel of geselecteerde versie onjuist",
-      "name": "Geef de installatie een unieke naam."
+      "name": "Geef de integratie een unieke naam."
     },
     "step": {
       "user": {

@@ -5,14 +5,14 @@
     },
     "error": {
       "auth": "Open Weather API key or version incorrect",
-      "name": "Specify an unique name for this instance."
+      "name": "Specify an unique name for the integration."
     },
     "step": {
       "user": {
         "title": "General set up",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "name": "Unique name of the instance",
+          "name": "Unique name of the integration",
           "use_owm": "Use Open Weather Map for weather data? Disable this is you want to use another source, such as your own weather station, exclusively. Leave this on if you intent to use Open Weather Map for at least part of the weather data."
         }
       },

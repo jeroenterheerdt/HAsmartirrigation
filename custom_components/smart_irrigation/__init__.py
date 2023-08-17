@@ -743,6 +743,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def async_remove_entity(self, zone_id: str):
         entity_registry = self.hass.helpers.entity_registry.async_get(self.hass)
+        zone_id = int(zone_id)
         entity = self.hass.data[const.DOMAIN]["zones"][zone_id]
         entity_registry.async_remove(entity.entity_id)
         self.hass.data[const.DOMAIN]["zones"].pop(zone_id, None)
