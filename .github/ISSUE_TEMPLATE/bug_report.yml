@@ -1,35 +1,20 @@
-name: Report bug Music Assistant
-description: Report an issue with Music Assistant.
-labels: ["triage"]
+name: Report bug
+description: Report an issue with Smart Irrigation
+labels: ["bug"]
+assignees: jeroenterheerdt
 body:
   - type: markdown
     attributes:
       value: |
-        This issue form is for reporting bugs only!
-        For questions read our [FAQ section][fq] or visit our community on [Discord][cf].
-        If you have a feature or enhancement request, please enter them in our discussions section [feature request][fr]
-
-        [fq]: https://github.com/music-assistant/hass-music-assistant/discussions/categories/q-a-faq
-        [cf]: https://discord.com/channels/753947050995089438/753947050995089442
-        [fr]: https://github.com/music-assistant/hass-music-assistant/discussions/categories/feature-requests-and-ideas
-  - type: input
-    id: version_MA
-    validations:
-      required: true
-    attributes:
-      label: What version of Music Assistant has the issue?
-      placeholder: 2022.x.y
-      description: >
-        Can be found in: HACS -> Integrations -> Music Assistant -> Information
-        For example: 2022.6.2
+        Thanks for taking the time to fill out this bug report!s
   - type: textarea
     validations:
       required: true
     attributes:
-      label: The problem
+      label: What happened?
       description: |
         Please give a clear and concise description of the issue you are experiencing here,
-        to communicate to the maintainers. Tell us what you were trying to do and what happened.
+        to communicate to the maintainers. Tell us what you were trying to do, what happened and what you expected.
   - type: textarea
     validations:
       required: true
@@ -43,55 +28,18 @@ body:
       label: Relevant log output
       description: |
         Please copy and paste any relevant log output. Use the field below.
+      render: shell  
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Diagnostics file
+      description: You are required to attach a diagnostics file to your bug report. To download a diagnostics file, in Home Assistant, go to Settings>Devices&Services>Integrations>Smart Irrigation or use this link: https://my.home-assistant.io/redirect/integration/?domain=smart_irrigation. Click the 'three vertical dots' menu and select 'download diagnostics'.
+      options:
+        - label: I have attached a diagnostics file
+          required: true
   - type: textarea
     attributes:
       label: Additional information
       description: |
         If you have any additional information for us. Use the field below.
-  - type: markdown
-    attributes:
-      value: |
-        ## Environment
-  - type: input
-    id: version_HA
-    validations:
-      required: true
-    attributes:
-      label: What version of Home Assistant Core are your running
-      placeholder: 2022.5.4
-      description: |
-        Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
-        For example: 2022.5.4
-        [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
-  - type: dropdown
-    validations:
-      required: true
-    attributes:
-      label: What type of installation are you running?
-      description: |
-        Can be found in: [Settings -> About](https://my.home-assistant.io/redirect/info/).
-
-        [![Open your Home Assistant instance and show your Home Assistant version information.](https://my.home-assistant.io/badges/info.svg)](https://my.home-assistant.io/redirect/info/)
-      options:
-        - Home Assistant OS
-        - Home Assistant Container
-        - Home Assistant Supervised
-        - Home Assistant Core
-  - type: dropdown
-    validations:
-      required: true
-    attributes:
-      label: On what type of hardware are you running?
-      description: |
-        Can be found in: [Settings -> System -> Hardware](https://my.home-assistant.io/redirect/hardware/).
-
-        [![Open your Home Assistant instance and show your hardware information.](https://my.home-assistant.io/badges/hardware.svg)](https://my.home-assistant.io/redirect/hardware/)
-      options:
-        - Raspberry Pi
-        - ODROID
-        - ASUS Tinkerboard
-        - Generic x86-64 (e.g. Intel NUC)
-        - Windows
-        - macOS
-        - Linux
-        - Alternative
+  
