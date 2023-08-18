@@ -1,4 +1,3 @@
----
 name: Bug report
 description: File a bug report
 about: Create a report to help us improve
