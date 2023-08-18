@@ -34,7 +34,7 @@ body:
     validations:
       required: true
     attributes:
-      label: Which version are you running
+      label: Which version are you running?
       description: Version
   - type: checkboxes
     id: diagnostics
