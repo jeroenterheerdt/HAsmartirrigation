@@ -34,6 +34,9 @@ body:
     attributes:
       label: Diagnostics file
       description: You are required to attach a diagnostics file. To download a diagnostics file, in Home Assistant, go to Settings>Devices&Services>Integrations>Smart Irrigation or use this link: https://my.home-assistant.io/redirect/integration/?domain=smart_irrigation. Click the 'three vertical dots' menu and select 'download diagnostics'.
+      options:
+        - label: I have attached a diagnostics file
+          required: true
   - type: textarea
     attributes:
       label: Additional information
