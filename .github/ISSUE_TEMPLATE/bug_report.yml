@@ -29,6 +29,13 @@ body:
       description: |
         Please copy and paste any relevant log output. Use the field below.
       render: shell  
+  - type: input
+    id: version
+    validations:
+      required: true
+    attributes:
+      label: Which version are you running
+      description: Version
   - type: checkboxes
     id: diagnostics
     attributes:
