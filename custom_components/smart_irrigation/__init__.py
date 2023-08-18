@@ -420,8 +420,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         if modinst:
             if m[const.MODULE_NAME] == "PyETO":
                 # if we have precip info from a sensor we don't need to call OWM to get it.
-                if not precip_from_sensor:
-                    precip = self._OWMClient.get_precipitation(weatherdata)
+                if precip_from_sensor is None:
+                        precip = self._OWMClient.get_precipitation(weatherdata)
                 else:
                     precip = precip_from_sensor
             if m[const.MODULE_NAME] == "PyETO":
@@ -575,7 +575,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         return weatherdata, precip_from_sensor, sol_rad_from_sensor,et_from_sensor
 
     async def async_update_zone_config(self, zone_id: int = None, data: dict = {}):
-        zone_id = int(zone_id)
+        if zone_id is not None:
+            zone_id = int(zone_id)
         if const.ATTR_REMOVE in data:
             # delete a zone
             res = self.store.async_get_zone(zone_id)

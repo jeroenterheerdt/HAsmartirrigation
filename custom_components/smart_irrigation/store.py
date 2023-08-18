@@ -132,6 +132,7 @@ class MigratableStore(Store):
         return data
 
 
+
 class SmartIrrigationStorage:
     """Class to hold Smart Irrigation configuration data."""
 
