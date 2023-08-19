@@ -24,5 +24,10 @@ async def async_get_config_entry_diagnostics(
         storagedata = data.get('data')
     except:
         _LOGGER.error("unable to load storage file to generate diagnostics.")
-    diag: dict[str, Any] = {"config": config_entry.as_dict(), "storage": storagedata}
+    config_entry_info = config_entry.as_dict()
+    if "data" in config_entry_info and "owm_api_key" in config_entry_info["data"]:
+        config_entry_info["data"]["owm_api_key"] = "XXXXXXXX"
+    if "options" in config_entry_info and "owm_api_key" in config_entry_info["options"]:
+        config_entry_info["options"]["owm_api_key"]= "XXXXXXXXXXX"
+    diag: dict[str, Any] = {"config": config_entry_info, "storage": storagedata}
     return diag

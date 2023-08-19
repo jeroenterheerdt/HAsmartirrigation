@@ -418,6 +418,8 @@ class SmartIrrigationStorage:
         # return res
 
         res = []
+        # add dummy module
+        res.append({'id': "",'name': localize("module.selectmodule", self.hass.config.language)})
         for key, val in self.modules.items():
             res.append(attr.asdict(val))
         return res
@@ -455,8 +457,10 @@ class SmartIrrigationStorage:
     @callback
     def async_get_mapping(self, mapping_id: int) -> MappingEntry:
         """Get an existing MappingEntry by id."""
-        res = self.mappings.get(int(mapping_id))
-        return attr.asdict(res) if res else None
+        if mapping_id is not None:
+            res = self.mappings.get(int(mapping_id))
+            return attr.asdict(res) if res else None
+        return None
 
     @callback
     def async_get_mappings(self):
@@ -467,6 +471,8 @@ class SmartIrrigationStorage:
         # return res
 
         res = []
+        #add dummy mapping
+        res.append({'id': "",'name': localize("mapping.selectmapping", self.hass.config.language)})
         for key, val in self.mappings.items():
             res.append(attr.asdict(val))
         return res
