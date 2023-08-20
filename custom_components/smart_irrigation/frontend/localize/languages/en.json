@@ -3,7 +3,8 @@
     "labels": {
       "yes": "Yes",
       "no": "No",
-      "module": "Module"
+      "module": "Module",
+      "select": "Select"
     },
     "actions": {
       "delete": "Delete"

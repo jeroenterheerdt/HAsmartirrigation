@@ -372,7 +372,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     mapping_weatherdata = weatherdata
                 #if there is sensor data on the mapping, apply aggregates to it.
                 sensor_values = None
-                if mapping.get(const.MAPPING_DATA):
+                if mapping and mapping.get(const.MAPPING_DATA):
                     sensor_values = await self.apply_aggregates_to_mapping_data(mapping)
                 precip_from_sensor = None
                 sol_rad_from_sensor = None
@@ -396,7 +396,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     )
                 elif not mapping_weatherdata and not sensor_values:
                     # no data to calculate with!
-                    _LOGGER.error("Calculate all zones failed: no data available.")
+                    _LOGGER.warning("Calculate all zones failed: no data available.")
 
     def calculate_module(self, zone,weatherdata, precip_from_sensor, sol_rad_from_sensor, et_data):
         mod_id = zone.get(const.ZONE_MODULE)
@@ -519,13 +519,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     def check_mapping_sources(self, mapping_id):
         owm_in_mapping = False
         sensor_in_mapping = False
-        mapping = self.store.async_get_mapping(mapping_id)
-        for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
-            if not isinstance(the_map, str):
-                if the_map.get(const.MAPPING_CONF_SOURCE)==const.MAPPING_CONF_SOURCE_OWM:
-                    owm_in_mapping = True
-                if the_map.get(const.MAPPING_CONF_SOURCE)==const.MAPPING_CONF_SOURCE_SENSOR:
-                    sensor_in_mapping = True
+        if mapping_id:
+            mapping = self.store.async_get_mapping(mapping_id)
+            for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
+                if not isinstance(the_map, str):
+                    if the_map.get(const.MAPPING_CONF_SOURCE)==const.MAPPING_CONF_SOURCE_OWM:
+                        owm_in_mapping = True
+                    if the_map.get(const.MAPPING_CONF_SOURCE)==const.MAPPING_CONF_SOURCE_SENSOR:
+                        sensor_in_mapping = True
         return owm_in_mapping, sensor_in_mapping
 
     def build_sensor_values_for_mapping(self, mapping):
@@ -633,7 +634,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 self.register_start_event()
             elif not weatherdata and not sensor_values:
                     # no data to calculate with!
-                    _LOGGER.error("Calculate zone {} failed: no data available.".format(res[const.ZONE_NAME]))
+                    _LOGGER.warning("Calculate zone {} failed: no data available.".format(res[const.ZONE_NAME]))
         elif const.ATTR_CALCULATE_ALL in data:
             #calculate all zones
             _LOGGER.info("Calculating all zones");

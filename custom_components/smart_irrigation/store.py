@@ -418,8 +418,6 @@ class SmartIrrigationStorage:
         # return res
 
         res = []
-        # add dummy module
-        res.append({'id': "",'name': localize("module.selectmodule", self.hass.config.language)})
         for key, val in self.modules.items():
             res.append(attr.asdict(val))
         return res
@@ -471,8 +469,6 @@ class SmartIrrigationStorage:
         # return res
 
         res = []
-        #add dummy mapping
-        res.append({'id': "",'name': localize("mapping.selectmapping", self.hass.config.language)})
         for key, val in self.mappings.items():
             res.append(attr.asdict(val))
         return res

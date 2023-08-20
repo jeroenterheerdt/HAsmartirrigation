@@ -75,7 +75,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         throughput: float,
         state: str,
         duration: int,
-    ) -> None:
+            ) -> None:
         """Initialize the sensor entity."""
         self._hass = hass
         self.entity_id = generate_entity_id(entity_id_format="sensor.{}", name=entity_id.split(".")[1],hass=hass)

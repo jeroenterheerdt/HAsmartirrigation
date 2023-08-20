@@ -96,12 +96,23 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     }
     this.config = await fetchConfig(this.hass);
     this.zones = await fetchZones(this.hass);
+
+    //add dummy module and mapping
+    /*const mods: SmartIrrigationModule[] = [];
+    const dummyModule: SmartIrrigationModule = {
+      id: undefined,
+      name: "--SELECT--",
+      description: "",
+      config: Object,
+      schema: Object,
+    };
+    mods.push(dummyModule);
+    mods.concat(await fetchModules(this.hass));
+    this.modules = mods;*/
     this.modules = await fetchModules(this.hass);
     this.mappings = await fetchMappings(this.hass);
 
-    /*Object.entries(this.modules).forEach(([key, value]) =>
-      console.log(key, value)
-    );*/
+
   }
 
   private handleCalculateAllZones(): void {
@@ -147,6 +158,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   ): void {
     this.zones = Object.values(this.zones).map((zone, i) =>
       i === index ? updatedZone : zone
+    );
+    Object.entries(updatedZone).forEach(([key, value]) =>
+      console.log(key, value)
     );
     this.saveToHA(updatedZone);
   }
@@ -197,6 +211,33 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     }
     saveZone(this.hass, zone);
   }
+
+  private renderTheOptions(thelist: object, selected?: number): TemplateResult {
+    if (!this.hass) {
+      return html``;
+    } else {
+      let r = html`<option value="" ?selected=${
+        selected === undefined
+      }">---${localize("common.labels.select", this.hass.language)}---</option>`;
+      Object.entries(thelist).map(
+        ([key, value]) =>
+          /*html`<option value="${value["id"]}" ?selected="${
+          zone.module === value["id"]
+        }>
+          ${value["id"]}: ${value["name"]}
+        </option>`*/
+          (r = html`${r}
+            <option
+              value="${value["id"]}"
+              ?selected="${selected === value["id"]}"
+            >
+              ${value["id"]}: ${value["name"]}
+            </option>`)
+      );
+      return r;
+    }
+  }
+
   private renderZone(zone: SmartIrrigationZone, index: number): TemplateResult {
     if (!this.hass) {
       return html``;
@@ -358,20 +399,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                     ),
                   })}"
               >
-                ${Object.entries(this.modules).map(
-                  ([key, value]) =>
-                    /*html`<option value="${value["id"]}" ?selected="${
-                    zone.module === value["id"]
-                  }>
-                    ${value["id"]}: ${value["name"]}
-                  </option>`*/
-                    html`<option
-                      value="${value["id"]}"
-                      ?selected="${zone.module === value["id"]}"
-                    >
-                      ${value["id"]}: ${value["name"]}
-                    </option>`
-                )}
+                ${this.renderTheOptions(this.modules, zone.module)}
               </select>
               <label for="module${index}"
                 >${localize(
@@ -390,20 +418,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                     ),
                   })}"
               >
-                ${Object.entries(this.mappings).map(
-                  ([key, value]) =>
-                    /*html`<option value="${value["id"]}" ?selected="${
-                    zone.module === value["id"]
-                  }>
-                    ${value["id"]}: ${value["name"]}
-                  </option>`*/
-                    html`<option
-                      value="${value["id"]}"
-                      ?selected="${zone.mapping === value["id"]}"
-                    >
-                      ${value["id"]}: ${value["name"]}
-                    </option>`
-                )}
+              ${this.renderTheOptions(this.mappings, zone.mapping)}
               </select>
             </div>
             <div class="zoneline">

@@ -149,7 +149,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
                 vol.Optional(const.ZONE_BUCKET): vol.Coerce(float),
                 vol.Optional(const.ZONE_OLD_BUCKET): vol.Coerce(float),
                 vol.Optional(const.ZONE_DELTA): vol.Coerce(float),
-                vol.Optional(const.ZONE_MODULE): cv.string,
+                vol.Optional(const.ZONE_MODULE): vol.Or(int,str,None),
                 vol.Optional(const.ATTR_REMOVE): cv.boolean,
                 vol.Optional(const.ATTR_CALCULATE): cv.boolean,
                 vol.Optional(const.ATTR_CALCULATE_ALL): cv.boolean,
@@ -157,7 +157,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
                 vol.Optional(const.ATTR_UPDATE_ALL): cv.boolean,
                 vol.Optional(const.ZONE_EXPLANATION): vol.Coerce(str),
                 vol.Optional(const.ZONE_MULTIPLIER): vol.Coerce(float),
-                vol.Optional(const.ZONE_MAPPING): cv.string,
+                vol.Optional(const.ZONE_MAPPING): vol.Or(int,str,None),
                 vol.Optional(const.ZONE_LEAD_TIME): vol.Coerce(float),
             }
         )

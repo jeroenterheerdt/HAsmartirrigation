@@ -72,11 +72,7 @@
         "duration-after-lead-time-is": "hence the final duration is",
         "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Since bucket >= 0, no irrigation is necessary and duration is set to"
       }
-    },
-    "selectmodule": "--Select--"
-  },
-  "mapping": {
-    "selectmapping": "--Select--"
+    }
   },
   "calcmodules": {
     "pyeto": {

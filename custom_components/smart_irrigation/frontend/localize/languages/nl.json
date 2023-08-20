@@ -3,7 +3,8 @@
     "labels": {
       "yes": "Ja",
       "no": "Nee",
-      "module": "Module"
+      "module": "Module",
+      "select": "Kies"
     },
     "actions": {
       "delete": "Verwijderen"
