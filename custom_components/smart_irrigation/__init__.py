@@ -386,17 +386,20 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         #loop over sensor values and put them in weatherdata in the right keys
                         mapping_weatherdata,precip_from_sensor, sol_rad_from_sensor,et_from_sensor = self.insert_sensor_values_in_weatherdata(mapping=mapping, sensor_values=sensor_values, weatherdata=mapping_weatherdata, ha_config_is_metric=ha_config_is_metric)
                     data = self.calculate_module(zone, mapping_weatherdata, precip_from_sensor=precip_from_sensor, sol_rad_from_sensor = sol_rad_from_sensor,et_data=et_from_sensor)
-                    #remove sensor data from mapping
-                    changes = {}
-                    changes[const.MAPPING_DATA] = []
-                    self.store.async_update_mapping(mapping_id, changes=changes)
+
                     self.store.async_update_zone(zone.get(const.ZONE_ID), data)
                     async_dispatcher_send(
                         self.hass, const.DOMAIN + "_config_updated", zone.get(const.ZONE_ID)
                     )
                 elif not mapping_weatherdata and not sensor_values:
                     # no data to calculate with!
-                    _LOGGER.warning("Calculate all zones failed: no data available.")
+                    _LOGGER.warning("Calculate for zone {} failed: no data available.".format(const.ZONE_ID))
+        #remove mapping data from all mappings used
+        for mapping_id in mappings:
+            #remove sensor data from mapping
+            changes = {}
+            changes[const.MAPPING_DATA] = []
+            self.store.async_update_mapping(mapping_id, changes=changes)
 
     def calculate_module(self, zone,weatherdata, precip_from_sensor, sol_rad_from_sensor, et_data):
         mod_id = zone.get(const.ZONE_MODULE)
@@ -519,7 +522,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     def check_mapping_sources(self, mapping_id):
         owm_in_mapping = False
         sensor_in_mapping = False
-        if mapping_id:
+        if not mapping_id is None:
             mapping = self.store.async_get_mapping(mapping_id)
             for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
                 if not isinstance(the_map, str):
