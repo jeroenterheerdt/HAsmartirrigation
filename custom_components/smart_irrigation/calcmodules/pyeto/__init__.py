@@ -80,7 +80,7 @@ class PyETO(SmartIrrigationCalculationModule):
                     wind_m_s = weather_data["wind_speed"]
                 if "pressure" in weather_data:
                     atmos_pres = weather_data["pressure"]
-            if tdew and temp_c_min and temp_c_max and wind_m_s and atmos_pres:
+            if tdew is not None and temp_c_min is not None and temp_c_max is not None and wind_m_s is not None and atmos_pres is not None:
                 day_of_year = datetime.datetime.now().timetuple().tm_yday
 
                 sha = sunset_hour_angle(deg2rad(self._latitude), sol_dec(day_of_year))
