@@ -60,10 +60,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     store = await async_get_registry(hass)
     #store OWM info in hass.data
     hass.data.setdefault(const.DOMAIN, {})
+
     hass.data[const.DOMAIN][const.CONF_USE_OWM]= entry.data.get(const.CONF_USE_OWM)
-    if entry.data.get(const.CONF_USE_OWM):
-        hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = entry.data.get(const.CONF_OWM_API_KEY).strip()
+    if hass.data[const.DOMAIN][const.CONF_USE_OWM]:
+        if const.CONF_OWM_API_KEY in entry.data:
+            hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = entry.data.get(const.CONF_OWM_API_KEY).strip()
         hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = entry.data.get(const.CONF_OWM_API_VERSION)
+
+    #logic here is: if options are set that do not agree with the data settings, use the options
+    #handle options flow data
+    if const.CONF_USE_OWM in entry.options and entry.options.get(const.CONF_USE_OWM) != entry.data.get(const.CONF_USE_OWM):
+        hass.data[const.DOMAIN][const.CONF_USE_OWM] = entry.options.get(const.CONF_USE_OWM)
+        if const.CONF_OWM_API_KEY in entry.options:
+            hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = entry.options.get(const.CONF_OWM_API_KEY).strip()
+        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = entry.options.get(const.CONF_OWM_API_VERSION)
+
     coordinator = SmartIrrigationCoordinator(hass, session, entry, store)
 
     device_registry = dr.async_get(hass)
@@ -113,7 +124,9 @@ async def options_update_listener(
 ):
     """Handle options update."""
     # copy the api key and version to the hass data
-    hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = config_entry.options.get(const.CONF_OWM_API_KEY).strip()
+    hass.data[const.DOMAIN][const.CONF_USE_OWM] = config_entry.options.get(const.CONF_USE_OWM)
+    if const.CONF_OWM_API_KEY in config_entry.options:
+        hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = config_entry.options.get(const.CONF_OWM_API_KEY).strip()
     hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = config_entry.options.get(const.CONF_OWM_API_VERSION)
     await hass.config_entries.async_reload(config_entry.entry_id)
 
@@ -393,7 +406,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     )
                 elif not mapping_weatherdata and not sensor_values:
                     # no data to calculate with!
-                    _LOGGER.warning("Calculate for zone {} failed: no data available.".format(const.ZONE_ID))
+                    _LOGGER.warning("Calculate for zone {} failed: no data available.".format(zone.get(const.ZONE_NAME)))
         #remove mapping data from all mappings used
         for mapping_id in mappings:
             #remove sensor data from mapping
@@ -589,7 +602,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self.store.async_delete_zone(zone_id)
             await self.async_remove_entity(zone_id)
         elif const.ATTR_CALCULATE in data:
-            data.pop(const.ATTR_CALCULATE, None)
+            if isinstance(data, dict):
+                data.pop(const.ATTR_CALCULATE)
             #this should not retrieve new data from sensors!
             #calculate a zone
             res = self.store.async_get_zone(zone_id)
@@ -641,7 +655,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         elif const.ATTR_CALCULATE_ALL in data:
             #calculate all zones
             _LOGGER.info("Calculating all zones");
-            data.pop(const.ATTR_CALCULATE_ALL, None)
+            data.pop(const.ATTR_CALCULATE_ALL)
             await self._async_calculate_all()
             self.register_start_event()
         elif const.ATTR_UPDATE in data:
@@ -673,7 +687,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if const.ATTR_NEW_BUCKET_VALUE in data:
                 new_bucket_value = data[const.ATTR_NEW_BUCKET_VALUE]
             data[const.ZONE_BUCKET] = new_bucket_value
-            data.pop(const.ATTR_SET_BUCKET, None)
+            data.pop(const.ATTR_SET_BUCKET)
             self.store.async_update_zone(zone_id, data)
             async_dispatcher_send(
                 self.hass, const.DOMAIN + "_config_updated", zone_id

@@ -35,6 +35,13 @@
         "title": "Open Weather Map API configuratie",
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
+          "use_owm": "Gebruik Open Weather Map voor weerinformatie? Zet dit uit als je alleen een andere bronnen, zoals je eigen weerstation wilt gebruiken. Laat dit aan als je van plan bent Open Weather Map in ieder geval deels als bron te gebruiken."
+        }
+      },
+      "step1": {
+        "title": "Open Weather Map API configuratie",
+        "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigationn",
+        "data": {
           "owm_api_key": "API sleutel voor Open Weather Map",
           "owm_api_version": "Open Weather Map API versie (kies 3.0 voor nieuwe installaties)"
         }
