@@ -801,7 +801,7 @@ function ge(e,t){return(({finisher:e,descriptor:t})=>(i,a)=>{var s;if(void 0===a
           >
         </div>`),o=G`<div class="mappingline">${o}</div>`,o}renderAggregateOptionsForMapping(e,t){if(this.hass&&this.config){let e=G``,i="average";t[De]&&(i=t[De]);for(const t of Ge){const a=this.renderAggregateOption(t,i);e=G`${e}${a}`}return e}return G``}renderAggregateOption(e,t){if(this.hass&&this.config){return G`<option value="${e}" ?selected="${e===t}">
         ${Li("panels.mappings.cards.mapping.aggregates."+e,this.hass.language)}
-      </option>`}return G``}renderUnitOptionsForMapping(e,t){if(this.hass&&this.config){const i=function(e){switch(e){case Te:case Pe:case Be:case Ne:return[{unit:"°C",system:He},{unit:"°F",system:we}];case Ce:case Se:return[{unit:"mm",system:He},{unit:"in",system:we}];case Oe:return[{unit:"%",system:[He,we]}];case Me:return[{unit:"millibar",system:He},{unit:"hPa",system:He},{unit:"psi",system:we},{unit:"inch Hg",system:we}];case xe:return[{unit:"km/h",system:He},{unit:"meter/s",system:He},{unit:"mile/h",system:we}];case Le:return[{unit:"W/m2",system:He},{unit:"W/sq ft",system:we}];default:return[]}}(e);let a=G``,s=t[ze];const n=this.config.units;return t[ze]||i.forEach((function(e){"string"==typeof e.system?n==e.system&&(s=e.unit):e.system.forEach((function(t){n==t.system&&(s=e.unit)}))})),i.forEach((function(e){a=G`${a}
+      </option>`}return G``}renderUnitOptionsForMapping(e,t){if(this.hass&&this.config){const i=function(e){switch(e){case Te:case Pe:case Be:case Ne:return[{unit:"°C",system:He},{unit:"°F",system:we}];case Ce:case Se:return[{unit:"mm",system:He},{unit:"in",system:we}];case Oe:return[{unit:"%",system:[He,we]}];case Me:return[{unit:"millibar",system:He},{unit:"hPa",system:He},{unit:"psi",system:we},{unit:"inch Hg",system:we}];case xe:return[{unit:"km/h",system:He},{unit:"meter/s",system:He},{unit:"mile/h",system:we}];case Le:return[{unit:"W/m2",system:He},{unit:"MJ/day/m2",system:He},{unit:"W/sq ft",system:we},{unit:"MJ/day/sq ft",system:we}];default:return[]}}(e);let a=G``,s=t[ze];const n=this.config.units;return t[ze]||i.forEach((function(e){"string"==typeof e.system?n==e.system&&(s=e.unit):e.system.forEach((function(t){n==t.system&&(s=e.unit)}))})),i.forEach((function(e){a=G`${a}
           <option value="${e.unit}" ?selected="${s===e.unit}">
             ${e.unit}
           </option>`})),a}return G``}render(){return this.hass?G`
@@ -856,7 +856,7 @@ function ge(e,t){return(({finisher:e,descriptor:t})=>(i,a)=>{var s;if(void 0===a
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${Li("title",this.hass.language)}</div>
-          <div class="version">${"v2023.8.0-beta15"}</div>
+          <div class="version">${"v2023.8.0-beta16"}</div>
         </div>
 
         <ha-tabs

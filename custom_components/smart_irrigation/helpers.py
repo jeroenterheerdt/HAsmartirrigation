@@ -2,7 +2,7 @@ import os
 import sys
 import importlib
 import logging
-from .const import CUSTOM_COMPONENTS, DOMAIN, GALLON_TO_LITER_FACTOR, INCH_TO_MM_FACTOR, INHG_TO_HPA_FACTOR, INHG_TO_PSI_FACTOR, K_TO_C_FACTOR, KMH_TO_MILESH_FACTOR, KMH_TO_MS_FACTOR, LITER_TO_GALLON_FACTOR, M2_TO_SQ_FT_FACTOR, MAPPING_DEWPOINT, MAPPING_EVAPOTRANSPIRATION, MAPPING_HUMIDITY, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_SOLRAD, MAPPING_TEMPERATURE, MAPPING_WINDSPEED, MBAR_TO_INHG_FACTOR, MBAR_TO_PSI_FACTOR, MILESH_TO_KMH_FACTOR, MILESH_TO_MS_FACTOR, MM_TO_INCH_FACTOR, MS_TO_KMH_FACTOR, MS_TO_MILESH_FACTOR, PSI_TO_HPA_FACTOR, PSI_TO_INHG_FACTOR, SQ_FT_TO_M2_FACTOR, UNIT_DEGREES_C, UNIT_DEGREES_F, UNIT_DEGREES_K, UNIT_GPM, UNIT_HPA, UNIT_INCH, UNIT_INHG, UNIT_KMH, UNIT_LPM, UNIT_M2, UNIT_MBAR, UNIT_MH, UNIT_MM, UNIT_MS, UNIT_PERCENT, UNIT_PSI, UNIT_SECONDS, UNIT_SQ_FT, UNIT_W_M2, UNIT_W_SQFT, W_M2_TO_W_SQ_FT_FACTOR, W_SQ_FT_TO_W_M2_FACTOR
+from .const import CUSTOM_COMPONENTS, DOMAIN, GALLON_TO_LITER_FACTOR, INCH_TO_MM_FACTOR, INHG_TO_HPA_FACTOR, INHG_TO_PSI_FACTOR, K_TO_C_FACTOR, KMH_TO_MILESH_FACTOR, KMH_TO_MS_FACTOR, LITER_TO_GALLON_FACTOR, M2_TO_SQ_FT_FACTOR, MAPPING_DEWPOINT, MAPPING_EVAPOTRANSPIRATION, MAPPING_HUMIDITY, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_SOLRAD, MAPPING_TEMPERATURE, MAPPING_WINDSPEED, MBAR_TO_INHG_FACTOR, MBAR_TO_PSI_FACTOR, MILESH_TO_KMH_FACTOR, MILESH_TO_MS_FACTOR, MM_TO_INCH_FACTOR, MS_TO_KMH_FACTOR, MS_TO_MILESH_FACTOR, PSI_TO_HPA_FACTOR, PSI_TO_INHG_FACTOR, SQ_FT_TO_M2_FACTOR, UNIT_DEGREES_C, UNIT_DEGREES_F, UNIT_DEGREES_K, UNIT_GPM, UNIT_HPA, UNIT_INCH, UNIT_INHG, UNIT_KMH, UNIT_LPM, UNIT_M2, UNIT_MBAR, UNIT_MH, UNIT_MJ_DAY_M2, UNIT_MJ_DAY_SQFT, UNIT_MM, UNIT_MS, UNIT_PERCENT, UNIT_PSI, UNIT_SECONDS, UNIT_SQ_FT, UNIT_W_M2, UNIT_W_SQFT, W_M2_TO_W_SQ_FT_FACTOR, W_SQ_FT_TO_W_M2_FACTOR, W_TO_MJ_DAY_FACTOR
 from homeassistant import exceptions
 
 from homeassistant.core import (
@@ -76,14 +76,15 @@ def convert_mapping_to_metric(val, mapping, unit, system_is_metric):
             #assume it's inHG
             return convert_between(from_unit=UNIT_INHG, to_unit=UNIT_HPA, val=val)
     elif mapping == MAPPING_SOLRAD:
-        #either: w/m2 for metric, w/sqft for imperial
+        #either: assume w/m2 for metric, w/sqft for imperial
         if unit:
-            return convert_between(from_unit=unit, to_unit=UNIT_W_M2,val=val)
+            return convert_between(from_unit=unit, to_unit=UNIT_MJ_DAY_M2,val=val)
         elif system_is_metric:
-            return val
+            #assume it's w/m2
+            return convert_between(from_unit=UNIT_W_M2, to_unit=UNIT_MJ_DAY_M2, val=val)
         else:
             #assume it's w/sqft
-            return convert_between(from_unit=UNIT_W_SQFT, to_unit=UNIT_W_M2,val=val)
+            return convert_between(from_unit=UNIT_W_SQFT, to_unit=UNIT_MJ_DAY_M2,val=val)
     elif mapping == MAPPING_WINDSPEED:
         #either UNIT_KMH, unit: UNIT_MS (Default for metric), m/h (imperial)
         if unit:
@@ -119,7 +120,7 @@ def convert_between(from_unit,to_unit,val):
     elif from_unit in [UNIT_KMH, UNIT_MS, UNIT_MH]:
         return convert_speed(from_unit, to_unit, val)
     #convert production/area
-    elif from_unit in [UNIT_W_M2, UNIT_W_SQFT]:
+    elif from_unit in [UNIT_W_M2, UNIT_MJ_DAY_M2,UNIT_W_SQFT,UNIT_MJ_DAY_SQFT]:
         return convert_production(from_unit, to_unit, val)
     #unexpected from_unit
     _LOGGER.warning("Unexpected conversion of {} from {} to {}".format(val, from_unit, to_unit))
@@ -128,12 +129,34 @@ def convert_between(from_unit,to_unit,val):
 def convert_production(from_unit, to_unit, val):
     if to_unit == from_unit:
         return val
-    if to_unit == UNIT_W_M2:
+    if to_unit == UNIT_MJ_DAY_M2:
+        if from_unit == UNIT_W_M2:
+            return float(float(val)*W_TO_MJ_DAY_FACTOR)
+        elif from_unit == UNIT_W_SQFT:
+            return float((float(val)*W_SQ_FT_TO_W_M2_FACTOR)*W_TO_MJ_DAY_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_SQFT:
+            return float(float(val)*SQ_FT_TO_M2_FACTOR)
+    elif to_unit == UNIT_MJ_DAY_SQFT:
+        if from_unit == UNIT_W_M2:
+            return float((float(val)*W_M2_TO_W_SQ_FT_FACTOR)*W_TO_MJ_DAY_FACTOR)
+        elif from_unit == UNIT_W_SQFT:
+            return float(float(val)*W_TO_MJ_DAY_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_M2:
+            return float(float(val)*M2_TO_SQ_FT_FACTOR)
+    elif to_unit == UNIT_W_M2:
         if from_unit == UNIT_W_SQFT:
             return float(float(val)*W_SQ_FT_TO_W_M2_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_SQFT:
+            return float((float(val)/W_TO_MJ_DAY_FACTOR)*W_SQ_FT_TO_W_M2_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_M2:
+            return float(float(val)/W_TO_MJ_DAY_FACTOR)
     elif to_unit == UNIT_W_SQFT:
         if from_unit == UNIT_W_M2:
             return float(float(val)*W_M2_TO_W_SQ_FT_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_M2:
+            return float((float(val)/W_TO_MJ_DAY_FACTOR)*W_M2_TO_W_SQ_FT_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_SQFT:
+            return float(float(val)/W_TO_MJ_DAY_FACTOR)
     #unknown conversion
     return None
 

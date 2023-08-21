@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2023.8.0-beta15"
+VERSION = "v2023.8.0-beta16"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -163,6 +163,8 @@ UNIT_MH = "mile/h"
 UNIT_MS = "meter/s"
 UNIT_W_M2 = "W/m2"
 UNIT_W_SQFT = "W/sq ft"
+UNIT_MJ_DAY_M2 = "MJ/day/m2"
+UNIT_MJ_DAY_SQFT = "MJ/day/sq ft"
 
 # METRIC TO IMPERIAL (US) FACTORS
 MM_TO_INCH_FACTOR = 0.03937008 #mm * factor = inch
@@ -188,8 +190,7 @@ W_SQ_FT_TO_W_M2_FACTOR = 10.76391042 #w/sqft * factor = w/m2
 #OTHER FACTORS
 KMH_TO_MS_FACTOR = 0.0277777777777778 #kmh * factor = ms
 MS_TO_KMH_FACTOR = 3.6 #m/s * factor = kmh
-W_TO_J_DAY_FACTOR = 86400 #w * factor = joules/day
-J_TO_MJ_FACTOR = 0.000001 #j * factor = mj
+W_TO_MJ_DAY_FACTOR = 0.0864 #w * factor = mj/day, same for w/m2 to mj/day/m2
 K_TO_C_FACTOR = 273.15 # K-factor = C, C+factor=K
 INHG_TO_PSI_FACTOR = 0.49115420057253 #inhg * factor = PSI
 PSI_TO_INHG_FACTOR = 2.0360206576012 #psi * factor = inhg
