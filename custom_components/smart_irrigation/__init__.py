@@ -579,7 +579,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         return weatherdata, precip_from_sensor, sol_rad_from_sensor,et_from_sensor
 
     async def async_update_zone_config(self, zone_id: int = None, data: dict = {}):
-        if zone_id is not None:
+        if not zone_id is None:
             zone_id = int(zone_id)
         if const.ATTR_REMOVE in data:
             # delete a zone
@@ -787,7 +787,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 if state:
                     #find zone_id for zone with name
                     zone_id = state.attributes.get(const.ZONE_ID)
-                    if zone_id:
+                    if not zone_id is None:
                         data = []
                         data.append(const.ATTR_CALCULATE)
                         await self.async_update_zone_config(zone_id=zone_id,data=data)
@@ -807,7 +807,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 if state:
                     #find zone_id for zone with name
                     zone_id = state.attributes.get(const.ZONE_ID)
-                    if zone_id:
+                    if not zone_id is None:
                         data = []
                         data.append(const.ATTR_UPDATE)
                         await self.async_update_zone_config(zone_id=zone_id,data=data)
@@ -822,7 +822,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 if state:
                     #find zone_id for zone with name
                     zone_id = state.attributes.get(const.ZONE_ID)
-                    if zone_id:
+                    if not zone_id is None:
                         data = {}
                         data[const.ATTR_SET_BUCKET] = {}
                         data[const.ATTR_NEW_BUCKET_VALUE] = 0
@@ -844,7 +844,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 if state:
                     #find zone_id for zone with name
                     zone_id = state.attributes.get(const.ZONE_ID)
-                    if zone_id:
+                    if not zone_id is None:
                         data = {}
                         data[const.ATTR_SET_BUCKET] = {}
                         data[const.ATTR_NEW_BUCKET_VALUE] = new_value

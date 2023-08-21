@@ -394,7 +394,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 @change="${(e: Event) =>
                   this.handleEditZone(index, {
                     ...zone,
-                    [ZONE_MODULE]: parseFloat(
+                    [ZONE_MODULE]: parseInt(
                       (e.target as HTMLSelectElement).value
                     ),
                   })}"
@@ -478,9 +478,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 @input="${(e: Event) =>
                   this.handleEditZone(index, {
                     ...zone,
-                    [ZONE_MULTIPLIER]: parseInt(
-                      (e.target as HTMLInputElement).value,
-                      10
+                    [ZONE_MULTIPLIER]: parseFloat(
+                      (e.target as HTMLInputElement).value
                     ),
                   })}"
               />

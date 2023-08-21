@@ -463,7 +463,7 @@ function ge(e,t){return(({finisher:e,descriptor:t})=>(i,a)=>{var s;if(void 0===a
 
               <select
                 id="module${t}"
-                @change="${i=>this.handleEditZone(t,Object.assign(Object.assign({},e),{module:parseFloat(i.target.value)}))}"
+                @change="${i=>this.handleEditZone(t,Object.assign(Object.assign({},e),{module:parseInt(i.target.value)}))}"
               >
                 ${this.renderTheOptions(this.modules,e.module)}
               </select>
@@ -510,7 +510,7 @@ function ge(e,t){return(({finisher:e,descriptor:t})=>(i,a)=>{var s;if(void 0===a
                 id="multiplier${t}"
                 type="number"
                 .value="${e.multiplier}"
-                @input="${i=>this.handleEditZone(t,Object.assign(Object.assign({},e),{multiplier:parseInt(i.target.value,10)}))}"
+                @input="${i=>this.handleEditZone(t,Object.assign(Object.assign({},e),{multiplier:parseFloat(i.target.value)}))}"
               />
               <label for="duration${t}"
                 >${Li("panels.zones.labels.duration",this.hass.language)}
@@ -856,7 +856,7 @@ function ge(e,t){return(({finisher:e,descriptor:t})=>(i,a)=>{var s;if(void 0===a
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${Li("title",this.hass.language)}</div>
-          <div class="version">${"v2023.8.0-beta16"}</div>
+          <div class="version">${"v2023.8.0-beta17"}</div>
         </div>
 
         <ha-tabs

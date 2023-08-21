@@ -34,7 +34,7 @@ DEFAULT_FORECAST_DAYS = 0
 
 SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_COASTAL, default=DEFAULT_COASTAL): vol.Coerce(bool),
+        vol.Optional(CONF_COASTAL, default=DEFAULT_COASTAL): vol.Coerce(bool), #is really required, but otherwise the UI shows a * near the checkbox
         vol.Required(CONF_SOLRAD_BEHAVIOR, default=DEFAULT_SOLRAD_BEHAVIOR): vol.Coerce(SOLRAD_behavior),
         vol.Required(CONF_FORECAST_DAYS, default=DEFAULT_FORECAST_DAYS): vol.Coerce(int),
     }
