@@ -1,6 +1,7 @@
 """The PyETO module for Smart Irrigation Integration."""
 import datetime
 import logging
+from statistics import mean
 from ..calcmodule import SmartIrrigationCalculationModule
 from .pyeto import (sunset_hour_angle, sol_dec, cs_rad, daylight_hours, et_rad,deg2rad,
                     inv_rel_dist_earth_sun, sol_rad_from_t,sol_rad_from_sun_hours,
@@ -58,13 +59,15 @@ class PyETO(SmartIrrigationCalculationModule):
 
     def calculate(self,weather_data, precip, sol_rad=None):
         delta = 0
+        deltas = []
         if weather_data:
             if "daily" in weather_data:
 
                 #loop over the forecast days, ending at forecast days +1, so if forecast_days=0, we get one day
                 for x in range(self._forecast_days+1):
-                    delta+=self.calculate_et_for_day(weather_data,precip,sol_rad,x) #calculate et for x's weather (0 is today, 1 is tomorrow, etc) and update delta
-
+                    deltas.append(self.calculate_et_for_day(weather_data,precip,sol_rad,x)) #calculate et for x's weather (0 is today, 1 is tomorrow, etc) and update delta
+        #return average of the collected deltas
+        delta = mean(deltas)
         return delta
 
     def calculate_et_for_day(self,weather_data, precip,sol_rad=None,index=0):

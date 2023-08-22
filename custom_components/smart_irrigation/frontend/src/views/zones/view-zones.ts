@@ -111,8 +111,6 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     this.modules = mods;*/
     this.modules = await fetchModules(this.hass);
     this.mappings = await fetchMappings(this.hass);
-
-
   }
 
   private handleCalculateAllZones(): void {
@@ -192,6 +190,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       return;
     }
     //call the calculate method of the module for the zone
+    console.log("calculate zone: " + index.toString());
     calculateZone(this.hass, index.toString());
   }
 

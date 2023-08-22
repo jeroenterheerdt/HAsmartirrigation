@@ -89,7 +89,7 @@ export class SmartIrrigationZone {
     this.delta = 0;
     this.old_bucket = 0;
     this.explanation = "";
-    this.multiplier = 1;
+    this.multiplier = 1.0;
     this.mapping = undefined;
     this.lead_time = 0;
   }

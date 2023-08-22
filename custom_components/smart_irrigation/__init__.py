@@ -60,7 +60,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     store = await async_get_registry(hass)
     #store OWM info in hass.data
     hass.data.setdefault(const.DOMAIN, {})
-
     hass.data[const.DOMAIN][const.CONF_USE_OWM]= entry.data.get(const.CONF_USE_OWM)
     if hass.data[const.DOMAIN][const.CONF_USE_OWM]:
         if const.CONF_OWM_API_KEY in entry.data:
@@ -378,6 +377,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if zone.get(const.ZONE_STATE)==const.ZONE_STATE_AUTOMATIC:
                 mapping_id = zone[const.ZONE_MAPPING]
                 o_i_m, s_i_m = self.check_mapping_sources(mapping_id = mapping_id)
+                # if using pyeto and using a forecast o_i_m needs to be set to true!
+                modinst = self.getModuleInstanceByID(zone.get(const.ZONE_MODULE))
+                if modinst and modinst.name=="PyETO" and modinst.forecast>0:
+                    o_i_m=True
+
                 mapping = self.store.async_get_mapping(mapping_id)
                 mapping_weatherdata = {}
                 #at least part of the data comes from OWM, so capture it
@@ -414,17 +418,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             changes[const.MAPPING_DATA] = []
             self.store.async_update_mapping(mapping_id, changes=changes)
 
-    def calculate_module(self, zone,weatherdata, precip_from_sensor, sol_rad_from_sensor, et_data):
-        mod_id = zone.get(const.ZONE_MODULE)
-        m = self.store.async_get_module(mod_id)
-        if not m:
+    def getModuleInstanceByID(self, module_id):
+        m = self.store.async_get_module(module_id)
+        if m is None:
             return
-        precip = 0
-
-        bucket = zone.get(const.ZONE_BUCKET)
-        data = {}
-        data[const.ZONE_OLD_BUCKET]=round(bucket,1)
-        explanation = ""
         #load the module dynamically
         mods = loadModules(const.MODULE_DIR)
         modinst = None
@@ -433,6 +430,21 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 themod = getattr(mods[mod]["module"], mods[mod]["class"])
                 modinst = themod(self.hass, config=m["config"])
                 break
+        return modinst
+
+    def calculate_module(self, zone,weatherdata, precip_from_sensor, sol_rad_from_sensor, et_data):
+        mod_id = zone.get(const.ZONE_MODULE)
+        m = self.store.async_get_module(mod_id)
+        if m is None:
+            return
+        modinst = self.getModuleInstanceByID(mod_id)
+        precip = 0
+        bucket = zone.get(const.ZONE_BUCKET)
+        data = {}
+        data[const.ZONE_OLD_BUCKET]=round(bucket,1)
+        explanation = ""
+
+
         if modinst:
             if m[const.MODULE_NAME] == "PyETO":
                 # if we have precip info from a sensor we don't need to call OWM to get it.
@@ -450,6 +462,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 delta = 0-modinst.calculate(et_data=et_data)
             data[const.ZONE_BUCKET] = round(bucket+delta,1)
             data[const.ZONE_DELTA] = round(delta,1)
+        else:
+            _LOGGER.error("Unknown module for zone {}".format(zone.get(const.ZONE_NAME)))
+            return
         explanation = localize("module.calculation.explanation.module-returned-evapotranspiration-deficiency", self.hass.config.language)+" {}. ".format(data[const.ZONE_DELTA])
         explanation += localize("module.calculation.explanation.bucket-was", self.hass.config.language)+" {}".format(data[const.ZONE_OLD_BUCKET])
         explanation += ".<br/>"+localize("module.calculation.explanation.new-bucket-values-is", self.hass.config.language)+" ["
@@ -617,10 +632,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #does the mapping use OWM?
             mapping_id = res[const.ZONE_MAPPING]
             owm_in_mapping, sensor_in_mapping = self.check_mapping_sources(mapping_id = mapping_id)
-
+            # if using pyeto and using a forecast o_i_m needs to be set to true!
+            modinst = self.getModuleInstanceByID(res.get(const.ZONE_MODULE))
+            if modinst and modinst.name=="PyETO" and modinst._forecast_days>0:
+                owm_in_mapping=True
             if self.use_OWM and owm_in_mapping:
                 # data comes at least partly from owm
                 weatherdata = await self.hass.async_add_executor_job(self._OWMClient.get_data)
+            elif not self.use_OWM and owm_in_mapping:
+                _LOGGER.error("Error calculating zone {}. Part of the data required came from OpenWeather but there is no OWM API configured. Either configure the OWM API, change your mapping sources or stop using forcasting on the PyETO module.".format(res[const.ZONE_NAME]))
+                return
             mapping = self.store.async_get_mapping(mapping_id)
 
             #if there is sensor data on the mapping, apply aggregates to it.
@@ -876,6 +897,7 @@ def register_services(hass):
     """Register services used by Smart Irrigation component."""
 
     coordinator = hass.data[const.DOMAIN]["coordinator"]
+
 
     hass.services.async_register(
         const.DOMAIN,
