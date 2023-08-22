@@ -319,11 +319,17 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
         </ha-card>
 
         ${Object.entries(this.modules).map(([key, value]) =>
-          this.renderModule(value, value["id"])
+          this.renderModule(value, parseInt(key))
         )}
       `;
     }
   }
+
+  /*
+   ${Object.entries(this.modules).map(([key, value]) =>
+          this.renderModule(value, value["id"])
+        )}
+        */
 
   static get styles(): CSSResultGroup {
     return css`

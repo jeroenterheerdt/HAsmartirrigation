@@ -157,9 +157,6 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     this.zones = Object.values(this.zones).map((zone, i) =>
       i === index ? updatedZone : zone
     );
-    Object.entries(updatedZone).forEach(([key, value]) =>
-      console.log(key, value)
-    );
     this.saveToHA(updatedZone);
   }
 
@@ -167,6 +164,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
+    console.log("handleUpdateZone: " + index.toString());
     /*showConfirmationDialog(
       ev,
       "Are you sure you want to delete this zone?",
@@ -174,11 +172,15 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     );*/
     //const dialog = new ConfirmationDialog();
     //dialog.showDialog("{'message':'Test!'}");
+    const zone = Object.values(this.zones).at(index);
+    if (!zone) {
+      return;
+    }
     this.zones = this.zones.filter((_, i) => i !== index);
     if (!this.hass) {
       return;
     }
-    deleteZone(this.hass, index.toString());
+    deleteZone(this.hass, zone.id.toString());
   }
 
   private handleCalculateZone(index: number): void {
@@ -190,8 +192,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       return;
     }
     //call the calculate method of the module for the zone
-    console.log("calculate zone: " + index.toString());
-    calculateZone(this.hass, index.toString());
+    calculateZone(this.hass, zone.id.toString());
   }
 
   private handleUpdateZone(index: number): void {
@@ -202,7 +203,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    updateZone(this.hass, index.toString());
+    updateZone(this.hass, zone.id.toString());
   }
   private saveToHA(zone: SmartIrrigationZone): void {
     if (!this.hass) {
@@ -608,12 +609,17 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
           </ha-card>
 
           ${Object.entries(this.zones).map(([key, value]) =>
-            this.renderZone(value, value["id"])
+            this.renderZone(value, parseInt(key))
           )}
         </ha-card>
       `;
     }
   }
+  /*
+  ${Object.entries(this.zones).map(([key, value]) =>
+            this.renderZone(value, value["id"])
+          )}
+          */
 
   static get styles(): CSSResultGroup {
     return css`

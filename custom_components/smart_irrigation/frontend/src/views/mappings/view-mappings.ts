@@ -497,11 +497,17 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         </ha-card>
 
         ${Object.entries(this.mappings).map(([key, value]) =>
-          this.renderMapping(value, value["id"])
+          this.renderMapping(value, parseInt(key))
         )}
       `;
     }
   }
+
+  /*
+  ${Object.entries(this.mappings).map(([key, value]) =>
+          this.renderMapping(value, value["id"])
+        )}
+        */
 
   static get styles(): CSSResultGroup {
     return css`
