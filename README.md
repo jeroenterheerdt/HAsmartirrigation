@@ -34,18 +34,26 @@ The component uses the [PyETo module to calculate the evapotranspiration value (
 
 ## Visual representation of what this component does
 ![](images/smart_irrigation_diagram.png?raw=true)
+
 1. Snow and rain fall on the ground add moisture. This is tracked /predicted depending on the [operation mode](#operation-modes) by the `rain` and `snow` attributes Together, this makes up the `precipitation`.
+
 2. Sunshine, temperature, wind speed, place on earth and other factors influence the amount of moisture lost from the ground(`evapotranspiration`). This is tracked / predicted depending on the [operation mode](#operation-modes).
+
 3. The difference between `precipitation` and `evapotranspiration` is the `netto precipitation`: negative values mean more moisture is lost than gets added by rain/snow, while positive values mean more moisture is added by rain/snow than what evaporates.
+
 4. Once a day (time is configurable) the `netto precipitation` is added/substracted from the `bucket,` which starts as empty. If the `bucket` is below zero, irrigation is required. 
+
 5. Irrigation should be run for `sensor.[zone_name]`, which is 0 if `bucket`>=0. Afterwards, the `bucket` needs to be reset (using `reset_bucket`). It's up to the user of the component to build the automation for this final step.
 
 There are many more options available, see below. To understand how `precipitation`, `netto precipitation`, the `bucket` and irrigation interact, see [example behavior on the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week).
 
 ## Operation modes
 You can use this component in various modes:
+
 1. **Full Open Weather Map**. In this mode all data comes from the Open Weather Map service. You will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions.
+
 2. **Full Sensors**. Using sensors. In this mode all data comes from sensors such as a weather station. When specificying a sensor for precipitation, note that it needs to be a cumulative daily sensor. Open Weather Map is not used and you do not need an API key.
+
 3. **Mixed**. A combination of 1) and 2). In this mode part of the data is supplied by sensors and part by Open Weather Map. In this mode you will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions. When specificying a sensor for precipitation, note that it needs to be a cumulative daily sensor.
 
 When planning to set up mode 2) (Full Sensors), 3) or (Mixed) see [Measurements and Units](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Measurements-and-Units) for more information on the measurements and units expected by this component.
@@ -56,10 +64,13 @@ In order to get the most accurate results using sensors is preferable either fro
 Since this component provides multiple configuration options it might get confusing about in which scenario what behavior can be expected and what input is required. In the table below we summarize the configuration modes, their accuracy, the required input and how daily run time is calculated. Keep in mind that run time is based on the netto precipitation (precipitation - evapotranspiration) and the bucket value for previous days.1
 |Mode|Accuracy|Input|How adjusted run time is calculated|
 
+|Mode|Accuracy|Input|How adjusted run time is calculated|
 |---|---|---|---|
 |Mode 1 - Full Open Weather Map|Low|No sensor input required, just an API key for Open Weather Map|Average of precipitation and evapotranspiration.|
 |Mode 2 - Full Sensor, but calculating evapotranspiration|High|Sensors are required for all inputs. All inputs are expected to be point-in-time, *except precipitation*. That sensor is normally provided by a weather station or weather service as a daily accumulative / 'total precipitation today' sensor and that is what is expected by the component|Most recent value for precipitation and average of evapotranspiration.
 |Mode 3 - Mixed|Medium|API key is required for any inputs that have not been provided sensors. All inputs are expected to be point-in-time, *except precipitation*. That sensor is normally provided by a weather station or weather service as a 'total precipitation today' sensor and that is what is expected by the component|If a sensor is provided for precipitation, most recent value for precipitation is used. Otherwise the average of both precipitation and evapotranspiration.|
+|Mode 4 -Not calculating|Very high|In this mode, just two sensors are required: one for precipitation and one for evapotranspiration. Both are expected to be daily accumulative sensors ('total today'), as is normally the case when provided by a weather service or weather station.|Most recent value of both precipitation and evapotranspiration.|
+
 
 ## Configuration
 
@@ -135,6 +146,7 @@ You should end up with one device and for each zone one entitiy and their attrib
 
 #### Services
 For each instance of the component the following services will be available:
+
 | Service | Description|
 | --- | --- |
 |`Smart Irrigation: calculate_all_zones`|Triggers the calculation of all zones. Use only if you disabled automatic refresh in the options.|
@@ -147,6 +159,7 @@ For each instance of the component the following services will be available:
 
 #### Events
 The component uses a number of events internally that you do not need to pay attention to unless you need to debug things. The exception is the `_start` event.
+
 | Event | Description|
 | --- | --- |
 |`[instance]_start`|Fires depending on `sensor.[zone_name]` value and sunrise. You can listen to this event to optimize the moment you irrigate so your irrigation starts just before sunrise and is completed at sunrise. See below for examples on how to use this.|
@@ -158,6 +171,7 @@ The component uses a number of events internally that you do not need to pay att
 #### `sensor.[zone_name]`
 The number of seconds the irrigation system needs to run assuming maximum evapotranspiration and no rain / snow. This value and the attributes are static for your configuration.
 Attributes:
+
 | Attribute | Description |
 | --- | --- |
 |`id`|internal identification|
@@ -186,6 +200,7 @@ Since this component does not interface with your irrigation system directly, yo
 
 #### Example automation 1: one valve, potentially daily irrigation
 Here is an example automation that runs when the `smart_irrigation_start` event is fired. It checks if `sensor.smart_irrigation_daily_adjusted_run_time` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service. If you have multiple instances you will need to adjust the event, entities and service names accordingly.
+
 ```
 - alias: Smart Irrigation
   description: 'Start Smart Irrigation at 06:00 and run it only if the `sensor.[zone_name]` is >0 and run it for precisely that many seconds'
@@ -208,7 +223,7 @@ Here is an example automation that runs when the `smart_irrigation_start` event 
   - service: smart_irrigation.reset_bucket
     data: {}
     entity_id: sensor.[zone_name]
-    ```
+```
 
 [See more advanced examples in the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Automation-examples).
 
@@ -216,6 +231,7 @@ Here is an example automation that runs when the `smart_irrigation_start` event 
 This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week) provides insight into how this component should behave in certain weather conditions. With this you should be able to do a sanity check against your configuration and make sure everything is working correctly.
 ## Available services
 The component provides the following services:
+
 | Service | Description |
 | --- | --- |
 |`smart_irrigation.reset_bucket`|this service needs to be called after any irrigation so the bucket is reset to 0.|
