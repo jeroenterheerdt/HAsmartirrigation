@@ -13,7 +13,7 @@
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Unieke naam",
-          "use_owm": "Gebruik Open Weather Map voor weerinformatie? Zet dit uit als je alleen een andere bronnen, zoals je eigen weerstation wilt gebruiken. Laat dit aan als je van plan bent Open Weather Map in ieder geval deels als bron te gebruiken."
+          "use_owm": "Gebruik Open Weather Map voor weerinformatie en voorspellingen? Zet dit uit als je alleen een andere bronnen, zoals je eigen weerstation wilt gebruiken. Let op dat je geen voorspellingen kunt gebruiken als je dit uitzet. Laat dit aan als je van plan bent Open Weather Map in ieder geval deels als bron te gebruiken."
         }
       },
       "step1": {
@@ -35,7 +35,7 @@
         "title": "Open Weather Map API configuratie",
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "use_owm": "Gebruik Open Weather Map voor weerinformatie? Zet dit uit als je alleen een andere bronnen, zoals je eigen weerstation wilt gebruiken. Laat dit aan als je van plan bent Open Weather Map in ieder geval deels als bron te gebruiken."
+          "use_owm": "Gebruik Open Weather Map voor weerinformatie en voorspellingen? Zet dit uit als je alleen een andere bronnen, zoals je eigen weerstation wilt gebruiken. Let op dat je geen voorspellingen kunt gebruiken als je dit uitzet. Laat dit aan als je van plan bent Open Weather Map in ieder geval deels als bron te gebruiken."
         }
       },
       "step1": {

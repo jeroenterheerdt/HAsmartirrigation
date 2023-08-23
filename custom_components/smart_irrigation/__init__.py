@@ -379,7 +379,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 o_i_m, s_i_m = self.check_mapping_sources(mapping_id = mapping_id)
                 # if using pyeto and using a forecast o_i_m needs to be set to true!
                 modinst = self.getModuleInstanceByID(zone.get(const.ZONE_MODULE))
-                if modinst and modinst.name=="PyETO" and modinst.forecast>0:
+                if modinst and modinst.name=="PyETO" and modinst._forecast_days>0:
                     o_i_m=True
 
                 mapping = self.store.async_get_mapping(mapping_id)
