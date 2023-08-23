@@ -100,7 +100,7 @@ Specify one or more irrigation zones here. The component calculates irrigation d
 
 - Name: The name of your zone, e.g. garden
 - Size: The size of this zone (m<sup>2</sup> or sq ft)
-- Throughput: The flow of this zone (liter/minute or ???/minute)
+- Throughput: The flow of this zone (liter/minute or gallon/minute)
 - Bucket: You can manipulate this calculated value.
 - Lead Time: In seconds. Time needed to warm up your irrigation system, e.g. time to establish a connection or start a pump etc.
 
@@ -127,17 +127,16 @@ If you let PyETO to estimate from temperature or sun hours, it will not ask OWM 
   - Coastal: If the location you are tracking is situated on or adjacent to coast of a large land mass or anywhere else where air masses are influenced by a nearby water body, enable this setting.
   - Solrad behaviour: Should solar radiation estimated from temperature or sun hours or disabled 
   - Forecast days: How many forecast days taken into account
-- 1:Static: 'Dummy' module with a static configurable duration.
-  - Delta: ???
+- 1:Static: static configurable netto precipitation.
+  - Delta: netto precipitation
+- Passthrough: Passthrough module returns the value of an evapotranspiration sensor as delta.  
 
 #### MAPPINGS
 For sensor configuration take care to make sure the unit the component expects is the same as your sensor provides.**
 
-- Names of sensors that supply required measurements (optional). Only required in mode 2) and 3). See [Measurements and Units](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Measurements-and-Units) for more information on the measurements and units expected by this component.
- 
 **Multi-zone support**: For irrigation systems that have multiple zones which you want to run in series (one after the other), you need to add a zone *for each zone*. Of course, the configuration should be done for each zone, including the area the zone covers and the corresponding settings.
 
- > **If you want to go back and change your settings afterwards, you can either update the zon or delete the zone and re-create it.**
+ > **If you want to go back and change your settings afterwards, you can either update or delete the zone and re-create it.**
 
 #### HELP
 Links to wiki, forum and issues.
@@ -151,13 +150,14 @@ For each instance of the component the following services will be available:
 
 | Service | Description|
 | --- | --- |
-|`Smart Irrigation: calculate_all_zones`|Triggers the calculation of all zones. Use only if you disabled automatic refresh in the options.|
 |`Smart Irrigation: calculate_zone`|Triggers the calculation of one specific zone.|
-|`Smart Irrigation: reset_all_buckets`|Resets all buckets.|
+|`Smart Irrigation: calculate_all_zones`|Triggers the calculation of all automatic zones. Use only if you disabled automatic refresh in the options.|
+|`Smart Irrigation: update_zone`|Updates one specific zone with weather data|
+|`Smart Irrigation: update_all_zones`|Updates all automatic zones with weather data|
 |`Smart Irrigation: reset_bucket`|Resets one specific bucket.|
-|`Smart Irrigation: set_all_buckets`|Sets all buckets to a specific `value`.|
+|`Smart Irrigation: reset_all_buckets`|Resets all automatic buckets.|
 |`Smart Irrigation: set_bucket`|Sets a specific bucket to to a specific `value`.|
-|`Smart Irrigation: update_all_zones`|Updates all zones with weather data|
+|`Smart Irrigation: set_all_buckets`|Sets all automatic buckets to a specific `value`.|
 
 #### Start Event
 
@@ -167,7 +167,7 @@ For each instance of the component the following services will be available:
 
 #### Entities
 #### `sensor.[zone_name]`
-The number of seconds the irrigation system needs to run assuming maximum evapotranspiration and no rain / snow. This value and the attributes are static for your configuration.
+
 Attributes:
 
 | Attribute | Description |
