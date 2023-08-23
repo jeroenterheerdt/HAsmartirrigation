@@ -16,7 +16,7 @@
 
 Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
 
-This component calculates the time to run your irrigation system to compensate for moisture loss by evaporation / evapotranspiration. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required including optinal weather forecast. Multiple zones can be supported as each zone will have its own flow configuration. 
+This component calculates the time to run your irrigation system to compensate for moisture loss by evaporation/evapotranspiration. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required including optinal weather forecast. Multiple zones can be supported as each zone will have its own flow configuration. 
 
 > **Note - use this component at your own risk - we do not assume responsibility for any inconvience caused by using this component. Always use common sense before deciding to irrigate using the calculations this component provides. For example, irrigating during excessive rainfall might cause flooding. Again - we assume no responsibility for any inconvience caused.**
 
@@ -36,9 +36,9 @@ This is all the component does, and this is on purpose to provide maximum flexib
 ## Visual representation of what this component does
 ![](images/smart_irrigation_diagram.png?raw=true)
 
-1. Snow and rain fall on the ground add moisture. This is tracked /predicted depending on the [operation mode](#operation-modes) by the `rain` and `snow` attributes Together, this makes up the `precipitation`.
+1. Snow and rain fall on the ground add moisture. This is tracked/predicted depending on the [operation mode](#operation-modes) by the `rain` and `snow` attributes Together, this makes up the `precipitation`.
 
-2. Sunshine, temperature, wind speed, place on earth and other factors influence the amount of moisture lost from the ground(`evapotranspiration`). This is tracked / predicted depending on the [operation mode](#operation-modes).
+2. Sunshine, temperature, wind speed, place on earth and other factors influence the amount of moisture lost from the ground(`evapotranspiration`). This is tracked/predicted depending on the [operation mode](#operation-modes).
 
 3. The difference between `precipitation` and `evapotranspiration` is the `netto precipitation`: negative values mean more moisture is lost than gets added by rain/snow, while positive values mean more moisture is added by rain/snow than what evaporates.
 
@@ -67,7 +67,7 @@ Since this component provides multiple configuration options it might get confus
 |Mode|Accuracy|Input|How adjusted run time is calculated|
 |---|---|---|---|
 |Mode 1 - Full Open Weather Map|Low|No sensor input required, just an API key for Open Weather Map|Average of precipitation and evapotranspiration.|
-|Mode 2 - Full Sensor, but calculating evapotranspiration|High|Sensors are required for all inputs. All inputs are expected to be point-in-time, *except precipitation*. That sensor is normally provided by a weather station or weather service as a daily accumulative / 'total precipitation today' sensor and that is what is expected by the component|Most recent value for precipitation and average of evapotranspiration.
+|Mode 2 - Full Sensor, but calculating evapotranspiration|High|Sensors are required for all inputs. All inputs are expected to be point-in-time, *except precipitation*. That sensor is normally provided by a weather station or weather service as a daily accumulative/'total precipitation today' sensor and that is what is expected by the component|Most recent value for precipitation and average of evapotranspiration.
 |Mode 3 - Mixed|Medium|API key is required for any inputs that have not been provided sensors. All inputs are expected to be point-in-time, *except precipitation*. That sensor is normally provided by a weather station or weather service as a 'total precipitation today' sensor and that is what is expected by the component|If a sensor is provided for precipitation, most recent value for precipitation is used. Otherwise the average of both precipitation and evapotranspiration.|
 |Mode 4 -Not calculating|Very high|In this mode, just two sensors are required: one for precipitation and one for evapotranspiration. Both are expected to be daily accumulative sensors ('total today'), as is normally the case when provided by a weather service or weather station.|Most recent value of both precipitation and evapotranspiration.|
 
@@ -105,17 +105,20 @@ Specify one or more irrigation zones here. The component calculates irrigation d
 - Bucket: You can manipulate this calculated value.
 - Lead Time: In seconds. Time needed to warm up your irrigation system, e.g. time to establish a connection or start a pump etc.
 
-You can update and callculate all automatic zones.
+You can update and calculate all automatic zones.
 
 **Per Zone Settings**
 You can change any value mentioned before. Additionaly there are some more options.
 
-- State: Wether updating and calculation of that zone should be enabled in mode 'Automatic' or 'Manual' or 'Disabled'.
+- State: 
+  - 'Automatic': Automatic updating and calculation of that zone. Module and sensor mapping is mandatory.
+  - 'Manual': Only manual updating and calculation of that zone. Module and sensor mapping is mandatory.
+  - 'Disabled': The zone is disabled. No updating and calculation of that zone. Module and sensor mapping is optional.
 - Module: Choose the calculation module (see below) shall be used for that zone to calculate irrigation duration.
 - Mapping: Which sensor mapping (see below) shall be used for that zone.
-- Bucket: Either calculated or manualy set. Bucket >=0 no irrigation is necesarry, bucket <0 irrigation is necesarry.
-- Multiplier: Multiplies the duration of the irrigation.
-- Duration: Either calculated or manualy set.
+- Bucket: Either calculated or manually set. Bucket >=0 no irrigation is necesarry, bucket <0 irrigation is necesarry.
+- Multiplier: Multiplies the duration of the irrigation or divides if you do 0.5 for example.
+- Duration: Either calculated or manually set.
 
 Below each zone there are some buttons to update, calculate or delete that zone.
 
@@ -135,7 +138,7 @@ If you let PyETO to estimate from temperature or sun hours, it will not ask OWM 
 #### MAPPINGS
 For sensor configuration take care to make sure the unit the component expects is the same as your sensor provides.
 
-**Multi-zone support**: For irrigation systems that have multiple zones which you want to run in series (one after the other or indepedenly), one zone must be created in each case. Of course, the configuration should be done for each zone, including the area the zone covers and the corresponding settings.
+**Multi-zone support**: For irrigation systems that have multiple zones which you want to run in series (one after the other or independently), one zone must be created in each case. Of course, the configuration should be done for each zone, including the area the zone covers and the corresponding settings.
 
  > **If you want to go back and change your settings afterwards, you can either update or delete the zone and re-create it.**
 
@@ -146,7 +149,7 @@ Links to wiki, forum and issues.
 After successful configuration, go to Settings -> Devices & Services and add the integration 'Smart Irrigation'
 You should end up with one device and one entity for each zone and their attributes, listed below as well as [seven services](#available-services).
 
-For each instance of the component the following entities, services and events will be available:
+For the the component the following entities, services and events will be available:
 
 #### Entities
 #### `sensor.[zone_name]`
@@ -177,15 +180,15 @@ Sample screenshot:
 |`Smart Irrigation: update_zone`|Updates one specific zone with weather data|
 |`Smart Irrigation: update_all_zones`|Updates all automatic zones with weather data|
 |`Smart Irrigation: reset_bucket`|Resets one specific bucket.|
-|`Smart Irrigation: reset_all_buckets`|Resets all automatic buckets.|
+|`Smart Irrigation: reset_all_buckets`|Resets all buckets.|
 |`Smart Irrigation: set_bucket`|Sets a specific bucket to to a specific `value`.|
-|`Smart Irrigation: set_all_buckets`|Sets all automatic buckets to a specific `value`.|
+|`Smart Irrigation: set_all_buckets`|Sets all buckets to a specific `value`.|
 
 #### Start Event
 
 | Event | Description|
 | --- | --- |
-|`[instance]_start`|Fires depending on `sensor.[zone_name]` value and sunrise. You can listen to this event to optimize the moment you irrigate so your irrigation starts just before sunrise and is completed at sunrise. See below for examples on how to use this.|
+|`[instance]_start`|Fires on the total of the durations of all non-disabled zones and sunrise (event is scheduled at: sunrise - sum(duration for all non-disabled zones). You can listen to this event to optimize the moment you irrigate so your irrigation starts just before sunrise and is completed at sunrise. See below for examples on how to use this.|
 
 
 The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) describes the entities, the attributes and the calculations.
@@ -195,7 +198,7 @@ The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigat
 
 
 ### Step 4: Creating Automations
-Since this component does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom component with any irrigation system you might have, regardless of how that interfaces with Home Assistant. In order for this to work correctly, you should base your automation on the value of `sensor.[zone_name]` as long as you run your automation after it was updated (e.g. 11:00 PM / 23:00 hours local time). If that value is above 0 it is time to irrigate. Note that the value is the run time in seconds. Also, after irrigation, you need to call the `smart_irrigation.reset_bucket` service to reset the net irrigation tracking to 0.
+Since this component does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom component with any irrigation system you might have, regardless of how that interfaces with Home Assistant. In order for this to work correctly, you should base your automation on the value of `sensor.[zone_name]` as long as you run your automation after it was updated (e.g. 11:00 PM/23:00 hours local time). If that value is above 0 it is time to irrigate. Note that the value is the run time in seconds. Also, after irrigation, you need to call the `smart_irrigation.reset_bucket` service to reset the net irrigation tracking to 0.
 
 > **The last step in any automation is very important, since you will need to let the component know you have finished irrigating and the evaporation counter can be reset by calling the `smart_irrigation.reset_bucket` service**
 
