@@ -80,12 +80,12 @@ In this section:
 - [Services, Events, Entities and Attributes](#step-3-checking-services-events-and-entities)
 - [Example automation](#step-4-creating-automation)
 
-### Step 1: installing of component
+### Step 1: Installing of Component
 Install the custom component (preferably using HACS) and then use the Configuration --> Integrations pane to search for 'Smart Irrigation'. In your sidebar you will find a new entry for panel 'Smart Irrigation'
 - API Key for Open Weather Map (optional). Only required in mode 1) and 3). See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions.
 
 
-### Step 2: configuration of component
+### Step 2: Configuration of Component
 You will need to specify the following:
 
 #### GENERAL
@@ -106,7 +106,7 @@ Specify one or more irrigation zones here. The component calculates irrigation d
 
 You can Update all zones and Callculate all.
 
-**Per zone settings**
+**Per Zone Settings**
 You can change any value mentioned before. Additionaly there are some more options.
 
 - State: Wether Updating and Calculation of that zone should be enabled in mode 'Automatic' or 'Manual' or 'Disabled'
@@ -140,7 +140,7 @@ For sensor configuration take care to make sure the unit the component expects i
 #### HELP
 Links to wiki, forum and issues.
 
-### Step 3: checking services, events and entities
+### Step 3: Checking Services, Events and Entities
 After successful configuration, go to Settings -> Devices & Services and add the integration 'Smart Irrigation'
 You should end up with one device and one entity for each zone and their attributes, listed below as well as [seven services](#available-services).
 
@@ -189,16 +189,16 @@ Sample screenshot:
 
 The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) describes the entities, the attributes and the calculations.
 
-#### Showing other attributes as entities (sensors)
+#### Showing other Attributes as Entities (Sensors)
 [See the Wiki for more information on how to expose other values this components calculates as sensors](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Showing-other-sensors).
 
 
-### Step 4: creating automation
+### Step 4: Creating Automation
 Since this component does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom component with any irrigation system you might have, regardless of how that interfaces with Home Assistant. In order for this to work correctly, you should base your automation on the value of `sensor.[zone_name]` as long as you run your automation after it was updated (11:00 PM / 23:00 hours local time). If that value is above 0 it is time to irrigate. Note that the value is the run time in seconds. Also, after irrigation, you need to call the `smart_irrigation.reset_bucket` service to reset the net irrigation tracking to 0.
 
 > **The last step in any automation is very important, since you will need to let the component know you have finished irrigating and the evaporation counter can be reset by calling the `smart_irrigation.reset_bucket` service**
 
-#### Example automation 1: one valve, potentially daily irrigation
+#### Example Automation 1: one valve, potentially daily irrigation
 Here is an example automation that runs when the `smart_irrigation_start` event is fired. It checks if `sensor.smart_irrigation_daily_adjusted_run_time` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_daily_adjusted_run_time` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service. If you have multiple instances you will need to adjust the event, entities and service names accordingly.
 
 ```
@@ -210,7 +210,7 @@ Here is an example automation that runs when the `smart_irrigation_start` event 
   condition:
   - above: '0'
     condition: numeric_state
-    entity_id: sensor.smart_irrigation_daily_adjusted_run_time
+    entity_id: sensor.[zone_name]
   action:
   - service: switch.turn_on
     data: {}
@@ -227,10 +227,10 @@ Here is an example automation that runs when the `smart_irrigation_start` event 
 
 [See more advanced examples in the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Automation-examples).
 
-## Example behavior in a week
+## Example Behavior in a Week
 This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week) provides insight into how this component should behave in certain weather conditions. With this you should be able to do a sanity check against your configuration and make sure everything is working correctly.
 
-## Available services
+## Available Services
 The component provides the following services:
 
 | Service | Description |
@@ -245,5 +245,5 @@ The component provides the following services:
 ## How this works
 [See the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works).
 
-## Getting Open Weather Map API key
+## Getting Open Weather Map API Key
 Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key. If the key does not work right away, no worries. The email you should have received from OpenWeaterMap says it will be activated 'within the next couple of hours'. So if it does not work right away, be patient a bit. You will need to sign up for the paid (but free for limited API calls) OneCall API 3.0 plan if you do not have a key already. You can use a key for the 3.0 and 2.5 version of the API.
