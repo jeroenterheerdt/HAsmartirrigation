@@ -122,6 +122,8 @@ Below each zone there are some buttons to update, calculate or delete that zone.
 Add one or more modules that calculate irrigation duration. Each module comes with its own configuration and can be used to calculate duration for one or more zones. Modules can't be deleted if they are used by one or more zones.
 
 - 0:PyETO: Calculate duration based on the FAO56 calculation from the PyETO library. 
+  - If you set PyETO to not estimate, it will look for a solar radiation sensor in the mapping and will use that value. If there is none, it will use OWMs value (assuming you have OWM configured).
+If you let PyETO to estimate from temperature or sun hours, it will not ask OWM for a solar radiation value nor will it ask a sensor for a solar radiation value, even if you configured it in the mapping.
   - Coastal: If the location you are tracking is situated on or adjacent to coast of a large land mass or anywhere else where air masses are influenced by a nearby water body, enable this setting.
   - Solrad behaviour: Should solar radiation estimated from temperature or sun hours or disabled 
   - Forecast days: How many forecast days taken into account
