@@ -183,7 +183,7 @@ Attributes:
 
 Sample screenshot:
 
-![](images/bsi_entity.png?raw=true)
+![](images/sensor.[zone_name].png?raw=true)
 
 The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) describes the entities, the attributes and the calculations.
 
