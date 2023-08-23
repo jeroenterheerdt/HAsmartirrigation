@@ -56,7 +56,7 @@ You can use this component in various modes:
 
 3. **Mixed**. A combination of 1) and 2). In this mode part of the data is supplied by sensors and part by Open Weather Map. In this mode you will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions. When specificying a sensor for precipitation, note that it needs to be a cumulative daily sensor.
 
-When planning to set up mode 2) (Full Sensors), 3) or (Mixed) see [Measurements and Units](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Measurements-and-Units) for more information on the measurements and units expected by this component.
+When planning to set up mode 2) Full Sensors, or 3) Mixed see [Measurements and Units](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Measurements-and-Units) for more information on the measurements and units expected by this component.
 
 ## Getting the best results
 In order to get the most accurate results using sensors is preferable either from your own weather station or from another, from example through [Weatherflow Smart Weather](https://github.com/briis/smartweather). If you have a weather station that provides evapotranspiration (ET) values, use that. If you do not have that, use sensors including solar radiation (mode 3). If you do not have access to a sensor that provides solar radiation, let this component estimate it but use sensors for the other inputs (modified mode 3). If you do have access to limited amount of sensors (say only temperature) use that and use Open Weather Map for the rest (mode 2). If you do not have access to any sensors at all use Open Weather Map (mode 1).
@@ -75,11 +75,10 @@ Since this component provides multiple configuration options it might get confus
 ## Configuration
 
 In this section:
-- [Installation](###step-1-installing-of-component)
-- [Configuration](###step-2-configuration-of-component)
+- [Installation](#step-1-installing-of-component)
+- [Configuration](#step-2-configuration-of-component)
 - [Services, Events, Entities and Attributes](#step-3-checking-services,-events-and-entities)
 - [Example automation](#step-4-creating-automation)
-- [Optional settings](#step-4-configuring-optional-settings)
 
 ### Step 1: installing of component
 Install the custom component (preferably using HACS) and then use the Configuration --> Integrations pane to search for 'Smart Irrigation'. In your sidebar you will find a new entry for panel 'Smart Irrigation'
@@ -156,7 +155,7 @@ For each instance of the component the following services will be available:
 |`Smart Irrigation: reset_bucket`|Resets one specific bucket.|
 |`Smart Irrigation: set_all_buckets`|Sets all buckets to a specific `value`.|
 |`Smart Irrigation: set_bucket`|Sets a specific bucket to to a specific `value`.|
-| `Smart Irrigation: update_all_zones`|Updates all zones with weather data|
+|`Smart Irrigation: update_all_zones`|Updates all zones with weather data|
 
 #### Events
 The component uses a number of events internally that you do not need to pay attention to unless you need to debug things. The exception is the `_start` event.
