@@ -77,7 +77,7 @@ Since this component provides multiple configuration options it might get confus
 In this section:
 - [Installation](#step-1-installing-of-component)
 - [Configuration](#step-2-configuration-of-component)
-- [Services, Events, Entities and Attributes](#step-3-checking-services,-events-and-entities)
+- [Services, Events, Entities and Attributes](#step-3-checking-services-events-and-entities)
 - [Example automation](#step-4-creating-automation)
 
 ### Step 1: installing of component
