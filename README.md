@@ -15,16 +15,18 @@
 ![](logo.png?raw=true)
 
 Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
+
 This component calculates the time to run your irrigation system to compensate for moisture lost by evaporation / evapotranspiration. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required. Multiple zones can be supported as each zone will have its own flow configuration. 
 
 > **Note - use this component at your own risk - we do not assume responsibility for any inconvience caused by using this component. Always use common sense before deciding to irrigate using the calculations this component provides. For example, irrigating during excessive rainfall might cause flooding. Again - we assume no responsibility for any inconvience caused.**
 
 > **Note If you want to go back and change your settings afterwards, you can either delete the zone and re-create it.**
 
-The component keeps track of precipitation and at 23:00 (11:00 PM) local time stores it in a daily value.
-It then calculates the exact runtime in seconds to compensate for the next evaporation.
+The component keeps track of weather data and uses the weather info at 23:00 (11:00 PM) to calculate duration per zone. It then calculates the exact runtime in seconds to compensate for the next evaporation.
 
 Note that this is the default behavior and this can be disabled if you want more control. Also, the time auto refresh happens (if not disabled) is configurable.
+
+It's also possible to enable or disable the use for Open Weather Map for weather data and forecasting. If it is disabled you want to use another source, such as your own weather station, exclusively. If you turn it off, you will not be able to use forecasts. Leave this on if you intent to use Open Weather Map for at least part of the weather data, including forecasting. If you enable it the API Key for Open Weather MAP can be changed also like the version you want to use (API 2.5 or 3.0).
 
 This is all the component does, and this is on purpose to provide maximum flexibility. Users are expected to use the value of `sensor.[zone_name]` to interact with their irrigation system and afterwards call the `smart_irrigation.reset_bucket` service. [See the example automations below](#step-4-creating-automation).
 
