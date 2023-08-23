@@ -55,9 +55,9 @@ You can use this component in various modes:
 
 2. **Full Sensors**. Using sensors. In this mode all data comes from sensors such as a weather station. When specificying a sensor for precipitation, note that it needs to be a cumulative daily sensor. Open Weather Map is not used and you do not need an API key.
 
-3. **Mixed**. A combination of 1) and 2). In this mode part of the data is supplied by sensors and part by Open Weather Map. In this mode you will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions. When specificying a sensor for precipitation, note that it needs to be a cumulative daily sensor.
+3. **Mixed**. A combination of mode 1 and mode 2. In this mode part of the data is supplied by sensors and part by Open Weather Map. In this mode you will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions. When specificying a sensor for precipitation, note that it needs to be a cumulative daily sensor.
 
-When planning to set up mode 2) Full Sensors, or 3) Mixed see [Measurements and Units](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Measurements-and-Units) for more information on the measurements and units expected by this component.
+When planning to set up mode 2 (Full Sensors), or mode 3 (Mixed) see [Measurements and Units](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Measurements-and-Units) for more information on the measurements and units expected by this component.
 
 ## Getting the best results
 In order to get the most accurate results using sensors is preferable either from your own weather station or from another, from example through [Weatherflow Smart Weather](https://github.com/briis/smartweather). If you have a weather station that provides evapotranspiration (ET) values, use that.  If you do not have access to a sensor that provides solar radiation, let this component estimate it but use sensors for the other inputs. If you do have access to limited amount of sensors (say only temperature) use that and use Open Weather Map for the rest (mode 2). If you do not have access to any sensors at all use Open Weather Map (mode 1).
@@ -83,7 +83,7 @@ In this section:
 ### Step 1: Installing of Component
 Install the custom component (preferably using HACS). In your sidebar you will find a new entry for panel 'Smart Irrigation'
 
-- API Key for Open Weather Map (optional). Only required in mode 1) and 3). See [Getting Open Weather Map API Key](#getting-open-weather-map-api-key) below for instructions.
+- API Key for Open Weather Map (optional). Only required in mode 1 and 3. See [Getting Open Weather Map API Key](#getting-open-weather-map-api-key) below for instructions.
 
 
 ### Step 2: Configuration of Component
