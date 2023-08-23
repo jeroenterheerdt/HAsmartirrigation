@@ -53,7 +53,7 @@ You can use this component in various modes:
 
 1. **Full Open Weather Map**. In this mode all data comes from the Open Weather Map service. You will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions.
 
-2. **Full Sensors**. Using sensors. In this mode all data comes from sensors such as a weather station. When specificying a sensor for precipitation, note that it needs to be a cumulative daily sensor. Open Weather Map is not used and you do not need an API key.
+2. **Full Sensors**. Using sensors. In this mode all data comes from sensors such as a weather station. Open Weather Map is not used in any way (e.g. forecast) and you do not need an API key.
 
 3. **Mixed**. A combination of mode 1 and mode 2. In this mode part of the data is supplied by sensors and part by Open Weather Map. In this mode you will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions. When specificying a sensor for precipitation, note that it needs to be a cumulative daily sensor.
 
@@ -112,7 +112,7 @@ You can change any value mentioned before. Additionaly there are some more optio
 
 - State: 
   - 'Automatic': Automatic updating and calculation of that zone. Module and sensor mapping is mandatory.
-  - 'Manual': Only manual updating and calculation of that zone. Module and sensor mapping is mandatory.
+  - 'Manual': Only manual updating and calculation of that zone. No module and sensor mapping is required.
   - 'Disabled': The zone is disabled. No updating and calculation of that zone. Module and sensor mapping is optional.
 - Module: Choose the calculation module (see below) shall be used for that zone to calculate irrigation duration.
 - Mapping: Which sensor mapping (see below) shall be used for that zone.
@@ -149,7 +149,7 @@ Links to wiki, forum and issues.
 After successful configuration, go to Settings -> Devices & Services and add the integration 'Smart Irrigation'
 You should end up with one device and one entity for each zone and their attributes, listed below as well as [seven services](#available-services).
 
-For the the component the following entities, services and events will be available:
+Once the component is installed, the following entities, services and events will be available:
 
 #### Entities
 #### `sensor.[zone_name]`
