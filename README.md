@@ -20,9 +20,7 @@ This component calculates the time to run your irrigation system to compensate f
 
 > **Note - use this component at your own risk - we do not assume responsibility for any inconvience caused by using this component. Always use common sense before deciding to irrigate using the calculations this component provides. For example, irrigating during excessive rainfall might cause flooding. Again - we assume no responsibility for any inconvience caused.**
 
-> **Note If you want to go back and change your settings afterwards, you can either delete the zone and re-create it.**
-
-The component keeps track of weather data and uses the weather info at 23:00 (11:00 PM) to calculate duration per zone. It then calculates the exact runtime in seconds to compensate for the next evaporation.
+The component keeps track of weather data and uses the weather info at 23:00 (11:00 PM) or another choosen time to calculate duration per zone. It then calculates the exact runtime in seconds to compensate for the next evaporation.
 
 Each zone may have it's own mapping to calculation modules and sensor mappings. You can define as much modules or sensor mappings as you need or want.
 
