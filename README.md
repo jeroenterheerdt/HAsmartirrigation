@@ -26,7 +26,7 @@ It then calculates the exact runtime in seconds to compensate for the next evapo
 
 Note that this is the default behavior and this can be disabled if you want more control. Also, the time auto refresh happens (if not disabled) is configurable.
 
-This is all the component does, and this is on purpose to provide maximum flexibility. Users are expected to use the value of `sensor.[zone_name]` to interact with their irrigation system and afterwards call the `smart_irrigation.reset_bucket` service. [See the example automations below](#step-3-creating-automation).
+This is all the component does, and this is on purpose to provide maximum flexibility. Users are expected to use the value of `sensor.[zone_name]` to interact with their irrigation system and afterwards call the `smart_irrigation.reset_bucket` service. [See the example automations below](#step-4-creating-automation).
 
 This component uses reference evapotranspiration values and calculates water budgets from that. This is an industry-standard approach. Information can be found at https://www.rainbird.com/professionals/irrigation-scheduling-use-et-save-water, amongst others.
 
@@ -43,7 +43,7 @@ The component uses the [PyETo module to calculate the evapotranspiration value (
 
 4. Once a day (time is configurable) the `netto precipitation` is added/substracted from the `bucket,` which starts as empty. If the `bucket` is below zero, irrigation is required. 
 
-5. Irrigation should be run for `sensor.[zone_name]`, which is 0 if `bucket`>=0. Afterwards, the `bucket` needs to be reset (using `reset_bucket`). It's up to the user of the component to build the automation for this final step.
+5. Irrigation should be run for `sensor.[zone_name]`, which is 0 if `bucket`  >=0. Afterwards, the `bucket` needs to be reset (using `reset_bucket`). It's up to the user of the component to build the automation for this final step.
 
 There are many more options available, see below. To understand how `precipitation`, `netto precipitation`, the `bucket` and irrigation interact, see [example behavior on the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week).
 
@@ -75,9 +75,10 @@ Since this component provides multiple configuration options it might get confus
 ## Configuration
 
 In this section:
-- [One-time set up](#step-1-configuration-of-component)
-- [List of events, services entities and attributes created](#step-2-checking-entities)
-- [Example automation](#step-3-creating-automation)
+- [Installation](###step-1-installing-of-component)
+- [Configuration](###step-2-configuration-of-component)
+- [Services, Events, Entities and Attributes](#step-3-checking-services,-events-and-entities)
+- [Example automation](#step-4-creating-automation)
 - [Optional settings](#step-4-configuring-optional-settings)
 
 ### Step 1: installing of component
@@ -99,7 +100,7 @@ Specify one or more irrigation zones here. The component calculates irrigation d
 > **When entering any values in the configuration of this component, keep in mind that the component will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).
 
 - Name: The name of your zone, e.g. garden
-- Size: The size of this zone (m² or sq ft)
+- Size: The size of this zone (m<sup>2</sup> or sq ft)
 - Throughput: The flow of this zone (liter/minute or ???/minute)
 - Bucket: You can manipulate this calculated value.
 - Lead Time: In seconds. Time needed to warm up your irrigation system, e.g. time to establish a connection or start a pump etc.
@@ -112,7 +113,7 @@ You can change any value mentioned before. Additionaly there are some more optio
 - State: Wether Updating and Calculation of that zone should be enabled in mode 'Automatic' or 'Manual' or 'Disabled'
 - Module: Choose the calculation module (see below) shall be used for that zone to calculate irrigation duration
 - Mapping: Which sensor mapping (see below) shall be used for that zone
-- Bucket: Either calculated or manualy set. Bucket >= 0 no irrigation is necesarry, bucket < 0 irrigation is necesarry.
+- Bucket: Either calculated or manualy set. Bucket >=0 no irrigation is necesarry, bucket <0 irrigation is necesarry.
 - Multiplier: Multiplies the duration of irrigation
 - Duration: Either calculated or manualy set
 
@@ -142,7 +143,7 @@ Links to wiki, forum and issues.
 
 ### Step 3: checking services, events and entities
 After successful configuration, go to Settings -> Devices & Services and add the integration 'Smart Irrigation'
-You should end up with one device and for each zone one entitiy and their attributes, listed below as well as [seven services](#available-services).
+You should end up with one device and one entity for each zone and their attributes, listed below as well as [seven services](#available-services).
 
 #### Services
 For each instance of the component the following services will be available:
@@ -229,6 +230,7 @@ Here is an example automation that runs when the `smart_irrigation_start` event 
 
 ## Example behavior in a week
 This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week) provides insight into how this component should behave in certain weather conditions. With this you should be able to do a sanity check against your configuration and make sure everything is working correctly.
+
 ## Available services
 The component provides the following services:
 
