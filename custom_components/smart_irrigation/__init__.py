@@ -38,7 +38,7 @@ from .panel import (
     async_register_panel,
     async_unregister_panel,
 )
-from .helpers import (check_time, convert_mapping_to_metric, loadModules)
+from .helpers import (check_time, convert_between, convert_mapping_to_metric, loadModules)
 from .websockets import async_register_websockets
 
 from .OWMClient import OWMClient
@@ -473,7 +473,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         if data[const.ZONE_BUCKET] < 0:
             # calculate duration
-            precipitation_rate = (zone.get(const.ZONE_THROUGHPUT)*60)/zone.get(const.ZONE_SIZE)
+            ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
+            tput = zone.get(const.ZONE_THROUGHPUT)
+            sz = zone.get(const.ZONE_SIZE)
+            if not ha_config_is_metric:
+                # throughput is in gpm and size is in sq ft since HA is not in metric, so we need to adjust those first!
+                tput = convert_between(const.UNIT_GPM,const.UNIT_LPM,tput)
+                sz = convert_between(const.UNIT_SQ_FT, const.UNIT_M2, sz)
+            precipitation_rate = (tput*60)/sz
             #new version of calculation below - this is the old version from V1. Switching to the new version removes the need for ET values to be passed in!
             #water_budget = 1
             #if mod.maximum_et != 0:

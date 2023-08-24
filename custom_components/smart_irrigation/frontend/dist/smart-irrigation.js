@@ -342,7 +342,7 @@ function ge(e,t){return(({finisher:e,descriptor:t})=>(i,a)=>{var s;if(void 0===a
               .value="${this.config.autoupdatefirsttime}"
               @input=${e=>{this.saveData({autoupdatefirsttime:e.target.value})}}
             />
-          </div>`),this.data.autoupdateenabled&&this.data.autoupdatefirsttime&&this.data.calctime&&this.data.autoupdatefirsttime>=this.data.calctime&&(t=G`${t}
+          </div>`),this.data.autoupdateenabled&&this.data.autoupdatefirsttime&&this.data.calctime&&this.data.autoupdatefirsttime>=this.data.calctime&&(e=G`${e}
             <div class="card-content">
               ${Li("panels.general.cards.automatic-update.errors.warning-update-time-on-or-after-calc-time",this.hass.language)}!
             </div>`),t=G`<ha-card header="${Li("panels.general.cards.automatic-update.header",this.hass.language)}",
@@ -352,7 +352,7 @@ function ge(e,t){return(({finisher:e,descriptor:t})=>(i,a)=>{var s;if(void 0===a
           <div class="card-content">
             ${Li("panels.general.description",this.hass.language)}
           </div> </ha-card
-        >${e}${t}`}return G``}saveData(e){var t,i;this.hass&&this.data&&(this.data=Object.assign(Object.assign({},this.data),e),(t=this.hass,i=this.data,t.callApi("POST",Ee+"/config",i)).catch((e=>zi(e,this.shadowRoot.querySelector("ha-card")))).then())}static get styles(){return u`
+        >${t}${e}`}return G``}saveData(e){var t,i;this.hass&&this.data&&(this.data=Object.assign(Object.assign({},this.data),e),(t=this.hass,i=this.data,t.callApi("POST",Ee+"/config",i)).catch((e=>zi(e,this.shadowRoot.querySelector("ha-card")))).then())}static get styles(){return u`
       ${Di}
       .hidden {
         display: none;
@@ -856,7 +856,7 @@ function ge(e,t){return(({finisher:e,descriptor:t})=>(i,a)=>{var s;if(void 0===a
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${Li("title",this.hass.language)}</div>
-          <div class="version">${"v2023.8.0-beta22"}</div>
+          <div class="version">${"v2023.8.0-beta23"}</div>
         </div>
 
         <ha-tabs

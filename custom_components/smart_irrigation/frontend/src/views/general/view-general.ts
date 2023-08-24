@@ -264,7 +264,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
         this.data.calctime
       ) {
         if (this.data.autoupdatefirsttime >= this.data.calctime) {
-          r2 = html`${r2}
+          r1 = html`${r1}
             <div class="card-content">
               ${localize(
                 "panels.general.cards.automatic-update.errors.warning-update-time-on-or-after-calc-time",
@@ -284,7 +284,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
           <div class="card-content">
             ${localize("panels.general.description", this.hass.language)}
           </div> </ha-card
-        >${r1}${r2}`;
+        >${r2}${r1}`;
 
       return r;
     }
