@@ -78,7 +78,7 @@ In this section:
 - [Installation](#step-1-installing-of-component)
 - [Configuration](#step-2-configuration-of-component)
 - [Services, Events, Entities and Attributes](#step-3-checking-services-events-and-entities)
-- [Example automation](#step-4-creating-automations)
+- [Creating automations](#step-4-creating-automations)
 
 ### Step 1: Installing of Component
 Install the custom component (preferably using HACS). In your sidebar you will find a new entry for panel 'Smart Irrigation'
