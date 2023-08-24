@@ -14,9 +14,9 @@
 # Smart Irrigation
 ![](logo.png?raw=true)
 
-Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
-
 This component calculates the time to run your irrigation system to compensate for moisture loss by evaporation/evapotranspiration. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required including optinal weather forecast. Multiple zones can be supported as each zone will have its own flow configuration. 
+
+Smart Irrigation custom component for Home Assistant. Partly based on the excellent work at https://github.com/hhaim/hass/.
 
 > **Note - use this component at your own risk - we do not assume responsibility for any inconvience caused by using this component. Always use common sense before deciding to irrigate using the calculations this component provides. For example, irrigating during excessive rainfall might cause flooding. Again - we assume no responsibility for any inconvience caused.**
 
