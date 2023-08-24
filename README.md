@@ -146,7 +146,7 @@ Links to wiki, forum and issues.
 
 ### Step 3: Checking Services, Events and Entities
 After successful configuration, go to Settings -> Devices & Services and add the integration 'Smart Irrigation'
-You should end up with one device and one entity for each zone and their attributes, listed below as well as [seven services](#available-services).
+You should end up with one device and one entity for each zone and their attributes, listed below as well as [eight services](#services).
 
 Once the component is installed, the following entities, services and events will be available:
 
