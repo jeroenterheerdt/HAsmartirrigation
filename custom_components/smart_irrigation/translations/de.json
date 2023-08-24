@@ -51,8 +51,8 @@
     "common": {
       "attributes": {
         "size": "Größe",
-        "throughput": "Durchsatz",
-        "state": "Status"
+        "throughput": "Durchfluss",
+        "state": "Zustand"
       }
     },
     "defaults": {

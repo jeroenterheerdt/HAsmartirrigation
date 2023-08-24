@@ -90,8 +90,8 @@
               "dewpoint": "Taupunkt",
               "evapotranspiration": "Verdunstung",
               "humidity": "Feuchtigkeit",
-              "maximum temperature": "Maximum Temperatur",
-              "minimum temperature": "Minimum Temperatur",
+              "maximum temperature": "Maximum-Temperatur",
+              "minimum temperature": "Minimum-Temperatur",
               "precipitation": "Niederschlag",
               "pressure": "Luftdruck",
               "solar radiation": "Sonnenstrahlung",
@@ -100,7 +100,7 @@
             },
             "sensor-entity": "Sensor Entität",
             "sensor-units": "Sensor liefert Werte in",
-            "sensor-aggregate-use-the": "Nutze den",
+            "sensor-aggregate-use-the": "Nutze den/die/das",
             "sensor-aggregate-of-sensor-values-to-calculate": "des Sensorwertes um die Bewässerungsdauer zu berechnen",
             "aggregates": {
               "average": "Durchschnitt",
@@ -142,8 +142,8 @@
         "labels": {
           "name": "Name",
           "size": "Größe",
-          "throughput": "Durchsatz",
-          "state": "Status",
+          "throughput": "Durchfluss",
+          "state": "Zustand",
           "states": {
             "disabled": "Aus",
             "manual": "Manuell",
