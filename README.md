@@ -123,8 +123,6 @@ Below each zone there are some buttons to update, calculate or delete that zone.
 
 **Multi-zone support**: For irrigation systems that have multiple zones which you want to run in series (one after the other or independently), one zone must be created in each case. Of course, the configuration should be done for each zone, including the area the zone covers and the corresponding settings.
 
- > **If you want to go back and change your settings afterwards, you can either update or delete the zone and re-create it.**
-
 #### MODULES
 Add one or more modules that calculate irrigation duration. Each module comes with its own configuration and can be used to calculate duration for one or more zones. Modules can't be deleted if they are used by one or more zones.
 
