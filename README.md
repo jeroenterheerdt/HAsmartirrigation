@@ -218,7 +218,8 @@ Here is an example automation that runs when the `smart_irrigation_start` event 
     data: {}
     entity_id: switch.irrigation_tap1
   - delay:
-      seconds: '{{states("sensor.[zone_name]")}}'
+      seconds: "{{states(sensor.[zone_name])}}"
+
   - service: switch.turn_off
     data: {}
     entity_id: switch.irrigation_tap1
