@@ -14,7 +14,7 @@
 # Smart Irrigation
 ![](logo.png?raw=true)
 
-This component calculates the time to run your irrigation system to compensate for moisture loss by <a href=https://en.wikipedia.org/wiki/Evaporation target="_blank">evaporation</a> / <a href=https://en.wikipedia.org/wiki/Evapotranspiration target="_blank">evapotranspiration</a>. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required including optinal weather forecast. Multiple zones can be supported as each zone will have its own flow configuration. 
+This component calculates the time to run your irrigation system to compensate for moisture loss by [evaporation](https://en.wikipedia.org/wiki/Evaporation ){:target="_blank" rel="noopener"} / [evapotranspiration](https://en.wikipedia.org/wiki/Evapotranspiration ){:target="_blank" rel="noopener"}. Using this component you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and adjusts accordingly, so if it rains or snows less or no irrigation is required including optinal weather forecast. Multiple zones can be supported as each zone will have its own flow configuration. 
 
 The component keeps track of weather data and uses the weather info by default at 23:00 (11:00 PM) or you choose the time to calculate duration per zone. It then calculates the exact runtime in seconds to compensate for the next evaporation.
 
