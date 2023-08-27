@@ -18,7 +18,7 @@ This integration calculates the time to run your irrigation system to compensate
 
 The integration keeps track of weather data and uses the weather info by default at 23:00 (11:00 PM) or you choose the time to calculate duration per zone. It then calculates the exact runtime in seconds to compensate for the next evaporation.
 
-Each zone may have it's own mapping to calculation modules and sensor mappings. You can define as much modules or sensor mappings as you need or want.
+Each zone may have it's own mapping to calculation modules and sensor groups. You can define as much modules or sensor groups as you need or want.
 
 It's also possible to enable or disable the use for Open Weather Map for weather data and forecasting. If it is disabled you want to use another source, such as your own weather station, exclusively. If you turn it off, you will not be able to use forecasts. Leave this on if you intent to use Open Weather Map for at least part of the weather data, including forecasting. If you enable it the API Key for Open Weather MAP can be changed also like the version you want to use (API 2.5 or 3.0).
 
@@ -95,7 +95,7 @@ This page provides global settings.
 - Automatic weather data update: If enabled specify how often sensor update should happen (minutes, hours, days). Warning: weatherdata update time must be on or after calculation time! 
 
 #### ZONES
-Specify one or more irrigation zones here. The integration calculates irrigation duration per zone, depending on size, throughput, state, module and sensor mapping. A zone can be _disabled_ (so it doesn't do anything), _automatic_ or _manual_. If in automatic, duration is automatically calculated. If in manual, you specify the duration yourself. If disabled, the zone is not included in any calculation.
+Specify one or more irrigation zones here. The integration calculates irrigation duration per zone, depending on size, throughput, state, module and sensor group. A zone can be _disabled_ (so it doesn't do anything), _automatic_ or _manual_. If in automatic, duration is automatically calculated. If in manual, you specify the duration yourself. If disabled, the zone is not included in any calculation.
 
 > **When entering any values in the configuration of this integration, keep in mind that the integration will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).
 
@@ -111,11 +111,11 @@ You can update and calculate all automatic zones.
 You can change any value mentioned before. Additionaly there are some more options.
 
 - State: 
-  - 'Automatic': Automatic updating and calculation of that zone. Module and sensor mapping is mandatory.
-  - 'Manual': Only manual updating and calculation of that zone. No module and sensor mapping is required.
-  - 'Disabled': The zone is disabled. No updating and calculation of that zone. Module and sensor mapping is optional.
+  - 'Automatic': Automatic updating and calculation of that zone. Module and sensor group is mandatory.
+  - 'Manual': Only manual updating and calculation of that zone. No module and sensor group is required.
+  - 'Disabled': The zone is disabled. No updating and calculation of that zone. Module and sensor group is optional.
 - Module: Choose the calculation module (see below) shall be used for that zone to calculate irrigation duration.
-- Mapping: Which sensor mapping (see below) shall be used for that zone.
+- Sensor group: Which sensor group (see below) shall be used for that zone.
 - Bucket: Either calculated or manually set. Bucket >=0 no irrigation is necesarry, bucket <0 irrigation is necesarry.
 - Multiplier: Multiplies the duration of the irrigation or divides if you do 0.5 for example.
 - Duration: Either calculated or manually set.
@@ -128,8 +128,8 @@ Below each zone there are some buttons to update, calculate or delete that zone.
 Add one or more modules that calculate irrigation duration. Each module comes with its own configuration and can be used to calculate duration for one or more zones. Modules can't be deleted if they are used by one or more zones.
 
 - 0:PyETO: Calculate duration based on the FAO56 calculation from the PyETO library. 
-  - If you set PyETO to not estimate, it will look for a solar radiation sensor in the mapping and will use that value. If there is none, it will use OWMs value (assuming you have OWM configured).
-If you let PyETO to estimate from temperature or sun hours, it will not ask OWM for a solar radiation value nor will it ask a sensor for a solar radiation value, even if you configured it in the mapping.
+  - If you set PyETO to not estimate, it will look for a solar radiation sensor in the sensor group and will use that value. If there is none, it will use OWMs value (assuming you have OWM configured).
+If you let PyETO to estimate from temperature or sun hours, it will not ask OWM for a solar radiation value nor will it ask a sensor for a solar radiation value, even if you configured it in the sensor group.
   - Coastal: If the location you are tracking is situated on or adjacent to coast of a large land mass or anywhere else where air masses are influenced by a nearby water body, enable this setting.
   - Solrad behaviour: Should solar radiation estimated from temperature or sun hours or disabled 
   - Forecast days: How many forecast days taken into account
@@ -137,7 +137,7 @@ If you let PyETO to estimate from temperature or sun hours, it will not ask OWM 
   - Delta: netto precipitation
 - Passthrough: Passthrough module returns the value of an evapotranspiration sensor as delta.  
 
-#### MAPPINGS
+#### Sensor groups
 For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides.
 
 #### HELP
