@@ -122,7 +122,7 @@
     },
     "zones": {
       "title": "Zones",
-      "description": "Specify one or more irrigation zones here. The component calculates irrigation duration per zone, depending on size, throughput, state, module and mapping.",
+      "description": "Specify one or more irrigation zones here. The irrigation duration is calculated per zone, depending on size, throughput, state, module and mapping.",
       "no_items": "There are no zones defined yet.",
       "cards": {
         "add-zone": {
