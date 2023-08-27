@@ -57,7 +57,7 @@
     },
     "defaults": {
       "default-zone": "Standard Zone",
-      "default-mapping": "Standard Mapping"
+      "default-mapping": "Standard Sensorgruppe"
     },
     "module": {
       "calculation": {

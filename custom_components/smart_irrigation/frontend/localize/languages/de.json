@@ -69,12 +69,12 @@
         }
       },
       "mappings": {
-        "title": "Mappings",
-        "description": "Fügen Sie einen oder mehrere Mappings hinzu, die Wetterdaten von OpenWeatherMap, von Sensoren oder einer Kombination daraus abrufen. Jedes Mapping kann für eine oder mehrere Zonen verwendet werden",
-        "no_items": "Es sind noch keine Mappings vorhanden.",
+        "title": "Sensorgruppen",
+        "description": "Fügen Sie einen oder mehrere Sensorgruppen hinzu, die Wetterdaten von OpenWeatherMap, von Sensoren oder einer Kombination daraus abrufen. Jede Sensorgruppe kann für eine oder mehrere Zonen verwendet werden",
+        "no_items": "Es ist noch keine Sensorgruppe vorhanden.",
         "cards": {
           "add-mapping": {
-            "header": "Mapping hinzufügen",
+            "header": "Sensorgruppe hinzufügen",
             "actions": {
               "add": "Hinzufügen"
             }
@@ -112,7 +112,7 @@
               "sum": "Summe"
             },
             "errors": {
-              "cannot-delete-mapping-because-zones-use-it": "Dieses Moapping kann nicht entfernt werden, da es von mindestens einer Zone verwendet wird"
+              "cannot-delete-mapping-because-zones-use-it": "Diese Sensorgruppe kann nicht entfernt werden, da sie von mindestens einer Zone verwendet wird"
             }
           }
         },
@@ -122,7 +122,7 @@
       },
       "zones": {
         "title": "Zonen",
-        "description": "Fügen Sie eine oder mehrere Zonen hinzu. Die Bewässerungszeit wird pro Zone, abhängig von Größe, Durchsatz, Status, Modul und Mapping berechnet.",
+        "description": "Fügen Sie eine oder mehrere Zonen hinzu. Die Bewässerungszeit wird pro Zone, abhängig von Größe, Durchsatz, Status, Modul und Sensorgruppe berechnet.",
         "no_items": "Es sind noch kein Zonen vorhanden.",
         "cards": {
           "add-zone": {
@@ -150,7 +150,7 @@
             "automatic": "Automatisch"
           },
   
-          "mapping": "Mapping",
+          "mapping": "Sensor Gruppe",
           "bucket": "Vorrat",
           "lead-time": "Anlaufzeit",
           "multiplier": "Multiplikator",
