@@ -69,14 +69,14 @@
       }
     },
     "mappings": {
-      "title": "Mappings",
-      "description": "Add one or more mappings that retrieve weather data from OpenWeatherMap, from sensors or a combination of these. You can map each mapping to one or more zones",
-      "no_items": "There are no mappings defined yet.",
+      "title": "Sensor Groups",
+      "description": "Add one or more sensor groups that retrieve weather data from OpenWeatherMap, from sensors or a combination of these. You can map each sensor group to one or more zones",
+      "no_items": "There are no sensor group defined yet.",
       "cards": {
         "add-mapping": {
-          "header": "Add mapping",
+          "header": "Add sensor groups",
           "actions": {
-            "add": "Add mapping"
+            "add": "Add sensor group"
           }
         },
         "mapping": {
@@ -112,7 +112,7 @@
             "sum": "Sum"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "You cannot delete this mapping because there is at least one zone using it"
+            "cannot-delete-mapping-because-zones-use-it": "You cannot delete this sensor group because there is at least one zone using it"
           }
         }
       },
@@ -122,7 +122,7 @@
     },
     "zones": {
       "title": "Zones",
-      "description": "Specify one or more irrigation zones here. The component calculates irrigation duration per zone, depending on size, throughput, state, module and mapping.",
+      "description": "Specify one or more irrigation zones here. The irrigation duration is calculated per zone, depending on size, throughput, state, module and sensor group.",
       "no_items": "There are no zones defined yet.",
       "cards": {
         "add-zone": {
@@ -150,7 +150,7 @@
           "automatic": "Automatic"
         },
 
-        "mapping": "Mapping",
+        "mapping": "Sensor Group",
         "bucket": "Bucket",
         "lead-time": "Lead time",
         "multiplier": "Multiplier",
