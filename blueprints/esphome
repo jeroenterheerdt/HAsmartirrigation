@@ -1,0 +1,55 @@
+blueprint:
+  name: ESPHome Irrigation
+  description: ESPHome Irrigation
+  domain: automation
+  input:
+    esphome_device:
+      name: ESPHome device
+      description: ESPHome device to turn on and off
+      selector:
+        entity:
+    #        filter:
+    #            - domain: ???
+    #            - device_class: ???
+
+    irrigation_zone:
+      name: Irrigation Zone
+      description: Zone to irrigate
+      selector:
+        entity:
+          filter:
+            - device_class: duration
+
+variables:
+  esphome_device: !input esphome_device
+  irrigation_time: !input irrigation_zone
+
+alias: Irrigation with ESPHome device
+description: "Irrigation with ESPHome device"
+
+trigger:
+  platform: event
+  event_type: smart_irrigation_start
+
+condition:
+  - condition: numeric_state
+    entity_id: !input irrigation_zone
+    above: 0
+
+action:
+  - repeat:
+      for_each:
+        - esphome_device.valve
+      sequence:
+        - service: esphome.{{esphome_device}}_set_valve_run_duration
+          data:
+            duration: "{{states(irrigation_time)}"
+          target:
+            entity_id: esphome_device.valve
+
+  - service: smart_irrigation.reset_bucket
+    data: {}
+    target:
+      entity_id: !input irrigation_zone
+
+mode: single
