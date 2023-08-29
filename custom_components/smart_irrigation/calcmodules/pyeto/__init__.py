@@ -132,6 +132,8 @@ class PyETO(SmartIrrigationCalculationModule):
                     ),  # value stored is in hPa, but needs to be provided in kPa
                 )
 
-                delta = round(precip-eto,1)
+                #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
+                #delta = round(precip-eto,1)
+                delta = precip-eto
                 return delta
         return 0

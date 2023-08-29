@@ -441,7 +441,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         precip = 0
         bucket = zone.get(const.ZONE_BUCKET)
         data = {}
-        data[const.ZONE_OLD_BUCKET]=round(bucket,1)
+        #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
+        #data[const.ZONE_OLD_BUCKET]=round(bucket,1)
+        data[const.ZONE_OLD_BUCKET]=bucket
         explanation = ""
 
 
@@ -460,8 +462,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 delta = modinst.calculate()
             elif m[const.MODULE_NAME] == "Passthrough":
                 delta = 0-modinst.calculate(et_data=et_data)
-            data[const.ZONE_BUCKET] = round(bucket+delta,1)
-            data[const.ZONE_DELTA] = round(delta,1)
+            #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
+            #data[const.ZONE_BUCKET] = round(bucket+delta,1)
+            #data[const.ZONE_DELTA] = round(delta,1)
+            data[const.ZONE_BUCKET] = bucket+delta
+            data[const.ZONE_DELTA] = delta
         else:
             _LOGGER.error("Unknown module for zone {}".format(zone.get(const.ZONE_NAME)))
             return
@@ -495,15 +500,23 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             explanation += localize("module.calculation.explanation.bucket-less-than-zero-irrigation-necessary", self.hass.config.language)+".<br/>"+localize("module.calculation.explanation.steps-taken-to-calculate-duration", self.hass.config.language)+":<br/>"
             # v1 only
             # explanation += "<ol><li>Water budget is defined as abs([bucket])/max(ET)={}</li>".format(water_budget)
-            explanation += "<li>"+localize("module.calculation.explanation.precipitation-rate-defined-as",self.hass.config.language)+"["+localize("common.attributes.throughput",self.hass.config.language)+"]*60/["+localize("common.attributes.size",self.hass.config.language)+"]={}*60/{}={}</li>".format(zone.get(const.ZONE_THROUGHPUT),zone.get(const.ZONE_SIZE),round(precipitation_rate,1))
+            #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
+            #explanation += "<li>"+localize("module.calculation.explanation.precipitation-rate-defined-as",self.hass.config.language)+"["+localize("common.attributes.throughput",self.hass.config.language)+"]*60/["+localize("common.attributes.size",self.hass.config.language)+"]={}*60/{}={}</li>".format(zone.get(const.ZONE_THROUGHPUT),zone.get(const.ZONE_SIZE),round(precipitation_rate,1))
+            explanation += "<li>"+localize("module.calculation.explanation.precipitation-rate-defined-as",self.hass.config.language)+"["+localize("common.attributes.throughput",self.hass.config.language)+"]*60/["+localize("common.attributes.size",self.hass.config.language)+"]={}*60/{}={}</li>".format(zone.get(const.ZONE_THROUGHPUT),zone.get(const.ZONE_SIZE),precipitation_rate)
             # v1 only
             # explanation += "<li>The base schedule index is defined as (max(ET)/[precipitation rate]*60)*60=({}/{}*60)*60={}</li>".format(mod.maximum_et,precipitation_rate,round(base_schedule_index,1))
             # explanation += "<li>the duration is calculated as [water_budget]*[base_schedule_index]={}*{}={}</li>".format(water_budget,round(base_schedule_index,1),round(duration))
-            explanation += "<li>"+localize("module.calculation.explanation.duration-is-calculated-as",self.hass.config.language)+" abs(["+localize("module.calculation.explanation.bucket",self.hass.config.language)+"])/["+localize("module.calculation.explanation.precipitation-rate-variable",self.hass.config.language)+"]*3600={}/{}*3600={}</li>".format(abs(data[const.ZONE_BUCKET]),round(precipitation_rate,1),round(duration))
+            #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
+            #explanation += "<li>"+localize("module.calculation.explanation.duration-is-calculated-as",self.hass.config.language)+" abs(["+localize("module.calculation.explanation.bucket",self.hass.config.language)+"])/["+localize("module.calculation.explanation.precipitation-rate-variable",self.hass.config.language)+"]*3600={}/{}*3600={}</li>".format(abs(data[const.ZONE_BUCKET]),round(precipitation_rate,1),round(duration))
+            explanation += "<li>"+localize("module.calculation.explanation.duration-is-calculated-as",self.hass.config.language)+" abs(["+localize("module.calculation.explanation.bucket",self.hass.config.language)+"])/["+localize("module.calculation.explanation.precipitation-rate-variable",self.hass.config.language)+"]*3600={}/{}*3600={}</li>".format(abs(data[const.ZONE_BUCKET]),precipitation_rate,duration)
             duration = zone.get(const.ZONE_MULTIPLIER) * duration
             explanation += "<li>"+localize("module.calculation.explanation.multiplier-is-applied",self.hass.config.language)+" {}, ".format(zone.get(const.ZONE_MULTIPLIER))
-            explanation += localize("module.calculation.explanation.duration-after-multiplier-is",self.hass.config.language)+" {}</li>".format(round(duration))
-            duration = round(zone.get(const.ZONE_LEAD_TIME)+duration)
+            #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
+            #explanation += localize("module.calculation.explanation.duration-after-multiplier-is",self.hass.config.language)+" {}</li>".format(round(duration))
+            explanation += localize("module.calculation.explanation.duration-after-multiplier-is",self.hass.config.language)+" {}</li>".format(duration)
+            #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
+            #duration = round(zone.get(const.ZONE_LEAD_TIME)+duration)
+            duration = zone.get(const.ZONE_LEAD_TIME)+duration
             explanation += "<li>"+localize("module.calculation.explanation.lead-time-is-applied",self.hass.config.language)+" {}, ".format(zone.get(const.ZONE_LEAD_TIME))
             explanation += localize("module.calculation.explanation.duration-after-lead-time-is",self.hass.config.language)+" {}</li></ol>".format(duration)
         else:
