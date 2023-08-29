@@ -48,7 +48,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup(hass, config):
     """Track states and offer events for sensors."""
-    #this did not work. Users will have to reload the component / i.e. restart HA if they make this change.
+    #this did not work. Users will have to reload the integration / i.e. restart HA if they make this change.
     #listener for core config changes (for unit changes)
     #hass.bus.listen("core_config_updated", handle_core_config_change)
     return True
@@ -901,7 +901,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
 @callback
 def register_services(hass):
-    """Register services used by Smart Irrigation component."""
+    """Register services used by Smart Irrigation integration."""
 
     coordinator = hass.data[const.DOMAIN]["coordinator"]
 

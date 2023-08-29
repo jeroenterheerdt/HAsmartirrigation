@@ -69,12 +69,12 @@
       }
     },
     "mappings": {
-      "title": "Links",
-      "description": "Voeg een of meer links toe die weergegevens ophalen van OpenWeatherMap, van sensoren of een combinatie. Elke link kan worden gebruikt voor een of meerdere zones",
-      "no_items": "Er zijn nog geen links.",
+      "title": "Sensorgroepen",
+      "description": "Voeg een of meer sensorgroepen toe die weergegevens ophalen van OpenWeatherMap, van sensoren of een combinatie. Elke sensorgroep kan worden gebruikt voor een of meerdere zones",
+      "no_items": "Er zijn nog geen sensorgroepen.",
       "cards": {
         "add-mapping": {
-          "header": "Voeg link toe",
+          "header": "Voeg sensorgroep toe",
           "actions": {
             "add": "Toevoegen"
           }
@@ -112,7 +112,7 @@
             "sum": "Totaal"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "Deze link kan niet worden verwijderd omdat er minimaal een zone gebruik van maakt"
+            "cannot-delete-mapping-because-zones-use-it": "Deze sensorgroep kan niet worden verwijderd omdat er minimaal een zone gebruik van maakt"
           }
         }
       },
@@ -122,7 +122,7 @@
     },
     "zones": {
       "title": "Zones",
-      "description": "Voeg een of meerdere zones toe. Per zone wordt de irrigatietijd berekend, afhankelijk van de afmeting, doorvoer, status, module en link.",
+      "description": "Voeg een of meerdere zones toe. Per zone wordt de irrigatietijd berekend, afhankelijk van de afmeting, doorvoer, status, module en sensorgroep.",
       "no_items": "Er zijn nog geen zones.",
       "cards": {
         "add-zone": {
@@ -150,7 +150,7 @@
           "automatic": "Automatisch"
         },
 
-        "mapping": "Link",
+        "mapping": "Sensorgroep",
         "bucket": "Voorraad",
         "lead-time": "Aanlooptijd",
         "multiplier": "Vermenigvuldiger",
