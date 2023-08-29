@@ -1,6 +1,6 @@
 blueprint:
-  name: ESPHome Irrigation
-  description: ESPHome Irrigation
+  name: ESPHome Smart Irrigation
+  description: ESPHome Smart Irrigation
   domain: automation
   input:
     esphome_device:
