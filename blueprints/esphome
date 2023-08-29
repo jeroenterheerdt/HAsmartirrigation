@@ -20,9 +20,16 @@ blueprint:
           filter:
             - device_class: duration
 
+    service_call:
+      name: Service Call
+      description: ESPHome Service to call
+      selector:
+        action:
+
 variables:
   esphome_device: !input esphome_device
   irrigation_time: !input irrigation_zone
+  service_call: !input service_call
 
 alias: Irrigation with ESPHome device
 description: "Irrigation with ESPHome device"
@@ -41,7 +48,7 @@ action:
       for_each:
         - esphome_device.valve
       sequence:
-        - service: esphome.{{esphome_device}}_set_valve_run_duration
+        - service: service_call
           data:
             duration: "{{states(irrigation_time)}"
           target:
