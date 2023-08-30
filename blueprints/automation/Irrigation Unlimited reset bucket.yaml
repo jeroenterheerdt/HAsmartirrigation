@@ -19,9 +19,6 @@ blueprint:
           filter:
             - domain: binary_sensor
 
-variables:
-  irrigation_time: !input irrigation_zone
-
 alias: Smart Irrigation reset bucket
 
 trigger:
