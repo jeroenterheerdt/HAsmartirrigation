@@ -1,6 +1,6 @@
 blueprint:
-  name: Standard Irrigation
-  description: Standard irrigation for one zone
+  name: Smart Irrigation
+  description: Smart irrigation for a zone
   domain: automation
   input:
     irrigation_switch:
@@ -21,10 +21,10 @@ blueprint:
             - device_class: duration
 
 variables:
-  irrigation_time: !input irrigation_zone
+  duration: !input irrigation_zone
 
 alias: Standard Irrigation
-description: "Standard irrigation for one Zone"
+description: "Standard irrigation for a Zone"
 
 trigger:
   platform: event
@@ -41,7 +41,7 @@ action:
     target:
       entity_id: !input irrigation_switch
 
-  - delay: "{{ states(irrigation_time) }}"
+  - delay: "{{ states(duration) }}"
 
   - service: switch.turn_off
     data: {}

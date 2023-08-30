@@ -1,6 +1,6 @@
 blueprint:
-  name: Simple Scheduler Irrigationt
-  description: Irrigation for one zone, called by Simple Scheduler
+  name: Simple Scheduler Irrigation
+  description: Irrigation for a zone, called by Simple Scheduler
   domain: script
   input:
     irrigation_switch:
@@ -20,7 +20,7 @@ blueprint:
             - device_class: duration
 
 variables:
-  irrigation_time: !input irrigation_zone
+  duration: !input irrigation_zone
 
 alias: Standard Irrigation
 description: "Standard irrigation for one Zone"
@@ -35,7 +35,7 @@ sequence:
     target:
       entity_id: !input irrigation_switch
 
-  - delay: "{{ states(irrigation_time) }}"
+  - delay: "{{ states(duration) }}"
 
   - service: switch.turn_off
     data: {}
