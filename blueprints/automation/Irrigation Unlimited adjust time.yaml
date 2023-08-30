@@ -1,0 +1,37 @@
+blueprint:
+  name: Irrigation Unlimited adjust watering time
+  description: Adjust watering times based on smart irrigation calculations
+  domain: automation
+  input:
+    irrigation_zone:
+      name: Irrigation Zone
+      description: Zone to irrigate
+      selector:
+        entity:
+          filter:
+            - device_class: duration
+
+    time_on:
+      name: Time to turn on
+      selector:
+        time:
+      default: "23:30:00"
+
+variables:
+  irrigation_time: !input irrigation_zone
+
+alias: Smart Irrigation adjustment
+
+trigger:
+  platform: time
+  at: !input time_on
+
+condition:
+  - condition: "{{ states(irrigation_time) | float(-1) >= 0 }}"
+
+action:
+  - service: irrigation_unlimited.adjust_time
+    data:
+      actual: "{{ timedelta(seconds=states(irrigation_time) | int(0)) }}"
+
+mode: single
