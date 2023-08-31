@@ -200,7 +200,7 @@ Since this integration does not interface with your irrigation system directly, 
 > **The last step in any automation is very important, since you will need to let the integration know you have finished irrigating and the evaporation counter can be reset by calling the `smart_irrigation.reset_bucket` service**
 
 #### Example Automation 1: one valve, potentially daily irrigation
-Here is an example automation that runs when the `smart_irrigation_start` event is fired. It checks if `sensor.[zone_name]` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.[zone_name]` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service. If you have multiple instances you will need to adjust the event, entities and service names accordingly.
+Here is an example automation that runs when the `smart_irrigation_start_all_zones` event is fired. It checks if `sensor.[zone_name]` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.[zone_name]` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service. If you have multiple instances you will need to adjust the event, entities and service names accordingly.
 
 ```
 - alias: Smart Irrigation
