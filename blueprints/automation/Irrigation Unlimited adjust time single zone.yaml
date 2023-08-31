@@ -1,6 +1,6 @@
 blueprint:
-  name: Irrigation Unlimited adjust watering time for a single zone
-  description: Adjust watering times based on smart irrigation calculations
+  name: Irrigation Unlimited adjust watering time for a single zone.
+  description: Adjust watering times based on smart irrigation calculations.
   domain: automation
   input:
     irrigation_zone:
