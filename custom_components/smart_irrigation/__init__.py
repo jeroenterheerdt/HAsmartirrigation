@@ -1,5 +1,5 @@
 """The Smart Irrigation Integration."""
-from datetime import timedelta
+from datetime import timedelta, timezone
 import datetime
 import logging
 import os
@@ -21,7 +21,9 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 from homeassistant.helpers.event import (
+    async_call_later,
     async_track_point_in_time,
+    async_track_point_in_utc_time,
     async_track_time_change,
     async_track_time_interval,
 )
@@ -632,6 +634,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 return
             self.store.async_delete_zone(zone_id)
             await self.async_remove_entity(zone_id)
+
         elif const.ATTR_CALCULATE in data:
             if isinstance(data, dict):
                 data.pop(const.ATTR_CALCULATE)
@@ -744,6 +747,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
             self.store.async_get_config()
 
+        # update the start event
+        self.register_start_event()
+
     def register_start_event(self):
         sun_state = self.hass.states.get("sun.sun")
         if sun_state is not None:
@@ -755,13 +761,19 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S%z")
                 total_duration = self.get_total_duration_all_enabled_zones()
                 if total_duration > 0:
-                    time_to_fire = sun_rise - datetime.timedelta(seconds=total_duration)
+                    time_to_wait = sun_rise - datetime.datetime.now(timezone.utc) - datetime.timedelta(seconds=total_duration)
+                    time_to_fire = datetime.datetime.now(timezone.utc) + time_to_wait
+                    #time_to_wait = total_duration
+
+                    #time_to_fire = datetime.datetime.now(timezone.utc)+datetime.timedelta(seconds=total_duration)
+
                     if self._track_sunrise_event_unsub:
                         self._track_sunrise_event_unsub()
                         self._track_sunrise_event_unsub = None
-                    self._track_sunrise_event_unsub = async_track_point_in_time(
-                        self.hass, self._fire_start_event, point_in_time=time_to_fire
-                    )
+                    #self._track_sunrise_event_unsub = async_track_point_in_utc_time(
+                    #    self.hass, self._fire_start_event, point_in_time=time_to_fire
+                    #)
+                    self._track_sunrise_event_unsub = async_call_later(self.hass, time_to_wait,self._fire_start_event)
                     event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
                     _LOGGER.info("Start irrigation event {} will fire at {}".format(event_to_fire, time_to_fire))
 
@@ -770,9 +782,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         zones = self.store.async_get_zones()
         for zone in zones:
             if zone.get(const.ZONE_STATE)==const.ZONE_STATE_AUTOMATIC or zone.get(const.ZONE_STATE)==const.ZONE_STATE_MANUAL:
-                total_duration = zone.get(const.ZONE_DURATION,0)
+                total_duration += zone.get(const.ZONE_DURATION,0)
         return total_duration
 
+    @callback
     def _fire_start_event(self, *args):
         event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
         self.hass.bus.fire(event_to_fire, {})

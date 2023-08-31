@@ -31,11 +31,10 @@ export class SmartIrrigationPanel extends LitElement {
   }
 
   render() {
-    /*if (!customElements.get('ha-panel-config'))
-      return html`
-        loading...
-      `;
-    */
+    if (!customElements.get("ha-panel-config")) return html` loading... `;
+
+    console.log("language: " + this.hass.language);
+    console.log("selected language: " + this.hass.selectedLanguage);
     const path = getPath();
     return html`
       <div class="header">
@@ -125,7 +124,8 @@ export class SmartIrrigationPanel extends LitElement {
             <a
               href="https://github.com/jeroenterheerdt/HAsmartirrigation/issues"
               >Github Issue</a
-            > (English only).
+            >
+            (English only).
           </div></ha-card
         >`;
       default:

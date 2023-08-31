@@ -154,6 +154,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     index: number,
     updatedZone: SmartIrrigationZone
   ): void {
+    if (!this.hass) {
+      return;
+    }
     this.zones = Object.values(this.zones).map((zone, i) =>
       i === index ? updatedZone : zone
     );
@@ -164,7 +167,6 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    console.log("handleUpdateZone: " + index.toString());
     /*showConfirmationDialog(
       ev,
       "Are you sure you want to delete this zone?",

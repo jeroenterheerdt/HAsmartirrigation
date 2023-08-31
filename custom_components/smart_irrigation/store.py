@@ -61,6 +61,7 @@ from .const import (
     ZONE_MULTIPLIER,
     ZONE_NAME,
     ZONE_SIZE,
+    ZONE_STATE_AUTOMATIC,
     ZONE_THROUGHPUT,
     ZONE_STATE,
     ZONE_DURATION,
@@ -393,8 +394,8 @@ class SmartIrrigationStorage:
             if ATTR_NEW_BUCKET_VALUE in changes:
                 changes[ZONE_BUCKET] = changes[ATTR_NEW_BUCKET_VALUE]
                 changes.pop(ATTR_NEW_BUCKET_VALUE)
-            # if bucket on zone is 0, then duration should be 0
-            if ZONE_BUCKET in changes and changes[ZONE_BUCKET] == 0:
+            # if bucket on zone is 0, then duration should be 0, but only if zone is automatic
+            if ZONE_BUCKET in changes and changes[ZONE_BUCKET] == 0 and changes[ZONE_STATE] == ZONE_STATE_AUTOMATIC:
                 changes[ZONE_DURATION] = 0
             changes.pop('id', None)
             new = self.zones[zone_id] = attr.evolve(old, **changes)
