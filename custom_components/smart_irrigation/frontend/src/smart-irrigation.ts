@@ -33,8 +33,6 @@ export class SmartIrrigationPanel extends LitElement {
   render() {
     if (!customElements.get("ha-panel-config")) return html` loading... `;
 
-    console.log("language: " + this.hass.language);
-    console.log("selected language: " + this.hass.selectedLanguage);
     const path = getPath();
     return html`
       <div class="header">

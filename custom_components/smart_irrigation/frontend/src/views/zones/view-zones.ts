@@ -43,6 +43,7 @@ import {
   ZONE_DURATION,
   ZONE_LEAD_TIME,
   ZONE_MAPPING,
+  ZONE_MAXIMUM_DURATION,
   ZONE_MODULE,
   ZONE_MULTIPLIER,
   ZONE_NAME,
@@ -143,6 +144,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       multiplier: 1,
       mapping: undefined,
       lead_time: 0,
+      maximum_duration: undefined,
     };
 
     this.zones = [...this.zones, newZone];
@@ -460,6 +462,27 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                   this.handleEditZone(index, {
                     ...zone,
                     [ZONE_LEAD_TIME]: parseInt(
+                      (e.target as HTMLInputElement).value,
+                      10
+                    ),
+                  })}"
+              />
+              <label for="maximum-duration${index}"
+                >${localize(
+                  "panels.zones.labels.maximum-duration",
+                  this.hass.language
+                )}
+                (s):</label
+              >
+              <input
+                class="shortinput"
+                id="maximum-duration${index}"
+                type="number"
+                .value="${zone.maximum_duration}"
+                @input="${(e: Event) =>
+                  this.handleEditZone(index, {
+                    ...zone,
+                    [ZONE_MAXIMUM_DURATION]: parseInt(
                       (e.target as HTMLInputElement).value,
                       10
                     ),

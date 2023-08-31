@@ -57,6 +57,7 @@ from .const import (
     ZONE_ID,
     ZONE_LEAD_TIME,
     ZONE_MAPPING,
+    ZONE_MAXIMUM_DURATION,
     ZONE_MODULE,
     ZONE_MULTIPLIER,
     ZONE_NAME,
@@ -95,6 +96,7 @@ class ZoneEntry:
     explanation = attr.ib(type=str,default=None)
     mapping = attr.ib(type=str,default=None)
     lead_time = attr.ib(type=float, default=None)
+    maximum_duration = attr.ib(type=float, default=None)
 
 @attr.s(slots=True, frozen=True)
 class ModuleEntry:
@@ -184,7 +186,8 @@ class SmartIrrigationStorage:
                         module=zone[ZONE_MODULE],
                         multiplier=zone[ZONE_MULTIPLIER],
                         mapping=zone[ZONE_MAPPING],
-                        lead_time = zone[ZONE_LEAD_TIME]
+                        lead_time = zone[ZONE_LEAD_TIME],
+                        maximum_duration = zone[ZONE_MAXIMUM_DURATION]
                     )
             if "modules" in data:
                 for module in data["modules"]:
@@ -231,10 +234,10 @@ class SmartIrrigationStorage:
 
     async def async_factory_default_zones(self):
         new_zone1 = ZoneEntry(
-            **{ZONE_ID: 0, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 1", ZONE_SIZE: 50.5, ZONE_THROUGHPUT: 10.1,ZONE_MODULE:0,ZONE_MAPPING:0,ZONE_LEAD_TIME:0}
+            **{ZONE_ID: 0, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 1", ZONE_SIZE: 50.5, ZONE_THROUGHPUT: 10.1,ZONE_MODULE:0,ZONE_MAPPING:0,ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION:None}
         )
         new_zone2 = ZoneEntry(
-            **{ZONE_ID: 1, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 2", ZONE_SIZE: 100.1, ZONE_THROUGHPUT: 20.2,ZONE_MODULE:0,ZONE_MAPPING: 0, ZONE_LEAD_TIME:0}
+            **{ZONE_ID: 1, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 2", ZONE_SIZE: 100.1, ZONE_THROUGHPUT: 20.2,ZONE_MODULE:0,ZONE_MAPPING: 0, ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION: None}
         )
         self.zones[0] = new_zone1
         self.zones[1] = new_zone2
@@ -395,7 +398,7 @@ class SmartIrrigationStorage:
                 changes[ZONE_BUCKET] = changes[ATTR_NEW_BUCKET_VALUE]
                 changes.pop(ATTR_NEW_BUCKET_VALUE)
             # if bucket on zone is 0, then duration should be 0, but only if zone is automatic
-            if ZONE_BUCKET in changes and changes[ZONE_BUCKET] == 0 and changes[ZONE_STATE] == ZONE_STATE_AUTOMATIC:
+            if ZONE_BUCKET in changes and changes[ZONE_BUCKET] == 0 and old.state == ZONE_STATE_AUTOMATIC:
                 changes[ZONE_DURATION] = 0
             changes.pop('id', None)
             new = self.zones[zone_id] = attr.evolve(old, **changes)

@@ -151,9 +151,10 @@ async def async_unload_entry(hass, entry):
 async def async_remove_entry(hass, entry):
     """Remove Smart Irrigation config entry."""
     async_unregister_panel(hass)
-    coordinator = hass.data[const.DOMAIN]["coordinator"]
-    await coordinator.async_delete_config()
-    del hass.data[const.DOMAIN]
+    if const.DOMAIN in hass.data:
+        coordinator = hass.data[const.DOMAIN]["coordinator"]
+        await coordinator.async_delete_config()
+        del hass.data[const.DOMAIN]
 
 
 class SmartIrrigationCoordinator(DataUpdateCoordinator):
@@ -209,7 +210,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def async_update_config(self, data):
         #handle auto calc changes
         await self.set_up_auto_calc_time(data)
-        #handle auto update changes
+        #handle auto update changes, includings updating OWMClient cache settings
         await self.set_up_auto_update_time(data)
         self.store.async_update_config(data)
         async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated")
@@ -284,6 +285,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         elif data[const.CONF_AUTO_UPDATE_SCHEDULE] == const.CONF_AUTO_UPDATE_MINUTELY:
             #track time X minutes
             the_time_delta = timedelta(minutes=interval)
+        #update cache for OWMClient to time delta in seconds -1
+        self._OWMClient.cache_seconds = the_time_delta.total_seconds()-1
+
         async_track_time_interval(self.hass, self._async_update_all,the_time_delta)
         _LOGGER.info("Scheduled auto update time interval for each {}".format(the_time_delta))
 
@@ -503,7 +507,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # v1 only
             # explanation += "<ol><li>Water budget is defined as abs([bucket])/max(ET)={}</li>".format(water_budget)
             #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
-            explanation += "<li>"+localize("module.calculation.explanation.precipitation-rate-defined-as",self.hass.config.language)+"["+localize("common.attributes.throughput",self.hass.config.language)+"]*60/["+localize("common.attributes.size",self.hass.config.language)+"]={}*60/{}={}</li>".format(zone.get(const.ZONE_THROUGHPUT),zone.get(const.ZONE_SIZE),round(precipitation_rate,1))
+            explanation += "<li>"+localize("module.calculation.explanation.precipitation-rate-defined-as",self.hass.config.language)+" ["+localize("common.attributes.throughput",self.hass.config.language)+"]*60/["+localize("common.attributes.size",self.hass.config.language)+"]={}*60/{}={}</li>".format(zone.get(const.ZONE_THROUGHPUT),zone.get(const.ZONE_SIZE),round(precipitation_rate,1))
             # v1 only
             # explanation += "<li>The base schedule index is defined as (max(ET)/[precipitation rate]*60)*60=({}/{}*60)*60={}</li>".format(mod.maximum_et,precipitation_rate,round(base_schedule_index,1))
             # explanation += "<li>the duration is calculated as [water_budget]*[base_schedule_index]={}*{}={}</li>".format(water_budget,round(base_schedule_index,1),round(duration))
@@ -514,6 +518,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
             explanation += localize("module.calculation.explanation.duration-after-multiplier-is",self.hass.config.language)+" {}</li>".format(round(duration))
             #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
+
+            # get maximum duration if set and >=0 and override duration if it's higher than maximum duration
+            explanation += "<li>"+localize("module.calculation.explanation.maximum-duration-is-applied",self.hass.config.language)+" {}, ".format(zone.get(const.ZONE_MAXIMUM_DURATION))
+            if zone.get(const.ZONE_MAXIMUM_DURATION) is not None and zone.get(const.ZONE_MAXIMUM_DURATION) >=0 and duration > zone.get(const.ZONE_MAXIMUM_DURATION):
+                duration = zone.get(const.ZONE_MAXIMUM_DURATION)
+                explanation += localize("module.calculation.explanation.duration-after-maximum-duration-is",self.hass.config.language)+" {}</li>".format(round(duration))
             duration = round(zone.get(const.ZONE_LEAD_TIME)+duration)
             explanation += "<li>"+localize("module.calculation.explanation.lead-time-is-applied",self.hass.config.language)+" {}, ".format(zone.get(const.ZONE_LEAD_TIME))
             explanation += localize("module.calculation.explanation.duration-after-lead-time-is",self.hass.config.language)+" {}</li></ol>".format(duration)
@@ -586,6 +596,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     #this mapping maps to a sensor, so retrieve its value from HA
                     if self.hass.states.get(the_map.get(const.MAPPING_CONF_SENSOR)):
                         val = float(self.hass.states.get(the_map.get(const.MAPPING_CONF_SENSOR)).state)
+                        #make sure to store the val as metric
+                        #first check we are not in metric mode already.
+                        if not self.hass.config.units is METRIC_SYSTEM:
+                            val = convert_mapping_to_metric(val, key,the_map.get(const.MAPPING_CONF_UNIT), False)
                         # add val to sensor values
                         sensor_values[key]= val
         return sensor_values
@@ -597,31 +611,50 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         for s, val in sensor_values.items():
             unit = mapping[const.MAPPING_MAPPINGS][s].get(const.MAPPING_CONF_UNIT)
             if s == const.MAPPING_DEWPOINT:
-                weatherdata["daily"][0]["dew_point"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                #weatherdata["daily"][0]["dew_point"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                #conversion shouldn't be necessary as it should be stored in metric in the storage.
+                weatherdata["daily"][0]["dew_point"] = val
             if s == const.MAPPING_EVAPOTRANSPIRATION:
-                et_from_sensor = convert_mapping_to_metric(val,s,unit,ha_config_is_metric)
+                #conversion shouldn't be necessary as it should be stored in metric in the storage.
+                #et_from_sensor = convert_mapping_to_metric(val,s,unit,ha_config_is_metric)
+                et_from_sensor = val
             elif s == const.MAPPING_TEMPERATURE:
                 if not "temp" in weatherdata["daily"][0]:
                     weatherdata["daily"][0]["temp"]={}
-                weatherdata["daily"][0]["temp"]["day"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                #conversion shouldn't be necessary as it should be stored in metric in the storage.
+                #weatherdata["daily"][0]["temp"]["day"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                weatherdata["daily"][0]["temp"]["day"] = val
             elif s == const.MAPPING_HUMIDITY:
-                weatherdata["daily"][0]["humidity"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                #conversion shouldn't be necessary as it should be stored in metric in the storage.
+                #weatherdata["daily"][0]["humidity"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                weatherdata["daily"][0]["humidity"] = val
             elif s == const.MAPPING_MAX_TEMP:
                 if not "temp" in weatherdata["daily"][0]:
                     weatherdata["daily"][0]["temp"]={}
-                weatherdata["daily"][0]["temp"]["max"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                #weatherdata["daily"][0]["temp"]["max"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                weatherdata["daily"][0]["temp"]["max"] = val
             elif s == const.MAPPING_MIN_TEMP:
                 if not "temp" in weatherdata["daily"][0]:
                     weatherdata["daily"][0]["temp"]={}
-                weatherdata["daily"][0]["temp"]["min"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                #conversion shouldn't be necessary as it should be stored in metric in the storage.
+                #weatherdata["daily"][0]["temp"]["min"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                weatherdata["daily"][0]["temp"]["min"] = val
             elif s == const.MAPPING_PRECIPITATION:
-                precip_from_sensor = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                #conversion shouldn't be necessary as it should be stored in metric in the storage.
+                #precip_from_sensor = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                precip_from_sensor = val
             elif s == const.MAPPING_PRESSURE:
-                weatherdata["daily"][0]["pressure"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                #conversion shouldn't be necessary as it should be stored in metric in the storage.
+                #weatherdata["daily"][0]["pressure"] = convert_mapping_to_metric(val, s,unit,ha_config_is_metric)
+                weatherdata["daily"][0]["pressure"] = val
             elif s == const.MAPPING_SOLRAD:
-                sol_rad_from_sensor = convert_mapping_to_metric(val,s,unit,ha_config_is_metric)
+                #conversion shouldn't be necessary as it should be stored in metric in the storage.
+                #sol_rad_from_sensor = convert_mapping_to_metric(val,s,unit,ha_config_is_metric)
+                sol_rad_from_sensor = val
             elif s == const.MAPPING_WINDSPEED:
-                weatherdata["daily"][0]["wind_speed"] = convert_mapping_to_metric(val,s,unit,ha_config_is_metric)
+                #conversion shouldn't be necessary as it should be stored in metric in the storage.
+                #weatherdata["daily"][0]["wind_speed"] = convert_mapping_to_metric(val,s,unit,ha_config_is_metric)
+                weatherdata["daily"][0]["wind_speed"] = val
         return weatherdata, precip_from_sensor, sol_rad_from_sensor,et_from_sensor
 
     async def async_update_zone_config(self, zone_id: int = None, data: dict = {}):
@@ -656,6 +689,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if modinst and modinst.name=="PyETO" and modinst._forecast_days>0:
                 owm_in_mapping=True
             if self.use_OWM and owm_in_mapping:
+                # set override cache if set
+                self._OWMClient.override_cache = data.get(const.ATTR_OVERRIDE_CACHE, False)
                 # data comes at least partly from owm
                 weatherdata = await self.hass.async_add_executor_job(self._OWMClient.get_data)
             elif not self.use_OWM and owm_in_mapping:
@@ -687,8 +722,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 async_dispatcher_send(
                     self.hass, const.DOMAIN + "_config_updated", zone_id)
 
-                #make sure we fire the start event in time!
-                self.register_start_event()
             elif not weatherdata and not sensor_values:
                     # no data to calculate with!
                     _LOGGER.warning("Calculate zone {} failed: no data available.".format(res[const.ZONE_NAME]))
@@ -697,7 +730,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             _LOGGER.info("Calculating all zones");
             data.pop(const.ATTR_CALCULATE_ALL)
             await self._async_calculate_all()
-            self.register_start_event()
+
         elif const.ATTR_UPDATE in data:
             #update sensor data for a zone
             res = self.store.async_get_zone(zone_id)

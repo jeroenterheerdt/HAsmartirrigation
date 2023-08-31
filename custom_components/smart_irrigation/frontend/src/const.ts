@@ -1,4 +1,4 @@
-export const VERSION = "v2023.8.0-beta27";
+export const VERSION = "v2023.8.0-beta28";
 export const REPO = "https://github.com/jeroenterheerdt/HASmartIrrigation;";
 export const ISSUES_URL = REPO + "/issues";
 
@@ -91,3 +91,4 @@ export const ZONE_EXPLANATION = "explanation";
 export const ZONE_MULTIPLIER = "multiplier";
 export const ZONE_MAPPING = "mapping";
 export const ZONE_LEAD_TIME = "lead_time";
+export const ZONE_MAXIMUM_DURATION = "maximum_duration";

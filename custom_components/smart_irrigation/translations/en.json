@@ -75,6 +75,8 @@
         "precipitation-rate-variable": "precipitation_rate",
         "multiplier-is-applied": "Now, the multiplier is applied. The multiplier is",
         "duration-after-multiplier-is": "hence the duration is",
+        "maximum-duration-is-applied": "Then, the maximum duration is applied. The maximum duration is",
+        "duration-after-maximum-duration-is": "hence the duration is",
         "lead-time-is-applied": "Finally, the lead time is applied. The lead time is",
         "duration-after-lead-time-is": "hence the final duration is",
         "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Since bucket >= 0, no irrigation is necessary and duration is set to"

@@ -153,6 +153,7 @@
         "mapping": "Sensor Group",
         "bucket": "Bucket",
         "lead-time": "Lead time",
+        "maximum-duration": "Maximum duration",
         "multiplier": "Multiplier",
         "duration": "Duration"
       },

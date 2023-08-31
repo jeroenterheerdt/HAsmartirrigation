@@ -45,6 +45,7 @@ export const calculateZone = (
   return hass.callApi("POST", DOMAIN + "/zones", {
     id: zone_id,
     calculate: true,
+    override_cache: true,
   });
 };
 

@@ -69,6 +69,7 @@ export class SmartIrrigationZone {
   multiplier: number;
   mapping?: number;
   lead_time: number;
+  maximum_duration?: number;
 
   constructor(
     i: number,
@@ -92,6 +93,7 @@ export class SmartIrrigationZone {
     this.multiplier = 1.0;
     this.mapping = undefined;
     this.lead_time = 0;
+    this.maximum_duration = undefined;
   }
 }
 

@@ -153,6 +153,7 @@
         "mapping": "Sensorgroep",
         "bucket": "Voorraad",
         "lead-time": "Aanlooptijd",
+        "maximum-duration": "Maximale duur",
         "multiplier": "Vermenigvuldiger",
         "duration": "Irrigatieduur"
       },

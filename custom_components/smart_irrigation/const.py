@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2023.8.0-beta27"
+VERSION = "v2023.8.0-beta28"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -70,6 +70,7 @@ ATTR_SET_BUCKET = "set_bucket"
 ATTR_NEW_BUCKET_VALUE = "new_bucket_value"
 ATTR_UPDATE = "update"
 ATTR_UPDATE_ALL = "update_all"
+ATTR_OVERRIDE_CACHE = "override_cache"
 
 ZONE_ID = "id"
 ZONE_NAME = "name"
@@ -89,6 +90,7 @@ ZONE_EXPLANATION = "explanation"
 ZONE_MULTIPLIER = "multiplier"
 ZONE_MAPPING = "mapping"
 ZONE_LEAD_TIME = "lead_time"
+ZONE_MAXIMUM_DURATION = "maximum_duration"
 
 MODULE_DIR = "calcmodules"
 MODULE_ID = "id"

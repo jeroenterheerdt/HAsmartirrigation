@@ -1,5 +1,6 @@
 """Client to talk to Open Weather Map API."""  # pylint: disable=invalid-name
 
+import datetime
 import requests
 import json
 import logging
@@ -37,72 +38,84 @@ OWM_validators = {
 class OWMClient:  # pylint: disable=invalid-name
     """Open Weather Map Client."""
 
-    def __init__(self,api_key, api_version, latitude, longitude):
+    def __init__(self,api_key, api_version, latitude, longitude, cache_seconds=0, override_cache = False):
         """Init."""
         self.api_key = api_key.strip().replace(" ","")
         self.api_version = api_version.strip()
         self.longitude = longitude
         self.latitude = latitude
         self.url = OWM_URL.format(api_version, "metric", latitude, longitude, api_key)
+        #defaults to no cache
+        self.cache_seconds = cache_seconds
+        self.override_cache = override_cache
+        self._last_time_called = datetime.datetime(1900,1,1,0,0,0)
+        self._cached_data = None
 
     def get_data(self):
         """Validate and return data."""
-        try:
-            req = requests.get(self.url)
-            doc = json.loads(req.text)
-            if "cod" in doc:
-                if doc["cod"] != 200:
-                    raise IOError("Cannot talk to OWM API, check API key.")
-            if "daily" in doc:
-                data = doc["daily"][0]
-                for k in OWM_required_keys:
-                    if k not in data:
-                        self.raiseIOError(k)
-                    else:
-                        # check value
-                        if k is not OWM_temp_key_name:
-                            if (
-                                data[k] < OWM_validators[k]["min"]
-                                or data[k] > OWM_validators[k]["max"]
-                            ):
-                                self.validationError(
-                                    k,
-                                    data[k],
-                                    OWM_validators[k]["min"],
-                                    OWM_validators[k]["max"],
-                                )
-                        if k == OWM_wind_speed_key_name:
-                            # OWM reports wind speed at 10m height, so need to convert to 2m:
-                            doc["daily"][0][OWM_wind_speed_key_name] = doc["daily"][0][
-                                OWM_wind_speed_key_name
-                            ] * (4.87 / math.log((67.8 * 10) - 5.42))
-                if OWM_temp_key_name in data:
-                    for kt in OWM_required_key_temp:
-                        if kt not in data[OWM_temp_key_name]:
-                            self.raiseIOError(kt)
+        if self.override_cache or datetime.datetime.now() >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds):
+            try:
+                req = requests.get(self.url,timeout=60) #60 seconds timeout
+                doc = json.loads(req.text)
+                if "cod" in doc:
+                    if doc["cod"] != 200:
+                        raise IOError("Cannot talk to OWM API, check API key.")
+                if "daily" in doc:
+                    data = doc["daily"][0]
+                    for k in OWM_required_keys:
+                        if k not in data:
+                            self.raiseIOError(k)
                         else:
                             # check value
-                            if (
-                                data[OWM_temp_key_name][kt]
-                                < OWM_validators["temp"]["min"]
-                                or data[OWM_temp_key_name][kt]
-                                > OWM_validators["temp"]["max"]
-                            ):
-                                self.validationError(
-                                    kt,
-                                    data[OWM_temp_key_name][kt],
-                                    OWM_validators["temp"]["min"],
-                                    OWM_validators["temp"]["max"],
-                                )
-            else:
-                _LOGGER.warning(
-                    "Ignoring OWM input: missing required key 'daily' in OWM API return"
-                )
-                return None
-            return doc
-        except Exception as ex:
-            _LOGGER.warning(ex)
-            raise ex
+                            if k is not OWM_temp_key_name:
+                                if (
+                                    data[k] < OWM_validators[k]["min"]
+                                    or data[k] > OWM_validators[k]["max"]
+                                ):
+                                    self.validationError(
+                                        k,
+                                        data[k],
+                                        OWM_validators[k]["min"],
+                                        OWM_validators[k]["max"],
+                                    )
+                            if k == OWM_wind_speed_key_name:
+                                # OWM reports wind speed at 10m height, so need to convert to 2m:
+                                doc["daily"][0][OWM_wind_speed_key_name] = doc["daily"][0][
+                                    OWM_wind_speed_key_name
+                                ] * (4.87 / math.log((67.8 * 10) - 5.42))
+                    if OWM_temp_key_name in data:
+                        for kt in OWM_required_key_temp:
+                            if kt not in data[OWM_temp_key_name]:
+                                self.raiseIOError(kt)
+                            else:
+                                # check value
+                                if (
+                                    data[OWM_temp_key_name][kt]
+                                    < OWM_validators["temp"]["min"]
+                                    or data[OWM_temp_key_name][kt]
+                                    > OWM_validators["temp"]["max"]
+                                ):
+                                    self.validationError(
+                                        kt,
+                                        data[OWM_temp_key_name][kt],
+                                        OWM_validators["temp"]["min"],
+                                        OWM_validators["temp"]["max"],
+                                    )
+                else:
+                    _LOGGER.warning(
+                        "Ignoring OWM input: missing required key 'daily' in OWM API return"
+                    )
+                    return None
+                self._cached_data = doc
+                self._last_time_called = datetime.datetime.now()
+                return doc
+            except Exception as ex:
+                _LOGGER.warning(ex)
+                raise ex
+        else:
+            #return cached_data
+            _LOGGER.info("Returning cached OWM data")
+            return self._cached_data
 
     def raiseIOError(self, key):
         raise IOError("Missing required key {0} in OWM API return".format(key))
