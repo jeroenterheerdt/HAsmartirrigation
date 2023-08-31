@@ -105,16 +105,25 @@
           "precipitation-rate-variable": "Niederschlag",
           "multiplier-is-applied": "Der Multiplikator wird angewendet. Der Multiplikator ist",
           "duration-after-multiplier-is": "also ist die Dauer",
+          "maximum-duration-is-applied": "Dann wird die maximale Bewässerungsdauer angewendet. Die maximale Bewässerungsdauer ist",
+          "duration-after-maximum-duration-is": "hence the duration is",
           "lead-time-is-applied": "Zuletzt wird die Vorlaufzeit angewendet. Die Vorlaufzeit ist",
           "duration-after-lead-time-is": "also ist die Dauer",
           "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Wenn der Vorrat >= 0 ist, ist keine Bewässerung nötig und die Dauer ist gleich"
         }
       }
-    "static": {
-      "description": "Modul mit einer frei wählbaren Dauer"
     },
-    "passthrough": {
-      "description": "Gibt Werte eines Sensors für Evapotranspiration als Veränderung zurück"
+    "calcmodules": {
+      "pyeto": {
+        "description": "Die Berechnung der Dauer basiert auf der FAO56-Formel aus der PyETO-Bibliothek"
+      },
+      "static": {
+        "description": "'Dummy'-Modul mit einem statisch konfigurierbaren Delta"
+      },
+      "passthrough": {
+        "description": "Passthrough-Modul, das den Wert eines Evapotranspirationssensors als Delta zurückgibt"
+      }
     }
   }
 }
+  
