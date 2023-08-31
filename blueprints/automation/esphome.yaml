@@ -31,7 +31,7 @@ description: "Irrigation with ESPHome device"
 
 trigger:
   platform: event
-  event_type: smart_irrigation_start_all_zones
+  event_type: smart_irrigation_start_irrigation_all_zones
 
 condition:
   - condition: numeric_state
