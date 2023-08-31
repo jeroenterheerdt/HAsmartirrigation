@@ -62,7 +62,7 @@
     "module": {
       "calculation": {
         "explanation": {
-          "module-returned-evapotranspiration-deficiency": "Beachte: diese Beschreibung nutzt '.' als Dezimalzeichen. Das Modul berchnete einen Evapotranspirationsmangel von",
+          "module-returned-evapotranspiration-deficiency": "Beachte: diese Beschreibung nutzt '.' als Dezimaltrennzeichen. Das Modul berchnete einen Evapotranspirationsmangel von",
           "bucket-was": "Der alte Vorrat war",
           "new-bucket-values-is": "Der neue Vorrat ist",
           "old-bucket-variable": "alter_Vorrat",
