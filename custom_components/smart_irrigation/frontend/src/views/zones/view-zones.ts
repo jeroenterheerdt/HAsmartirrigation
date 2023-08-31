@@ -154,6 +154,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     index: number,
     updatedZone: SmartIrrigationZone
   ): void {
+    if (!this.hass) {
+      return;
+    }
     this.zones = Object.values(this.zones).map((zone, i) =>
       i === index ? updatedZone : zone
     );
@@ -164,7 +167,6 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    console.log("handleUpdateZone: " + index.toString());
     /*showConfirmationDialog(
       ev,
       "Are you sure you want to delete this zone?",
@@ -282,6 +284,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
           <path fill="#404040" d="${mdiUpdate}" />
         </svg>`;
       }
+
       return html`
         <ha-card header="${zone.name}">
           <div class="card-content">
@@ -432,7 +435,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 class="shortinput"
                 id="bucket${index}"
                 type="number"
-                .value="${zone.bucket}"
+                .value="${Number(zone.bucket).toFixed(1)}"
                 @input="${(e: Event) =>
                   this.handleEditZone(index, {
                     ...zone,
