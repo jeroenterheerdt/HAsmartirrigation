@@ -182,6 +182,7 @@ class SmartIrrigationStorage:
                         size=zone[ZONE_SIZE],
                         throughput=zone[ZONE_THROUGHPUT],
                         state=zone[ZONE_STATE],
+                        bucket=zone[ZONE_BUCKET],
                         duration=zone[ZONE_DURATION],
                         module=zone[ZONE_MODULE],
                         multiplier=zone[ZONE_MULTIPLIER],
