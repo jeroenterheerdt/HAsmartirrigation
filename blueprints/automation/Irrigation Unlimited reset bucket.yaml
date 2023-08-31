@@ -1,6 +1,6 @@
 blueprint:
-  name: Irrigation Unlimited --> Smart Irrigation reset bucket
-  description: Irrigation Unlimited --> Smart Irrigation reset bucket
+  name: Irrigation Unlimited --> Smart Irrigation reset bucket.
+  description: Irrigation Unlimited --> Smart Irrigation reset bucket.
   domain: automation
   input:
     irrigation_zone:

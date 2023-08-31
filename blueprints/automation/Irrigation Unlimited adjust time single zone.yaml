@@ -1,5 +1,5 @@
 blueprint:
-  name: Irrigation Unlimited adjust watering time.
+  name: Irrigation Unlimited adjust watering time for a single zone.
   description: Adjust watering times based on smart irrigation calculations.
   domain: automation
   input:
@@ -10,6 +10,14 @@ blueprint:
         entity:
           filter:
             - device_class: duration
+
+    unlimited_zone:
+      name: Unlimited Zone
+      description: Unlimited zone to irrigate
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
 
     time_on:
       name: Time to turn on
@@ -34,14 +42,7 @@ action:
   - service: irrigation_unlimited.adjust_time
     data:
       actual: "{{ timedelta(seconds=states('duration') | int(0)) }}"
-      # -------------------------------------------------------------------
-      # Please see documentation regarding the adjust_time service call.
-      # Choose an option below. Comment out/delete as needed. This will NOT work as is.
-      # 1. Adjust a single zone. Change the zone as required
-      # entity_id: binary_sensor.irrigation_unlimited_c1_z1
-      # 2. Adjust a sequence. Change the sequence_id as required
-      # entity_id: binary_sensor.irrigation_unlimited_c1_m
-      # sequence_id: 1
-      # -------------------------------------------------------------------
+      # 1. Adjust a single zone.
+      entity_id: !input unlimited_zone
 
 mode: single

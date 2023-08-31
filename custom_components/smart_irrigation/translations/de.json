@@ -85,6 +85,31 @@
     "pyeto": {
       "description": "Die Dauer wird mit der FAO56-Formel aus der PyETO Library berechnet"
     },
+    "defaults": {
+      "default-zone": "Standard Zone",
+      "default-mapping": "Standard Sensorgruppe"
+    },
+    "module": {
+      "calculation": {
+        "explanation": {
+          "module-returned-evapotranspiration-deficiency": "Beachte: diese Beschreibung nutzt '.' als Dezimaltrennzeichen. Das Modul berchnete einen Evapotranspirationsmangel von",
+          "bucket-was": "Der alte Vorrat war",
+          "new-bucket-values-is": "Der neue Vorrat ist",
+          "old-bucket-variable": "alter_Vorrat",
+          "delta": "Veränderung",
+          "bucket-less-than-zero-irrigation-necessary": "Wenn der Vorrat < 0 ist, ist eine Bewässerung nötig",
+          "steps-taken-to-calculate-duration": "Für eine exakte Berechnung der Dauer, wurden folgende Schritte durchgeführt",
+          "precipitation-rate-defined-as": "Der Niederschlag ist",
+          "duration-is-calculated-as": "Die Dauer ist",
+          "bucket": "Vorrat",
+          "precipitation-rate-variable": "Niederschlag",
+          "multiplier-is-applied": "Der Multiplikator wird angewendet. Der Multiplikator ist",
+          "duration-after-multiplier-is": "also ist die Dauer",
+          "lead-time-is-applied": "Zuletzt wird die Vorlaufzeit angewendet. Die Vorlaufzeit ist",
+          "duration-after-lead-time-is": "also ist die Dauer",
+          "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Wenn der Vorrat >= 0 ist, ist keine Bewässerung nötig und die Dauer ist gleich"
+        }
+      }
     "static": {
       "description": "Modul mit einer frei wählbaren Dauer"
     },
