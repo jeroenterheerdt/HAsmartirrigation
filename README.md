@@ -125,7 +125,7 @@ Below each zone there are some buttons to update, calculate or delete that zone.
 **Multi-zone support**: For irrigation systems that have multiple zones which you want to run in series (one after the other or independently), one zone must be created in each case. Of course, the configuration should be done for each zone, including the area the zone covers and the corresponding settings.
 
 #### MODULES
-Add one or more modules that calculate irrigation duration. Each module comes with its own configuration and can be used to calculate duration for one or more zones. Modules can't be deleted if they are used by one or more zones.
+Add one or more modules that calculate irrigation duration. Each module comes with its own configuration and can be used to calculate duration for one or more zones. The maximum duration of the weather forecast can also be set. Modules can't be deleted if they are used by one or more zones.
 
 - 0:PyETO: Calculate duration based on the FAO56 calculation from the PyETO library. 
   - If you set PyETO to not estimate, it will look for a solar radiation sensor in the sensor group and will use that value. If there is none, it will use OWMs value (assuming you have OWM configured).
