@@ -43,7 +43,7 @@ This is all the integration does, and this is on purpose to provide maximum flex
 
 4. Once a day (time is configurable) the `netto precipitation` is added/substracted from the `bucket,` which starts as empty. If the `bucket` is below zero, irrigation is required. 
 
-5. Irrigation should be run for `sensor.[zone_name]`, which is 0 if `bucket`  >=0. Afterwards, the `bucket` needs to be reset (using `reset_bucket`). It's up to the user of the integration to build the automation for this final step. See [Example automation](#step-4-creating-automation)
+5. Irrigation should be run for `sensor.[zone_name]`, which is 0 if `bucket`  >=0. Afterwards, the `bucket` needs to be reset (using `reset_bucket`). It's up to the user of the integration to build the automation for this final step. See [Example automation](#step-4-creating-automations)
 
 There are many more options available, see below. To understand how `precipitation`, `netto precipitation`, the `bucket` and irrigation interact, see [example behavior on the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week).
 
@@ -62,7 +62,7 @@ You can use this integration in various modes:
 When planning to set up mode 2 (Full Sensors), or mode 3 (Mixed) see [Measurements and Units](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Measurements-and-Units) for more information on the measurements and units expected by this integration.
 
 ## Getting the best Results
-In order to get the most accurate results using sensors is preferable either from your own weather station or from another, from example through [Weatherflow Smart Weather](https://github.com/briis/smartweather). If you have a weather station that provides evapotranspiration (ET) values, use that.  If you do not have access to a sensor that provides solar radiation, let this integration estimate it but use sensors for the other inputs. If you do have access to limited amount of sensors (say only temperature) use that and use Open Weather Map for the rest (mode 2). If you do not have access to any sensors at all use Open Weather Map (mode 1).
+In order to get the most accurate results using sensors is preferable either from your own weather station or from another, from example through [Weatherflow Smart Weather](https://github.com/briis/hass-weatherflow). If you have a weather station that provides evapotranspiration (ET) values, use that.  If you do not have access to a sensor that provides solar radiation, let this integration estimate it but use sensors for the other inputs. If you do have access to limited amount of sensors (say only temperature) use that and use Open Weather Map for the rest (mode 2). If you do not have access to any sensors at all use Open Weather Map (mode 1).
 
 Since this integration provides multiple configuration options it might get confusing about in which scenario what behavior can be expected and what input is required. In the table below we summarize the configuration modes, their accuracy, the required input and how daily run time is calculated. Keep in mind that run time is based on the netto precipitation (precipitation - evapotranspiration) and the bucket value for previous days.
 
@@ -135,7 +135,7 @@ You can change any value mentioned before. Additionaly there are some more optio
 - Multiplier: Multiplies the duration of the irrigation or divides if you do 0.5 for example.
 - Duration: Either calculated or manually set.
 
-Below each zone there are some buttons to update with weather date, calculate irrigation durationor to delete that zone. After a calculation there is also a button to get some information how duration was calculated.
+Below each zone there are some buttons to update with weather data, calculate irrigation duration or to delete that zone. After a calculation there is also a button to get some information how duration was calculated.
 
 #### MODULES
 
@@ -153,7 +153,7 @@ If you let PyETO to estimate from temperature or sun hours, it will not ask OWM 
 
 #### Sensor groups
 
-For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides. You can choose which sensors to use, the used value like average, maximum, minimum etc. 
+For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides. You can choose which sensors to use like average, maximum, minimum etc.
 
 #### HELP
 
@@ -161,14 +161,13 @@ Links to wiki, forum and issues.
 
 ### Step 3: Checking Services, Events and Entities
 
-After successful configuration, go to Settings -> Devices & Services and add the integration 'Smart Irrigation'
-You should end up with one device and one entity for each zone and their attributes, listed below as well as [eight services](#services).
+After successful configuration, go to Settings -> Devices & Services and add the integration 'Smart Irrigation'. You should end up with one device and one entity for each zone and their attributes, listed below as well as [eight services](#services).
 
 Once the integration is installed, the following entities, services and events will be available:
 
 #### Entities
 
-#### `sensor.[zone_name]`
+##### sensor.[zone_name]
 
 Attributes:
 
@@ -225,20 +224,19 @@ Here is an example automation that runs when the `smart_irrigation_start_irrigat
 ```
 - alias: Smart Irrigation
   description: 'Start Smart Irrigation at 06:00 and run it only if the `sensor.[zone_name]` is >0 and run it for precisely that many seconds'
-  trigger:
-  - at: 06:00
-    platform: time
-  condition:
-  - above: '0'
-    condition: numeric_state
+trigger:
+  - platform: event
+    event_type: smart_irrigation_start_irrigation_all_zones
+condition:
+  - condition: numeric_state
     entity_id: sensor.[zone_name]
+    above: 0
   action:
   - service: switch.turn_on
     data: {}
     entity_id: switch.irrigation_tap1
   - delay:
       seconds: '{{states("sensor.[zone_name"])}}'
-
   - service: switch.turn_off
     data: {}
     entity_id: switch.irrigation_tap1
