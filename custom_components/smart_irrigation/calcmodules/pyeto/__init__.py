@@ -33,6 +33,17 @@ DEFAULT_COASTAL = False
 DEFAULT_SOLRAD_BEHAVIOR = SOLRAD_behavior.EstimateFromTemp
 DEFAULT_FORECAST_DAYS = 0
 
+MAPPING_DEWPOINT = "Dewpoint"
+MAPPING_EVAPOTRANSPIRATION = "Evapotranspiration"
+MAPPING_HUMIDITY = "Humidity"
+MAPPING_MAX_TEMP = "Maximum Temperature"
+MAPPING_MIN_TEMP = "Minimum Temperature"
+MAPPING_PRECIPITATION = "Precipitation"
+MAPPING_PRESSURE = "Pressure"
+MAPPING_SOLRAD = "Solar Radiation"
+MAPPING_TEMPERATURE = "Temperature"
+MAPPING_WINDSPEED = "Windspeed"
+
 SCHEMA = vol.Schema(
     {
         vol.Optional(CONF_COASTAL, default=DEFAULT_COASTAL): vol.Coerce(bool), #is really required, but otherwise the UI shows a * near the checkbox
@@ -57,32 +68,27 @@ class PyETO(SmartIrrigationCalculationModule):
 
 
 
-    def calculate(self,weather_data, precip, sol_rad=None):
+    def calculate(self,weather_data, forecast_data):
         delta = 0
         deltas = []
         if weather_data:
-            if "daily" in weather_data:
-
-                #loop over the forecast days, ending at forecast days +1, so if forecast_days=0, we get one day
-                for x in range(self._forecast_days+1):
-                    deltas.append(self.calculate_et_for_day(weather_data,precip,sol_rad,x)) #calculate et for x's weather (0 is today, 1 is tomorrow, etc) and update delta
+            deltas.append(self.calculate_et_for_day(weather_data))
+            #loop over the forecast days
+            for x in range(self._forecast_days):
+                deltas.append(self.calculate_et_for_day(forecast_data[x]))
         #return average of the collected deltas
         delta = mean(deltas)
         return delta
 
-    def calculate_et_for_day(self,weather_data, precip,sol_rad=None,index=0):
-        if len(weather_data["daily"])-1 >= index:
-            weather_data = weather_data["daily"][index] #get index's days weather
-            if weather_data:
-                if "dew_point" in weather_data:
-                    tdew = weather_data["dew_point"]
-                if "temp" in weather_data:
-                    temp_c_min = weather_data["temp"]["min"]
-                    temp_c_max = weather_data["temp"]["max"]
-                if "wind_speed" in weather_data:
-                    wind_m_s = weather_data["wind_speed"]
-                if "pressure" in weather_data:
-                    atmos_pres = weather_data["pressure"]
+    def calculate_et_for_day(self,weather_data):
+        if weather_data:
+            tdew = weather_data.get(MAPPING_DEWPOINT)
+            temp_c_min = weather_data.get(MAPPING_MIN_TEMP)
+            temp_c_max = weather_data.get(MAPPING_MAX_TEMP)
+            wind_m_s = weather_data.get(MAPPING_WINDSPEED)
+            atmos_pres = weather_data.get(MAPPING_PRESSURE)
+            sol_rad = weather_data.get(MAPPING_SOLRAD)
+            precip = weather_data.get(MAPPING_PRECIPITATION)
             if tdew is not None and temp_c_min is not None and temp_c_max is not None and wind_m_s is not None and atmos_pres is not None:
                 day_of_year = datetime.datetime.now().timetuple().tm_yday
 

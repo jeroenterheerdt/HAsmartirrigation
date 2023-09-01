@@ -6,6 +6,8 @@ import json
 import logging
 import math
 
+from .const import MAPPING_DEWPOINT, MAPPING_HUMIDITY, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_TEMPERATURE, MAPPING_WINDSPEED
+
 _LOGGER = logging.getLogger(__name__)
 
 # Open Weather Map URL
@@ -14,15 +16,24 @@ OWM_URL = (
 )
 
 # Required OWM keys for validation
-OWM_temp_key_name = "temp"
 OWM_wind_speed_key_name = "wind_speed"
+OWM_pressure_key_name = "pressure"
+OWM_humidity_key_name = "humidity"
+OWM_temp_key_name = "temp"
+OWM_dew_point_key_name = "dew_point"
+
 OWM_required_keys = {
-    "wind_speed",
-    "dew_point",
+    OWM_wind_speed_key_name,
+    OWM_dew_point_key_name,
     OWM_temp_key_name,
-    "humidity",
-    "pressure",
+    OWM_humidity_key_name,
+    OWM_pressure_key_name,
 }
+
+max_temp_key_name = "max_temp"
+min_temp_key_name = "min_temp"
+precip_key_name = "precip"
+
 OWM_required_key_temp = {"day", "min", "max"}
 
 # Validators
@@ -50,24 +61,116 @@ class OWMClient:  # pylint: disable=invalid-name
         self.override_cache = override_cache
         self._last_time_called = datetime.datetime(1900,1,1,0,0,0)
         self._cached_data = None
+        self._cached_forecast_data = None
 
-    def get_data(self):
-        """Validate and return data."""
-        if self.override_cache or datetime.datetime.now() >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds):
+    def get_forecast_data(self):
+        """Validate and return forecast data"""
+        if self._cached_forecast_data is None or self.override_cache or datetime.datetime.now() >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds):
             try:
                 req = requests.get(self.url,timeout=60) #60 seconds timeout
                 doc = json.loads(req.text)
                 if "cod" in doc:
                     if doc["cod"] != 200:
                         raise IOError("Cannot talk to OWM API, check API key.")
+                #parse out values from daily
                 if "daily" in doc:
-                    data = doc["daily"][0]
+                    parsed_data_total = []
+                    #get the required values from daily.
+                    for x in range(1, len(doc["daily"])-1):
+                        data = doc["daily"][x]
+                        parsed_data = {}
+                        for k in OWM_required_keys:
+                            if k not in data:
+                                self.raiseIOError(k)
+                            else:
+                                # check value
+                                if k not in [OWM_wind_speed_key_name, OWM_temp_key_name]:
+                                    if (
+                                        data[k] < OWM_validators[k]["min"]
+                                        or data[k] > OWM_validators[k]["max"]
+                                    ):
+                                        self.validationError(
+                                            k,
+                                            data[k],
+                                            OWM_validators[k]["min"],
+                                            OWM_validators[k]["max"],
+                                        )
+                                elif k is OWM_temp_key_name:
+                                    for kt in OWM_required_key_temp:
+                                        if kt not in data[OWM_temp_key_name]:
+                                            self.raiseIOError(kt)
+                                        else:
+                                            # check value
+                                            if (
+                                                data[OWM_temp_key_name][kt]
+                                                < OWM_validators["temp"]["min"]
+                                                or data[OWM_temp_key_name][kt]
+                                                > OWM_validators["temp"]["max"]
+                                            ):
+                                                self.validationError(
+                                                    kt,
+                                                    data[OWM_temp_key_name][kt],
+                                                    OWM_validators["temp"]["min"],
+                                                    OWM_validators["temp"]["max"],
+                                                )
+                                elif k is OWM_wind_speed_key_name:
+                                    # OWM reports wind speed at 10m height, so need to convert to 2m:
+                                    data[OWM_wind_speed_key_name] = data[OWM_wind_speed_key_name] * (4.87 / math.log((67.8 * 10) - 5.42))
+                        parsed_data[MAPPING_WINDSPEED] = data[OWM_wind_speed_key_name]
+                        parsed_data[MAPPING_PRESSURE] = data[OWM_pressure_key_name]
+                        parsed_data[MAPPING_HUMIDITY] = data[OWM_humidity_key_name]
+                        parsed_data[MAPPING_TEMPERATURE] = data[OWM_temp_key_name]['day']
+                        #also put in min/max here
+                        parsed_data[MAPPING_MAX_TEMP] = data[OWM_temp_key_name]['max']
+                        parsed_data[MAPPING_MIN_TEMP] = data[OWM_temp_key_name]['min']
+                        parsed_data[MAPPING_DEWPOINT] = data[OWM_dew_point_key_name]
+                        #add precip from daily
+                        # if rain or snow are missing from the OWM data set them to 0
+                        rain = 0.0
+                        snow = 0.0
+                        parsed_data[MAPPING_PRECIPITATION] = 0.0
+                        if "rain" in data:
+                            rain = float(data["rain"])
+                        if "snow" in data:
+                            snow = float(data["snow"])
+                        parsed_data[MAPPING_PRECIPITATION] = rain+snow
+                        parsed_data_total.append(parsed_data)
+                    self._cached_forecast_data = parsed_data_total
+                    self._last_time_called = datetime.datetime.now()
+                    return parsed_data_total
+                else:
+                    _LOGGER.warning(
+                        "Ignoring OWM input: missing required key 'daily' in OWM API return"
+                    )
+                return None
+            except Exception as ex:
+                _LOGGER.warning(ex)
+                raise ex
+        else:
+            #return cached_data
+            _LOGGER.info("Returning cached OWM forecastdata")
+            return self._cached_forecast_data
+
+    def get_data(self):
+        """Validate and return data."""
+        if self._cached_data is None or self.override_cache or datetime.datetime.now() >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds):
+            try:
+                req = requests.get(self.url,timeout=60) #60 seconds timeout
+                doc = json.loads(req.text)
+                if "cod" in doc:
+                    if doc["cod"] != 200:
+                        raise IOError("Cannot talk to OWM API, check API key.")
+                #parse out values for current and rain/snow from daily[0].
+                if "current" in doc and "daily" in doc:
+                    parsed_data = {}
+                    #get the required values from current and daily.
+                    data = doc["current"]
                     for k in OWM_required_keys:
                         if k not in data:
                             self.raiseIOError(k)
                         else:
                             # check value
-                            if k is not OWM_temp_key_name:
+                            if k is not OWM_wind_speed_key_name:
                                 if (
                                     data[k] < OWM_validators[k]["min"]
                                     or data[k] > OWM_validators[k]["max"]
@@ -78,37 +181,39 @@ class OWMClient:  # pylint: disable=invalid-name
                                         OWM_validators[k]["min"],
                                         OWM_validators[k]["max"],
                                     )
-                            if k == OWM_wind_speed_key_name:
+                            elif k is OWM_wind_speed_key_name:
                                 # OWM reports wind speed at 10m height, so need to convert to 2m:
-                                doc["daily"][0][OWM_wind_speed_key_name] = doc["daily"][0][
-                                    OWM_wind_speed_key_name
-                                ] * (4.87 / math.log((67.8 * 10) - 5.42))
-                    if OWM_temp_key_name in data:
-                        for kt in OWM_required_key_temp:
-                            if kt not in data[OWM_temp_key_name]:
-                                self.raiseIOError(kt)
-                            else:
-                                # check value
-                                if (
-                                    data[OWM_temp_key_name][kt]
-                                    < OWM_validators["temp"]["min"]
-                                    or data[OWM_temp_key_name][kt]
-                                    > OWM_validators["temp"]["max"]
-                                ):
-                                    self.validationError(
-                                        kt,
-                                        data[OWM_temp_key_name][kt],
-                                        OWM_validators["temp"]["min"],
-                                        OWM_validators["temp"]["max"],
-                                    )
+                                data[OWM_wind_speed_key_name] = data[OWM_wind_speed_key_name] * (4.87 / math.log((67.8 * 10) - 5.42))
+                    parsed_data[MAPPING_WINDSPEED] = data[OWM_wind_speed_key_name]
+                    parsed_data[MAPPING_PRESSURE] = data[OWM_pressure_key_name]
+                    parsed_data[MAPPING_HUMIDITY] = data[OWM_humidity_key_name]
+                    parsed_data[MAPPING_TEMPERATURE] = data[OWM_temp_key_name]
+                    #also put in min/max here as just the current temp
+                    parsed_data[MAPPING_MAX_TEMP] = data[OWM_temp_key_name]
+                    parsed_data[MAPPING_MIN_TEMP] = data[OWM_temp_key_name]
+                    parsed_data[MAPPING_DEWPOINT] = data[OWM_dew_point_key_name]
+                    #add precip from daily
+                    dailydata = doc["daily"][0]
+                    if dailydata is not None:
+                        # if rain or snow are missing from the OWM data set them to 0
+                        rain = 0.0
+                        snow = 0.0
+                        if "rain" in dailydata:
+                            rain = float(dailydata["rain"])
+                        if "snow" in dailydata:
+                            snow = float(dailydata["snow"])
+                        parsed_data[MAPPING_PRECIPITATION] = rain+snow
+                    else:
+                        parsed_data[MAPPING_PRECIPITATION] = 0.0
+
+                    self._cached_data = parsed_data
+                    self._last_time_called = datetime.datetime.now()
+                    return parsed_data
                 else:
                     _LOGGER.warning(
-                        "Ignoring OWM input: missing required key 'daily' in OWM API return"
+                        "Ignoring OWM input: missing required key 'current' and 'daily' in OWM API return"
                     )
-                    return None
-                self._cached_data = doc
-                self._last_time_called = datetime.datetime.now()
-                return doc
+                return None
             except Exception as ex:
                 _LOGGER.warning(ex)
                 raise ex
@@ -126,32 +231,3 @@ class OWMClient:  # pylint: disable=invalid-name
                 value, key, minval, maxval
             )
         )
-
-    def get_precipitation(self,data):
-        """Parse out precipitation info from OWM data."""
-        if data is not None:
-            # if rain or snow are missing from the OWM data set them to 0
-            if "rain" in data:
-                self.rain = float(data["rain"])
-            else:
-                self.rain = 0
-            if "snow" in data:
-                self.snow = float(data["snow"])
-            else:
-                self.snow = 0
-            #_LOGGER.info(
-            #    "rain: {}, snow: {}".format(  # pylint: disable=logging-format-interpolation
-            #        self.rain, self.snow
-            #    )
-            #)
-            if isinstance(self.rain, str):
-                self.rain = 0
-            if isinstance(self.snow, str):
-                self.snow = 0
-            retval = self.rain + self.snow
-            if isinstance(retval, str):
-                if retval.count(".") > 1:
-                    retval = retval.split(".")[0] + "." + retval.split(".")[1]
-            retval = float(retval)
-            return retval
-        return 0.0
