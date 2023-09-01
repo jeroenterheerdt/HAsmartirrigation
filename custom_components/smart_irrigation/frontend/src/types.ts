@@ -93,7 +93,7 @@ export class SmartIrrigationZone {
     this.multiplier = 1.0;
     this.mapping = undefined;
     this.lead_time = 0;
-    this.maximum_duration = undefined;
+    this.maximum_duration = 3600; //default maximum duration to one hour = 3600 seconds
   }
 }
 

@@ -264,6 +264,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 _LOGGER.warning("Schedule auto calculate time is not valid: {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
                 raise ValueError("Time is not a valid time")
         else:
+            #set OWM client cache to 0
+            if self._OWMClient:
+                self._OWMClient.cache_seconds = 0
             #remove all time trackers
             if self._track_auto_calc_time_unsub:
                 self._track_auto_calc_time_unsub()
@@ -286,7 +289,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #track time X minutes
             the_time_delta = timedelta(minutes=interval)
         #update cache for OWMClient to time delta in seconds -1
-        self._OWMClient.cache_seconds = the_time_delta.total_seconds()-1
+        if self._OWMClient:
+            self._OWMClient.cache_seconds = the_time_delta.total_seconds()-1
 
         async_track_time_interval(self.hass, self._async_update_all,the_time_delta)
         _LOGGER.info("Scheduled auto update time interval for each {}".format(the_time_delta))

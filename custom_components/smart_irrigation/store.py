@@ -21,6 +21,7 @@ from .const import (
     CONF_DEFAULT_AUTO_UPDATE_TIME,
     CONF_DEFAULT_AUTO_UPDATED_ENABLED,
     CONF_DEFAULT_CALC_TIME,
+    CONF_DEFAULT_MAXIMUM_DURATION,
     CONF_DEFAULT_USE_OWM,
     CONF_IMPERIAL,
     CONF_METRIC,
@@ -96,7 +97,7 @@ class ZoneEntry:
     explanation = attr.ib(type=str,default=None)
     mapping = attr.ib(type=str,default=None)
     lead_time = attr.ib(type=float, default=None)
-    maximum_duration = attr.ib(type=float, default=None)
+    maximum_duration = attr.ib(type=float, default=CONF_DEFAULT_MAXIMUM_DURATION)
 
 @attr.s(slots=True, frozen=True)
 class ModuleEntry:
@@ -235,10 +236,10 @@ class SmartIrrigationStorage:
 
     async def async_factory_default_zones(self):
         new_zone1 = ZoneEntry(
-            **{ZONE_ID: 0, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 1", ZONE_SIZE: 50.5, ZONE_THROUGHPUT: 10.1,ZONE_MODULE:0,ZONE_MAPPING:0,ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION:None}
+            **{ZONE_ID: 0, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 1", ZONE_SIZE: 50.5, ZONE_THROUGHPUT: 10.1,ZONE_MODULE:0,ZONE_MAPPING:0,ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION:CONF_DEFAULT_MAXIMUM_DURATION}
         )
         new_zone2 = ZoneEntry(
-            **{ZONE_ID: 1, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 2", ZONE_SIZE: 100.1, ZONE_THROUGHPUT: 20.2,ZONE_MODULE:0,ZONE_MAPPING: 0, ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION: None}
+            **{ZONE_ID: 1, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 2", ZONE_SIZE: 100.1, ZONE_THROUGHPUT: 20.2,ZONE_MODULE:0,ZONE_MAPPING: 0, ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION: CONF_DEFAULT_MAXIMUM_DURATION}
         )
         self.zones[0] = new_zone1
         self.zones[1] = new_zone2

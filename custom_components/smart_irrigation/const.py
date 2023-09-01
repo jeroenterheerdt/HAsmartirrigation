@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2023.8.0-beta29"
+VERSION = "v2023.9.0-beta1"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -52,6 +52,7 @@ CONF_UNITS = "units"
 CONF_IMPERIAL = "imperial"
 CONF_METRIC = "metric"
 CONF_USE_OWM = "use_owm"
+CONF_DEFAULT_MAXIMUM_DURATION = 3600 #default maximum duration to one hour == 3600 seconds
 
 CUSTOM_COMPONENTS = "custom_components"
 INTEGRATION_FOLDER = DOMAIN
