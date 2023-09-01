@@ -99,17 +99,26 @@ Specify one or more irrigation zones here. The integration calculates irrigation
 
 > **When entering any values in the configuration of this integration, keep in mind that the integration will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).
 
+**Multi-zone support**: For irrigation systems that have multiple zones which you want to run in series or independently, one zone must be created in each case. Of course, the configuration should be done for each zone, including the area the zone covers and the corresponding settings.
+
+**Add Zone**
 - Name: The name of your zone, e.g. garden
 - Size: The size of this zone (m<sup>2</sup> or sq ft)
 - Throughput: The flow of this zone (liter/minute or gallon/minute)
-- Bucket: You can manipulate this calculated value.
-- Lead Time: In seconds. Time needed to warm up your irrigation system, e.g. time to establish a connection or start a pump etc.
 
 You can update and calculate all automatic zones.
 
-**Per Zone Settings**
-You can change any value mentioned before. Additionaly there are some more options.
+**Actions on all Zones**
+- Update all zones with weather data from sensors.
+- Calculate irrigation duration for all zones.
 
+**Per Zone Settings**
+You can change any value mentioned before. Additionaly there are some more options. 
+
+
+- Name: change the name of a zone
+- Size: change the size of a zone
+- Throughput: change the throughput of a zone
 - State: 
   - 'Automatic': Automatic updating and calculation of that zone. Module and sensor group is mandatory.
   - 'Manual': Only manual updating and calculation of that zone. No module and sensor group is required.
@@ -117,15 +126,15 @@ You can change any value mentioned before. Additionaly there are some more optio
 - Module: Choose the calculation module (see below) shall be used for that zone to calculate irrigation duration.
 - Sensor group: Which sensor group (see below) shall be used for that zone.
 - Bucket: Either calculated or manually set. Bucket >=0 no irrigation is necesarry, bucket <0 irrigation is necesarry.
+- Lead Time: In seconds. Time needed to warm up your irrigation system, e.g. time to establish a connection or start a pump etc.
+- Maximum duration: The maximum duration of the irrigation, to avoid flooding.
 - Multiplier: Multiplies the duration of the irrigation or divides if you do 0.5 for example.
 - Duration: Either calculated or manually set.
 
-Below each zone there are some buttons to update, calculate or delete that zone.
-
-**Multi-zone support**: For irrigation systems that have multiple zones which you want to run in series (one after the other or independently), one zone must be created in each case. Of course, the configuration should be done for each zone, including the area the zone covers and the corresponding settings.
+Below each zone there are some buttons to update with weather date, calculate irrigation durationor to delete that zone. After a calculation there is also a button to get some information how duration was calculated.
 
 #### MODULES
-Add one or more modules that calculate irrigation duration. Each module comes with its own configuration and can be used to calculate duration for one or more zones. The maximum duration of the weather forecast can also be set. Modules can't be deleted if they are used by one or more zones.
+Add one or more modules that calculate irrigation duration. Each module comes with its own configuration and can be used to calculate duration for one or more zones. The maximum days of the weather forecast can also be set. Modules can't be deleted if they are used by one or more zones.
 
 - 0:PyETO: Calculate duration based on the FAO56 calculation from the PyETO library. 
   - If you set PyETO to not estimate, it will look for a solar radiation sensor in the sensor group and will use that value. If there is none, it will use OWMs value (assuming you have OWM configured).
@@ -138,7 +147,7 @@ If you let PyETO to estimate from temperature or sun hours, it will not ask OWM 
 - Passthrough: Passthrough module returns the value of an evapotranspiration sensor as delta.  
 
 #### Sensor groups
-For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides.
+For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides. You can choose which sensors to use, the used value like average, maximum, minimum etc. 
 
 #### HELP
 Links to wiki, forum and issues.
