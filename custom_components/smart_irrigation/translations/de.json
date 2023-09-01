@@ -1,10 +1,10 @@
 {
   "config": {
     "abort": {
-      "single_instance_allowed": "Es ist nur eine Integration für Smart Irrigation erlaubt."
+      "single_instance_allowed": "Es ist nur eine Integration für Smart Irrigation zulässig."
     },
     "error": {
-      "auth": "Open Weather API Key oder Version falsch",
+      "auth": "Open Weather API Key oder Version falsch.",
       "name": "Geben Sie einen eindeutigen Namen für die Integration ein."
     },
     "step": {
@@ -13,7 +13,7 @@
         "description": "Falls Sie Hilfe benötigen, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Eindeutiger Namen der Integration",
-          "use_owm": "Wollen Sie Open Weather Map für Wetterdaten oder -vorhersagen nutzen? Deaktivieren Sie diesen Dienst, wenn Sie ausschließlich Ihre eigene Wetterstation nutzern wollen. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktivieren Sie diesen Dienst, falls Sie beabsichtigen, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen nutzen wollen."
+          "use_owm": "Wollen Sie Open Weather Map für Wetterdaten und/oder Vorhersagen nutzen? Deaktivieren Sie diesen Dienst, wenn Sie ausschließlich Ihre eigene Wetterstation nutzen wollen. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktivieren Sie diesen Dienst, falls Sie beabsichtigen, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen nutzen zu wollen."
         }
       },
       "step1": {
@@ -28,14 +28,14 @@
   },
   "options": {
     "error": {
-      "auth": "Open Weather API Key oder Version falsch"
+      "auth": "Open Weather API Key oder Version falsch."
     },
     "step": {
       "init": {
         "title": "Open Weather Map API Einstellungen",
         "description": "Falls Sie Hilfe benötigen, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "use_owm": "Wollen Sie Open Weather Map für Wetterdaten oder -vorhersagen nutzen? Deaktivieren Sie diesen Dienst, wenn Sie ausschließlich Ihre eigene Wetterstation nutzern wollen. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktivieren Sie diesen Dienst, falls Sie beabsichtigen, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen nutzen wollen."
+          "use_owm": "Wollen Sie Open Weather Map für Wetterdaten oder -vorhersagen nutzen? Deaktivieren Sie diesen Dienst, wenn Sie ausschließlich Ihre eigene Wetterstation nutzern wollen. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktivieren Sie diesen Dienst, falls Sie beabsichtigen, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen nutzen zu wollen."
         }
       },
       "step1": {
@@ -62,12 +62,12 @@
   "module": {
     "calculation": {
       "explanation": {
-        "module-returned-evapotranspiration-deficiency": "Beachte: diese Beschreibung nutzt '.' als Dezimalzeichen and shows rounded values. Das Modul berchnete einen Evapotranspirationsmangel von",
+        "module-returned-evapotranspiration-deficiency": "Beachte: diese Beschreibung nutzt '.' als Dezimalzeichen und zeigt gerundete Werte. Das Modul berchnete einen Evapotranspirationsmangel von",
         "bucket-was": "Der alte Vorrat war",
         "new-bucket-values-is": "Der neue Vorrat ist",
         "old-bucket-variable": "alter_Vorrat",
         "delta": "Veränderung",
-        "bucket-less-than-zero-irrigation-necessary": "Wenn der Vorrat < 0 ist, ist eine Bewässerung nötig",
+        "bucket-less-than-zero-irrigation-necessary": "Wenn der Vorrat < 0 ist, ist eine Bewässerung nötig.",
         "steps-taken-to-calculate-duration": "Für eine exakte Berechnung der Dauer, wurden folgende Schritte durchgeführt",
         "precipitation-rate-defined-as": "Der Niederschlag ist",
         "duration-is-calculated-as": "Die Dauer ist",
@@ -77,7 +77,8 @@
         "duration-after-multiplier-is": "also ist die Dauer",
         "lead-time-is-applied": "Zuletzt wird die Vorlaufzeit angewendet. Die Vorlaufzeit ist",
         "duration-after-lead-time-is": "also ist die Dauer",
-        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Wenn der Vorrat >= 0 ist, ist keine Bewässerung nötig und die Dauer ist gleich"
+        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Wenn der Vorrat >= 0 ist, ist keine Bewässerung nötig und die Dauer ist gleich",
+        "maximum-duration-is-applied": "Die maximale Dauer wird angewendet. Diese ist"
       }
     }
   },
@@ -100,13 +101,13 @@
           "bucket-less-than-zero-irrigation-necessary": "Wenn der Vorrat < 0 ist, ist eine Bewässerung nötig",
           "steps-taken-to-calculate-duration": "Für eine exakte Berechnung der Dauer, wurden folgende Schritte durchgeführt",
           "precipitation-rate-defined-as": "Der Niederschlag ist",
-          "duration-is-calculated-as": "Die Dauer ist",
+          "duration-is-calculated-as": "Die berechnete Dauer ist",
           "bucket": "Vorrat",
           "precipitation-rate-variable": "Niederschlag",
           "multiplier-is-applied": "Der Multiplikator wird angewendet. Der Multiplikator ist",
           "duration-after-multiplier-is": "also ist die Dauer",
           "maximum-duration-is-applied": "Dann wird die maximale Bewässerungsdauer angewendet. Die maximale Bewässerungsdauer ist",
-          "duration-after-maximum-duration-is": "hence the duration is",
+          "duration-after-maximum-duration-is": "also ist die Dauer",
           "lead-time-is-applied": "Zuletzt wird die Vorlaufzeit angewendet. Die Vorlaufzeit ist",
           "duration-after-lead-time-is": "also ist die Dauer",
           "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Wenn der Vorrat >= 0 ist, ist keine Bewässerung nötig und die Dauer ist gleich"
@@ -118,12 +119,17 @@
         "description": "Die Berechnung der Dauer basiert auf der FAO56-Formel aus der PyETO-Bibliothek"
       },
       "static": {
-        "description": "'Dummy'-Modul mit einem statisch konfigurierbaren Delta"
+        "description": "'Dummy'-Modul mit einer statisch konfigurierbaren Veränderung."
       },
       "passthrough": {
-        "description": "Passthrough-Modul, das den Wert eines Evapotranspirationssensors als Delta zurückgibt"
+        "description": "Passthrough-Modul, das den Wert eines Evapotranspirationssensors als Delta zurückgibt."
       }
+    },
+    "static": {
+      "description": "'Dummy'-Modul mit einer statisch konfigurierbaren Veränderung."
+    },
+    "passthrough": {
+      "description": "Passthrough-Modul, das den Wert eines Evapotranspirationssensors als Veränderung zurückgibt."
     }
   }
 }
-  

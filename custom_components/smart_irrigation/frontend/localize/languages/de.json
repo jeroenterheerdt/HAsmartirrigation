@@ -1,171 +1,170 @@
 {
-    "common": {
-      "labels": {
-        "yes": "Ja",
-        "no": "Nein",
-        "module": "Modul",
-        "select": "Wähle"
-      },
-      "actions": {
-        "delete": "Lösche"
-      }
+  "common": {
+    "actions": {
+      "delete": "Lösche"
     },
-    "title": "Smart Irrigation",
-    "panels": {
-      "general": {
-        "title": "Allgemein",
-        "description": "Diese Seite bietet allgemeine Einstellungen.",
-        "cards": {
-          "automatic-duration-calculation": {
-            "header": "Automatische Berechnung der Bewässerungsdauer",
-            "labels": {
-              "auto-calc-enabled": "Automatische Berechnung der Dauer pro Zone",
-              "auto-calc-time": "Calculate at"
-            }
-          },
-          "automatic-update": {
-            "header": "Automatische Aktualisierung der Wetterdaten",
-            "labels": {
-              "auto-update-enabled": "Automatisches Update der Wetterdaten",
-              "auto-update-interval": "Update der Sensordaten alle",
-              "auto-update-first-update": "(Erster) Update um"
-            },
-            "options": {
-              "minutes": "Minuten",
-              "hours": "Stunden",
-              "days": "Tage"
-            },
-            "errors": {
-              "warning-update-time-on-or-after-calc-time": "Hinweis: Die automatische Aktualisierung der Wetterdaten erfolgt bei oder nach der automatischen Berechnung der Bewässerungszeit"
-            }
-          }
-        }
-      },
-      "modules": {
-        "title": "Module",
-        "description": "Fügen Sie ein oder mehrere Module hinzu. Module berechnen die Bewässerungszeit. Jedes Modul hat seine eigene Konfiguration und kann zur Berechnung der Bewässerungszeit für eine oder mehrere Zonen verwendet werden",
-        "no_items": "Es sind noch kein Module vorhanden.",
-        "cards": {
-          "add-module": {
-            "header": "Modul hinzufügen",
-            "actions": {
-              "add": "Hinzufügen"
-            }
-          },
-          "module": {
-            "labels": {
-              "configuration": "Konfiguration",
-              "required": "Feld ist erforderlich"
-            },
-            "translated-options": {
-              "EstimateFromTemp": "Basierend auf der Temperatur",
-              "EstimateFromSunHours": "Basierend auf den Sonnenstunden",
-              "DontEstimate": "Nicht berechnen"
-            },
-            "errors": {
-              "cannot-delete-module-because-zones-use-it": "Dieses Modul kann nicht entfernt werden, da es von mindestens einer Zone verwendet wird"
-            }
-          }
-        }
-      },
-      "mappings": {
-        "title": "Sensorgruppen",
-        "description": "Fügen Sie einen oder mehrere Sensorgruppen hinzu, die Wetterdaten von OpenWeatherMap, von Sensoren oder einer Kombination daraus abrufen. Jede Sensorgruppe kann für eine oder mehrere Zonen verwendet werden",
-        "no_items": "Es ist noch keine Sensorgruppe vorhanden.",
-        "cards": {
-          "add-mapping": {
-            "header": "Sensorgruppe hinzufügen",
-            "actions": {
-              "add": "Hinzufügen"
-            }
-          },
-          "mapping": {
-            "source": "Quelle",
-            "sources": {
-              "openweathermap": "OpenWeatherMap",
-              "sensor": "Sensor",
-              "none": "Kein"
-            },
-            "items": {
-              "dewpoint": "Taupunkt",
-              "evapotranspiration": "Verdunstung",
-              "humidity": "Feuchtigkeit",
-              "maximum temperature": "Maximum-Temperatur",
-              "minimum temperature": "Minimum-Temperatur",
-              "precipitation": "Gesamtniederschlag",
-              "pressure": "Luftdruck",
-              "solar radiation": "Sonnenstrahlung",
-              "temperature": "Temperatur",
-              "windspeed": "Windgeschwindikeit"
-            },
-            "sensor-entity": "Sensor Entität",
-            "sensor-units": "Sensor liefert Werte in",
-            "sensor-aggregate-use-the": "Nutze den/die/das",
-            "sensor-aggregate-of-sensor-values-to-calculate": "des Sensorwertes um die Bewässerungsdauer zu berechnen",
-            "aggregates": {
-              "average": "Durchschnitt",
-              "minimum": "Minimum",
-              "maximum": "Maximum",
-              "first": "Erster",
-              "last": "Letzter",
-              "median": "Median",
-              "sum": "Summe"
-            },
-            "errors": {
-              "cannot-delete-mapping-because-zones-use-it": "Diese Sensorgruppe kann nicht entfernt werden, da sie von mindestens einer Zone verwendet wird"
-            }
-          }
-        },
-        "labels": {
-          "mapping-name": "Name"
-        }
-      },
-      "zones": {
-        "title": "Zonen",
-        "description": "Fügen Sie eine oder mehrere Zonen hinzu. Die Bewässerungszeit wird pro Zone, abhängig von Größe, Durchsatz, Status, Modul und Sensorgruppe berechnet.",
-        "no_items": "Es sind noch kein Zonen vorhanden.",
-        "cards": {
-          "add-zone": {
-            "header": "Zone hinzufügen",
-            "actions": {
-              "add": "Hinzufügen"
-            }
-          },
-          "zone-actions": {
-            "header": "Aktionen für alle Zonen",
-            "actions": {
-              "update-all": "Alle Zonen updaten",
-              "calculate-all": "All Zonen berechnen"
-            }
-          }
-        },
-        "labels": {
-          "name": "Name",
-          "size": "Größe",
-          "throughput": "Durchfluss",
-          "state": "Zustand",
-          "states": {
-            "disabled": "Aus",
-            "manual": "Manuell",
-            "automatic": "Automatisch"
-          },
-  
-          "mapping": "Sensor Gruppe",
-          "bucket": "Vorrat",
-          "lead-time": "Anlaufzeit",
-          "multiplier": "Multiplikator",
-          "duration": "Dauer"
-        },
-        "actions": {
-          "add": "Hinzufügen",
-          "calculate": "Berechnen",
-          "update": "Update",
-          "information": "Information"
-        }
-      },
-      "help": {
-        "title": "Hilfe"
-      }
+    "labels": {
+      "module": "Modul",
+      "no": "Nein",
+      "select": "Wähle",
+      "yes": "Ja"
     }
-  }
-  
+  },
+  "panels": {
+    "general": {
+      "cards": {
+        "automatic-duration-calculation": {
+          "header": "Automatische Berechnung der Bewässerungsdauer",
+          "labels": {
+            "auto-calc-enabled": "Automatische Berechnung der Dauer pro Zone",
+            "auto-calc-time": "Calculate at"
+          }
+        },
+        "automatic-update": {
+          "errors": {
+            "warning-update-time-on-or-after-calc-time": "Hinweis: Die automatische Aktualisierung der Wetterdaten erfolgt bei oder nach der automatischen Berechnung der Bewässerungszeit"
+          },
+          "header": "Automatische Aktualisierung der Wetterdaten",
+          "labels": {
+            "auto-update-enabled": "Automatisches Update der Wetterdaten",
+            "auto-update-first-update": "(Erster) Update um",
+            "auto-update-interval": "Update der Sensordaten alle"
+          },
+          "options": {
+            "days": "Tage",
+            "hours": "Stunden",
+            "minutes": "Minuten"
+          }
+        }
+      },
+      "description": "Diese Seite ist für allgemeine Einstellungen.",
+      "title": "Allgemein"
+    },
+    "help": {
+      "title": "Hilfe"
+    },
+    "mappings": {
+      "cards": {
+        "add-mapping": {
+          "actions": {
+            "add": "Hinzufügen"
+          },
+          "header": "Sensorgruppe hinzufügen"
+        },
+        "mapping": {
+          "aggregates": {
+            "average": "Durchschnitt",
+            "first": "Erster",
+            "last": "Letzter",
+            "maximum": "Maximum",
+            "median": "Median",
+            "minimum": "Minimum",
+            "sum": "Summe"
+          },
+          "errors": {
+            "cannot-delete-mapping-because-zones-use-it": "Diese Sensorgruppe kann nicht entfernt werden, da sie von mindestens einer Zone verwendet wird."
+          },
+          "items": {
+            "dewpoint": "Taupunkt",
+            "evapotranspiration": "Verdunstung",
+            "humidity": "Feuchtigkeit",
+            "maximum temperature": "Maximum-Temperatur",
+            "minimum temperature": "Minimum-Temperatur",
+            "precipitation": "Gesamtniederschlag",
+            "pressure": "Luftdruck",
+            "solar radiation": "Sonnenstrahlung",
+            "temperature": "Temperatur",
+            "windspeed": "Windgeschwindikeit"
+          },
+          "sensor-aggregate-of-sensor-values-to-calculate": "des Sensorwertes, um die Bewässerungsdauer zu berechnen.",
+          "sensor-aggregate-use-the": "Nutze den/die/das",
+          "sensor-entity": "Sensor Entität",
+          "sensor-units": "Sensor Werte in",
+          "source": "Quelle",
+          "sources": {
+            "none": "Kein",
+            "openweathermap": "OpenWeatherMap",
+            "sensor": "Sensor"
+          }
+        }
+      },
+      "description": "Fügen Sie einen oder mehrere Sensorgruppen hinzu, die Wetterdaten von OpenWeatherMap, von Sensoren oder einer Kombination daraus abrufen. Jede Sensorgruppe kann für eine oder mehrere Zonen verwendet werden",
+      "labels": {
+        "mapping-name": "Name"
+      },
+      "no_items": "Es ist noch keine Sensorgruppe vorhanden.",
+      "title": "Sensorgruppen"
+    },
+    "modules": {
+      "cards": {
+        "add-module": {
+          "actions": {
+            "add": "Hinzufügen"
+          },
+          "header": "Modul hinzufügen"
+        },
+        "module": {
+          "errors": {
+            "cannot-delete-module-because-zones-use-it": "Dieses Modul kann nicht entfernt werden, da es von mindestens einer Zone verwendet wird."
+          },
+          "labels": {
+            "configuration": "Konfiguration",
+            "required": "Feld ist erforderlich"
+          },
+          "translated-options": {
+            "DontEstimate": "Nicht berechnen",
+            "EstimateFromSunHours": "Basierend auf den Sonnenstunden",
+            "EstimateFromTemp": "Basierend auf der Temperatur"
+          }
+        }
+      },
+      "description": "Fügen Sie ein oder mehrere Module hinzu. Module berechnen die Bewässerungszeit. Jedes Modul hat seine eigene Konfiguration und kann zur Berechnung der Bewässerungszeit für eine oder mehrere Zonen verwendet werden.",
+      "no_items": "Es sind noch kein Module vorhanden.",
+      "title": "Module"
+    },
+    "zones": {
+      "actions": {
+        "add": "Hinzufügen",
+        "calculate": "Bewässerungsdauer berechnen.",
+        "information": "Information",
+        "update": "Wetterdaten aktualisieren."
+      },
+      "cards": {
+        "add-zone": {
+          "actions": {
+            "add": "Hinzufügen"
+          },
+          "header": "Zone hinzufügen"
+        },
+        "zone-actions": {
+          "actions": {
+            "calculate-all": "Alle Zonen berechnen",
+            "update-all": "Alle Zonen aktualisieren"
+          },
+          "header": "Aktionen für alle Zonen"
+        }
+      },
+      "description": "Fügen Sie eine oder mehrere Zonen hinzu. Die Bewässerungszeit wird pro Zone, abhängig von Größe, Durchsatz, Status, Modul und Sensorgruppe berechnet.",
+      "labels": {
+        "bucket": "Vorrat",
+        "duration": "Dauer",
+        "lead-time": "Anlaufzeit",
+        "mapping": "Sensorgruppe",
+        "maximum-duration": "Maximale Dauer",
+        "multiplier": "Multiplikator",
+        "name": "Name",
+        "size": "Größe",
+        "state": "Berechnung",
+        "states": {
+          "automatic": "Automatisch",
+          "disabled": "Aus",
+          "manual": "Manuell"
+        },
+        "throughput": "Durchfluss"
+      },
+      "no_items": "Es ist noch keine Zone vorhanden.",
+      "title": "Zonen"
+    }
+  },
+  "title": "Smart Irrigation"
+}
