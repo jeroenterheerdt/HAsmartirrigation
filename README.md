@@ -12,6 +12,7 @@
 
 
 # Smart Irrigation
+
 ![](logo.png?raw=true)
 
 This integration calculates the time to run your irrigation system to compensate for moisture loss by [evaporation](https://en.wikipedia.org/wiki/Evaporation) and [evapotranspiration](https://en.wikipedia.org/wiki/Evapotranspiration). Using this integration you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and evapotranspiration and adjusts accordingly, so if it rains or snows less or no irrigation is required including optinal weather forecast. Multiple zones can be supported as each zone will have its own flow configuration. 
@@ -31,6 +32,7 @@ This is all the integration does, and this is on purpose to provide maximum flex
 > **Note - use this integration at your own risk - we do not assume responsibility for any inconvience caused by using this integration. Always use common sense before deciding to irrigate using the calculations this integration provides. For example, irrigating during excessive rainfall might cause flooding. Again - we assume no responsibility for any inconvience caused.**
 
 ## Visual Representation of what this integration does
+
 ![](images/smart_irrigation_diagram.png?raw=true)
 
 1. Snow and rain fall on the ground add moisture. This is tracked/predicted depending on the [operation mode](#operation-modes) by the `rain` and `snow` attributes Together, this makes up the `precipitation`.
@@ -46,6 +48,7 @@ This is all the integration does, and this is on purpose to provide maximum flex
 There are many more options available, see below. To understand how `precipitation`, `netto precipitation`, the `bucket` and irrigation interact, see [example behavior on the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week).
 
 ## Operation Modes
+
 You can use this integration in various modes:
 
 1. **Full Open Weather Map**. In this mode all data comes from the Open Weather Map service. You will need to create and provide an API key. See [Getting Open Weater Map API Key](#getting-open-weather-map-api-key) below for instructions.
@@ -70,7 +73,6 @@ Since this integration provides multiple configuration options it might get conf
 |Mode 3 - Mixed|Medium|API key is required for any inputs that have not been provided sensors. All inputs are expected to be point-in-time, *except precipitation*. That sensor is normally provided by a weather station or weather service as a 'total precipitation today' sensor and that is what is expected by the integration|If a sensor is provided for precipitation, most recent value for precipitation is used. Otherwise the average of both precipitation and evapotranspiration.|
 |Mode 4 -Not calculating|Very high|In this mode, just two sensors are required: one for precipitation and one for evapotranspiration. Both are expected to be daily accumulative sensors ('total today'), as is normally the case when provided by a dedicated weather service or weather station.|Most recent value of both precipitation and evapotranspiration.|
 
-
 ## Configuration
 
 In this section:
@@ -81,20 +83,23 @@ In this section:
 - [Creating automations](#step-4-creating-automations)
 
 ### Step 1: Installation
+
 Install the custom integration (preferably using HACS). In your sidebar you will find a new entry for panel 'Smart Irrigation'
 
 - API Key for Open Weather Map (optional). Only required in mode 1 and 3. See [Getting Open Weather Map API Key](#getting-open-weather-map-api-key) below for instructions.
 
-
 ### Step 2: Configuration
+
 You will need to specify the following:
 
 #### GENERAL
+
 This page provides global settings.
 - Automatic duration calculation: If enabled set the time of calculation (HH:MM).
 - Automatic weather data update: If enabled specify how often sensor update should happen (minutes, hours, days). Warning: weatherdata update time must be on or after calculation time! 
 
 #### ZONES
+
 Specify one or more irrigation zones here. The integration calculates irrigation duration per zone, depending on size, throughput, state, module and sensor group. A zone can be _disabled_ (so it doesn't do anything), _automatic_ or _manual_. If in automatic, duration is automatically calculated. If in manual, you specify the duration yourself. If disabled, the zone is not included in any calculation.
 
 > **When entering any values in the configuration of this integration, keep in mind that the integration will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).
@@ -115,7 +120,6 @@ You can update and calculate all automatic zones.
 **Per Zone Settings**
 You can change any value mentioned before. Additionaly there are some more options. 
 
-
 - Name: change the name of a zone
 - Size: change the size of a zone
 - Throughput: change the throughput of a zone
@@ -134,6 +138,7 @@ You can change any value mentioned before. Additionaly there are some more optio
 Below each zone there are some buttons to update with weather date, calculate irrigation durationor to delete that zone. After a calculation there is also a button to get some information how duration was calculated.
 
 #### MODULES
+
 Add one or more modules that calculate irrigation duration. Each module comes with its own configuration and can be used to calculate duration for one or more zones. The maximum days of the weather forecast can also be set. Modules can't be deleted if they are used by one or more zones.
 
 - 0:PyETO: Calculate duration based on the FAO56 calculation from the PyETO library. 
@@ -147,18 +152,22 @@ If you let PyETO to estimate from temperature or sun hours, it will not ask OWM 
 - Passthrough: Passthrough module returns the value of an evapotranspiration sensor as delta.  
 
 #### Sensor groups
+
 For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides. You can choose which sensors to use, the used value like average, maximum, minimum etc. 
 
 #### HELP
+
 Links to wiki, forum and issues.
 
 ### Step 3: Checking Services, Events and Entities
+
 After successful configuration, go to Settings -> Devices & Services and add the integration 'Smart Irrigation'
 You should end up with one device and one entity for each zone and their attributes, listed below as well as [eight services](#services).
 
 Once the integration is installed, the following entities, services and events will be available:
 
 #### Entities
+
 #### `sensor.[zone_name]`
 
 Attributes:
@@ -200,10 +209,12 @@ Sample screenshot:
 The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) describes the entities, the attributes and the calculations.
 
 #### Showing other Attributes as Entities (Sensors)
+
 [See the Wiki for more information on how to expose other values this integrations calculates as sensors](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Showing-other-sensors).
 
 
 ### Step 4: Creating Automations
+
 Since this integration does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom integration with any irrigation system you might have, regardless of how that interfaces with Home Assistant. In order for this to work correctly, you should base your automation on the value of `sensor.[zone_name]` as long as you run your automation after it was updated (e.g. 11:00 PM/23:00 hours local time). If that value is above 0 it is time to irrigate. Note that the value is the run time in seconds. Also, after irrigation, you need to call the `smart_irrigation.reset_bucket` service to reset the net irrigation tracking to 0.
 
 > **The last step in any automation is very important, since you will need to let the integration know you have finished irrigating and the evaporation counter can be reset by calling the `smart_irrigation.reset_bucket` service**
@@ -239,10 +250,13 @@ Here is an example automation that runs when the `smart_irrigation_start_irrigat
 [See more advanced examples in the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Automation-examples).
 
 ## Example Behavior in a Week
+
 This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week) provides insight into how this integration should behave in certain weather conditions. With this you should be able to do a sanity check against your configuration and make sure everything is working correctly.
 
 ## How this works
+
 [See the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works).
 
 ## Getting Open Weather Map API Key
+
 Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key. If the key does not work right away, no worries. The email you should have received from OpenWeaterMap says it will be activated 'within the next couple of hours'. So if it does not work right away, be patient a bit. You will need to sign up for the paid (but free for limited API calls) OneCall API 3.0 plan if you do not have a key already. You can use a key for the 3.0 and 2.5 version of the API.
