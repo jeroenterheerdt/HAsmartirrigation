@@ -17,7 +17,7 @@
           "header": "Automatische Berechnung der Bewässerungsdauer",
           "labels": {
             "auto-calc-enabled": "Automatische Berechnung der Dauer pro Zone",
-            "auto-calc-time": "Calculate at"
+            "auto-calc-time": "Berechne um"
           }
         },
         "automatic-update": {
@@ -76,7 +76,7 @@
             "temperature": "Temperatur",
             "windspeed": "Windgeschwindikeit"
           },
-          "sensor-aggregate-of-sensor-values-to-calculate": "des Sensorwertes, um die Bewässerungsdauer zu berechnen.",
+          "sensor-aggregate-of-sensor-values-to-calculate": "des Sensors für die Berechnung.",
           "sensor-aggregate-use-the": "Nutze den/die/das",
           "sensor-entity": "Sensor Entität",
           "sensor-units": "Sensor Werte in",
