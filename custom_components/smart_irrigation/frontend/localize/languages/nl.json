@@ -79,12 +79,14 @@
           "sensor-aggregate-of-sensor-values-to-calculate": "van de sensor waardes om irrigatietijd te berekenen",
           "sensor-aggregate-use-the": "Gebruik de/het",
           "sensor-entity": "Sensor entiteit",
-          "sensor-units": "Sensor geeft waardes in",
+          "input-units": "Invoer geeft waardes in",
+          "static_value": "Waarde",
           "source": "Bron",
           "sources": {
             "none": "Geen",
             "openweathermap": "OpenWeatherMap",
-            "sensor": "Sensor"
+            "sensor": "Sensor",
+            "static": "Vaste waarde"
           }
         }
       },

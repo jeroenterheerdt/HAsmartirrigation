@@ -79,12 +79,14 @@
           "sensor-aggregate-of-sensor-values-to-calculate": "of sensor values to calculate duration",
           "sensor-aggregate-use-the": "Use the",
           "sensor-entity": "Sensor entity",
-          "sensor-units": "Sensor provides values in",
+          "static_value": "Value",
+          "input-units": "Input provides values in",
           "source": "Source",
           "sources": {
             "none": "None",
             "openweathermap": "OpenWeatherMap",
-            "sensor": "Sensor"
+            "sensor": "Sensor",
+            "static": "Static value"
           }
         }
       },

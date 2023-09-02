@@ -412,8 +412,10 @@ class SmartIrrigationStorage:
     @callback
     def async_get_module(self, module_id: int) -> ModuleEntry:
         """Get an existing ModuleEntry by id."""
-        res = self.modules.get(int(module_id))
-        return attr.asdict(res) if res else None
+        if module_id is None:
+            res = self.modules.get(int(module_id))
+            return attr.asdict(res) if res else None
+        return None
 
     @callback
     def async_get_modules(self):

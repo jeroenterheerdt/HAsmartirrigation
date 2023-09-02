@@ -312,7 +312,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         mappings = await self._get_unique_mappings_for_automatic_zones(zones)
         #loop over the mappings and store sensor data
         for mapping_id in mappings:
-            owm_in_mapping, sensor_in_mapping = self.check_mapping_sources(mapping_id = mapping_id)
+            owm_in_mapping, sensor_in_mapping, static_in_mapping = self.check_mapping_sources(mapping_id = mapping_id)
             if self.use_OWM and owm_in_mapping:
                 # retrieve data from OWM
                 weatherdata = await self.hass.async_add_executor_job(self._OWMClient.get_data)
@@ -320,6 +320,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 mapping = self.store.async_get_mapping(mapping_id)
                 sensor_values = self.build_sensor_values_for_mapping(mapping)
                 weatherdata = await self.merge_weatherdata_and_sensor_values(weatherdata,sensor_values)
+            if static_in_mapping:
+                mapping = self.store.async_get_mapping(mapping_id)
+                static_values = self.build_static_values_for_mapping(mapping)
+                weatherdata = await self.merge_weatherdata_and_sensor_values(weatherdata, static_values)
             #add the weatherdata value to the mappings sensor values
             mapping_data = mapping[const.MAPPING_DATA]
             mapping_data.append(weatherdata)
@@ -389,7 +393,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         zones = self.store.async_get_zones()
         mappings = await self._get_unique_mappings_for_automatic_zones(zones)
         for mapping_id in mappings:
-            o, s = self.check_mapping_sources(mapping_id = mapping_id)
+            o, s, sv = self.check_mapping_sources(mapping_id = mapping_id)
             if o:
                 owm_in_mapping = True
         #at least part of the data comes from OWM
@@ -401,7 +405,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         for zone in zones:
             if zone.get(const.ZONE_STATE)==const.ZONE_STATE_AUTOMATIC:
                 mapping_id = zone[const.ZONE_MAPPING]
-                o_i_m, s_i_m = self.check_mapping_sources(mapping_id = mapping_id)
+                o_i_m, s_i_m, sv_in_m = self.check_mapping_sources(mapping_id = mapping_id)
                 # if using pyeto and using a forecast o_i_m needs to be set to true!
                 modinst = self.getModuleInstanceByID(zone.get(const.ZONE_MODULE))
                 if modinst and modinst.name=="PyETO" and modinst._forecast_days>0:
@@ -596,6 +600,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     def check_mapping_sources(self, mapping_id):
         owm_in_mapping = False
         sensor_in_mapping = False
+        static_in_mapping = False
         if not mapping_id is None:
             mapping = self.store.async_get_mapping(mapping_id)
             for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
@@ -604,7 +609,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         owm_in_mapping = True
                     if the_map.get(const.MAPPING_CONF_SOURCE)==const.MAPPING_CONF_SOURCE_SENSOR:
                         sensor_in_mapping = True
-        return owm_in_mapping, sensor_in_mapping
+                    if the_map.get(const.MAPPING_CONF_SOURCE) == const.MAPPING_CONF_SOURCE_STATIC_VALUE:
+                        static_in_mapping = True
+        return owm_in_mapping, sensor_in_mapping, static_in_mapping
 
     def build_sensor_values_for_mapping(self, mapping):
         sensor_values = {}
@@ -621,6 +628,20 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         # add val to sensor values
                         sensor_values[key]= val
         return sensor_values
+
+    def build_static_values_for_mapping(self, mapping):
+        static_values = {}
+        for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
+            if not isinstance(the_map, str):
+                if the_map.get(const.MAPPING_CONF_SOURCE)==const.MAPPING_CONF_SOURCE_STATIC_VALUE and the_map.get(const.MAPPING_CONF_STATIC_VALUE):
+                    #this mapping maps to a static value, so return its value
+                    val = float(the_map.get(const.MAPPING_CONF_STATIC_VALUE))
+                    #first check we are not in metric mode already.
+                    if not self.hass.config.units is METRIC_SYSTEM:
+                        val = convert_mapping_to_metric(val, key,the_map.get(const.MAPPING_CONF_UNIT), False)
+                    # add val to sensor values
+                    static_values[key]= val
+        return static_values
 
     async def async_update_zone_config(self, zone_id: int = None, data: dict = {}):
         if not zone_id is None:
@@ -699,7 +720,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 return
             sensor_values = {}
             mapping_id = res[const.ZONE_MAPPING]
-            owm_in_mapping, sensor_in_mapping = self.check_mapping_sources(mapping_id = mapping_id)
+            owm_in_mapping, sensor_in_mapping, static_in_mapping = self.check_mapping_sources(mapping_id = mapping_id)
 
             mapping = self.store.async_get_mapping(mapping_id)
             weatherdata = None
@@ -713,6 +734,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     weatherdata = await self.merge_weatherdata_and_sensor_values(weatherdata,sensor_values)
                 else:
                     weatherdata = sensor_values
+            if static_in_mapping:
+                static_values = self.build_static_values_for_mapping(mapping)
+                if weatherdata:
+                    weatherdata = await self.merge_weatherdata_and_sensor_values(weatherdata, static_values)
+                else:
+                    weatherdata = static_values
             #add the weatherdata value to the mappings sensor values
             mapping_data = mapping[const.MAPPING_DATA]
             mapping_data.append(weatherdata)

@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2023.9.0-beta2"
+VERSION = "v2023.9.0-beta3"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -121,9 +121,11 @@ MAPPING_WINDSPEED = "Windspeed"
 MAPPING_CONF_SOURCE_OWM = "owm"
 MAPPING_CONF_SOURCE_SENSOR = "sensor"
 MAPPING_CONF_SOURCE_NONE = "none"
+MAPPING_CONF_SOURCE_STATIC_VALUE = "static"
 
 MAPPING_CONF_SOURCE = "source"
 MAPPING_CONF_SENSOR = "sensorentity"
+MAPPING_CONF_STATIC_VALUE = "static_value"
 MAPPING_CONF_UNIT = "unit"
 MAPPING_CONF_AGGREGATE = "aggregate"
 MAPPING_CONF_AGGREGATE_AVERAGE = "average"

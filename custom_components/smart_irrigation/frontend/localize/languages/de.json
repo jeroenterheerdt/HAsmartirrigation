@@ -79,7 +79,7 @@
           "sensor-aggregate-of-sensor-values-to-calculate": "des Sensors für die Berechnung.",
           "sensor-aggregate-use-the": "Nutze den/die/das",
           "sensor-entity": "Sensor Entität",
-          "sensor-units": "Sensor Werte in",
+          "input-units": "Sensor Werte in",
           "source": "Quelle",
           "sources": {
             "none": "Kein",

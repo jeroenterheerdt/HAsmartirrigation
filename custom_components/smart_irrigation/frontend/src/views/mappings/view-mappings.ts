@@ -33,6 +33,8 @@ import {
   MAPPING_CONF_SOURCE_NONE,
   MAPPING_CONF_SOURCE_OWM,
   MAPPING_CONF_SOURCE_SENSOR,
+  MAPPING_CONF_SOURCE_STATIC_VALUE,
+  MAPPING_CONF_STATIC_VALUE,
   MAPPING_CONF_UNIT,
   MAPPING_DEWPOINT,
   MAPPING_EVAPOTRANSPIRATION,
@@ -206,7 +208,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         )}
       </label>
     </div> `;
-    //source radiobutton: OWM or sensor or (none/sensor)
+    //source radiobutton: (OWM/sensor/static value) or (none/sensor/static value)
     //show sensor entity input box only if sensor source is selected
     //show unit all the time, but set it to the metric value and disable if OWM. Else enable.
     r = html`${r}
@@ -307,6 +309,33 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           )}</label
         >
       </div>`;
+    r = html`${r}
+      <input
+        type="radio"
+        id="${value + index + MAPPING_CONF_SOURCE_STATIC_VALUE}"
+        value="${MAPPING_CONF_SOURCE_STATIC_VALUE}"
+        name="${value + index + MAPPING_CONF_SOURCE}"
+        ?checked="${
+          mappingline[MAPPING_CONF_SOURCE] === MAPPING_CONF_SOURCE_STATIC_VALUE
+        }"
+        @change="${(e: Event) =>
+          this.handleEditMapping(index, {
+            ...mapping,
+            mappings: {
+              ...mapping.mappings,
+              [value]: {
+                ...mapping.mappings[value],
+                [MAPPING_CONF_SOURCE]: (e.target as HTMLInputElement).value,
+              },
+            },
+          })}"
+      /><label for="${value + index + MAPPING_CONF_SOURCE_STATIC_VALUE}"
+        >${localize(
+          "panels.mappings.cards.mapping.sources.static",
+          this.hass.language
+        )}</label
+      >
+    </div>`;
     if (mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_SENSOR) {
       r = html`${r}
         <div class="mappingsettingline">
@@ -333,11 +362,43 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
               })}"
           />
         </div>`;
+    }
+    if (mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_STATIC_VALUE) {
+      r = html`${r}
+        <div class="mappingsettingline">
+          <label for="${value + index + MAPPING_CONF_STATIC_VALUE}"
+            >${localize(
+              "panels.mappings.cards.mapping.static_value",
+              this.hass.language
+            )}:</label
+          >
+          <input
+            type="text"
+            id="${value + index + MAPPING_CONF_STATIC_VALUE}"
+            value="${mappingline[MAPPING_CONF_STATIC_VALUE]}"
+            @input="${(e: Event) =>
+              this.handleEditMapping(index, {
+                ...mapping,
+                mappings: {
+                  ...mapping.mappings,
+                  [value]: {
+                    ...mapping.mappings[value],
+                    [MAPPING_CONF_STATIC_VALUE]: (e.target as HTMLInputElement).value,
+                  },
+                },
+              })}"
+          />
+        </div>`;
+    }
+    if (
+      mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_SENSOR ||
+      mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_STATIC_VALUE
+    ) {
       r = html`${r}
         <div class="mappingsettingline">
           <label for="${value + index + MAPPING_CONF_UNIT}"
             >${localize(
-              "panels.mappings.cards.mapping.sensor-units",
+              "panels.mappings.cards.mapping.input-units",
               this.hass.language
             )}:</label
           >
@@ -359,6 +420,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
             ${this.renderUnitOptionsForMapping(value, mappingline)}
           </select>
         </div>`;
+    }
+    if (mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_SENSOR) {
       r = html`${r}
         <div class="mappingsettingline">
           <label for="${value + index + MAPPING_CONF_AGGREGATE}"
