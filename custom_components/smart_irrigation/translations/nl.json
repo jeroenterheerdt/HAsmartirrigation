@@ -92,45 +92,6 @@
     },
     "passthrough": {
       "description": "Geeft waarde van ET sensor as verandering terug"
-    },
-    "defaults": {
-      "default-zone": "Standaard zone",
-      "default-mapping": "Standaard sensorgroep"
-    },
-    "module": {
-      "calculation": {
-        "explanation": {
-          "module-returned-evapotranspiration-deficiency": "NB: in deze uitleg wordt de '.' as decimaalscheidingsteken gebruikt en worden afgeronde getalleng getoond. Module berekende ET waarde van",
-          "bucket-was": "Voorraad was",
-          "new-bucket-values-is": "Nieuwe voorraad is",
-          "old-bucket-variable": "oude_voorraad",
-          "delta": "verandering",
-          "bucket-less-than-zero-irrigation-necessary": "Omdat de voorraad < 0 is, is irrigatie nodig",
-          "steps-taken-to-calculate-duration": "On de exacte duur te berekenen werd het volgende gedaan",
-          "precipitation-rate-defined-as": "De neerslag is",
-          "duration-is-calculated-as": "De duur is",
-          "bucket": "voorraad",
-          "precipitation-rate-variable": "neerslag",
-          "multiplier-is-applied": "De vermenigvuldiger wordt toegepast. Deze is",
-          "duration-after-multiplier-is": "dus de duur is",
-          "maximum-duration-is-applied": "De maximum duur wordt toegepast. Deze is",
-          "duration-after-maximum-duration-is": "dus de duur is",
-          "lead-time-is-applied": "As laatste wordt de aanlooptijd toegepast. Deze is",
-          "duration-after-lead-time-is": "dus de duur is",
-          "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Omdat de voorraad >= 0 is er geen irrigatie nodig en is de duur gelijk aan"
-        }
-      }
-    },
-    "calcmodules": {
-      "pyeto": {
-        "description": "Bereken duur op basis van de FAU56 formule en de PyETO library"
-      },
-      "passthrough": {
-        "description": "Passthrough-module die de waarde van een verdampingssensor retourneert als een delta."
-      },
-      "static": {
-        "description": "Module met instelbare verandering"
-      }
     }
   }
 }

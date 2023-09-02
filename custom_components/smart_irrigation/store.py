@@ -189,7 +189,7 @@ class SmartIrrigationStorage:
                         multiplier=zone[ZONE_MULTIPLIER],
                         mapping=zone[ZONE_MAPPING],
                         lead_time = zone[ZONE_LEAD_TIME],
-                        maximum_duration = zone[ZONE_MAXIMUM_DURATION]
+                        maximum_duration = zone.get(ZONE_MAXIMUM_DURATION, CONF_DEFAULT_MAXIMUM_DURATION)
                     )
             if "modules" in data:
                 for module in data["modules"]:
