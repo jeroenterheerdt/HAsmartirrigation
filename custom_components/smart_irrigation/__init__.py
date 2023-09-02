@@ -360,7 +360,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             for key,d in data_by_sensor.items():
                 if len(d) > 1:
                     #apply aggregate
+                    # set up default aggregates in case not specified (left default by user or using OWM)
                     aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT
+                    if key == const.MAPPING_PRECIPITATION:
+                        aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION
+                    elif key == const.MAPPING_MAX_TEMP:
+                        aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP
+                    elif key == const.MAPPING_MIN_TEMP:
+                        aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP
                     if mapping.get(const.MAPPING_MAPPINGS):
                         mappings = mapping.get(const.MAPPING_MAPPINGS)
                         if key in mappings:
@@ -906,7 +913,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def handle_reset_bucket(self, call):
         """Reset a specific zone bucket to 0"""
         if const.SERVICE_ENTITY_ID in call.data:
-            for entity in call.data[const.SERVICE_ENTITY_ID]:
+            eid = call.data[const.SERVICE_ENTITY_ID]
+            if not isinstance(eid,list):
+                eid = [call.data[const.SERVICE_ENTITY_ID]]
+            for entity in eid:
                 _LOGGER.info("Reset bucket service called for zone {}.".format(entity))
                 #find entity zone id and call calculate on the zone
                 state = self.hass.states.get(entity)
@@ -928,7 +938,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         """Reset a specific zone bucket to new value"""
         if const.SERVICE_ENTITY_ID in call.data and const.ATTR_NEW_BUCKET_VALUE in call.data:
             new_value = call.data[const.ATTR_NEW_BUCKET_VALUE]
-            for entity in call.data[const.SERVICE_ENTITY_ID]:
+            eid = call.data[const.SERVICE_ENTITY_ID]
+            if not isinstance(eid,list):
+                eid = [call.data[const.SERVICE_ENTITY_ID]]
+            for entity in eid:
                 _LOGGER.info("Set bucket service called for zone {}, new value: {}.".format(entity, new_value))
                 #find entity zone id and call calculate on the zone
                 state = self.hass.states.get(entity)
