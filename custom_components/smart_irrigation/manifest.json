@@ -1,9 +1,7 @@
 {
   "domain": "smart_irrigation",
   "name": "Smart Irrigation",
-  "codeowners": [
-    "@jeroenterheerdt"
-  ],
+  "codeowners": ["@jeroenterheerdt"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/jeroenterheerdt/HASmartIrrigation",
@@ -13,6 +11,6 @@
   "issue_tracker": "https://github.com/jeroenterheerdt/HASmartIrrigation/issues",
   "requirements": [],
   "ssdp": [],
-  "version": "0.0.81",
+  "version": "0.0.82",
   "zeroconf": []
 }
