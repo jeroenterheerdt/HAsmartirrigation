@@ -313,15 +313,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         #loop over the mappings and store sensor data
         for mapping_id in mappings:
             owm_in_mapping, sensor_in_mapping, static_in_mapping = self.check_mapping_sources(mapping_id = mapping_id)
+            mapping = self.store.async_get_mapping(mapping_id)
             if self.use_OWM and owm_in_mapping:
                 # retrieve data from OWM
                 weatherdata = await self.hass.async_add_executor_job(self._OWMClient.get_data)
             if sensor_in_mapping:
-                mapping = self.store.async_get_mapping(mapping_id)
                 sensor_values = self.build_sensor_values_for_mapping(mapping)
                 weatherdata = await self.merge_weatherdata_and_sensor_values(weatherdata,sensor_values)
             if static_in_mapping:
-                mapping = self.store.async_get_mapping(mapping_id)
                 static_values = self.build_static_values_for_mapping(mapping)
                 weatherdata = await self.merge_weatherdata_and_sensor_values(weatherdata, static_values)
             #add the weatherdata value to the mappings sensor values
