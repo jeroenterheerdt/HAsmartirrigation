@@ -41,7 +41,19 @@
       "title": "Allgemein"
     },
     "help": {
-      "title": "Hilfe"
+      "title": "Hilfe",
+      "cards": {
+        "how-to-get-help": {
+          "title": "Hilfe bekommen",
+          "first-read-the": "Lies zuerst im",
+          "wiki": "Wiki",
+          "if-you-still-need-help": "Benötigst du weiterhin Hilfe, wende dich an das",
+          "community-forum": "Community Forum",
+          "or-open-a": "oder eröffne einen",
+          "github-issue": "Github Issue",
+          "english-only": "nur Englisch"
+        }
+      }
     },
     "mappings": {
       "cards": {
@@ -84,7 +96,8 @@
           "sources": {
             "none": "Kein",
             "openweathermap": "OpenWeatherMap",
-            "sensor": "Sensor"
+            "sensor": "Sensor",
+            "static": "Fester Wert"
           }
         }
       },
