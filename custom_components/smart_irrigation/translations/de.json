@@ -5,20 +5,20 @@
     },
     "error": {
       "auth": "Open Weather API Key oder Version falsch.",
-      "name": "Geben Sie einen eindeutigen Namen für die Integration ein."
+      "name": "Gebe einen eindeutigen Namen für die Integration ein."
     },
     "step": {
       "user": {
         "title": "Allgemein",
-        "description": "Falls Sie Hilfe benötigen, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "description": "Falls du Hilfe benötigst, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Eindeutiger Namen der Integration",
-          "use_owm": "Wollen Sie Open Weather Map für Wetterdaten und/oder Vorhersagen nutzen? Deaktivieren Sie diesen Dienst, wenn Sie ausschließlich Ihre eigene Wetterstation nutzen wollen. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktivieren Sie diesen Dienst, falls Sie beabsichtigen, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen nutzen zu wollen."
+          "use_owm": "Willst du Open Weather Map für Wetterdaten und/oder Vorhersagen nutzen? Deaktiviere diesen Dienst, wenn du ausschließlich deine eigene Wetterstation nutzen willst. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktiviere diesen Dienst, falls du beabsichtigst, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen zu nutzen."
         }
       },
       "step1": {
         "title": "Open Weather API Key Einstellungen",
-        "description": "Falls Sie Hilfe benötigen, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "description": "Falls du Hilfe benötigst, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "owm_api_key": "API Key für Open Weather Map",
           "owm_api_version": "Open Weather Map API Version (3.0 für eine neue Konfigurstion.)"
@@ -33,14 +33,14 @@
     "step": {
       "init": {
         "title": "Open Weather Map API Einstellungen",
-        "description": "Falls Sie Hilfe benötigen, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "description": "Falls du Hilfe benötigst, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "use_owm": "Wollen Sie Open Weather Map für Wetterdaten oder -vorhersagen nutzen? Deaktivieren Sie diesen Dienst, wenn Sie ausschließlich Ihre eigene Wetterstation nutzern wollen. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktivieren Sie diesen Dienst, falls Sie beabsichtigen, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen nutzen zu wollen."
+          "use_owm": "Willst du Open Weather Map für Wetterdaten oder -vorhersagen nutzen? Deaktiviere diesen Dienst, wenn du ausschließlich deine eigene Wetterstation nutzern willst. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktiviere diesen Dienst, falls du beabsichtigst, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen zu nutzen."
         }
       },
       "step1": {
         "title": "Open Weather Map API Einstellungen",
-        "description": "Falls Sie Hilfe benötigen, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "description": "Falls du Hilfe benötigst, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "owm_api_key": "API Key für Open Weather Map",
           "owm_api_version": "Open Weather Map API Version (3.0 für eine neue Konfigurstion.)"

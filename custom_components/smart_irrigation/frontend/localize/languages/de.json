@@ -88,11 +88,11 @@
           }
         }
       },
-      "description": "Fügen Sie einen oder mehrere Sensorgruppen hinzu, die Wetterdaten von OpenWeatherMap, von Sensoren oder einer Kombination daraus abrufen. Jede Sensorgruppe kann für eine oder mehrere Zonen verwendet werden",
+      "description": "Füge eine oder mehrere Sensorgruppen hinzu, die Wetterdaten von OpenWeatherMap, Sensoren oder einer Kombination daraus abrufen. Jede Sensorgruppe kann für eine oder mehrere Zonen verwendet werden",
       "labels": {
         "mapping-name": "Name"
       },
-      "no_items": "Es ist noch keine Sensorgruppe vorhanden.",
+      "no_items": "Es ist noch keine Sensorgruppe angelegt.",
       "title": "Sensorgruppen"
     },
     "modules": {
@@ -118,8 +118,8 @@
           }
         }
       },
-      "description": "Fügen Sie ein oder mehrere Module hinzu. Module berechnen die Bewässerungsdauer. Jedes Modul hat seine eigene Konfiguration und kann zur Berechnung der Bewässerungsdauer für eine oder mehrere Zonen verwendet werden.",
-      "no_items": "Es sind noch kein Module vorhanden.",
+      "description": "Füge ein oder mehrere Module hinzu. Module berechnen die Bewässerungsdauer. Jedes Modul hat seine eigene Konfiguration und kann zur Berechnung der Bewässerungsdauer für eine oder mehrere Zonen verwendet werden.",
+      "no_items": "Es ist noch kein Module angelegt.",
       "title": "Module"
     },
     "zones": {
@@ -144,7 +144,7 @@
           "header": "Aktionen für alle Zonen"
         }
       },
-      "description": "Fügen Sie eine oder mehrere Zonen hinzu. Die Bewässerungsdauer wird pro Zone, abhängig von Größe, Durchsatz, Status, Modul und Sensorgruppe berechnet.",
+      "description": "Füge eine oder mehrere Zonen hinzu. Die Bewässerungsdauer wird pro Zone, abhängig von Größe, Durchsatz, Status, Modul und Sensorgruppe berechnet.",
       "labels": {
         "bucket": "Vorrat",
         "duration": "Dauer",
