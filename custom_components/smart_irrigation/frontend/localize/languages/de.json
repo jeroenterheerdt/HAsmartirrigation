@@ -91,6 +91,7 @@
           "sensor-aggregate-of-sensor-values-to-calculate": "des Sensors für die Berechnung.",
           "sensor-aggregate-use-the": "Nutze den/die/das",
           "sensor-entity": "Sensor Entität",
+          "static_value": "Wert",
           "input-units": "Sensor Werte in",
           "source": "Quelle",
           "sources": {
@@ -173,7 +174,8 @@
           "disabled": "Aus",
           "manual": "Manuell"
         },
-        "throughput": "Durchfluss"
+        "throughput": "Durchfluss",
+        "maximum-bucket": "Maximaler Vorrat"
       },
       "no_items": "Es ist noch keine Zone vorhanden.",
       "title": "Zonen"
