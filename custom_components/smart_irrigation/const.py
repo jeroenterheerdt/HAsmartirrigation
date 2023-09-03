@@ -9,7 +9,7 @@ DOMAIN = "smart_irrigation"
 CUSTOM_COMPONENTS = "custom_components"
 
 LANGUAGE_FILES_DIR = "translations"
-SUPPORTED_LANGUAGES = ["de","en","nl"]
+SUPPORTED_LANGUAGES = ["de","en","nl","fr"]
 
 CONF_OWM_API_KEY = "owm_api_key"
 CONF_OWM_API_VERSION = "owm_api_version"
