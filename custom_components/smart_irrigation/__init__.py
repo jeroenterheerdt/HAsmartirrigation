@@ -314,6 +314,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         for mapping_id in mappings:
             owm_in_mapping, sensor_in_mapping, static_in_mapping = self.check_mapping_sources(mapping_id = mapping_id)
             mapping = self.store.async_get_mapping(mapping_id)
+            weatherdata = None
             if self.use_OWM and owm_in_mapping:
                 # retrieve data from OWM
                 weatherdata = await self.hass.async_add_executor_job(self._OWMClient.get_data)
@@ -397,56 +398,48 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         #are any modules using OWM / sensors?
         owm_in_mapping = False
         zones = self.store.async_get_zones()
-        mappings = await self._get_unique_mappings_for_automatic_zones(zones)
-        for mapping_id in mappings:
-            o, s, sv = self.check_mapping_sources(mapping_id = mapping_id)
-            if o:
-                owm_in_mapping = True
-        #at least part of the data comes from OWM
-        if self.use_OWM and owm_in_mapping:
-            # data comes at least partly from owm
-            weatherdata = await self.hass.async_add_executor_job(self._OWMClient.get_data)
 
-        #loop over zones again and update weatherdata with mapping, then calculate
+        #for mapping_id in mappings:
+        #    o, s, sv = self.check_mapping_sources(mapping_id = mapping_id)
+        #    if o:
+        #        owm_in_mapping = True
+        #at least part of the data comes from OWM
+        #if self.use_OWM and owm_in_mapping:
+        #    # data comes at least partly from owm
+        #    weatherdata = await self.hass.async_add_executor_job(self._OWMClient.get_data)
+
+        #loop over zones and calculate
         for zone in zones:
             if zone.get(const.ZONE_STATE)==const.ZONE_STATE_AUTOMATIC:
                 mapping_id = zone[const.ZONE_MAPPING]
-                o_i_m, s_i_m, sv_in_m = self.check_mapping_sources(mapping_id = mapping_id)
+                #o_i_m, s_i_m, sv_in_m = self.check_mapping_sources(mapping_id = mapping_id)
                 # if using pyeto and using a forecast o_i_m needs to be set to true!
                 modinst = self.getModuleInstanceByID(zone.get(const.ZONE_MODULE))
+                forecastdata = None
                 if modinst and modinst.name=="PyETO" and modinst._forecast_days>0:
-                    o_i_m=True
-
+                    if self.use_OWM:
+                        # get forecast info from OWM
+                        forecastdata = await self.hass.async_add_executor_job(self._OWMClient.get_forecast_data)
+                    else:
+                        _LOGGER.error("Error calculating zone {}. You have configured forecasting but but there is no OWM API configured. Either configure the OWM API or stop using forcasting on the PyETO module.".format(zone.get(const.ZONE_NAME)))
+                        return
                 mapping = self.store.async_get_mapping(mapping_id)
-                mapping_weatherdata = {}
-                #at least part of the data comes from OWM, so capture it
-                if o_i_m:
-                    mapping_weatherdata = weatherdata
                 #if there is sensor data on the mapping, apply aggregates to it.
                 sensor_values = None
-                if mapping and mapping.get(const.MAPPING_DATA):
+                if const.MAPPING_DATA in mapping and mapping.get(const.MAPPING_DATA):
                     sensor_values = await self.apply_aggregates_to_mapping_data(mapping)
-                precip_from_sensor = None
-                sol_rad_from_sensor = None
-                et_from_sensor = None
-                ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
-                if mapping_weatherdata or sensor_values:
-                    if "daily" not in mapping_weatherdata:
-                        mapping_weatherdata["daily"] = []
-                        mapping_weatherdata["daily"].append({})
-                    if sensor_values:
-                        #loop over sensor values and put them in weatherdata in the right keys
-                        mapping_weatherdata,precip_from_sensor, sol_rad_from_sensor,et_from_sensor = self.insert_sensor_values_in_weatherdata(mapping=mapping, sensor_values=sensor_values, weatherdata=mapping_weatherdata, ha_config_is_metric=ha_config_is_metric)
-                    data = self.calculate_module(zone, mapping_weatherdata, precip_from_sensor=precip_from_sensor, sol_rad_from_sensor = sol_rad_from_sensor,et_data=et_from_sensor)
+                if sensor_values:
+                    data = self.calculate_module(zone, weatherdata=sensor_values,forecastdata=forecastdata)
 
                     self.store.async_update_zone(zone.get(const.ZONE_ID), data)
                     async_dispatcher_send(
                         self.hass, const.DOMAIN + "_config_updated", zone.get(const.ZONE_ID)
                     )
-                elif not mapping_weatherdata and not sensor_values:
+                else:
                     # no data to calculate with!
                     _LOGGER.warning("Calculate for zone {} failed: no data available.".format(zone.get(const.ZONE_NAME)))
         #remove mapping data from all mappings used
+        mappings = await self._get_unique_mappings_for_automatic_zones(zones)
         for mapping_id in mappings:
             #remove sensor data from mapping
             changes = {}
@@ -500,13 +493,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #data[const.ZONE_BUCKET] = round(bucket+delta,1)
             #data[const.ZONE_DELTA] = round(delta,1)
             data[const.ZONE_BUCKET] = bucket+delta
+            #if maximum bucket configured, limit bucket with that.
+            if zone.get(const.ZONE_MAXIMUM_BUCKET) is not None and data[const.ZONE_BUCKET]> zone.get(const.ZONE_MAXIMUM_BUCKET):
+                data[const.ZONE_BUCKET] = float(zone.get(const.ZONE_MAXIMUM_BUCKET))
+
             data[const.ZONE_DELTA] = delta
         else:
             _LOGGER.error("Unknown module for zone {}".format(zone.get(const.ZONE_NAME)))
             return
         explanation = localize("module.calculation.explanation.module-returned-evapotranspiration-deficiency", self.hass.config.language)+" {}. ".format(round(data[const.ZONE_DELTA],1))
         explanation += localize("module.calculation.explanation.bucket-was", self.hass.config.language)+" {}".format(round(data[const.ZONE_OLD_BUCKET],1))
-        explanation += ".<br/>"+localize("module.calculation.explanation.new-bucket-values-is", self.hass.config.language)+" ["
+        explanation += ".<br/>"+localize("module.calculation.explanation.maximum-bucket-is", self.hass.config.language)+" {}".format(round(float(zone.get(const.ZONE_MAXIMUM_BUCKET)),1))
+        explanation += "."+localize("module.calculation.explanation.new-bucket-values-is", self.hass.config.language)+" ["
         explanation += localize("module.calculation.explanation.old-bucket-variable", self.hass.config.language)+"]+["
         explanation += localize("module.calculation.explanation.delta", self.hass.config.language)+"]={}+{}={}.<br/>".format(round(data[const.ZONE_OLD_BUCKET],1),round(data[const.ZONE_DELTA],1),round(data[const.ZONE_BUCKET],1))
 
@@ -540,7 +538,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # explanation += "<li>The base schedule index is defined as (max(ET)/[precipitation rate]*60)*60=({}/{}*60)*60={}</li>".format(mod.maximum_et,precipitation_rate,round(base_schedule_index,1))
             # explanation += "<li>the duration is calculated as [water_budget]*[base_schedule_index]={}*{}={}</li>".format(water_budget,round(base_schedule_index,1),round(duration))
             #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
-            explanation += "<li>"+localize("module.calculation.explanation.duration-is-calculated-as",self.hass.config.language)+" abs(["+localize("module.calculation.explanation.bucket",self.hass.config.language)+"])/["+localize("module.calculation.explanation.precipitation-rate-variable",self.hass.config.language)+"]*3600={}/{}*3600={}</li>".format(abs(data[const.ZONE_BUCKET]),round(precipitation_rate,1),round(duration))
+            explanation += "<li>"+localize("module.calculation.explanation.duration-is-calculated-as",self.hass.config.language)+" abs(["+localize("module.calculation.explanation.bucket",self.hass.config.language)+"])/["+localize("module.calculation.explanation.precipitation-rate-variable",self.hass.config.language)+"]*3600={}/{}*3600={}</li>".format(abs(round(data[const.ZONE_BUCKET],1)),round(precipitation_rate,1),round(duration))
             duration = zone.get(const.ZONE_MULTIPLIER) * duration
             explanation += "<li>"+localize("module.calculation.explanation.multiplier-is-applied",self.hass.config.language)+" {}, ".format(zone.get(const.ZONE_MULTIPLIER))
             #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186

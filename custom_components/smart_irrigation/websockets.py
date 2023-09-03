@@ -161,6 +161,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
                 vol.Optional(const.ZONE_MAPPING): vol.Or(int,str,None),
                 vol.Optional(const.ZONE_LEAD_TIME): vol.Coerce(float),
                 vol.Optional(const.ZONE_MAXIMUM_DURATION): vol.Coerce(float),
+                vol.Optional(const.ZONE_MAXIMUM_BUCKET): vol.Or(float, int, None),
             }
         )
     )

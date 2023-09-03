@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2023.9.0-beta7"
+VERSION = "v2023.9.0-beta8"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -53,6 +53,7 @@ CONF_IMPERIAL = "imperial"
 CONF_METRIC = "metric"
 CONF_USE_OWM = "use_owm"
 CONF_DEFAULT_MAXIMUM_DURATION = 3600 #default maximum duration to one hour == 3600 seconds
+CONF_DEFAULT_MAXIMUM_BUCKET = 50 #default maximum bucket of 50
 
 CUSTOM_COMPONENTS = "custom_components"
 INTEGRATION_FOLDER = DOMAIN
@@ -92,6 +93,7 @@ ZONE_MULTIPLIER = "multiplier"
 ZONE_MAPPING = "mapping"
 ZONE_LEAD_TIME = "lead_time"
 ZONE_MAXIMUM_DURATION = "maximum_duration"
+ZONE_MAXIMUM_BUCKET = "maximum_bucket"
 
 MODULE_DIR = "calcmodules"
 MODULE_ID = "id"

@@ -41,7 +41,19 @@
       "title": "General"
     },
     "help": {
-      "title": "Help"
+      "title": "Help",
+      "cards": {
+        "how-to-get-help": {
+          "title": "How to get help",
+          "first-read-the": "First, read the",
+          "wiki": "Wiki",
+          "if-you-still-need-help": "If you still need help reach out on the",
+          "community-forum": "Community forum",
+          "or-open-a": "or open a",
+          "github-issue": "Github Issue",
+          "english-only": "English only"
+        }
+      }
     },
     "mappings": {
       "cards": {
@@ -162,7 +174,8 @@
           "disabled": "Disabled",
           "manual": "Manual"
         },
-        "throughput": "Throughput"
+        "throughput": "Throughput",
+        "maximum-bucket": "Maximum bucket"
       },
       "no_items": "There are no zones defined yet.",
       "title": "Zones"

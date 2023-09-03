@@ -79,7 +79,8 @@
         "duration-after-maximum-duration-is": "dus de duur is",
         "lead-time-is-applied": "As laatste wordt de aanlooptijd toegepast. Deze is",
         "duration-after-lead-time-is": "dus de uiteindelijke duur is",
-        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Omdat de voorraad >= 0 is er geen irrigatie nodig en is de duur gelijk aan"
+        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Omdat de voorraad >= 0 is er geen irrigatie nodig en is de duur gelijk aan",
+        "maximum-bucket-is": "maximale voorraad grootte is"
       }
     }
   },

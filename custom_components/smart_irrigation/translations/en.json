@@ -79,7 +79,8 @@
         "duration-after-maximum-duration-is": "hence the duration is",
         "lead-time-is-applied": "Finally, the lead time is applied. The lead time is",
         "duration-after-lead-time-is": "hence the final duration is",
-        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Since bucket >= 0, no irrigation is necessary and duration is set to"
+        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Since bucket >= 0, no irrigation is necessary and duration is set to",
+        "maximum-bucket-is": "maximum bucket size is"
       }
     }
   },

@@ -41,7 +41,19 @@
       "title": "Algemeen"
     },
     "help": {
-      "title": "Hulp"
+      "title": "Hulp",
+      "cards": {
+        "how-to-get-help": {
+          "title": "Hulp vragen",
+          "first-read-the": "Allereerst, lees de",
+          "wiki": "Wiki",
+          "if-you-still-need-help": "Als je hierna nog steeds hulp nodig hebt, laat een bericht achter op het",
+          "community-forum": "Community forum",
+          "or-open-a": "of open een",
+          "github-issue": "Github Issue",
+          "english-only": "alleen Engels"
+        }
+      }
     },
     "mappings": {
       "cards": {
@@ -162,7 +174,8 @@
           "disabled": "Uit",
           "manual": "Manueel"
         },
-        "throughput": "Doorvoer"
+        "throughput": "Doorvoer",
+        "maximum-bucket": "Maximale voorraad"
       },
       "no_items": "Er zijn nog geen zones.",
       "title": "Zones"

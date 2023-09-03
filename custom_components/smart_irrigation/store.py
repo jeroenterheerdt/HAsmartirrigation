@@ -21,6 +21,7 @@ from .const import (
     CONF_DEFAULT_AUTO_UPDATE_TIME,
     CONF_DEFAULT_AUTO_UPDATED_ENABLED,
     CONF_DEFAULT_CALC_TIME,
+    CONF_DEFAULT_MAXIMUM_BUCKET,
     CONF_DEFAULT_MAXIMUM_DURATION,
     CONF_DEFAULT_USE_OWM,
     CONF_IMPERIAL,
@@ -58,6 +59,7 @@ from .const import (
     ZONE_ID,
     ZONE_LEAD_TIME,
     ZONE_MAPPING,
+    ZONE_MAXIMUM_BUCKET,
     ZONE_MAXIMUM_DURATION,
     ZONE_MODULE,
     ZONE_MULTIPLIER,
@@ -98,6 +100,7 @@ class ZoneEntry:
     mapping = attr.ib(type=str,default=None)
     lead_time = attr.ib(type=float, default=None)
     maximum_duration = attr.ib(type=float, default=CONF_DEFAULT_MAXIMUM_DURATION)
+    maximum_bucket = attr.ib(type=float, default=CONF_DEFAULT_MAXIMUM_BUCKET)
 
 @attr.s(slots=True, frozen=True)
 class ModuleEntry:
@@ -189,7 +192,8 @@ class SmartIrrigationStorage:
                         multiplier=zone[ZONE_MULTIPLIER],
                         mapping=zone[ZONE_MAPPING],
                         lead_time = zone[ZONE_LEAD_TIME],
-                        maximum_duration = zone.get(ZONE_MAXIMUM_DURATION, CONF_DEFAULT_MAXIMUM_DURATION)
+                        maximum_duration = zone.get(ZONE_MAXIMUM_DURATION, CONF_DEFAULT_MAXIMUM_DURATION),
+                        maximum_bucket = zone.get(ZONE_MAXIMUM_BUCKET, CONF_DEFAULT_MAXIMUM_BUCKET),
                     )
             if "modules" in data:
                 for module in data["modules"]:
@@ -236,10 +240,10 @@ class SmartIrrigationStorage:
 
     async def async_factory_default_zones(self):
         new_zone1 = ZoneEntry(
-            **{ZONE_ID: 0, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 1", ZONE_SIZE: 50.5, ZONE_THROUGHPUT: 10.1,ZONE_MODULE:0,ZONE_MAPPING:0,ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION:CONF_DEFAULT_MAXIMUM_DURATION}
+            **{ZONE_ID: 0, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 1", ZONE_SIZE: 50.5, ZONE_THROUGHPUT: 10.1,ZONE_MODULE:0,ZONE_MAPPING:0,ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION:CONF_DEFAULT_MAXIMUM_DURATION, ZONE_MAXIMUM_BUCKET: CONF_DEFAULT_MAXIMUM_BUCKET}
         )
         new_zone2 = ZoneEntry(
-            **{ZONE_ID: 1, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 2", ZONE_SIZE: 100.1, ZONE_THROUGHPUT: 20.2,ZONE_MODULE:0,ZONE_MAPPING: 0, ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION: CONF_DEFAULT_MAXIMUM_DURATION}
+            **{ZONE_ID: 1, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 2", ZONE_SIZE: 100.1, ZONE_THROUGHPUT: 20.2,ZONE_MODULE:0,ZONE_MAPPING: 0, ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION: CONF_DEFAULT_MAXIMUM_DURATION, ZONE_MAXIMUM_BUCKET: CONF_DEFAULT_MAXIMUM_BUCKET}
         )
         self.zones[0] = new_zone1
         self.zones[1] = new_zone2
@@ -412,7 +416,7 @@ class SmartIrrigationStorage:
     @callback
     def async_get_module(self, module_id: int) -> ModuleEntry:
         """Get an existing ModuleEntry by id."""
-        if module_id is None:
+        if module_id is not None:
             res = self.modules.get(int(module_id))
             return attr.asdict(res) if res else None
         return None

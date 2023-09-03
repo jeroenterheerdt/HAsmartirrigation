@@ -108,22 +108,47 @@ export class SmartIrrigationPanel extends LitElement {
           ></smart-irrigation-view-mappings>
         `;
       case "help":
-        return html`<ha-card header="How to get help">
+        return html`<ha-card
+          header="${localize(
+            "panels.help.cards.how-to-get-help.title",
+            this.hass.language
+          )}"
+        >
           <div class="card-content">
-            First, read the
-            <a href="https://github.com/jeroenterheerdt/HAsmartirrigation/wiki"
-              >Wiki</a
-            >. If you still need help reach out on the
+          ${localize(
+            "panels.help.cards.how-to-get-help.first-read-the",
+            this.hass.language
+          )} <a href="https://github.com/jeroenterheerdt/HAsmartirrigation/wiki"
+              >${localize(
+                "panels.help.cards.how-to-get-help.wiki",
+                this.hass.language
+              )}</a
+            >. ${localize(
+              "panels.help.cards.how-to-get-help.if-you-still-need-help",
+              this.hass.language
+            )}
             <a
               href="https://community.home-assistant.io/t/smart-irrigation-save-water-by-precisely-watering-your-lawn-garden"
-              >Community forum</a
+              >${localize(
+                "panels.help.cards.how-to-get-help.community-forum",
+                this.hass.language
+              )}</a
             >
-            or open a
+            ${localize(
+              "panels.help.cards.how-to-get-help.or-open-a",
+              this.hass.language
+            )}
             <a
               href="https://github.com/jeroenterheerdt/HAsmartirrigation/issues"
-              >Github Issue</a
+              >${localize(
+                "panels.help.cards.how-to-get-help.github-issue",
+                this.hass.language
+              )}</a
             >
-            (English only).
+            (${localize(
+              "panels.help.cards.how-to-get-help.english-only",
+              this.hass.language
+            )}).
           </div></ha-card
         >`;
       default:

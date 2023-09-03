@@ -43,6 +43,7 @@ import {
   ZONE_DURATION,
   ZONE_LEAD_TIME,
   ZONE_MAPPING,
+  ZONE_MAXIMUM_BUCKET,
   ZONE_MAXIMUM_DURATION,
   ZONE_MODULE,
   ZONE_MULTIPLIER,
@@ -145,6 +146,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       mapping: undefined,
       lead_time: 0,
       maximum_duration: undefined,
+      maximum_bucket: undefined,
     };
 
     this.zones = [...this.zones, newZone];
@@ -446,6 +448,26 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                     ),
                   })}"
               />
+              <label for="maximum-bucket${index}"
+                >${localize(
+                  "panels.zones.labels.maximum-bucket",
+                  this.hass.language
+                )}:</label
+              >
+              <input
+                class="shortinput"
+                id="maximum-bucket${index}"
+                type="number"
+                .value="${Number(zone.maximum_bucket).toFixed(1)}"
+                @input="${(e: Event) =>
+                  this.handleEditZone(index, {
+                    ...zone,
+                    [ZONE_MAXIMUM_BUCKET]: parseFloat(
+                      (e.target as HTMLInputElement).value
+                    ),
+                  })}"
+              />
+              <br/>
               <label for="lead_time${index}"
                 >${localize(
                   "panels.zones.labels.lead-time",
