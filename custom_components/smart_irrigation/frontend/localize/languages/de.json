@@ -22,7 +22,7 @@
         },
         "automatic-update": {
           "errors": {
-            "warning-update-time-on-or-after-calc-time": "Hinweis: Die automatische Aktualisierung der Wetterdaten erfolgt bei oder nach der automatischen Berechnung der Bewässerungszeit"
+            "warning-update-time-on-or-after-calc-time": "Hinweis: Die automatische Aktualisierung der Wetterdaten erfolgt bei oder nach der automatischen Berechnung der Bewässerungsdauer"
           },
           "header": "Automatische Aktualisierung der Wetterdaten",
           "labels": {
@@ -118,7 +118,7 @@
           }
         }
       },
-      "description": "Fügen Sie ein oder mehrere Module hinzu. Module berechnen die Bewässerungszeit. Jedes Modul hat seine eigene Konfiguration und kann zur Berechnung der Bewässerungszeit für eine oder mehrere Zonen verwendet werden.",
+      "description": "Fügen Sie ein oder mehrere Module hinzu. Module berechnen die Bewässerungsdauer. Jedes Modul hat seine eigene Konfiguration und kann zur Berechnung der Bewässerungsdauer für eine oder mehrere Zonen verwendet werden.",
       "no_items": "Es sind noch kein Module vorhanden.",
       "title": "Module"
     },
@@ -144,7 +144,7 @@
           "header": "Aktionen für alle Zonen"
         }
       },
-      "description": "Fügen Sie eine oder mehrere Zonen hinzu. Die Bewässerungszeit wird pro Zone, abhängig von Größe, Durchsatz, Status, Modul und Sensorgruppe berechnet.",
+      "description": "Fügen Sie eine oder mehrere Zonen hinzu. Die Bewässerungsdauer wird pro Zone, abhängig von Größe, Durchsatz, Status, Modul und Sensorgruppe berechnet.",
       "labels": {
         "bucket": "Vorrat",
         "duration": "Dauer",
