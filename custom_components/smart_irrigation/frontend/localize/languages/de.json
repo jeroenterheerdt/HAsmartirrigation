@@ -141,7 +141,8 @@
         "add": "Hinzufügen",
         "calculate": "Bewässerungsdauer berechnen.",
         "information": "Information",
-        "update": "Wetterdaten aktualisieren."
+        "update": "Wetterdaten aktualisieren.",
+        "reset-bucket": "Vorrat zurücksetzen"
       },
       "cards": {
         "add-zone": {
@@ -153,7 +154,8 @@
         "zone-actions": {
           "actions": {
             "calculate-all": "Alle Zonen berechnen",
-            "update-all": "Alle Zonen aktualisieren"
+            "update-all": "Alle Zonen aktualisieren",
+            "reset-all-buckets": "Alle Vorräte zurücksetzen"
           },
           "header": "Aktionen für alle Zonen"
         }
