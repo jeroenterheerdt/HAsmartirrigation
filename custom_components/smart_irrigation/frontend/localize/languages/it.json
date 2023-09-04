@@ -1,19 +1,17 @@
 {
   "common": {
-    "labels": {
-      "yes": "Si",
-      "no": "No",
-      "module": "Modulo"
-    },
     "actions": {
       "delete": "Cancella"
+    },
+    "labels": {
+      "module": "Modulo",
+      "no": "No",
+      "select": "Seleziona",
+      "yes": "Si"
     }
   },
-  "title": "Irrigazione Intelligente",
   "panels": {
     "general": {
-      "title": "Generale",
-      "description": "Questa pagina fornisce le impostazioni globali.",
       "cards": {
         "automatic-duration-calculation": {
           "header": "Calcolo automatico della durata",
@@ -23,67 +21,60 @@
           }
         },
         "automatic-update": {
+          "errors": {
+            "warning-update-time-on-or-after-calc-time": "Attenzione: ora di aggiornamento dei dati meteorologici in corrispondenza o dopo l'ora di calcolo"
+          },
           "header": "Aggiornamento automatico dei dati meteorologici",
           "labels": {
             "auto-update-enabled": "Aggiorna automaticamente i dati meteorologici",
-            "auto-update-interval": "Aggiorna i dati del sensore ogni",
-            "auto-update-first-update": "(Primo) aggiornamento alle"
+            "auto-update-first-update": "(Primo) aggiornamento alle",
+            "auto-update-interval": "Aggiorna i dati del sensore ogni"
           },
           "options": {
-            "minutes": "minuti",
+            "days": "giorni",
             "hours": "ore",
-            "days": "giorni"
-          },
-          "errors": {
-            "warning-update-time-on-or-after-calc-time": "Attenzione: ora di aggiornamento dei dati meteorologici in corrispondenza o dopo l'ora di calcolo"
+            "minutes": "minuti"
           }
         }
-      }
+      },
+      "description": "Questa pagina fornisce le impostazioni globali.",
+      "title": "Generale"
     },
-    "modules": {
-      "title": "Moduli",
-      "description": "Aggiungi uno o più moduli che calcolano la durata dell'irrigazione. Ogni modulo viene fornito con la propria configurazione e può essere utilizzato per calcolare la durata di una o più zone",
-      "no_items": "Non ci sono ancora moduli definiti.",
+    "help": {
+      "title": "Aiuto",
       "cards": {
-        "add-module": {
-          "header": "Aggiungi modulo",
-          "actions": {
-            "add": "Aggiungi modulo"
-          }
-        },
-        "module": {
-          "labels": {
-            "configuration": "Configurazione",
-            "required": "indica un campo richiesto"
-          },
-          "translated-options": {
-            "EstimateFromTemp": "Stima dalla temperatura",
-            "EstimateFromSunHours": "Stima dalle ore solari",
-            "DontEstimate": "Non stimare"
-          },
-          "errors": {
-            "cannot-delete-module-because-zones-use-it": "Non puoi eliminare questo modulo perché almeno una zona lo utilizza"
-          }
+        "how-to-get-help": {
+          "title": "Come ottenere aiuto",
+          "first-read-the": "Per prima cosa, leggi il",
+          "wiki": "Wiki",
+          "if-you-still-need-help": "Se hai ancora bisogno di aiuto, contatta il",
+          "community-forum": "Forum della Comunità",
+          "or-open-a": "oppure apri un",
+          "github-issue": "Problema su Github",
+          "english-only": "soltanto in Inglese"
         }
       }
     },
     "mappings": {
-      "title": "Mappature",
-      "description": "Aggiungi una o più mappature che recuperano i dati meteo da OpenWeatherMap, da sensori o da una combinazione di questi. È possibile mappare ciascuna mappatura su una o più zone",
-      "no_items": "Non ci sono ancora mappature definite.",
       "cards": {
         "add-mapping": {
-          "header": "Aggiungi mappatura",
           "actions": {
-            "add": "Aggiungi mappatura"
-          }
+            "add": "Aggiungi gruppo di sensori"
+          },
+          "header": "Aggiungi gruppo di sensori"
         },
         "mapping": {
-          "source": "Fonte",
-          "sources": {
-            "openweathermap": "OpenWeatherMap",
-            "sensor": "Sensore",
-            "none": "Nessuno"
+          "aggregates": {
+            "average": "Media",
+            "first": "Primo",
+            "last": "Ultimo",
+            "maximum": "Massimo",
+            "median": "Mediana",
+            "minimum": "Minimo",
+            "sum": "Somma"
+          },
+          "errors": {
+            "cannot-delete-mapping-because-zones-use-it": "Non è possibile eliminare questo gruppo di sensori perché almeno una zona lo utilizza."
           },
           "items": {
             "dewpoint": "Punto di rugiada",
@@ -97,73 +88,101 @@
             "temperature": "Temperatura",
             "windspeed": "Velocità del vento"
           },
-          "sensor-entity": "Entità sensore",
-          "sensor-units": "Il sensore fornisce valori in",
-          "sensor-aggregate-use-the": "Usa il",
           "sensor-aggregate-of-sensor-values-to-calculate": "dei valori del sensore per calcolare la durata",
-          "aggregates": {
-            "average": "Media",
-            "minimum": "Minimo",
-            "maximum": "Massimo",
-            "first": "Prmo",
-            "last": "Ultimo",
-            "median": "Mediana",
-            "sum": "Somma"
-          },
-          "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "Non puoi eliminare questa mappatura perché è utilizzata da almeno una zona"
+          "sensor-aggregate-use-the": "Usa il",
+          "sensor-entity": "Entità sensore",
+          "static_value": "Valore",
+          "sensor-units": "Il sensore fornisce valori in",
+          "input-units": "L'input fornisce valori in",
+          "source": "Fonte",
+          "sources": {
+            "none": "Nessuna",
+            "openweathermap": "OpenWeatherMap",
+            "sensor": "Sensore",
+            "static": "Valore statico"
           }
         }
       },
+      "description": "Aggiungi uno o più gruppi di sensori che recuperano i dati meteorologici da OpenWeatherMap, da sensori o da una combinazione di questi. È possibile mappare ciascun gruppo di sensori su una o più zone",
       "labels": {
         "mapping-name": "Nome"
-      }
+      },
+      "no_items": "Non è ancora stato definito alcun gruppo di sensori.",
+      "title": "Gruppi di sensori"
     },
-    "zones": {
-      "title": "Zone",
-      "description": "Specificare qui una o più zone di irrigazione. Il componente calcola la durata dell'irrigazione per zona, a seconda delle dimensioni, della produttività, dello stato, del modulo e della mappatura.",
-      "no_items": "Non ci sono ancora zone definite.",
+    "modules": {
       "cards": {
-        "add-zone": {
-          "header": "Aggiungi zona",
+        "add-module": {
           "actions": {
-            "add": "Aggiungi zona"
-          }
+            "add": "Aggiungi modulo"
+          },
+          "header": "Aggiungi modulo"
         },
-        "zone-actions": {
-          "header": "Azioni su tutte le zone",
-          "actions": {
-            "update-all": "Aggiorna tutte le zone",
-            "calculate-all": "Calcola tutte le zone"
+        "module": {
+          "errors": {
+            "cannot-delete-module-because-zones-use-it": "Non puoi eliminare questo modulo perché almeno una zona lo utilizza."
+          },
+          "labels": {
+            "configuration": "Configurazione",
+            "required": "indica un campo richiesto"
+          },
+          "translated-options": {
+            "DontEstimate": "Non stimare",
+            "EstimateFromSunHours": "Stima dalle ore solari",
+            "EstimateFromTemp": "Stima dalla temperatura"
           }
         }
       },
-      "labels": {
-        "name": "Nome",
-        "size": "Dimensione",
-        "throughput": "Portata",
-        "state": "Stato",
-        "states": {
-          "disabled": "Disabilitata",
-          "manual": "Manuale",
-          "automatic": "Automatico"
-        },
-
-        "mapping": "Mappatura",
-        "bucket": "Secchio",
-        "lead-time": "Tempo di consegna",
-        "multiplier": "Moltiplicatore",
-        "duration": "Durata"
-      },
+      "description": "Aggiungi uno o più moduli che calcolano la durata dell'irrigazione. Ogni modulo viene fornito con la propria configurazione e può essere utilizzato per calcolare la durata di una o più zone.",
+      "no_items": "Non ci sono ancora moduli definiti.",
+      "title": "Moduli"
+    },
+    "zones": {
       "actions": {
         "add": "Aggiungi",
         "calculate": "Calcola",
+        "information": "Informazioni",
         "update": "Aggiorna",
-        "information": "Informazione"
-      }
-    },
-    "help": {
-      "title": "Aiuto"
+        "reset-bucket": "Reimposta il secchio"
+      },
+      "cards": {
+        "add-zone": {
+          "actions": {
+            "add": "Aggiungi zona"
+          },
+          "header": "Aggiungi zona"
+        },
+        "zone-actions": {
+          "actions": {
+            "calculate-all": "Calcola tutte le zone",
+            "update-all": "Aggiorna tutte le zone",
+            "reset-all-buckets": "Reimposta tutte le zone"
+          },
+          "header": "Azioni su tutte le zone"
+        }
+      },
+      "description": "Specificare qui una o più zone di irrigazione. La durata dell'irrigazione viene calcolata per zona, a seconda delle dimensioni, della produttività, dello stato, del modulo e del gruppo di sensori.",
+      "labels": {
+        "bucket": "Secchio",
+        "duration": "Durata",
+        "lead-time": "Tempi di esecuzione",
+        "mapping": "Gruppo di sensori",
+        "maximum-duration": "Durata massima",
+        "multiplier": "Moltiplicatore",
+        "name": "Nome",
+        "size": "Misura",
+        "state": "Stato",
+        "states": {
+          "automatic": "Automatico",
+          "disabled": "Disabilitato",
+          "manual": "Manuale"
+        },
+        "throughput": "Portata",
+        "maximum-bucket": "Secchio massimo"
+      },
+      "no_items": "Non ci sono ancora zone definite.",
+      "title": "Zone"
     }
-  }
+  },
+  "title": "Irrigazione Intelligente"
 }

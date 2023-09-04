@@ -5,15 +5,15 @@
     },
     "error": {
       "auth": "Open Weather API key or version incorrect",
-      "name": "Specify an unique name for this instance."
+      "name": "Specify an unique name for the integration."
     },
     "step": {
       "user": {
         "title": "General set up",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "name": "Unique name of the instance",
-          "use_owm": "Use Open Weather Map for weather data? Disable this is you want to use another source, such as your own weather station, exclusively. Leave this on if you intent to use Open Weather Map for at least part of the weather data."
+          "name": "Unique name of the integration",
+          "use_owm": "Use Open Weather Map for weather data or forecasting? Disable this is you want to use another source, such as your own weather station, exclusively. If you turn it off, you will not be able to use forecasts. Leave this on if you intent to use Open Weather Map for at least part of the weather data, including forecasting."
         }
       },
       "step1": {
@@ -35,6 +35,13 @@
         "title": "Open Weather Map API set up",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
+          "use_owm": "Use Open Weather Map for weather data or forecasting? Disable this is you want to use another source, such as your own weather station, exclusively. If you turn it off, you will not be able to use forecasts. Leave this on if you intent to use Open Weather Map for at least part of the weather data, including forecasting."
+        }
+      },
+      "step1": {
+        "title": "Open Weather Map API set up",
+        "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
           "owm_api_key": "API key for Open Weather Map",
           "owm_api_version": "Open Weather Map API version (select 3.0 for new configurations)"
         }
@@ -50,12 +57,12 @@
   },
   "defaults": {
     "default-zone": "Default zone",
-    "default-mapping": "Default mapping"
+    "default-mapping": "Default sensor group"
   },
   "module": {
     "calculation": {
       "explanation": {
-        "module-returned-evapotranspiration-deficiency": "Module returned Evapotranspiration deficiency of",
+        "module-returned-evapotranspiration-deficiency": "Note: this explanation uses '.' as decimal separator and shows rounded values. Module returned Evapotranspiration deficiency of",
         "bucket-was": "Bucket was",
         "new-bucket-values-is": "New bucket value is",
         "old-bucket-variable": "old_bucket",
@@ -68,10 +75,24 @@
         "precipitation-rate-variable": "precipitation_rate",
         "multiplier-is-applied": "Now, the multiplier is applied. The multiplier is",
         "duration-after-multiplier-is": "hence the duration is",
+        "maximum-duration-is-applied": "Then, the maximum duration is applied. The maximum duration is",
+        "duration-after-maximum-duration-is": "hence the duration is",
         "lead-time-is-applied": "Finally, the lead time is applied. The lead time is",
         "duration-after-lead-time-is": "hence the final duration is",
-        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Since bucket >= 0, no irrigation is necessary and duration is set to"
+        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Since bucket >= 0, no irrigation is necessary and duration is set to",
+        "maximum-bucket-is": "maximum bucket size is"
       }
+    }
+  },
+  "calcmodules": {
+    "pyeto": {
+      "description": "Calculate duration based on the FAO56 calculation from the PyETO library"
+    },
+    "static": {
+      "description": "'Dummy' module with a static configurable delta"
+    },
+    "passthrough": {
+      "description": "Passthrough module that returns the value of an Evapotranspiration sensor as delta"
     }
   }
 }
