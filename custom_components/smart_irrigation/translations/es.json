@@ -1,0 +1,98 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Sólo se permite una única configuración de Riego Inteligente."
+    },
+    "error": {
+      "auth": "Clave o versión incorrecta de la API de Open Weather",
+      "name": "Especifique un nombre único para la integración."
+    },
+    "step": {
+      "user": {
+        "title": "Configuración general",
+        "description": "Si necesita ayuda con la configuración, consulte https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "name": "Nombre único de la integración",
+          "use_owm": "¿Desea utilizar Open Weather Map para datos o previsiones meteorológicas? Desactívelo si desea utilizar exclusivamente otra fuente, como su propia estación meteorológica. Si lo desactiva, no podrá utilizar previsiones. Déjela activada si pretende utilizar Open Weather Map para al menos parte de los datos meteorológicos, incluida la previsión."
+        }
+      },
+      "step1": {
+        "title": "Configuración de la API de Open Weather Map",
+        "description": "Si necesita ayuda con la configuración, consulte https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "owm_api_key": "Clave API para Open Weather Map",
+          "owm_api_version": "Versión de la API Open Weather Map (seleccione 3.0 para nuevas configuraciones)"
+        }
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "auth": "Clave o versión incorrecta de la API de Open Weather"
+    },
+    "step": {
+      "init": {
+        "title": "Configuración de la API Open Weather Map",
+        "description": "Si necesita ayuda con la configuración, consulte https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "use_owm": "¿Desea utilizar Open Weather Map para datos o previsiones meteorológicas? Desactívelo si desea utilizar exclusivamente otra fuente, como su propia estación meteorológica. Si lo desactiva, no podrá utilizar previsiones. Déjela activada si pretende utilizar Open Weather Map para al menos parte de los datos meteorológicos, incluida la previsión."
+        }
+      },
+      "step1": {
+        "title": "Configuración de la API Open Weather Map",
+        "description": "Si necesita ayuda con la configuración, consulte https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "owm_api_key": "Clave API para Open Weather Map",
+          "owm_api_version": "Versión de la API Open Weather Map (seleccione 3.0 para nuevas configuraciones)"
+        }
+      }
+    }
+  },
+  "common": {
+    "attributes": {
+      "size": "Tamaño",
+      "throughput": "Rendimiento",
+      "state": "Estado"
+    }
+  },
+  "defaults": {
+    "default-zone": "Zona de riego predeterminada",
+    "default-mapping": "Grupo de sensores predeterminado"
+  },
+  "module": {
+    "calculation": {
+      "explanation": {
+        "module-returned-evapotranspiration-deficiency": "Nota: esta explicación utiliza '.' como separador decimal y muestra valores redondeados. El módulo devuelve una deficiencia de evapotranspiración de",
+        "bucket-was": "El cubo era",
+        "new-bucket-values-is": "El nuevo valor del cubo es",
+        "old-bucket-variable": "old_bucket",
+        "delta": "delta",
+        "bucket-less-than-zero-irrigation-necessary": "Dado que cubo < 0, el riego es necesario",
+        "steps-taken-to-calculate-duration": "Para calcular la duración exacta, se siguieron los siguientes pasos",
+        "precipitation-rate-defined-as": "La tasa de precipitación se define como",
+        "duration-is-calculated-as": "La duración se calcula como",
+        "bucket": "cubo",
+        "precipitation-rate-variable": "precipitation_rate",
+        "multiplier-is-applied": "A continuación, se aplica el multiplicador. El multiplicador es",
+        "duration-after-multiplier-is": "por lo que la duración es",
+        "maximum-duration-is-applied": "A continuación, se aplica la duración máxima. La duración máxima es",
+        "duration-after-maximum-duration-is": "por lo que la duración es",
+        "lead-time-is-applied": "Por último, se aplica el plazo de entrega. El plazo de entrega es",
+        "duration-after-lead-time-is": "por lo que la duración final es",
+        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Como cubo >= 0, no es necesario regar y la duración se fija en",
+        "maximum-bucket-is": "El tamaño máximo de cubo es"
+      }
+    }
+  },
+  "calcmodules": {
+    "pyeto": {
+      "description": "Calcular la duración a partir del cálculo FAO56 de la biblioteca PyETO"
+    },
+    "static": {
+      "description": "Módulo 'de prueba' con un delta estático configurable"
+    },
+    "passthrough": {
+      "description": "Módulo de paso que devuelve el valor de un sensor de evapotranspiración como delta"
+    }
+  }
+}

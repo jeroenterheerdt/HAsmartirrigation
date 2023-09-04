@@ -1,6 +1,7 @@
 import * as en from "./languages/en.json";
 import * as nl from "./languages/nl.json";
 import * as de from "./languages/de.json";
+import * as es from "./languages/es.json";
 
 import IntlMessageFormat from "intl-messageformat";
 
@@ -8,6 +9,7 @@ const languages: any = {
   de: de,
   en: en,
   nl: nl,
+  es: es
 };
 
 export function localize(
