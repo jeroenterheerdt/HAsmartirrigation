@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2023.9.0-beta8"
+VERSION = "v2023.9.0-beta9"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -9,7 +9,7 @@ DOMAIN = "smart_irrigation"
 CUSTOM_COMPONENTS = "custom_components"
 
 LANGUAGE_FILES_DIR = "translations"
-SUPPORTED_LANGUAGES = ["en","nl"]
+SUPPORTED_LANGUAGES = ["de","en","nl"]
 
 CONF_OWM_API_KEY = "owm_api_key"
 CONF_OWM_API_VERSION = "owm_api_version"
@@ -73,6 +73,7 @@ ATTR_NEW_BUCKET_VALUE = "new_bucket_value"
 ATTR_UPDATE = "update"
 ATTR_UPDATE_ALL = "update_all"
 ATTR_OVERRIDE_CACHE = "override_cache"
+ATTR_RESET_ALL_BUCKETS = "reset_all_buckets"
 
 ZONE_ID = "id"
 ZONE_NAME = "name"

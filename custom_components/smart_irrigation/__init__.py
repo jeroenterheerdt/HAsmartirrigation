@@ -325,10 +325,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 static_values = self.build_static_values_for_mapping(mapping)
                 weatherdata = await self.merge_weatherdata_and_sensor_values(weatherdata, static_values)
             #add the weatherdata value to the mappings sensor values
-            mapping_data = mapping[const.MAPPING_DATA]
-            mapping_data.append(weatherdata)
-            changes = {"data": mapping_data}
-            self.store.async_update_mapping(mapping_id,changes)
+            if mapping is not None:
+                mapping_data = mapping[const.MAPPING_DATA]
+                mapping_data.append(weatherdata)
+                changes = {"data": mapping_data}
+                self.store.async_update_mapping(mapping_id,changes)
+            else:
+                _LOGGER.warning("Unable to find mapping with id in update all: {}".format(mapping_id))
 
     async def merge_weatherdata_and_sensor_values(self, wd, sv):
         if wd == None:
@@ -470,6 +473,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         bucket = zone.get(const.ZONE_BUCKET)
         data = {}
         data[const.ZONE_OLD_BUCKET]=bucket
+        self.hass
         explanation = ""
 
         if modinst:
@@ -717,7 +721,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             await self._async_calculate_all()
 
         elif const.ATTR_UPDATE in data:
-            #update sensor data for a zone
+            #update weather data for a zone
             res = self.store.async_get_zone(zone_id)
             _LOGGER.info("Updating zone {}".format(res[const.ZONE_NAME]))
             if not res:
@@ -757,12 +761,23 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             new_bucket_value = 0
             if const.ATTR_NEW_BUCKET_VALUE in data:
                 new_bucket_value = data[const.ATTR_NEW_BUCKET_VALUE]
+            res = self.store.async_get_zone(zone_id)
+            if not res:
+                return
+            #apply max bucket setting
+            if const.ZONE_MAXIMUM_BUCKET in res and new_bucket_value > res[const.ZONE_MAXIMUM_BUCKET]:
+                new_bucket_value = res[const.ZONE_MAXIMUM_BUCKET]
             data[const.ZONE_BUCKET] = new_bucket_value
             data.pop(const.ATTR_SET_BUCKET)
             self.store.async_update_zone(zone_id, data)
             async_dispatcher_send(
                 self.hass, const.DOMAIN + "_config_updated", zone_id
             )
+        elif const.ATTR_RESET_ALL_BUCKETS in data:
+            #reset all buckets
+            _LOGGER.info("Resetting all buckets")
+            data.pop(const.ATTR_RESET_ALL_BUCKETS)
+            await self.handle_reset_all_buckets(None)
         elif self.store.async_get_zone(zone_id):
             # modify a zone
             entry = self.store.async_update_zone(zone_id, data)

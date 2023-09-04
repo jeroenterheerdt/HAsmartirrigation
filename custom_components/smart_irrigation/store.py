@@ -403,6 +403,9 @@ class SmartIrrigationStorage:
             if ATTR_NEW_BUCKET_VALUE in changes:
                 changes[ZONE_BUCKET] = changes[ATTR_NEW_BUCKET_VALUE]
                 changes.pop(ATTR_NEW_BUCKET_VALUE)
+            #apply maximum bucket value
+            if ZONE_MAXIMUM_BUCKET in changes and changes[ZONE_BUCKET]>changes[ZONE_MAXIMUM_BUCKET]:
+                changes[ZONE_BUCKET] = changes[ZONE_MAXIMUM_BUCKET]
             # if bucket on zone is 0, then duration should be 0, but only if zone is automatic
             if ZONE_BUCKET in changes and changes[ZONE_BUCKET] == 0 and old.state == ZONE_STATE_AUTOMATIC:
                 changes[ZONE_DURATION] = 0

@@ -141,7 +141,8 @@
         "add": "Add",
         "calculate": "Calculate",
         "information": "Information",
-        "update": "Update"
+        "update": "Update",
+        "reset-bucket": "Reset bucket"
       },
       "cards": {
         "add-zone": {
@@ -153,7 +154,8 @@
         "zone-actions": {
           "actions": {
             "calculate-all": "Calculate all zones",
-            "update-all": "Update all zones"
+            "update-all": "Update all zones",
+            "reset-all-buckets": "Reset all buckets"
           },
           "header": "Actions on all zones"
         }
