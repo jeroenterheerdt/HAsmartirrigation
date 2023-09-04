@@ -100,7 +100,7 @@ This page provides global settings.
 
 #### ZONES
 
-Specify one or more irrigation zones here. The integration calculates irrigation duration per zone, depending on size, throughput, state, module and sensor group. A zone can be _disabled_ (so it doesn't do anything), _automatic_ or _manual_. If in automatic, duration is automatically calculated. If in manual, you specify the duration yourself. If disabled, the zone is not included in any calculation.
+Specify one or more irrigation zones here. The integration calculates irrigation duration per zone, depending on size, throughput, state, module and sensor group. A zone can be _disabled_ (so it doesn't do anything), _automatic_ or _manual_. If in automatic, duration is automatically calculated. If in manual, you specify the duration yourself also duration isn't reset by the reset_bucket services. If disabled, the zone is not included in any calculation.
 
 > **When entering any values in the configuration of this integration, keep in mind that the integration will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).
 
@@ -203,7 +203,7 @@ Sample screenshot:
 
 | Event | Description|
 | --- | --- |
-|`smart_irrigation_start_irrigation_all_zones`|Fires on the total of the durations of all non-disabled zones and sunrise (event is scheduled at: sunrise - sum(duration for all non-disabled zones). You can listen to this event to optimize the moment you irrigate so your irrigation starts just before sunrise and is completed at sunrise. See below for examples on how to use this.|
+|`smart_irrigation_start_irrigation_all_zones`|Fires on the total of the durations of all non-disabled zones and sunrise (event is scheduled at: sunrise - sum(duration for all non-disabled zones)). You can listen to this event to optimize the moment you irrigate so your irrigation starts just before sunrise and is completed at sunrise. See below for examples on how to use this.|
 
 The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) describes the entities, the attributes and the calculations.
 
