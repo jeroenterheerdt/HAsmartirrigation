@@ -35,4 +35,4 @@ reset_bucket:
     entity:
       domain: sensor
 reset_all_buckets:
-  descripiton: Reset bucket for all zones to 0
+  description: Reset bucket for all zones to 0
