@@ -1,0 +1,57 @@
+blueprint:
+  name: Smart Irrigation
+  description: Smart irrigation for a zone
+  domain: automation
+  input:
+    irrigation_switch:
+      name: Irrigation Switch
+      description: Switch, tap or valve to turn on and off
+      selector:
+        entity:
+          filter:
+            - domain: switch
+            - domain: input_boolean
+
+    irrigation_zone:
+      name: Irrigation Zone
+      description: Zone to irrigate
+      selector:
+        entity:
+          filter:
+            - device_class: duration
+
+variables:
+  duration: !input irrigation_zone
+
+alias: Standard Irrigation
+description: "Standard irrigation for a Zone"
+
+trigger:
+  platform: event
+  event_type: smart_irrigation_start_irrigation_all_zones
+
+condition:
+  - condition: numeric_state
+    entity_id: !input irrigation_zone
+    above: 0
+
+action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: !input irrigation_switch
+
+  - delay: "{{ states(duration) }}"
+
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id:
+        - !input irrigation_switch
+
+  - service: smart_irrigation.reset_bucket
+    data: {}
+    target:
+      entity_id: !input irrigation_zone
+
+mode: single

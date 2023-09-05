@@ -45,6 +45,7 @@ export const calculateZone = (
   return hass.callApi("POST", DOMAIN + "/zones", {
     id: zone_id,
     calculate: true,
+    override_cache: true,
   });
 };
 
@@ -66,6 +67,12 @@ export const calculateAllZones = (hass: HomeAssistant): Promise<boolean> => {
 export const updateAllZones = (hass: HomeAssistant): Promise<boolean> => {
   return hass.callApi("POST", DOMAIN + "/zones", {
     update_all: true,
+  });
+};
+
+export const resetAllBuckets = (hass: HomeAssistant): Promise<boolean> => {
+  return hass.callApi("POST", DOMAIN + "/zones", {
+    reset_all_buckets: true,
   });
 };
 

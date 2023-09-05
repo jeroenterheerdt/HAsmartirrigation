@@ -1,4 +1,4 @@
-"""Config flow for the Smart Irrigation component."""
+"""Config flow for the Smart Irrigation integration."""
 import voluptuous as vol
 from homeassistant.core import callback
 from homeassistant.helpers.selector import selector

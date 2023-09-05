@@ -55,54 +55,59 @@ export enum SmartIrrigationZoneState {
 
 //export type SmartIrrigationZone = {
 export class SmartIrrigationZone {
-  id: string;
+  id: number;
   name: string;
   size: number;
   throughput: number;
   state: SmartIrrigationZoneState;
   duration: number;
-  module: string;
+  module?: number;
   bucket: number;
   delta: number;
   old_bucket: number;
   explanation: string;
   multiplier: number;
-  mapping: string;
+  mapping?: number;
   lead_time: number;
+  maximum_duration?: number;
+  maximum_bucket?: number;
 
   constructor(
+    i: number,
     n: string,
     s: number,
     t: number,
     st: SmartIrrigationZoneState,
     d: number
   ) {
-    this.id = Date.now().toString();
+    this.id = i;
     this.name = n;
     this.size = s;
     this.throughput = t;
     this.state = st;
     this.duration = d;
-    this.module = "";
+    this.module = undefined;
     this.bucket = 0;
     this.delta = 0;
     this.old_bucket = 0;
     this.explanation = "";
-    this.multiplier = 1;
-    this.mapping = "";
+    this.multiplier = 1.0;
+    this.mapping = undefined;
     this.lead_time = 0;
+    this.maximum_duration = 3600; //default maximum duration to one hour = 3600 seconds
+    this.maximum_bucket = 50; //default maximum bucket size to 50 mm
   }
 }
 
 export class SmartIrrigationModule {
-  id: string;
+  id: number;
   name: string;
   description: string;
   //duration: number;
   config: object;
   schema: object;
-  constructor(n: string, d: string, c: object, s: object) {
-    this.id = Date.now().toString();
+  constructor(i: number, n: string, d: string, c: object, s: object) {
+    this.id = i;
     this.name = n;
     this.description = d;
     this.config = c;
@@ -113,12 +118,12 @@ export class SmartIrrigationModule {
 }
 
 export class SmartIrrigationMapping {
-  id: string;
+  id: number;
   name: string;
   mappings: object;
 
-  constructor(n: string, m: object) {
-    this.id = Date.now().toString();
+  constructor(i: number, n: string, m: object) {
+    this.id = i;
     this.name = n;
     this.mappings = m;
   }

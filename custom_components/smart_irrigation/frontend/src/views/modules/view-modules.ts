@@ -74,7 +74,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
       return;
     }
     const newModule: SmartIrrigationModule = {
-      id: this.modules.length.toString(),
+      id: this.modules.length,
       name: this.moduleInput.selectedOptions[0].text,
       description: m.description,
       config: m.config,
@@ -109,7 +109,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
       return html``;
     } else {
       const numberofzonesusingthismodule = this.zones.filter(
-        (o) => parseInt(o.module) === parseInt(module.id)
+        (o) => o.module === module.id
       ).length;
       return html`
         <ha-card header="${module.id}: ${module.name}">
@@ -319,11 +319,17 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
         </ha-card>
 
         ${Object.entries(this.modules).map(([key, value]) =>
-          this.renderModule(value, parseInt(value["id"]))
+          this.renderModule(value, parseInt(key))
         )}
       `;
     }
   }
+
+  /*
+   ${Object.entries(this.modules).map(([key, value]) =>
+          this.renderModule(value, value["id"])
+        )}
+        */
 
   static get styles(): CSSResultGroup {
     return css`

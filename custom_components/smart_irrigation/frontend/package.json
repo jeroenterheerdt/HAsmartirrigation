@@ -31,7 +31,7 @@
     "@rollup/plugin-node-resolve": "*",
     "@typescript-eslint/eslint-plugin": "*",
     "@typescript-eslint/parser": "*",
-    "custom-card-helpers": "*",
+    "custom-card-helpers": "^1.9.0",
     "eslint": "*",
     "eslint-config-prettier": "*",
     "eslint-plugin-import": "*",

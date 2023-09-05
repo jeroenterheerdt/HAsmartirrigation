@@ -1,0 +1,42 @@
+blueprint:
+  name: Irrigation Unlimited --> Smart Irrigation reset bucket.
+  description: Irrigation Unlimited --> Smart Irrigation reset bucket.
+  domain: automation
+  input:
+    irrigation_zone:
+      name: Irrigation Zone
+      description: Irrigation Zone
+      selector:
+        entity:
+          filter:
+            - device_class: duration
+
+    irrigation_unlimited_sensor:
+      name: Irrigation Unlimited sensor
+      description: Irrigation Unlimited sensors
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+
+alias: Smart Irrigation reset bucket
+
+trigger:
+  platform: state
+  entity_id:
+    - !input irrigation_unlimited_sensor
+  from: on
+  to: off
+
+condition:
+  - condition: numeric_state
+    entity_id: !input irrigation_zone
+    above: 0
+
+action:
+  - service: smart_irrigation.reset_bucket
+    data: {}
+    target:
+      entity_id: !input irrigation_zone
+
+mode: single

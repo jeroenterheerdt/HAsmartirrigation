@@ -1,9 +1,11 @@
 import * as en from "./languages/en.json";
-import * as nl from './languages/nl.json';
+import * as nl from "./languages/nl.json";
+import * as de from "./languages/de.json";
 
 import IntlMessageFormat from "intl-messageformat";
 
 const languages: any = {
+  de: de,
   en: en,
   nl: nl,
 };

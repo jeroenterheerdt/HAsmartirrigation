@@ -1,4 +1,4 @@
-export const VERSION = "v2023.8.0-beta5";
+export const VERSION = "v2023.9.0-beta9";
 export const REPO = "https://github.com/jeroenterheerdt/HASmartIrrigation;";
 export const ISSUES_URL = REPO + "/issues";
 
@@ -32,13 +32,18 @@ export const MAPPING_WINDSPEED = "Windspeed";
 
 export const MAPPING_CONF_SOURCE_OWM = "owm";
 export const MAPPING_CONF_SOURCE_SENSOR = "sensor";
+export const MAPPING_CONF_SOURCE_STATIC_VALUE = "static";
 export const MAPPING_CONF_SOURCE_NONE = "none";
 export const MAPPING_CONF_SOURCE = "source";
 export const MAPPING_CONF_SENSOR = "sensorentity";
+export const MAPPING_CONF_STATIC_VALUE = "static_value";
 export const MAPPING_CONF_UNIT = "unit";
 export const MAPPING_DATA = "data";
 export const MAPPING_CONF_AGGREGATE = "aggregate";
 export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT = "average";
+export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION = "last";
+export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP = "maximum";
+export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP = "minimum";
 export const MAPPING_CONF_AGGREGATE_OPTIONS = [
   "average",
   "first",
@@ -68,6 +73,8 @@ export const UNIT_MH = "mile/h";
 export const UNIT_MS = "meter/s";
 export const UNIT_W_M2 = "W/m2";
 export const UNIT_W_SQFT = "W/sq ft";
+export const UNIT_MJ_DAY_M2 = "MJ/day/m2";
+export const UNIT_MJ_DAY_SQFT = "MJ/day/sq ft";
 
 export const ZONE_ID = "id";
 export const ZONE_NAME = "name";
@@ -86,3 +93,5 @@ export const ZONE_EXPLANATION = "explanation";
 export const ZONE_MULTIPLIER = "multiplier";
 export const ZONE_MAPPING = "mapping";
 export const ZONE_LEAD_TIME = "lead_time";
+export const ZONE_MAXIMUM_DURATION = "maximum_duration";
+export const ZONE_MAXIMUM_BUCKET = "maximum_bucket";

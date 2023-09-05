@@ -1,0 +1,58 @@
+blueprint:
+  name: Irrigation Unlimited adjust watering time for a sequence.
+  description: Adjust watering times based on smart irrigation calculations.
+  domain: automation
+  input:
+    irrigation_zone:
+      name: Irrigation Zone
+      description: Zone to irrigate
+      selector:
+        entity:
+          filter:
+            - device_class: duration
+
+    unlimited_sequence:
+      name: Unlimited sequence
+      description: Unlimited sequence to irrigate
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+
+    unlimited_sequence_id:
+      name: Unlimited sequence ID
+      description: Unlimited sequence ID to irrigate
+      selector:
+        number:
+          max: 100
+          min: 0
+          mode: box
+
+    time_on:
+      name: Time to turn on
+      selector:
+        time:
+      default: "23:30:00"
+
+variables:
+  duration: !input irrigation_zone
+
+alias: Smart Irrigation adjustment
+
+trigger:
+  platform: time
+  at: !input time_on
+
+condition:
+  - condition: template
+    value_template: "{{ (states('duration') | float(-1)) >= 0 }}"
+
+action:
+  - service: irrigation_unlimited.adjust_time
+    data:
+      actual: "{{ timedelta(seconds=states('duration') | int(0)) }}"
+      # 2. Adjust a sequence.
+      entity_id: !input unlimited_sequence
+      sequence_id: !input unlimited_sequence_id
+
+mode: single

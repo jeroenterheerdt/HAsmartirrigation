@@ -26,6 +26,8 @@ import {
   UNIT_M2,
   UNIT_MBAR,
   UNIT_MH,
+  UNIT_MJ_DAY_M2,
+  UNIT_MJ_DAY_SQFT,
   UNIT_MM,
   UNIT_MS,
   UNIT_PERCENT,
@@ -111,10 +113,12 @@ export function getOptionsForMappingType(mapping: string) {
       ];
 
     case MAPPING_SOLRAD:
-      //return W/m2 or W/sq ft
+      //return MJ/Day/M2, W/m2,  Mj/Day/SQFT or W/sq ft
       return [
         { unit: UNIT_W_M2, system: CONF_METRIC },
+        { unit: UNIT_MJ_DAY_M2, system: CONF_METRIC },
         { unit: UNIT_W_SQFT, system: CONF_IMPERIAL },
+        { unit: UNIT_MJ_DAY_SQFT, system: CONF_IMPERIAL },
       ];
     default:
       return [];

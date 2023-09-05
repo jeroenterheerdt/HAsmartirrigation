@@ -21,6 +21,8 @@ from .const import (
     CONF_DEFAULT_AUTO_UPDATE_TIME,
     CONF_DEFAULT_AUTO_UPDATED_ENABLED,
     CONF_DEFAULT_CALC_TIME,
+    CONF_DEFAULT_MAXIMUM_BUCKET,
+    CONF_DEFAULT_MAXIMUM_DURATION,
     CONF_DEFAULT_USE_OWM,
     CONF_IMPERIAL,
     CONF_METRIC,
@@ -57,10 +59,13 @@ from .const import (
     ZONE_ID,
     ZONE_LEAD_TIME,
     ZONE_MAPPING,
+    ZONE_MAXIMUM_BUCKET,
+    ZONE_MAXIMUM_DURATION,
     ZONE_MODULE,
     ZONE_MULTIPLIER,
     ZONE_NAME,
     ZONE_SIZE,
+    ZONE_STATE_AUTOMATIC,
     ZONE_THROUGHPUT,
     ZONE_STATE,
     ZONE_DURATION,
@@ -94,6 +99,8 @@ class ZoneEntry:
     explanation = attr.ib(type=str,default=None)
     mapping = attr.ib(type=str,default=None)
     lead_time = attr.ib(type=float, default=None)
+    maximum_duration = attr.ib(type=float, default=CONF_DEFAULT_MAXIMUM_DURATION)
+    maximum_bucket = attr.ib(type=float, default=CONF_DEFAULT_MAXIMUM_BUCKET)
 
 @attr.s(slots=True, frozen=True)
 class ModuleEntry:
@@ -130,6 +137,7 @@ class Config:
 class MigratableStore(Store):
     async def _async_migrate_func(self, old_version, data: dict):
         return data
+
 
 
 class SmartIrrigationStorage:
@@ -178,11 +186,14 @@ class SmartIrrigationStorage:
                         size=zone[ZONE_SIZE],
                         throughput=zone[ZONE_THROUGHPUT],
                         state=zone[ZONE_STATE],
+                        bucket=zone[ZONE_BUCKET],
                         duration=zone[ZONE_DURATION],
                         module=zone[ZONE_MODULE],
                         multiplier=zone[ZONE_MULTIPLIER],
                         mapping=zone[ZONE_MAPPING],
-                        lead_time = zone[ZONE_LEAD_TIME]
+                        lead_time = zone[ZONE_LEAD_TIME],
+                        maximum_duration = zone.get(ZONE_MAXIMUM_DURATION, CONF_DEFAULT_MAXIMUM_DURATION),
+                        maximum_bucket = zone.get(ZONE_MAXIMUM_BUCKET, CONF_DEFAULT_MAXIMUM_BUCKET),
                     )
             if "modules" in data:
                 for module in data["modules"]:
@@ -229,10 +240,10 @@ class SmartIrrigationStorage:
 
     async def async_factory_default_zones(self):
         new_zone1 = ZoneEntry(
-            **{ZONE_ID: 0, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 1", ZONE_SIZE: 50.5, ZONE_THROUGHPUT: 10.1,ZONE_MODULE:0,ZONE_MAPPING:0,ZONE_LEAD_TIME:0}
+            **{ZONE_ID: 0, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 1", ZONE_SIZE: 50.5, ZONE_THROUGHPUT: 10.1,ZONE_MODULE:0,ZONE_MAPPING:0,ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION:CONF_DEFAULT_MAXIMUM_DURATION, ZONE_MAXIMUM_BUCKET: CONF_DEFAULT_MAXIMUM_BUCKET}
         )
         new_zone2 = ZoneEntry(
-            **{ZONE_ID: 1, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 2", ZONE_SIZE: 100.1, ZONE_THROUGHPUT: 20.2,ZONE_MODULE:0,ZONE_MAPPING: 0, ZONE_LEAD_TIME:0}
+            **{ZONE_ID: 1, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 2", ZONE_SIZE: 100.1, ZONE_THROUGHPUT: 20.2,ZONE_MODULE:0,ZONE_MAPPING: 0, ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION: CONF_DEFAULT_MAXIMUM_DURATION, ZONE_MAXIMUM_BUCKET: CONF_DEFAULT_MAXIMUM_BUCKET}
         )
         self.zones[0] = new_zone1
         self.zones[1] = new_zone2
@@ -392,8 +403,11 @@ class SmartIrrigationStorage:
             if ATTR_NEW_BUCKET_VALUE in changes:
                 changes[ZONE_BUCKET] = changes[ATTR_NEW_BUCKET_VALUE]
                 changes.pop(ATTR_NEW_BUCKET_VALUE)
-            # if bucket on zone is 0, then duration should be 0
-            if ZONE_BUCKET in changes and changes[ZONE_BUCKET] == 0:
+            #apply maximum bucket value
+            if ZONE_MAXIMUM_BUCKET in changes and changes[ZONE_BUCKET]>changes[ZONE_MAXIMUM_BUCKET]:
+                changes[ZONE_BUCKET] = changes[ZONE_MAXIMUM_BUCKET]
+            # if bucket on zone is 0, then duration should be 0, but only if zone is automatic
+            if ZONE_BUCKET in changes and changes[ZONE_BUCKET] == 0 and old.state == ZONE_STATE_AUTOMATIC:
                 changes[ZONE_DURATION] = 0
             changes.pop('id', None)
             new = self.zones[zone_id] = attr.evolve(old, **changes)
@@ -405,8 +419,10 @@ class SmartIrrigationStorage:
     @callback
     def async_get_module(self, module_id: int) -> ModuleEntry:
         """Get an existing ModuleEntry by id."""
-        res = self.modules.get(int(module_id))
-        return attr.asdict(res) if res else None
+        if module_id is not None:
+            res = self.modules.get(int(module_id))
+            return attr.asdict(res) if res else None
+        return None
 
     @callback
     def async_get_modules(self):
@@ -454,8 +470,10 @@ class SmartIrrigationStorage:
     @callback
     def async_get_mapping(self, mapping_id: int) -> MappingEntry:
         """Get an existing MappingEntry by id."""
-        res = self.mappings.get(int(mapping_id))
-        return attr.asdict(res) if res else None
+        if mapping_id is not None:
+            res = self.mappings.get(int(mapping_id))
+            return attr.asdict(res) if res else None
+        return None
 
     @callback
     def async_get_mappings(self):

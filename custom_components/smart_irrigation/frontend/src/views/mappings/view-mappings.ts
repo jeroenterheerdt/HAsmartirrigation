@@ -25,11 +25,16 @@ import {
   MAPPING_CONF_AGGREGATE,
   MAPPING_CONF_AGGREGATE_OPTIONS,
   MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT,
+  MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP,
+  MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP,
+  MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION,
   MAPPING_CONF_SENSOR,
   MAPPING_CONF_SOURCE,
   MAPPING_CONF_SOURCE_NONE,
   MAPPING_CONF_SOURCE_OWM,
   MAPPING_CONF_SOURCE_SENSOR,
+  MAPPING_CONF_SOURCE_STATIC_VALUE,
+  MAPPING_CONF_STATIC_VALUE,
   MAPPING_CONF_UNIT,
   MAPPING_DEWPOINT,
   MAPPING_EVAPOTRANSPIRATION,
@@ -100,7 +105,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       [MAPPING_WINDSPEED]: "",
     };
     const newMapping: SmartIrrigationMapping = {
-      id: this.mappings.length.toString(),
+      id: this.mappings.length,
       name: this.mappingNameInput.value,
       mappings: the_mappings,
     };
@@ -142,7 +147,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       return html``;
     } else {
       const numberofzonesusingthismapping = this.zones.filter(
-        (o) => parseInt(o.mapping) === parseInt(mapping.id)
+        (o) => o.mapping === mapping.id
       ).length;
       //below here we should go over all the mappings on the mapping object
       return html`
@@ -203,7 +208,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         )}
       </label>
     </div> `;
-    //source radiobutton: OWM or sensor or (none/sensor)
+    //source radiobutton: (OWM/sensor/static value) or (none/sensor/static value)
     //show sensor entity input box only if sensor source is selected
     //show unit all the time, but set it to the metric value and disable if OWM. Else enable.
     r = html`${r}
@@ -304,6 +309,33 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           )}</label
         >
       </div>`;
+    r = html`${r}
+      <input
+        type="radio"
+        id="${value + index + MAPPING_CONF_SOURCE_STATIC_VALUE}"
+        value="${MAPPING_CONF_SOURCE_STATIC_VALUE}"
+        name="${value + index + MAPPING_CONF_SOURCE}"
+        ?checked="${
+          mappingline[MAPPING_CONF_SOURCE] === MAPPING_CONF_SOURCE_STATIC_VALUE
+        }"
+        @change="${(e: Event) =>
+          this.handleEditMapping(index, {
+            ...mapping,
+            mappings: {
+              ...mapping.mappings,
+              [value]: {
+                ...mapping.mappings[value],
+                [MAPPING_CONF_SOURCE]: (e.target as HTMLInputElement).value,
+              },
+            },
+          })}"
+      /><label for="${value + index + MAPPING_CONF_SOURCE_STATIC_VALUE}"
+        >${localize(
+          "panels.mappings.cards.mapping.sources.static",
+          this.hass.language
+        )}</label
+      >
+    </div>`;
     if (mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_SENSOR) {
       r = html`${r}
         <div class="mappingsettingline">
@@ -330,11 +362,43 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
               })}"
           />
         </div>`;
+    }
+    if (mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_STATIC_VALUE) {
+      r = html`${r}
+        <div class="mappingsettingline">
+          <label for="${value + index + MAPPING_CONF_STATIC_VALUE}"
+            >${localize(
+              "panels.mappings.cards.mapping.static_value",
+              this.hass.language
+            )}:</label
+          >
+          <input
+            type="text"
+            id="${value + index + MAPPING_CONF_STATIC_VALUE}"
+            value="${mappingline[MAPPING_CONF_STATIC_VALUE]}"
+            @input="${(e: Event) =>
+              this.handleEditMapping(index, {
+                ...mapping,
+                mappings: {
+                  ...mapping.mappings,
+                  [value]: {
+                    ...mapping.mappings[value],
+                    [MAPPING_CONF_STATIC_VALUE]: (e.target as HTMLInputElement).value,
+                  },
+                },
+              })}"
+          />
+        </div>`;
+    }
+    if (
+      mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_SENSOR ||
+      mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_STATIC_VALUE
+    ) {
       r = html`${r}
         <div class="mappingsettingline">
           <label for="${value + index + MAPPING_CONF_UNIT}"
             >${localize(
-              "panels.mappings.cards.mapping.sensor-units",
+              "panels.mappings.cards.mapping.input-units",
               this.hass.language
             )}:</label
           >
@@ -356,6 +420,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
             ${this.renderUnitOptionsForMapping(value, mappingline)}
           </select>
         </div>`;
+    }
+    if (mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_SENSOR) {
       r = html`${r}
         <div class="mappingsettingline">
           <label for="${value + index + MAPPING_CONF_AGGREGATE}"
@@ -404,6 +470,13 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     } else {
       let r = html``;
       let selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT;
+      if (value === MAPPING_PRECIPITATION) {
+        selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION;
+      } else if (value === MAPPING_MAX_TEMP) {
+        selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP;
+      } else if (value === MAPPING_MIN_TEMP) {
+        selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP;
+      }
       if (mappingline[MAPPING_CONF_AGGREGATE]) {
         selected = mappingline[MAPPING_CONF_AGGREGATE];
       }
@@ -470,7 +543,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           header="${localize("panels.mappings.title", this.hass.language)}"
         >
           <div class="card-content">
-            ${localize("panels.mappings.description", this.hass.language)}
+            ${localize("panels.mappings.description", this.hass.language)}.
           </div>
         </ha-card>
         <ha-card
@@ -497,11 +570,17 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         </ha-card>
 
         ${Object.entries(this.mappings).map(([key, value]) =>
-          this.renderMapping(value, parseInt(value["id"]))
+          this.renderMapping(value, parseInt(key))
         )}
       `;
     }
   }
+
+  /*
+  ${Object.entries(this.mappings).map(([key, value]) =>
+          this.renderMapping(value, value["id"])
+        )}
+        */
 
   static get styles(): CSSResultGroup {
     return css`

@@ -10,6 +10,7 @@ import {
   mdiDelete,
   mdiCalculator,
   mdiUpdate,
+  mdiPailRemove,
 } from "@mdi/js";
 import {
   deleteZone,
@@ -22,6 +23,7 @@ import {
   fetchMappings,
   calculateAllZones,
   updateAllZones,
+  resetAllBuckets,
 } from "../../data/websockets";
 import { SubscribeMixin } from "../../subscribe-mixin";
 
@@ -43,6 +45,8 @@ import {
   ZONE_DURATION,
   ZONE_LEAD_TIME,
   ZONE_MAPPING,
+  ZONE_MAXIMUM_BUCKET,
+  ZONE_MAXIMUM_DURATION,
   ZONE_MODULE,
   ZONE_MULTIPLIER,
   ZONE_NAME,
@@ -96,12 +100,21 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     }
     this.config = await fetchConfig(this.hass);
     this.zones = await fetchZones(this.hass);
+
+    //add dummy module and mapping
+    /*const mods: SmartIrrigationModule[] = [];
+    const dummyModule: SmartIrrigationModule = {
+      id: undefined,
+      name: "--SELECT--",
+      description: "",
+      config: Object,
+      schema: Object,
+    };
+    mods.push(dummyModule);
+    mods.concat(await fetchModules(this.hass));
+    this.modules = mods;*/
     this.modules = await fetchModules(this.hass);
     this.mappings = await fetchMappings(this.hass);
-
-    /*Object.entries(this.modules).forEach(([key, value]) =>
-      console.log(key, value)
-    );*/
   }
 
   private handleCalculateAllZones(): void {
@@ -118,22 +131,31 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     updateAllZones(this.hass);
   }
 
+  private handleResetAllBuckets(): void {
+    if (!this.hass) {
+      return;
+    }
+    resetAllBuckets(this.hass);
+  }
+
   private handleAddZone(): void {
     const newZone: SmartIrrigationZone = {
-      id: Date.now().toString(),
+      id: this.zones.length, //new zone will have ID that is equal to current zone length.
       name: this.nameInput.value,
       size: parseFloat(this.sizeInput.value),
       throughput: parseFloat(this.throughputInput.value),
       state: SmartIrrigationZoneState.Automatic,
       duration: 0,
       bucket: 0,
-      module: "",
+      module: undefined,
       old_bucket: 0,
       delta: 0,
       explanation: "",
       multiplier: 1,
-      mapping: "",
+      mapping: undefined,
       lead_time: 0,
+      maximum_duration: undefined,
+      maximum_bucket: undefined,
     };
 
     this.zones = [...this.zones, newZone];
@@ -145,6 +167,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     index: number,
     updatedZone: SmartIrrigationZone
   ): void {
+    if (!this.hass) {
+      return;
+    }
     this.zones = Object.values(this.zones).map((zone, i) =>
       i === index ? updatedZone : zone
     );
@@ -162,11 +187,15 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     );*/
     //const dialog = new ConfirmationDialog();
     //dialog.showDialog("{'message':'Test!'}");
+    const zone = Object.values(this.zones).at(index);
+    if (!zone) {
+      return;
+    }
     this.zones = this.zones.filter((_, i) => i !== index);
     if (!this.hass) {
       return;
     }
-    deleteZone(this.hass, index.toString());
+    deleteZone(this.hass, zone.id.toString());
   }
 
   private handleCalculateZone(index: number): void {
@@ -178,7 +207,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       return;
     }
     //call the calculate method of the module for the zone
-    calculateZone(this.hass, index.toString());
+    calculateZone(this.hass, zone.id.toString());
   }
 
   private handleUpdateZone(index: number): void {
@@ -189,14 +218,45 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    updateZone(this.hass, index.toString());
+    updateZone(this.hass, zone.id.toString());
   }
+
   private saveToHA(zone: SmartIrrigationZone): void {
     if (!this.hass) {
       return;
     }
     saveZone(this.hass, zone);
   }
+
+  private renderTheOptions(thelist: object, selected?: number): TemplateResult {
+    if (!this.hass) {
+      return html``;
+    } else {
+      let r = html`<option value="" ?selected=${
+        selected === undefined
+      }">---${localize(
+        "common.labels.select",
+        this.hass.language
+      )}---</option>`;
+      Object.entries(thelist).map(
+        ([key, value]) =>
+          /*html`<option value="${value["id"]}" ?selected="${
+          zone.module === value["id"]
+        }>
+          ${value["id"]}: ${value["name"]}
+        </option>`*/
+          (r = html`${r}
+            <option
+              value="${value["id"]}"
+              ?selected="${selected === value["id"]}"
+            >
+              ${value["id"]}: ${value["name"]}
+            </option>`)
+      );
+      return r;
+    }
+  }
+
   private renderZone(zone: SmartIrrigationZone, index: number): TemplateResult {
     if (!this.hass) {
       return html``;
@@ -241,6 +301,21 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
           <path fill="#404040" d="${mdiUpdate}" />
         </svg>`;
       }
+      const reset_bucket_svg_to_show = html` <svg
+          style="width:24px;height:24px"
+          viewBox="0 0 24 24"
+          @click="${() =>
+            this.handleEditZone(index, {
+              ...zone,
+              [ZONE_BUCKET]: 0.0,
+            })}"}"
+        >
+          <title>
+            ${localize("panels.zones.actions.reset-bucket", this.hass.language)}
+          </title>
+          <path fill="#404040" d="${mdiPailRemove}" />
+        </svg>`;
+
       return html`
         <ha-card header="${zone.name}">
           <div class="card-content">
@@ -265,19 +340,13 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 >${localize("panels.zones.labels.size", this.hass.language)}
                 (${output_unit(this.config, ZONE_SIZE)}):</label
               >
-              <input
-                class="shortinput"
-                id="size${index}"
-                type="number"
-                .value="${zone.size}"
-                @input="${(e: Event) =>
-                  this.handleEditZone(index, {
-                    ...zone,
-                    [ZONE_SIZE]: parseInt(
-                      (e.target as HTMLInputElement).value,
-                      10
-                    ),
-                  })}"
+              <input class="shortinput" id="size${index}" type="number""
+              .value="${zone.size}"
+              @input="${(e: Event) =>
+                this.handleEditZone(index, {
+                  ...zone,
+                  [ZONE_SIZE]: parseFloat((e.target as HTMLInputElement).value),
+                })}"
               />
             </div>
             <div class="zoneline">
@@ -296,9 +365,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 @input="${(e: Event) =>
                   this.handleEditZone(index, {
                     ...zone,
-                    [ZONE_THROUGHPUT]: parseInt(
-                      (e.target as HTMLInputElement).value,
-                      10
+                    [ZONE_THROUGHPUT]: parseFloat(
+                      (e.target as HTMLInputElement).value
                     ),
                   })}"
               />
@@ -311,6 +379,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 )}:</label
               >
               <select
+                required
                 id="state${index}"
                 @change="${(e: Event) =>
                   this.handleEditZone(index, {
@@ -359,23 +428,12 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 @change="${(e: Event) =>
                   this.handleEditZone(index, {
                     ...zone,
-                    [ZONE_MODULE]: (e.target as HTMLSelectElement).value,
+                    [ZONE_MODULE]: parseInt(
+                      (e.target as HTMLSelectElement).value
+                    ),
                   })}"
               >
-                ${Object.entries(this.modules).map(
-                  ([key, value]) =>
-                    /*html`<option value="${value["id"]}" ?selected="${
-                    zone.module === value["id"]
-                  }>
-                    ${value["id"]}: ${value["name"]}
-                  </option>`*/
-                    html`<option
-                      value="${value["id"]}"
-                      ?selected="${zone.module === value["id"]}"
-                    >
-                      ${value["id"]}: ${value["name"]}
-                    </option>`
-                )}
+                ${this.renderTheOptions(this.modules, zone.module)}
               </select>
               <label for="module${index}"
                 >${localize(
@@ -389,23 +447,12 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 @change="${(e: Event) =>
                   this.handleEditZone(index, {
                     ...zone,
-                    [ZONE_MAPPING]: (e.target as HTMLSelectElement).value,
+                    [ZONE_MAPPING]: parseInt(
+                      (e.target as HTMLSelectElement).value
+                    ),
                   })}"
               >
-                ${Object.entries(this.mappings).map(
-                  ([key, value]) =>
-                    /*html`<option value="${value["id"]}" ?selected="${
-                    zone.module === value["id"]
-                  }>
-                    ${value["id"]}: ${value["name"]}
-                  </option>`*/
-                    html`<option
-                      value="${value["id"]}"
-                      ?selected="${zone.mapping === value["id"]}"
-                    >
-                      ${value["id"]}: ${value["name"]}
-                    </option>`
-                )}
+                ${this.renderTheOptions(this.mappings, zone.mapping)}
               </select>
             </div>
             <div class="zoneline">
@@ -419,16 +466,35 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 class="shortinput"
                 id="bucket${index}"
                 type="number"
-                .value="${zone.bucket}"
+                .value="${Number(zone.bucket).toFixed(1)}"
                 @input="${(e: Event) =>
                   this.handleEditZone(index, {
                     ...zone,
-                    [ZONE_BUCKET]: parseInt(
-                      (e.target as HTMLInputElement).value,
-                      10
+                    [ZONE_BUCKET]: parseFloat(
+                      (e.target as HTMLInputElement).value
                     ),
                   })}"
               />
+              <label for="maximum-bucket${index}"
+                >${localize(
+                  "panels.zones.labels.maximum-bucket",
+                  this.hass.language
+                )}:</label
+              >
+              <input
+                class="shortinput"
+                id="maximum-bucket${index}"
+                type="number"
+                .value="${Number(zone.maximum_bucket).toFixed(1)}"
+                @input="${(e: Event) =>
+                  this.handleEditZone(index, {
+                    ...zone,
+                    [ZONE_MAXIMUM_BUCKET]: parseFloat(
+                      (e.target as HTMLInputElement).value
+                    ),
+                  })}"
+              />
+              <br />
               <label for="lead_time${index}"
                 >${localize(
                   "panels.zones.labels.lead-time",
@@ -450,6 +516,27 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                     ),
                   })}"
               />
+              <label for="maximum-duration${index}"
+                >${localize(
+                  "panels.zones.labels.maximum-duration",
+                  this.hass.language
+                )}
+                (s):</label
+              >
+              <input
+                class="shortinput"
+                id="maximum-duration${index}"
+                type="number"
+                .value="${zone.maximum_duration}"
+                @input="${(e: Event) =>
+                  this.handleEditZone(index, {
+                    ...zone,
+                    [ZONE_MAXIMUM_DURATION]: parseInt(
+                      (e.target as HTMLInputElement).value,
+                      10
+                    ),
+                  })}"
+              />
             </div>
             <div class="zoneline">
               <label for="multiplier${index}"
@@ -466,9 +553,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 @input="${(e: Event) =>
                   this.handleEditZone(index, {
                     ...zone,
-                    [ZONE_MULTIPLIER]: parseInt(
-                      (e.target as HTMLInputElement).value,
-                      10
+                    [ZONE_MULTIPLIER]: parseFloat(
+                      (e.target as HTMLInputElement).value
                     ),
                   })}"
               />
@@ -495,7 +581,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
             </div>
             <div class="zoneline">
               ${update_svg_to_show} ${calculation_svg_to_show}
-              ${explanation_svg_to_show}
+              ${explanation_svg_to_show} ${reset_bucket_svg_to_show}
               <svg
                 style="width:24px;height:24px"
                 viewBox="0 0 24 24"
@@ -557,21 +643,21 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 "panels.zones.labels.name",
                 this.hass.language
               )}:</label>
-              <input id="nameInput" type="text" />
+              <input id="nameInput" type="text"/>
               </div>
               <div class="zoneline">
               <label for="sizeInput">${localize(
                 "panels.zones.labels.size",
                 this.hass.language
               )} (${output_unit(this.config, ZONE_SIZE)}):</label>
-              <input class="shortinput" id="sizeInput" type="number" />
+              <input class="shortinput" id="sizeInput" type="number"/>
               </div>
               <div class="zoneline">
               <label for="throughputInput">${localize(
                 "panels.zones.labels.throughput",
                 this.hass.language
               )} (${output_unit(this.config, ZONE_THROUGHPUT)}):</label>
-              <input id="throughputInput" class="shortinput" type="number" />
+              <input id="throughputInput" class="shortinput" type="number"/>
               </div>
               <div class="zoneline">
               <button @click="${this.handleAddZone}">${localize(
@@ -594,16 +680,25 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         "panels.zones.cards.zone-actions.actions.calculate-all",
         this.hass.language
       )}</button>
+                <button @click="${this.handleResetAllBuckets}">${localize(
+        "panels.zones.cards.zone-actions.actions.reset-all-buckets",
+        this.hass.language
+      )}</button>
             </div>
           </ha-card>
 
           ${Object.entries(this.zones).map(([key, value]) =>
-            this.renderZone(value, parseInt(value["id"]))
+            this.renderZone(value, parseInt(key))
           )}
         </ha-card>
       `;
     }
   }
+  /*
+  ${Object.entries(this.zones).map(([key, value]) =>
+            this.renderZone(value, value["id"])
+          )}
+          */
 
   static get styles(): CSSResultGroup {
     return css`
