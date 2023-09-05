@@ -100,7 +100,7 @@ This page provides global settings.
 
 #### ZONES
 
-Specify one or more irrigation zones here. The integration calculates irrigation duration per zone, depending on size, throughput, state, module and sensor group. A zone can be _disabled_ (so it doesn't do anything), _automatic_ or _manual_. If in automatic, duration is automatically calculated. If in manual, you specify the duration yourself also duration isn't reset by the reset_bucket services. If disabled, the zone is not included in any calculation.
+Specify one or more irrigation zones here. The integration calculates irrigation duration per zone, depending on size, throughput, state, module and sensor group. A zone can be _disabled_ (so it doesn't do anything), _automatic_ or _manual_. If in automatic, duration is automatically calculated. If in manual, you specify the duration yourself. Duration isn't reset by the reset_bucket services. If disabled, the zone is not included in any calculation.
 
 > **When entering any values in the configuration of this integration, keep in mind that the integration will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).
 
@@ -257,4 +257,4 @@ This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Examp
 
 ## Getting Open Weather Map API Key
 
-Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, go to API Keys and get your key. If the key does not work right away, no worries. The email you should have received from OpenWeaterMap says it will be activated 'within the next couple of hours'. So if it does not work right away, be patient a bit. You will need to sign up for the paid (but free for limited API calls) OneCall API 3.0 plan if you do not have a key already. You can use a key for the 3.0 and 2.5 version of the API.
+Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, You will need to sign up for the paid (but free for limited API calls) OneCall API 3.0 plan if you do not have a key already. Then, go to API Keys and get your key. If the key does not work right away, no worries. The email you should have received from OpenWeaterMap says it will be activated 'within the next couple of hours'. So if it does not work right away, be patient a bit.  You can use a key for the 3.0 and 2.5 version of the API. If you are worried about the cost of the API, You can put a rate limit below the paid threshold in the "Billing plans" page of your profile.
