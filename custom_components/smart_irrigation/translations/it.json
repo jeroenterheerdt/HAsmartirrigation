@@ -1,0 +1,98 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Soltanto una configurazione di Smart Irrigation è consentita."
+    },
+    "error": {
+      "auth": "Chiave API Open Weather API o versione non corretta",
+      "name": "Specifica un nome univoco per questa istanza."
+    },
+    "step": {
+      "user": {
+        "title": "Impostazioni Generali",
+        "description": "Se hai bisogno di aiuto con la configurazione, dai un'occhiata qui https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "name": "Nome univoco per questa istanza",
+          "use_owm": "Usi Open Weather Map per i dati meteo? Disativva questo se vuoi utilizzare un'altra fonte, come ad esempio la tua stazione meteorologica soltanto. Lascia attivo se il tuo intento è di usare Open Weather Map per almeno una parte dei dati meteorologici."
+        }
+      },
+      "step1": {
+        "title": "Impostazioni API Open Weather Map",
+        "description": "Se hai bisogno di aiuto con la configurazione, dai un'occhiata qui https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "owm_api_key": "Chiave API per Open Weather Map",
+          "owm_api_version": "Apri la versione API Weather Map (seleziona 3.0 per nuove configurazioni)"
+        }
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "auth": "Chiave API Open Weather API o versione non corretta"
+    },
+    "step": {
+      "init": {
+        "title": "Impostazioni API Open Weather Map",
+        "description": "Se hai bisogno di aiuto con la configurazione, dai un'occhiata qui https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "use_owm": "Utilizzare Open Weather Map per dati o previsioni meteorologiche? Disabilitalo se desideri utilizzare esclusivamente un'altra fonte, ad esempio la tua stazione meteorologica. Se lo disattivi non potrai utilizzare le previsioni. Lascialo attivo se intendi utilizzare Open Weather Map per almeno parte dei dati meteorologici, comprese le previsioni."
+        }
+      },
+      "step1": {
+        "title": "Apri la configurazione dell'API Weather Map",
+        "description": "Se hai bisogno di aiuto con la configurazione, consulta https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "owm_api_key": "Chiave API per Open Weather Map",
+          "owm_api_version": "Apri la versione API Weather Map (seleziona 3.0 per nuove configurazioni)"
+        }
+      }
+    }
+  },
+  "common": {
+    "attributes": {
+      "size": "size",
+      "throughput": "throughput",
+      "state": "state"
+    }
+  },
+  "defaults": {
+    "default-zone": "Zona predefinita",
+    "default-mapping": "Mappatura predefinita"
+  },
+  "module": {
+    "calculation": {
+      "explanation": {
+        "module-returned-evapotranspiration-deficiency": "Il modulo ha restituito un deficit di evapotraspirazione del",
+        "bucket-was": "Il secchio era",
+        "new-bucket-values-is": "Il nuovo valore del secchio è",
+        "old-bucket-variable": "old_bucket",
+        "delta": "delta",
+        "bucket-less-than-zero-irrigation-necessary": "Poiché secchio < 0, è necessaria l'irrigazione",
+        "steps-taken-to-calculate-duration": "Per calcolare la durata esatta, sono stati eseguiti i seguenti passaggi",
+        "precipitation-rate-defined-as": "Il tasso di precipitazione è definito come",
+        "duration-is-calculated-as": "La durata viene calcolata come",
+        "bucket": "bucket",
+        "precipitation-rate-variable": "precipitation_rate",
+        "multiplier-is-applied": "Ora viene applicato il moltiplicatore. Il moltiplicatore è",
+        "duration-after-multiplier-is": "quindi la durata è",
+        "maximum-duration-is-applied": "Quindi, viene applicata la durata massima. La durata massima è",
+        "duration-after-maximum-duration-is": "quindi la durata è",
+        "lead-time-is-applied": "Infine, viene applicato il lead time. Il tempo di consegna è",
+        "duration-after-lead-time-is": "quindi la durata finale è",
+        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Poiché secchio >= 0, non è necessaria alcuna irrigazione e la durata è impostata su",
+        "maximum-bucket-is": "la dimensione massima del secchio è"
+      }
+    }
+},
+  "calcmodules": {
+    "pyeto": {
+      "description": "Calcola la durata in base al calcolo FAO56 dalla libreria PyETO"
+    },
+    "static": {
+      "description": "Modulo 'fittizio' con un delta configurabile statico"
+    },
+    "passthrough": {
+      "description": "Modulo passthrough che restituisce il valore di un sensore di Evapotraspirazione sotto forma di delta"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+name: Report bug
+description: Report an issue with Smart Irrigation
+labels: ["bug"]
+assignees: jeroenterheerdt
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!s
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: What happened?
+      description: |
+        Please give a clear and concise description of the issue you are experiencing here,
+        to communicate to the maintainers. Tell us what you were trying to do, what happened and what you expected.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: How to reproduce
+      description: |
+        Describe the least amount of steps possible to reproduce your error
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: |
+        Please copy and paste any relevant log output. Use the field below.
+      render: shell  
+  - type: input
+    id: version
+    validations:
+      required: true
+    attributes:
+      label: Which version are you running?
+      description: Version
+  - type: checkboxes
+    id: diagnostics
+    attributes:
+      label: Diagnostics file
+      description: You are *required* to attach a diagnostics file. Issues that do not have a diagnostic file will be closed immediately. To download a diagnostics file, in Home Assistant, go to Settings>Devices&Services>Integrations>Smart Irrigation, or use [this link](https://my.home-assistant.io/redirect/integration/?domain=smart_irrigation). Click the 'three vertical dots' menu and select 'download diagnostics'.
+      options:
+        - label: I have attached a diagnostics file
+          required: true
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: |
+        If you have any additional information for us. Use the field below.
+  
