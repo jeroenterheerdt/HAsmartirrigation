@@ -188,10 +188,12 @@ class OWMClient:  # pylint: disable=invalid-name
                     parsed_data[MAPPING_PRESSURE] = data[OWM_pressure_key_name]
                     parsed_data[MAPPING_HUMIDITY] = data[OWM_humidity_key_name]
                     parsed_data[MAPPING_TEMPERATURE] = data[OWM_temp_key_name]
-                    #also put in min/max here as just the current temp
-                    parsed_data[MAPPING_MAX_TEMP] = data[OWM_temp_key_name]
-                    parsed_data[MAPPING_MIN_TEMP] = data[OWM_temp_key_name]
                     parsed_data[MAPPING_DEWPOINT] = data[OWM_dew_point_key_name]
+
+                    #NOT used: also put in min/max here as just the current temp
+                    #parsed_data[MAPPING_MAX_TEMP] = data[OWM_temp_key_name]
+                    #parsed_data[MAPPING_MIN_TEMP] = data[OWM_temp_key_name]
+
                     #add precip from daily
                     dailydata = doc["daily"][0]
                     if dailydata is not None:
@@ -203,6 +205,10 @@ class OWMClient:  # pylint: disable=invalid-name
                         if "snow" in dailydata:
                             snow = float(dailydata["snow"])
                         parsed_data[MAPPING_PRECIPITATION] = rain+snow
+
+                        #get max temp and min temp and store
+                        parsed_data[MAPPING_MIN_TEMP] = dailydata[OWM_temp_key_name]["min"]
+                        parsed_data[MAPPING_MAX_TEMP] = dailydata[OWM_temp_key_name]["max"]
                     else:
                         parsed_data[MAPPING_PRECIPITATION] = 0.0
 

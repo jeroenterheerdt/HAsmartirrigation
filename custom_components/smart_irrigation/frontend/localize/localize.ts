@@ -4,6 +4,7 @@ import * as es from "./languages/es.json";
 import * as fr from "./languages/fr.json";
 import * as it from "./languages/it.json";
 import * as nl from "./languages/nl.json";
+import * as no from "./languages/no.json";
 
 import IntlMessageFormat from "intl-messageformat";
 
@@ -14,6 +15,7 @@ const languages: any = {
   fr: fr,
   it: it,
   nl: nl,
+  no: no,
 };
 
 export function localize(

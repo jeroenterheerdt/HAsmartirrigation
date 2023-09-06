@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2023.9.0-beta10"
+VERSION = "v2023.9.0-beta11"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -9,7 +9,7 @@ DOMAIN = "smart_irrigation"
 CUSTOM_COMPONENTS = "custom_components"
 
 LANGUAGE_FILES_DIR = "translations"
-SUPPORTED_LANGUAGES = ["de","en","es","fr","it","nl"]
+SUPPORTED_LANGUAGES = ["de","en","es","fr","it","nl","no"]
 
 CONF_OWM_API_KEY = "owm_api_key"
 CONF_OWM_API_VERSION = "owm_api_version"
