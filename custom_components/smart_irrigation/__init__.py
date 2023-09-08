@@ -367,10 +367,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT
                     if key == const.MAPPING_PRECIPITATION:
                         aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION
-                    elif key == const.MAPPING_MAX_TEMP:
-                        aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP
-                    elif key == const.MAPPING_MIN_TEMP:
-                        aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP
+                    #removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
+                    #elif key == const.MAPPING_MAX_TEMP:
+                    #    aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP
+                    #elif key == const.MAPPING_MIN_TEMP:
+                    #    aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP
+                    #apply max and min aggregate to temp and add it in
+                    elif key == const.MAPPING_TEMPERATURE:
+                        #we need both max and min aggrgate and add those to the data
+                        resultdata[const.MAPPING_TEMPERATURE] = max(d)
+                        resultdata[const.MAPPING_MIN_TEMPERATURE] = min(d)
                     if mapping.get(const.MAPPING_MAPPINGS):
                         mappings = mapping.get(const.MAPPING_MAPPINGS)
                         if key in mappings:

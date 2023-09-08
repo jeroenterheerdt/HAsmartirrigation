@@ -191,6 +191,7 @@ class OWMClient:  # pylint: disable=invalid-name
                     parsed_data[MAPPING_DEWPOINT] = data[OWM_dew_point_key_name]
 
                     #NOT used: also put in min/max here as just the current temp
+                    #removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
                     #parsed_data[MAPPING_MAX_TEMP] = data[OWM_temp_key_name]
                     #parsed_data[MAPPING_MIN_TEMP] = data[OWM_temp_key_name]
 
@@ -207,8 +208,9 @@ class OWMClient:  # pylint: disable=invalid-name
                         parsed_data[MAPPING_PRECIPITATION] = rain+snow
 
                         #get max temp and min temp and store
-                        parsed_data[MAPPING_MIN_TEMP] = dailydata[OWM_temp_key_name]["min"]
-                        parsed_data[MAPPING_MAX_TEMP] = dailydata[OWM_temp_key_name]["max"]
+                        #removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
+                        #parsed_data[MAPPING_MIN_TEMP] = dailydata[OWM_temp_key_name]["min"]
+                        #parsed_data[MAPPING_MAX_TEMP] = dailydata[OWM_temp_key_name]["max"]
                     else:
                         parsed_data[MAPPING_PRECIPITATION] = 0.0
 

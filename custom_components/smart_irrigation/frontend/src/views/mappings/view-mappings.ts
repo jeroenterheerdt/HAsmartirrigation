@@ -25,8 +25,9 @@ import {
   MAPPING_CONF_AGGREGATE,
   MAPPING_CONF_AGGREGATE_OPTIONS,
   MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT,
-  MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP,
-  MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP,
+  //removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
+  //MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP,
+  //MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP,
   MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION,
   MAPPING_CONF_SENSOR,
   MAPPING_CONF_SOURCE,
@@ -39,8 +40,9 @@ import {
   MAPPING_DEWPOINT,
   MAPPING_EVAPOTRANSPIRATION,
   MAPPING_HUMIDITY,
-  MAPPING_MAX_TEMP,
-  MAPPING_MIN_TEMP,
+  //removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
+  //MAPPING_MAX_TEMP,
+  //MAPPING_MIN_TEMP,
   MAPPING_PRECIPITATION,
   MAPPING_PRESSURE,
   MAPPING_SOLRAD,
@@ -96,8 +98,9 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       [MAPPING_DEWPOINT]: "",
       [MAPPING_EVAPOTRANSPIRATION]: "",
       [MAPPING_HUMIDITY]: "",
-      [MAPPING_MAX_TEMP]: "",
-      [MAPPING_MIN_TEMP]: "",
+      //removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
+      //[MAPPING_MAX_TEMP]: "",
+      //[MAPPING_MIN_TEMP]: "",
       [MAPPING_PRECIPITATION]: "",
       [MAPPING_PRESSURE]: "",
       [MAPPING_SOLRAD]: "",
@@ -472,11 +475,14 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       let selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT;
       if (value === MAPPING_PRECIPITATION) {
         selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION;
-      } else if (value === MAPPING_MAX_TEMP) {
-        selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP;
-      } else if (value === MAPPING_MIN_TEMP) {
-        selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP;
       }
+      //removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
+      //else if (value === MAPPING_MAX_TEMP) {
+      //  selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP;
+      //}
+      //else if (value === MAPPING_MIN_TEMP) {
+      //  selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP;
+      //}
       if (mappingline[MAPPING_CONF_AGGREGATE]) {
         selected = mappingline[MAPPING_CONF_AGGREGATE];
       }

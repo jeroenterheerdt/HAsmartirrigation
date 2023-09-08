@@ -7,8 +7,9 @@ import {
   MAPPING_DEWPOINT,
   MAPPING_EVAPOTRANSPIRATION,
   MAPPING_HUMIDITY,
-  MAPPING_MAX_TEMP,
-  MAPPING_MIN_TEMP,
+  //removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
+  //MAPPING_MAX_TEMP,
+  //MAPPING_MIN_TEMP,
   MAPPING_PRECIPITATION,
   MAPPING_PRESSURE,
   MAPPING_SOLRAD,
@@ -78,8 +79,9 @@ export function output_unit(config, arg0: string): TemplateResult {
 export function getOptionsForMappingType(mapping: string) {
   switch (mapping) {
     case MAPPING_DEWPOINT:
-    case MAPPING_MIN_TEMP:
-    case MAPPING_MAX_TEMP:
+    //removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
+    //case MAPPING_MIN_TEMP:
+    //case MAPPING_MAX_TEMP:
     case MAPPING_TEMPERATURE:
       //this should be degrees C or F.
       return [
