@@ -51,6 +51,7 @@ import {
 } from "../../const";
 import { prettyPrint, getOptionsForMappingType } from "../../helpers";
 import { mdiDelete } from "@mdi/js";
+import moment from "moment";
 
 @customElement("smart-irrigation-view-mappings")
 class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
@@ -155,6 +156,16 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       //below here we should go over all the mappings on the mapping object
       return html`
         <ha-card header="${mapping.id}: ${mapping.name}">
+        <div class="card-content">
+            <label for="last_calculated${index}"
+              >${localize(
+                "panels.mappings.labels.data-last-updated",
+                this.hass.language
+              )}:
+              ${mapping.data_last_updated
+                ? moment(mapping.data_last_updated).format("YYYY-MM-DD HH:mm:ss") : "-"}</label
+            >
+          </div>
           <div class="card-content">
             <label for="name${mapping.id}"
               >${localize(

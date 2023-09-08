@@ -6,7 +6,7 @@ import json
 import logging
 import math
 
-from .const import MAPPING_DEWPOINT, MAPPING_HUMIDITY, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_TEMPERATURE, MAPPING_WINDSPEED
+from .const import MAPPING_DEWPOINT, MAPPING_HUMIDITY, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_TEMPERATURE, MAPPING_WINDSPEED, RETRIEVED_AT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -216,6 +216,7 @@ class OWMClient:  # pylint: disable=invalid-name
 
                     self._cached_data = parsed_data
                     self._last_time_called = datetime.datetime.now()
+                    parsed_data[RETRIEVED_AT] = self._last_time_called
                     return parsed_data
                 else:
                     _LOGGER.warning(

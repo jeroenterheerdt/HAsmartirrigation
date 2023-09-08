@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2023.9.0-beta11"
+VERSION = "v2023.9.0-beta12"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -95,6 +95,7 @@ ZONE_MAPPING = "mapping"
 ZONE_LEAD_TIME = "lead_time"
 ZONE_MAXIMUM_DURATION = "maximum_duration"
 ZONE_MAXIMUM_BUCKET = "maximum_bucket"
+ZONE_LAST_CALCULATED = "last_calculated"
 
 MODULE_DIR = "calcmodules"
 MODULE_ID = "id"
@@ -109,6 +110,7 @@ CONF_METRIC = "metric"
 MAPPING_ID = "id"
 MAPPING_NAME = "name"
 MAPPING_DATA = "data"
+MAPPING_DATA_LAST_UPDATED = "data_last_updated"
 MAPPING_MAPPINGS = "mappings"
 MAPPING_DEWPOINT = "Dewpoint"
 MAPPING_EVAPOTRANSPIRATION = "Evapotranspiration"
@@ -151,6 +153,9 @@ MAPPING_CONF_AGGREGATE_OPTIONS = [
   MAPPING_CONF_AGGREGATE_MINIMUM,
   MAPPING_CONF_AGGREGATE_SUM,
 ]
+
+#For timestamps
+RETRIEVED_AT = "retrieved" #on weatherdata
 
 EVENT_IRRIGATE_START = "start_irrigation_all_zones"
 

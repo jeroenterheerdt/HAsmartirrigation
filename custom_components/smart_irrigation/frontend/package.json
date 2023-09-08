@@ -38,6 +38,7 @@
     "eslint-plugin-prettier": "*",
     "intl-messageformat": "*",
     "lit": "^2.7.6",
+    "moment": "^2.29.4",
     "prettier": "*",
     "rollup": "^2.79.1",
     "rollup-plugin-terser": "*",

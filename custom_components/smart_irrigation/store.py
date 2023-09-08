@@ -1,3 +1,4 @@
+import datetime
 import logging
 import attr
 from collections import OrderedDict
@@ -29,6 +30,8 @@ from .const import (
     CONF_UNITS,
     CONF_USE_OWM,
     DOMAIN,
+    ZONE_LAST_CALCULATED,
+    MAPPING_DATA_LAST_UPDATED,
     MAPPING_CONF_SENSOR,
     MAPPING_CONF_SOURCE,
     MAPPING_CONF_SOURCE_NONE,
@@ -101,6 +104,7 @@ class ZoneEntry:
     lead_time = attr.ib(type=float, default=None)
     maximum_duration = attr.ib(type=float, default=CONF_DEFAULT_MAXIMUM_DURATION)
     maximum_bucket = attr.ib(type=float, default=CONF_DEFAULT_MAXIMUM_BUCKET)
+    last_calculated = attr.ib(type=datetime, default=None)
 
 @attr.s(slots=True, frozen=True)
 class ModuleEntry:
@@ -120,6 +124,7 @@ class MappingEntry:
     name = attr.ib(type=str, default=None)
     mappings = attr.ib(type=str,default=None)
     data = attr.ib(type=str,default="[]")
+    data_last_updated = attr.ib(type=datetime, default=None)
 
 @attr.s(slots=True, frozen=True)
 class Config:
@@ -194,6 +199,7 @@ class SmartIrrigationStorage:
                         lead_time = zone[ZONE_LEAD_TIME],
                         maximum_duration = zone.get(ZONE_MAXIMUM_DURATION, CONF_DEFAULT_MAXIMUM_DURATION),
                         maximum_bucket = zone.get(ZONE_MAXIMUM_BUCKET, CONF_DEFAULT_MAXIMUM_BUCKET),
+                        last_calculated = zone.get(ZONE_LAST_CALCULATED, None)
                     )
             if "modules" in data:
                 for module in data["modules"]:
@@ -218,12 +224,20 @@ class SmartIrrigationStorage:
                     )
             if "mappings" in data:
                 for mapping in data["mappings"]:
+                    the_map = mapping.get(MAPPING_MAPPINGS)
+                    #remove max and min temp is present in mapping, they should only be there for old versions.
+                    if MAPPING_MAX_TEMP in the_map:
+                        the_map.pop(MAPPING_MAX_TEMP)
+                    if MAPPING_MIN_TEMP in the_map:
+                        the_map.pop(MAPPING_MIN_TEMP)
                     mappings[mapping[MAPPING_ID]] = MappingEntry(
                         id= mapping[MAPPING_ID],
                         name=mapping[MAPPING_NAME],
-                        mappings=mapping.get(MAPPING_MAPPINGS),
+                        mappings=the_map,
                         data=mapping.get(MAPPING_DATA),
+                        data_last_updated = mapping.get(MAPPING_DATA_LAST_UPDATED, None)
                     )
+
 
         self.config = config
         self.zones = zones

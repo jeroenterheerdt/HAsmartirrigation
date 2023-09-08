@@ -104,7 +104,8 @@
       },
       "description": "Voeg een of meer sensorgroepen toe die weergegevens ophalen van OpenWeatherMap, van sensoren of een combinatie. Elke sensorgroep kan worden gebruikt voor een of meerdere zones",
       "labels": {
-        "mapping-name": "Name"
+        "mapping-name": "Name",
+        "data-last-updated": "Bijgewerkt op"
       },
       "no_items": "Er zijn nog geen sensorgroepen.",
       "title": "Sensorgroepen"
@@ -177,7 +178,8 @@
           "manual": "Manueel"
         },
         "throughput": "Doorvoer",
-        "maximum-bucket": "Maximale voorraad"
+        "maximum-bucket": "Maximale voorraad",
+        "last_calculated": "Berekend op"
       },
       "no_items": "Er zijn nog geen zones.",
       "title": "Zones"

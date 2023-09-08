@@ -328,7 +328,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if mapping is not None:
                 mapping_data = mapping[const.MAPPING_DATA]
                 mapping_data.append(weatherdata)
-                changes = {"data": mapping_data}
+                changes = {"data": mapping_data,const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now()}
                 self.store.async_update_mapping(mapping_id,changes)
             else:
                 _LOGGER.warning("Unable to find mapping with id in update all: {}".format(mapping_id))
@@ -360,6 +360,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 data_by_sensor[key] = [val]
                             else:
                                 data_by_sensor[key].append(val)
+            #Drop MAX and MIN temp mapping because we calculate it from temp starting with beta 12
+            if const.MAPPING_MAX_TEMP in data_by_sensor:
+                data_by_sensor.pop(const.MAPPING_MAX_TEMP)
+            if const.MAPPING_MIN_TEMP in data_by_sensor:
+                data_by_sensor.pop(const.MAPPING_MIN_TEMP)
             for key,d in data_by_sensor.items():
                 if len(d) > 1:
                     #apply aggregate
@@ -375,8 +380,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     #apply max and min aggregate to temp and add it in
                     elif key == const.MAPPING_TEMPERATURE:
                         #we need both max and min aggrgate and add those to the data
-                        resultdata[const.MAPPING_TEMPERATURE] = max(d)
-                        resultdata[const.MAPPING_MIN_TEMPERATURE] = min(d)
+                        resultdata[const.MAPPING_MAX_TEMP] = max(d)
+                        resultdata[const.MAPPING_MIN_TEMP] = min(d)
                     if mapping.get(const.MAPPING_MAPPINGS):
                         mappings = mapping.get(const.MAPPING_MAPPINGS)
                         if key in mappings:
@@ -571,6 +576,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         data[const.ZONE_DURATION] = duration
         data[const.ZONE_EXPLANATION] = explanation
+        data[const.ZONE_LAST_CALCULATED] = datetime.datetime.now()
         return data
 
     async def async_update_module_config(self, module_id: int=None, data: dict= {}):
@@ -757,7 +763,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #add the weatherdata value to the mappings sensor values
             mapping_data = mapping[const.MAPPING_DATA]
             mapping_data.append(weatherdata)
-            changes = {"data": mapping_data}
+            changes = {"data": mapping_data, const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now()}
             self.store.async_update_mapping(mapping_id,changes)
         elif const.ATTR_UPDATE_ALL in data:
             _LOGGER.info("Updating all zones.")

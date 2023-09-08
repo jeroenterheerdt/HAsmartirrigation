@@ -54,6 +54,7 @@ import {
   ZONE_STATE,
   ZONE_THROUGHPUT,
 } from "../../const";
+import moment, { Moment } from "moment";
 
 @customElement("smart-irrigation-view-zones")
 class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
@@ -318,6 +319,16 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
       return html`
         <ha-card header="${zone.name}">
+          <div class="card-content">
+            <label for="last_calculated${index}"
+              >${localize(
+                "panels.zones.labels.last_calculated",
+                this.hass.language
+              )}:
+              ${zone.last_calculated
+                ? moment(zone.last_calculated).format("YYYY-MM-DD HH:mm:ss") : "-"}</label
+            >
+          </div>
           <div class="card-content">
             <label for="name${index}"
               >${localize(
