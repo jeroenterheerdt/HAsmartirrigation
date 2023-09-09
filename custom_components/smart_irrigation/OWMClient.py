@@ -216,7 +216,6 @@ class OWMClient:  # pylint: disable=invalid-name
 
                     self._cached_data = parsed_data
                     self._last_time_called = datetime.datetime.now()
-                    parsed_data[RETRIEVED_AT] = self._last_time_called
                     return parsed_data
                 else:
                     _LOGGER.warning(

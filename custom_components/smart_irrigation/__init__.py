@@ -326,6 +326,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 weatherdata = await self.merge_weatherdata_and_sensor_values(weatherdata, static_values)
             #add the weatherdata value to the mappings sensor values
             if mapping is not None:
+                weatherdata[RETRIEVED_AT] = datetime.datetime.now()
                 mapping_data = mapping[const.MAPPING_DATA]
                 mapping_data.append(weatherdata)
                 changes = {"data": mapping_data,const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now()}
@@ -762,6 +763,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     weatherdata = static_values
             #add the weatherdata value to the mappings sensor values
             mapping_data = mapping[const.MAPPING_DATA]
+            weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
             mapping_data.append(weatherdata)
             changes = {"data": mapping_data, const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now()}
             self.store.async_update_mapping(mapping_id,changes)
