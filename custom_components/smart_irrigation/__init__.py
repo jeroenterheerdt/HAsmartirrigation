@@ -819,19 +819,20 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S%z")
                 total_duration = self.get_total_duration_all_enabled_zones()
                 if total_duration > 0:
-                    time_to_wait = sun_rise - datetime.datetime.now(timezone.utc) - datetime.timedelta(seconds=total_duration)
-                    time_to_fire = datetime.datetime.now(timezone.utc) + time_to_wait
+                    #time_to_wait = sun_rise - datetime.datetime.now(timezone.utc) - datetime.timedelta(seconds=total_duration)
+                    #time_to_fire = datetime.datetime.now(timezone.utc) + time_to_wait
+                    time_to_fire = sun_rise - datetime.timedelta(seconds=total_duration)
                     #time_to_wait = total_duration
 
                     #time_to_fire = datetime.datetime.now(timezone.utc)+datetime.timedelta(seconds=total_duration)
 
                     if self._track_sunrise_event_unsub:
                         self._track_sunrise_event_unsub()
-                        self._track_sunrise_event_unsub = None
-                    #self._track_sunrise_event_unsub = async_track_point_in_utc_time(
-                    #    self.hass, self._fire_start_event, point_in_time=time_to_fire
-                    #)
-                    self._track_sunrise_event_unsub = async_call_later(self.hass, time_to_wait,self._fire_start_event)
+                    self._track_sunrise_event_unsub = None
+                    self._track_sunrise_event_unsub = async_track_point_in_utc_time(
+                        self.hass, self._fire_start_event, point_in_time=time_to_fire
+                    )
+                    #self._track_sunrise_event_unsub = async_call_later(self.hass, time_to_wait,self._fire_start_event)
                     event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
                     _LOGGER.info("Start irrigation event {} will fire at {}".format(event_to_fire, time_to_fire))
 
