@@ -104,8 +104,7 @@
       },
       "description": "Add one or more sensor groups that retrieve weather data from OpenWeatherMap, from sensors or a combination of these. You can map each sensor group to one or more zones",
       "labels": {
-        "mapping-name": "Name",
-        "data-last-updated": "Data last updated"
+        "mapping-name": "Name"
       },
       "no_items": "There are no sensor group defined yet.",
       "title": "Sensor Groups"
@@ -179,7 +178,9 @@
         },
         "throughput": "Throughput",
         "maximum-bucket": "Maximum bucket",
-        "last_calculated": "Last calculated"
+        "last_calculated": "Last calculated",
+        "data-last-updated": "Data last updated",
+        "data-number-of-data-points": "Number of data points"
       },
       "no_items": "There are no zones defined yet.",
       "title": "Zones"

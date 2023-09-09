@@ -157,15 +157,6 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       return html`
         <ha-card header="${mapping.id}: ${mapping.name}">
         <div class="card-content">
-            <label for="last_calculated${index}"
-              >${localize(
-                "panels.mappings.labels.data-last-updated",
-                this.hass.language
-              )}:
-              ${mapping.data_last_updated
-                ? moment(mapping.data_last_updated).format("YYYY-MM-DD HH:mm:ss") : "-"}</label
-            >
-          </div>
           <div class="card-content">
             <label for="name${mapping.id}"
               >${localize(
@@ -186,22 +177,24 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
             ${Object.entries(mapping.mappings).map(([value]) =>
               this.renderMappingSetting(index, value)
             )}
-            ${numberofzonesusingthismapping
-              ? html`${localize(
-                  "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
-                  this.hass.language
-                )}`
-              : html` <svg
-                  style="width:24px;height:24px"
-                  viewBox="0 0 24 24"
-                  id="deleteZone${index}"
-                  @click="${(e: Event) => this.handleRemoveMapping(e, index)}"
-                >
-                  <title>
-                    ${localize("common.actions.delete", this.hass.language)}
-                  </title>
-                  <path fill="#404040" d="${mdiDelete}" />
-                </svg>`}
+            ${
+              numberofzonesusingthismapping
+                ? html`${localize(
+                    "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
+                    this.hass.language
+                  )}`
+                : html` <svg
+                    style="width:24px;height:24px"
+                    viewBox="0 0 24 24"
+                    id="deleteZone${index}"
+                    @click="${(e: Event) => this.handleRemoveMapping(e, index)}"
+                  >
+                    <title>
+                      ${localize("common.actions.delete", this.hass.language)}
+                    </title>
+                    <path fill="#404040" d="${mdiDelete}" />
+                  </svg>`
+            }
           </div>
         </ha-card>
       `;
@@ -397,7 +390,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                   ...mapping.mappings,
                   [value]: {
                     ...mapping.mappings[value],
-                    [MAPPING_CONF_STATIC_VALUE]: (e.target as HTMLInputElement).value,
+                    [MAPPING_CONF_STATIC_VALUE]: (e.target as HTMLInputElement)
+                      .value,
                   },
                 },
               })}"

@@ -317,10 +317,22 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
           <path fill="#404040" d="${mdiPailRemove}" />
         </svg>`;
 
-      //get mapping last updated
-      const mappinglastupdate = this.mappings.filter(
-        (o) => o.id === zone.mapping
-      )[0].data_last_updated;
+      //get mapping last updated and datapoints
+      let the_mapping;
+      let mapping_last_updated = "-";
+      let mapping_number_of_datapoints = 0;
+      if (zone.mapping != undefined) {
+        the_mapping = this.mappings.filter((o) => o.id === zone.mapping)[0];
+        if (the_mapping != undefined) {
+          if (the_mapping.data_last_updated != undefined) {
+            mapping_last_updated = moment(the_mapping.data_last_updated).format(
+              "YYYY-MM-DD HH:mm:ss");
+            if (the_mapping.data != undefined) {
+              mapping_number_of_datapoints = the_mapping.data.length;
+            }
+          }
+        }
+      }
       return html`
         <ha-card header="${zone.name}">
           <div class="card-content">
@@ -330,17 +342,26 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 this.hass.language
               )}:
               ${zone.last_calculated
-                ? moment(zone.last_calculated).format("YYYY-MM-DD HH:mm:ss") : "-"}</label
+                ? moment(zone.last_calculated).format("YYYY-MM-DD HH:mm:ss")
+                : "-"}</label
             >
           </div>
           <div class="card-content">
             <label for="last_updated${index}"
               >${localize(
-                "panels.mappings.labels.data-last-updated",
+                "panels.zones.labels.data-last-updated",
                 this.hass.language
               )}:
-              ${mappinglastupdate
-                ? moment(mappinglastupdate).format("YYYY-MM-DD HH:mm:ss") : "-"}</label
+              ${mapping_last_updated}</label
+            >
+          </div>
+          <div class="card-content">
+            <label for="last_updated${index}"
+              >${localize(
+                "panels.zones.labels.data-number-of-data-points",
+                this.hass.language
+              )}:
+              ${mapping_number_of_datapoints}</label
             >
           </div>
           <div class="card-content">
