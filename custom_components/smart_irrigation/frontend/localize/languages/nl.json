@@ -27,7 +27,7 @@
           "header": "Automatisch bijwerken van weer gegevens",
           "labels": {
             "auto-update-enabled": "Automatisch weergegevens bijwerken",
-            "auto-update-first-update": "(Eerste keer) Bijwerken op ",
+            "auto-update-delay": "Vertraging",
             "auto-update-interval": "Sensor data bijwerken elke"
           },
           "options": {

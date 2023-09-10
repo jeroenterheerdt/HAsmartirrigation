@@ -32,7 +32,7 @@ export class SmartIrrigationConfig {
   autocalcenabled: boolean;
   autoupdateenabled: boolean;
   autoupdateschedule: string;
-  autoupdatefirsttime: string;
+  autoupdatedelay: number;
   autoupdateinterval: number;
 
   constructor() {
@@ -42,7 +42,7 @@ export class SmartIrrigationConfig {
     this.autocalcenabled = true;
     this.autoupdateenabled = true;
     this.autoupdateschedule = "";
-    this.autoupdatefirsttime = "";
+    this.autoupdatedelay = 0;
     this.autoupdateinterval = 0;
   }
 }

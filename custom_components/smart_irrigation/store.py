@@ -11,15 +11,15 @@ from homeassistant.util.unit_system import METRIC_SYSTEM
 from .const import (
     ATTR_NEW_BUCKET_VALUE,
     CONF_AUTO_CALC_ENABLED,
+    CONF_AUTO_UPDATE_DELAY,
     CONF_AUTO_UPDATE_ENABLED,
     CONF_AUTO_UPDATE_INTERVAL,
     CONF_AUTO_UPDATE_SCHEDULE,
-    CONF_AUTO_UPDATE_TIME,
     CONF_CALC_TIME,
     CONF_DEFAULT_AUTO_CALC_ENABLED,
+    CONF_DEFAULT_AUTO_UPDATE_DELAY,
     CONF_DEFAULT_AUTO_UPDATE_INTERVAL,
     CONF_DEFAULT_AUTO_UPDATE_SCHEDULE,
-    CONF_DEFAULT_AUTO_UPDATE_TIME,
     CONF_DEFAULT_AUTO_UPDATED_ENABLED,
     CONF_DEFAULT_CALC_TIME,
     CONF_DEFAULT_MAXIMUM_BUCKET,
@@ -136,7 +136,7 @@ class Config:
     autocalcenabled = attr.ib(type=bool,default=True)
     autoupdateenabled = attr.ib(type=bool, default=True)
     autoupdateschedule = attr.ib(type=str, default=CONF_DEFAULT_AUTO_UPDATE_SCHEDULE)
-    autoupdatefirsttime = attr.ib(type=str, default=CONF_DEFAULT_AUTO_UPDATE_TIME)
+    autoupdatedelay = attr.ib(type=str, default=CONF_DEFAULT_AUTO_UPDATE_DELAY)
     autoupdateinterval = attr.ib(type=str, default=CONF_DEFAULT_AUTO_UPDATE_INTERVAL)
 
 class MigratableStore(Store):
@@ -166,7 +166,7 @@ class SmartIrrigationStorage:
                                 autocalcenabled = CONF_DEFAULT_AUTO_CALC_ENABLED,
                                 autoupdateenabled = CONF_DEFAULT_AUTO_UPDATED_ENABLED,
                                 autoupdateschedule = CONF_DEFAULT_AUTO_UPDATE_SCHEDULE,
-                                autoupdatefirsttime = CONF_DEFAULT_AUTO_UPDATE_TIME,
+                                autoupdatedelay = CONF_DEFAULT_AUTO_UPDATE_DELAY,
                                 autoupdateinterval = CONF_DEFAULT_AUTO_UPDATE_INTERVAL
                                 )
         zones: "OrderedDict[str, ZoneEntry]" = OrderedDict()
@@ -180,7 +180,7 @@ class SmartIrrigationStorage:
                             use_owm=data["config"].get(CONF_USE_OWM,CONF_DEFAULT_USE_OWM), autocalcenabled=data["config"].get(CONF_AUTO_CALC_ENABLED, CONF_DEFAULT_AUTO_CALC_ENABLED),
                             autoupdateenabled=data["config"].get(CONF_AUTO_UPDATE_ENABLED, CONF_DEFAULT_AUTO_UPDATED_ENABLED),
                             autoupdateschedule=data["config"].get(CONF_AUTO_UPDATE_SCHEDULE, CONF_DEFAULT_AUTO_UPDATE_SCHEDULE),
-                            autoupdatefirsttime=data["config"].get(CONF_AUTO_UPDATE_TIME, CONF_DEFAULT_AUTO_UPDATE_TIME),
+                            autoupdatedelay=data["config"].get(CONF_AUTO_UPDATE_DELAY, CONF_DEFAULT_AUTO_UPDATE_DELAY),
                             autoupdateinterval=data["config"].get(CONF_AUTO_UPDATE_INTERVAL, CONF_DEFAULT_AUTO_UPDATE_INTERVAL))
 
             if "zones" in data:

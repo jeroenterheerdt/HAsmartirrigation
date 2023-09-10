@@ -27,7 +27,7 @@
           "header": "Automatic weather data update",
           "labels": {
             "auto-update-enabled": "Automatically update weather data",
-            "auto-update-first-update": "(First) Update at",
+            "auto-update-delay": "Update delay",
             "auto-update-interval": "Update sensor data every"
           },
           "options": {

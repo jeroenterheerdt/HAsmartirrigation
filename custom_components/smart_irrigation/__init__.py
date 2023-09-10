@@ -220,23 +220,29 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #CONF_AUTO_UPDATE_SCHEDULE: minute, hour, day
             #CONF_AUTO_UPDATE_INTERVAL: X
             #CONF_AUTO_UPDATE_TIME: first update time
-            if check_time(data[const.CONF_AUTO_UPDATE_TIME]):
+            #2023.9.0-beta14 experiment: ignore auto update time. Instead do a delay?
+
+            #if check_time(data[const.CONF_AUTO_UPDATE_TIME]):
                 #first auto update time is valid
                 #update only the actual changed value: auto update time
-                timesplit = data[const.CONF_AUTO_UPDATE_TIME].split(":")
-                if self._track_auto_update_time_unsub:
-                    self._track_auto_update_time_unsub()
-                self._track_auto_update_time_unsub = async_track_time_change(
-                    self.hass,
-                    self._async_track_update_time,
-                    hour=timesplit[0],
-                    minute=timesplit[1],
-                    second=0
-                )
-                _LOGGER.info("Scheduled auto update first time update for {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
-            else:
-                _LOGGER.warning("Schedule auto update time is not valid: {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
-                raise ValueError("Time is not a valid time")
+            #    timesplit = data[const.CONF_AUTO_UPDATE_TIME].split(":")
+            #    if self._track_auto_update_time_unsub:
+            #        self._track_auto_update_time_unsub()
+            #    self._track_auto_update_time_unsub = async_track_time_change(
+            #        self.hass,
+            #        self._async_track_update_time,
+            #        hour=timesplit[0],
+            #        minute=timesplit[1],
+            #        second=0
+            #    )
+            #    _LOGGER.info("Scheduled auto update first time update for {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
+            #else:
+            #    _LOGGER.warning("Schedule auto update time is not valid: {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
+            #    raise ValueError("Time is not a valid time")
+            #call update track time after waiting [update_delay] seconds
+            if int(data[const.CONF_AUTO_UPDATE_DELAY])>0:
+                _LOGGER.info("Delaying auto update with {} seconds".format(data[const.CONF_AUTO_UPDATE_DELAY]))
+            async_call_later(self.hass, timedelta(seconds=int(data[const.CONF_AUTO_UPDATE_DELAY])),self.track_update_time)
         else:
             # remove all time trackers for auto update
             if self._track_auto_update_time_unsub:
@@ -259,7 +265,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     minute=timesplit[1],
                     second=0
                 )
-                _LOGGER.info("Scheduled auto calculate update for {}".format(data[const.CONF_CALC_TIME]))
+                _LOGGER.info("Scheduled auto calculate for {}".format(data[const.CONF_CALC_TIME]))
             else:
                 _LOGGER.warning("Schedule auto calculate time is not valid: {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
                 raise ValueError("Time is not a valid time")
@@ -272,9 +278,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 self._track_auto_calc_time_unsub()
             self.store.async_update_config(data)
 
-    async def _async_track_update_time(self, *args):
+    @callback
+    def track_update_time(self, *args):
         #perform update once
-        await self._async_update_all()
+        self.hass.async_create_task(self._async_update_all())
         #use async_track_time_interval
         data = self.store.async_get_config()
         the_time_delta = None
@@ -292,7 +299,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         if self._OWMClient:
             self._OWMClient.cache_seconds = the_time_delta.total_seconds()-1
 
-        async_track_time_interval(self.hass, self._async_update_all,the_time_delta)
+        if self._track_auto_update_time_unsub:
+            self._track_auto_update_time_unsub()
+        self._track_auto_update_time_unsub = async_track_time_interval(self.hass, self._async_update_all,the_time_delta)
         _LOGGER.info("Scheduled auto update time interval for each {}".format(the_time_delta))
 
     async def _get_unique_mappings_for_automatic_zones(self, zones):
@@ -326,7 +335,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 weatherdata = await self.merge_weatherdata_and_sensor_values(weatherdata, static_values)
             #add the weatherdata value to the mappings sensor values
             if mapping is not None:
-                weatherdata[RETRIEVED_AT] = datetime.datetime.now()
+                weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
                 mapping_data = mapping[const.MAPPING_DATA]
                 mapping_data.append(weatherdata)
                 changes = {"data": mapping_data,const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now()}

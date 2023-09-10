@@ -238,41 +238,28 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
             </select>
           </div>
           <div class="card-content">
-            <label for="updatetime"
+            <label for="updatedelay"
               >${localize(
-                "panels.general.cards.automatic-update.labels.auto-update-first-update",
+                "panels.general.cards.automatic-update.labels.auto-update-delay",
                 this.hass.language
-              )}:</label
+              )} (s):</label
             >
             <input
-              id="updatetime"
+              id="updatedelay"
               type="text"
               class="shortinput"
-              .value="${this.config.autoupdatefirsttime}"
+              .value="${this.config.autoupdatedelay}"
               @input=${(e: Event) => {
                 this.saveData({
-                  autoupdatefirsttime: (e.target as HTMLInputElement).value,
+                  autoupdatedelay: parseInt(
+                    (e.target as HTMLInputElement).value
+                  ),
                 });
               }}
             />
           </div>`;
       }
 
-      if (
-        this.data.autoupdateenabled &&
-        this.data.autoupdatefirsttime &&
-        this.data.calctime
-      ) {
-        if (this.data.autoupdatefirsttime >= this.data.calctime) {
-          r1 = html`${r1}
-            <div class="card-content">
-              ${localize(
-                "panels.general.cards.automatic-update.errors.warning-update-time-on-or-after-calc-time",
-                this.hass.language
-              )}!
-            </div>`;
-        }
-      }
       r2 = html`<ha-card header="${localize(
         "panels.general.cards.automatic-update.header",
         this.hass.language
