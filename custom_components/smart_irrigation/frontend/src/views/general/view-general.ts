@@ -16,11 +16,13 @@ import {
   AUTO_UPDATE_SCHEDULE_HOURLY,
   AUTO_UPDATE_SCHEDULE_MINUTELY,
   CONF_AUTO_CALC_ENABLED,
+  CONF_AUTO_CLEAR_ENABLED,
   CONF_AUTO_UPDATE_ENABLED,
   CONF_AUTO_UPDATE_INTERVAL,
   CONF_AUTO_UPDATE_SCHEDULE,
   CONF_AUTO_UPDATE_TIME,
   CONF_CALC_TIME,
+  CONF_CLEAR_TIME,
   DOMAIN,
 } from "../../const";
 
@@ -55,6 +57,8 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       CONF_AUTO_UPDATE_SCHEDULE,
       CONF_AUTO_UPDATE_TIME,
       CONF_AUTO_UPDATE_INTERVAL,
+      CONF_AUTO_CLEAR_ENABLED,
+      CONF_CLEAR_TIME,
     ]);
 
     /*Object.entries(this.data).forEach(([key, value]) => console.log(key, value));*/
@@ -242,7 +246,8 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
               >${localize(
                 "panels.general.cards.automatic-update.labels.auto-update-delay",
                 this.hass.language
-              )} (s):</label
+              )}
+              (s):</label
             >
             <input
               id="updatedelay"
@@ -265,13 +270,81 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
         this.hass.language
       )}",
       this.hass.language)}">${r2}</ha-card>`;
+
+      let r3 = html` <div class="card-content">
+        <label for="autoclearenabled"
+          >${localize(
+            "panels.general.cards.automatic-clear.labels.automatic-clear-enabled",
+            this.hass.language
+          )}:</label
+        >
+        <input
+          type="radio"
+          id="autoclearon"
+          name="autoclearenabled"
+          value="True"
+          ?checked="${this.config.autoclearenabled}"
+          @change="${(e: Event) => {
+            this.saveData({
+              autoclearenabled: parseBoolean(
+                (e.target as HTMLInputElement).value
+              ),
+            });
+          }}"
+        /><label for="autoclearon"
+          >${localize("common.labels.yes", this.hass.language)}</label
+        >
+        <input
+          type="radio"
+          id="autoclearoff"
+          name="autoclearenabled"
+          value="False"
+          ?checked="${!this.config.autoclearenabled}"
+          @change="${(e: Event) => {
+            this.saveData({
+              autoclearenabled: parseBoolean(
+                (e.target as HTMLInputElement).value
+              ),
+            });
+          }}"
+        /><label for="autoclearoff"
+          >${localize("common.labels.no", this.hass.language)}</label
+        >
+      </div>`;
+      if (this.data.autoclearenabled) {
+        r3 = html`${r3}
+          <div class="card-content">
+            <label for="calctime"
+              >${localize(
+                "panels.general.cards.automatic-clear.labels.automatic-clear-time",
+                this.hass.language
+              )}</label
+            >
+            <input
+              id="cleardatatime"
+              type="text"
+              class="shortinput"
+              .value="${this.config.cleardatatime}"
+              @input=${(e: Event) => {
+                this.saveData({
+                  cleardatatime: (e.target as HTMLInputElement).value,
+                });
+              }}
+            />
+          </div>`;
+      }
+      r3 = html`<ha-card header="${localize(
+        "panels.general.cards.automatic-clear.header",
+        this.hass.language
+      )}" >${r3}</div></ha-card>`;
+
       const r = html`<ha-card
           header="${localize("panels.general.title", this.hass.language)}"
         >
           <div class="card-content">
             ${localize("panels.general.description", this.hass.language)}
           </div> </ha-card
-        >${r2}${r1}`;
+        >${r2}${r1}${r3}`;
 
       return r;
     }

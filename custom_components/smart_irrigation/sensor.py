@@ -40,7 +40,7 @@ async def async_setup_entry(
     @callback
     def async_add_sensor_entity(config: dict):
         """Add each zone as Sensor entity."""
-        entity_id = "{}.{}".format(PLATFORM, slugify(config["name"]))
+        entity_id = "{}.{}".format(PLATFORM, const.DOMAIN+"_"+slugify(config["name"]))
 
         sensor_entity = SmartIrrigationZoneEntity(
             hass=hass,

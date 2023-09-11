@@ -183,6 +183,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         )
         self._track_auto_calc_time_unsub = None
         self._track_auto_update_time_unsub = None
+        self._track_auto_clear_time_unsub = None
         self._track_sunrise_event_unsub = None
         # set up auto calc time and auto update time from data
         the_config = self.store.async_get_config()
@@ -190,7 +191,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             hass.loop.create_task(self.set_up_auto_update_time(the_config))
         if the_config[const.CONF_AUTO_CALC_ENABLED]:
             hass.loop.create_task(self.set_up_auto_calc_time(the_config))
-
+        if the_config[const.CONF_AUTO_CLEAR_ENABLED]:
+            hass.loop.create_task(self.set_up_auto_clear_time(the_config))
 
         #set up sunrise tracking
         self.register_start_event()
@@ -212,6 +214,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         await self.set_up_auto_calc_time(data)
         #handle auto update changes, includings updating OWMClient cache settings
         await self.set_up_auto_update_time(data)
+        #handle auto clear changes
+        await self.set_up_auto_clear_time(data)
         self.store.async_update_config(data)
         async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated")
 
@@ -270,7 +274,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
                 _LOGGER.info("Scheduled auto calculate for {}".format(data[const.CONF_CALC_TIME]))
             else:
-                _LOGGER.warning("Schedule auto calculate time is not valid: {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
+                _LOGGER.warning("Scheduled auto calculate time is not valid: {}".format(data[const.CONF_CALC_TIME]))
                 raise ValueError("Time is not a valid time")
         else:
             #set OWM client cache to 0
@@ -281,6 +285,30 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 self._track_auto_calc_time_unsub()
             self.store.async_update_config(data)
 
+    async def set_up_auto_clear_time(self, data):
+        if data[const.CONF_AUTO_CLEAR_ENABLED]:
+            #make sure to unsub any existing and add for clear time
+            if check_time(data[const.CONF_CLEAR_TIME]):
+                timesplit = data[const.CONF_CLEAR_TIME].split(":")
+                #unsubscribe from any existing track_time_changes
+                if self._track_auto_clear_time_unsub:
+                    self._track_auto_clear_time_unsub()
+                self._track_auto_clear_time_unsub = async_track_time_change(
+                    self.hass,
+                    self._async_clear_all_weatherdata,
+                    hour=timesplit[0],
+                    minute=timesplit[1],
+                    second=0
+                )
+                _LOGGER.info("Scheduled auto clear of weatherdata for {}".format(data[const.CONF_CLEAR_TIME]))
+            else:
+                _LOGGER.warning("Scheduled auto clear time is not valid: {}".format(data[const.CONF_CLEAR_TIME]))
+                raise ValueError("Time is not a valid time")
+        else:
+            #remove all time trackers
+            if self._track_auto_clear_time_unsub:
+                self._track_auto_clear_time_unsub()
+            self.store.async_update_config(data)
     @callback
     def track_update_time(self, *args):
         #perform update once
@@ -419,6 +447,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     resultdata[key] = d[0]
             return resultdata
         return None
+
+    async def _async_clear_all_weatherdata(self, *args):
+        _LOGGER.info("Clearing all weatherdata")
+        mappings = self.store.async_get_mappings()
+        for mapping in mappings:
+            changes={const.MAPPING_DATA: [], const.MAPPING_DATA_LAST_UPDATED: None}
+            self.store.async_update_mapping(mapping.get(const.MAPPING_ID), changes)
 
     async def _async_calculate_all(self, *args):
         _LOGGER.info("Calculating all automatic zones")
@@ -810,6 +845,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             _LOGGER.info("Resetting all buckets")
             data.pop(const.ATTR_RESET_ALL_BUCKETS)
             await self.handle_reset_all_buckets(None)
+        elif const.ATTR_CLEAR_ALL_WEATHERDATA in data:
+            #clear all weatherdata
+            _LOGGER.info("Clearing all weatherdata")
+            data.pop(const.ATTR_CLEAR_ALL_WEATHERDATA)
+            await self.handle_clear_weatherdata(None)
         elif self.store.async_get_zone(zone_id):
             # modify a zone
             entry = self.store.async_update_zone(zone_id, data)
@@ -1006,6 +1046,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             _LOGGER.info("Reset all buckets service called, new value: {}".format(new_value))
             await self._async_set_all_buckets(new_value)
 
+    async def handle_clear_weatherdata(self, call):
+        """Clear all collected weatherdata"""
+        await self._async_clear_all_weatherdata()
+
 @callback
 def register_services(hass):
     """Register services used by Smart Irrigation integration."""
@@ -1056,4 +1100,10 @@ def register_services(hass):
         const.DOMAIN,
         const.SERVICE_SET_ALL_BUCKETS,
         coordinator.handle_set_all_buckets
+    )
+
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_CLEAR_WEATHERDATA,
+        coordinator.handle_clear_weatherdata
     )

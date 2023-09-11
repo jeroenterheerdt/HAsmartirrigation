@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2023.9.0-beta15"
+VERSION = "v2023.9.0-beta16"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -47,6 +47,10 @@ CONF_DEFAULT_AUTO_UPDATED_ENABLED = True
 CONF_AUTO_UPDATE_DELAY = "autoupdatedelay"
 CONF_DEFAULT_AUTO_UPDATE_DELAY = "0"
 CONF_AUTO_UPDATE_INTERVAL = "autoupdateinterval"
+CONF_AUTO_CLEAR_ENABLED = "autoclearenabled"
+CONF_DEFAULT_AUTO_CLEAR_ENABLED = True
+CONF_CLEAR_TIME = "cleardatatime"
+CONF_DEFAULT_CLEAR_TIME = "23:59"
 CONF_DEFAULT_AUTO_UPDATE_INTERVAL = "1"
 CONF_UNITS = "units"
 CONF_IMPERIAL = "imperial"
@@ -74,6 +78,7 @@ ATTR_UPDATE = "update"
 ATTR_UPDATE_ALL = "update_all"
 ATTR_OVERRIDE_CACHE = "override_cache"
 ATTR_RESET_ALL_BUCKETS = "reset_all_buckets"
+ATTR_CLEAR_ALL_WEATHERDATA = "clear_all_weatherdata"
 
 ZONE_ID = "id"
 ZONE_NAME = "name"
@@ -223,3 +228,4 @@ SERVICE_RESET_ALL_BUCKETS = "reset_all_buckets"
 SERVICE_SET_BUCKET = "set_bucket"
 SERVICE_SET_ALL_BUCKETS = "set_all_buckets"
 SERVICE_ENTITY_ID = "entity_id"
+SERVICE_CLEAR_WEATHERDATA = "clear_all_weather_data"

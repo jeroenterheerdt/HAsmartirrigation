@@ -76,6 +76,13 @@ export const resetAllBuckets = (hass: HomeAssistant): Promise<boolean> => {
   });
 };
 
+export const clearAllWeatherdata = (hass: HomeAssistant): Promise<boolean> => {
+  return hass.callApi("POST", DOMAIN + "/zones", {
+    clear_all_weatherdata: true,
+  });
+};
+
+
 export const deleteZone = (
   hass: HomeAssistant,
   zone_id: string

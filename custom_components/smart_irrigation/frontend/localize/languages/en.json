@@ -35,6 +35,13 @@
             "hours": "hours",
             "minutes": "minutes"
           }
+        },
+        "automatic-clear": {
+          "header": "Automatic weather data pruning",
+          "labels": {
+            "automatic-clear-enabled": "Automatically clear collected weather data",
+            "automatic-clear-time": "Clear weather data at"
+          }
         }
       },
       "description": "This page provides global settings.",
@@ -155,7 +162,8 @@
           "actions": {
             "calculate-all": "Calculate all zones",
             "update-all": "Update all zones",
-            "reset-all-buckets": "Reset all buckets"
+            "reset-all-buckets": "Reset all buckets",
+            "clear-all-weatherdata": "Clear all weatherdata"
           },
           "header": "Actions on all zones"
         }

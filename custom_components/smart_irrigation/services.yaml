@@ -36,3 +36,5 @@ reset_bucket:
       domain: sensor
 reset_all_buckets:
   description: Reset bucket for all zones to 0
+clear_all_weather_data:
+  description: Clear weatherdata for all zones

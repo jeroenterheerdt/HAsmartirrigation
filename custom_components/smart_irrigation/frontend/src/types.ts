@@ -34,6 +34,8 @@ export class SmartIrrigationConfig {
   autoupdateschedule: string;
   autoupdatedelay: number;
   autoupdateinterval: number;
+  cleardatatime: string;
+  autoclearenabled: boolean;
 
   constructor() {
     this.calctime = "23:00";
@@ -44,6 +46,8 @@ export class SmartIrrigationConfig {
     this.autoupdateschedule = "";
     this.autoupdatedelay = 0;
     this.autoupdateinterval = 0;
+    this.autoclearenabled = true;
+    this.cleardatatime = "23:59";
   }
 }
 

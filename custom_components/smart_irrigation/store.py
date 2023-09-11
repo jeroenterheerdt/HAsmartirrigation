@@ -11,17 +11,21 @@ from homeassistant.util.unit_system import METRIC_SYSTEM
 from .const import (
     ATTR_NEW_BUCKET_VALUE,
     CONF_AUTO_CALC_ENABLED,
+    CONF_AUTO_CLEAR_ENABLED,
     CONF_AUTO_UPDATE_DELAY,
     CONF_AUTO_UPDATE_ENABLED,
     CONF_AUTO_UPDATE_INTERVAL,
     CONF_AUTO_UPDATE_SCHEDULE,
     CONF_CALC_TIME,
+    CONF_CLEAR_TIME,
     CONF_DEFAULT_AUTO_CALC_ENABLED,
+    CONF_DEFAULT_AUTO_CLEAR_ENABLED,
     CONF_DEFAULT_AUTO_UPDATE_DELAY,
     CONF_DEFAULT_AUTO_UPDATE_INTERVAL,
     CONF_DEFAULT_AUTO_UPDATE_SCHEDULE,
     CONF_DEFAULT_AUTO_UPDATED_ENABLED,
     CONF_DEFAULT_CALC_TIME,
+    CONF_DEFAULT_CLEAR_TIME,
     CONF_DEFAULT_MAXIMUM_BUCKET,
     CONF_DEFAULT_MAXIMUM_DURATION,
     CONF_DEFAULT_USE_OWM,
@@ -133,11 +137,13 @@ class Config:
     calctime = attr.ib(type=str, default=CONF_DEFAULT_CALC_TIME)
     units = attr.ib(type=str, default=None)
     use_owm = attr.ib(type=bool, default=False)
-    autocalcenabled = attr.ib(type=bool,default=True)
-    autoupdateenabled = attr.ib(type=bool, default=True)
+    autocalcenabled = attr.ib(type=bool,default=CONF_AUTO_CALC_ENABLED)
+    autoupdateenabled = attr.ib(type=bool, default=CONF_AUTO_UPDATE_ENABLED)
     autoupdateschedule = attr.ib(type=str, default=CONF_DEFAULT_AUTO_UPDATE_SCHEDULE)
     autoupdatedelay = attr.ib(type=str, default=CONF_DEFAULT_AUTO_UPDATE_DELAY)
     autoupdateinterval = attr.ib(type=str, default=CONF_DEFAULT_AUTO_UPDATE_INTERVAL)
+    autoclearenabled =attr.ib(type=bool,default=CONF_DEFAULT_AUTO_CLEAR_ENABLED)
+    cleardatatime = attr.ib(type=str, default=CONF_DEFAULT_CLEAR_TIME)
 
 class MigratableStore(Store):
     async def _async_migrate_func(self, old_version, data: dict):
@@ -167,7 +173,9 @@ class SmartIrrigationStorage:
                                 autoupdateenabled = CONF_DEFAULT_AUTO_UPDATED_ENABLED,
                                 autoupdateschedule = CONF_DEFAULT_AUTO_UPDATE_SCHEDULE,
                                 autoupdatedelay = CONF_DEFAULT_AUTO_UPDATE_DELAY,
-                                autoupdateinterval = CONF_DEFAULT_AUTO_UPDATE_INTERVAL
+                                autoupdateinterval = CONF_DEFAULT_AUTO_UPDATE_INTERVAL,
+                                autoclearenabled = CONF_DEFAULT_AUTO_CLEAR_ENABLED,
+                                cleardatatime = CONF_DEFAULT_CLEAR_TIME
                                 )
         zones: "OrderedDict[str, ZoneEntry]" = OrderedDict()
         modules: "OrderedDict[str, ModuleEntry]" = OrderedDict()
@@ -181,7 +189,11 @@ class SmartIrrigationStorage:
                             autoupdateenabled=data["config"].get(CONF_AUTO_UPDATE_ENABLED, CONF_DEFAULT_AUTO_UPDATED_ENABLED),
                             autoupdateschedule=data["config"].get(CONF_AUTO_UPDATE_SCHEDULE, CONF_DEFAULT_AUTO_UPDATE_SCHEDULE),
                             autoupdatedelay=data["config"].get(CONF_AUTO_UPDATE_DELAY, CONF_DEFAULT_AUTO_UPDATE_DELAY),
-                            autoupdateinterval=data["config"].get(CONF_AUTO_UPDATE_INTERVAL, CONF_DEFAULT_AUTO_UPDATE_INTERVAL))
+                            autoupdateinterval=data["config"].get(CONF_AUTO_UPDATE_INTERVAL, CONF_DEFAULT_AUTO_UPDATE_INTERVAL),
+                            autoclearenabled=data["config"].get(CONF_AUTO_CLEAR_ENABLED, CONF_DEFAULT_AUTO_CLEAR_ENABLED),
+                            cleardatatime=data["config"].get(CONF_CLEAR_TIME, CONF_DEFAULT_CLEAR_TIME)
+            )
+
 
             if "zones" in data:
                 for zone in data["zones"]:

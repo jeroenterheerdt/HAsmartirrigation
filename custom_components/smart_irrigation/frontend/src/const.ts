@@ -1,4 +1,4 @@
-export const VERSION = "v2023.9.0-beta15";
+export const VERSION = "v2023.9.0-beta16";
 export const REPO = "https://github.com/jeroenterheerdt/HASmartIrrigation;";
 export const ISSUES_URL = REPO + "/issues";
 
@@ -12,6 +12,8 @@ export const CONF_AUTO_UPDATE_ENABLED = "autoupdateenabled";
 export const CONF_AUTO_UPDATE_SCHEDULE = "autoupdateschedule";
 export const CONF_AUTO_UPDATE_TIME = "autoupdatefirsttime";
 export const CONF_AUTO_UPDATE_INTERVAL = "autoupdateinterval";
+export const CONF_AUTO_CLEAR_ENABLED = "autoclearenabled";
+export const CONF_CLEAR_TIME = "cleardatatime";
 
 export const AUTO_UPDATE_SCHEDULE_MINUTELY = "minutes";
 export const AUTO_UPDATE_SCHEDULE_HOURLY = "hours";

@@ -35,6 +35,13 @@
             "hours": "uren",
             "minutes": "minuten"
           }
+        },
+        "automatic-clear": {
+          "header": "Automatisch weersinformatie opruimen",
+          "labels": {
+            "automatic-clear-enabled": "Automatisch weersinformatie verwijderen",
+            "automatic-clear-time": "Verwijder weersinformatie om"
+          }
         }
       },
       "description": "Dit zijn de algemene instellingen.",
@@ -155,7 +162,8 @@
           "actions": {
             "calculate-all": "Bereken alle zones",
             "update-all": "Werk alle zone data bij",
-            "reset-all-buckets": "Leeg alle voorraden"
+            "reset-all-buckets": "Leeg alle voorraden",
+            "clear-all-weatherdata": "Verwijder alle weersinformatie"
           },
           "header": "Acties voor alle zones"
         }

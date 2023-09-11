@@ -233,10 +233,10 @@ def convert_length(from_unit, to_unit, val):
         return val
     if to_unit == UNIT_MM:
         if from_unit == UNIT_INCH:
-            return float(float(val)*MM_TO_INCH_FACTOR)
+            return float(float(val)*INCH_TO_MM_FACTOR)
     elif to_unit == UNIT_INCH:
         if from_unit == UNIT_MM:
-            return float(float(val)*INCH_TO_MM_FACTOR)
+            return float(float(val)*MM_TO_INCH_FACTOR)
     #unknown conversion
     return None
 

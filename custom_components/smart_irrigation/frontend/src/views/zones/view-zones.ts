@@ -24,6 +24,7 @@ import {
   calculateAllZones,
   updateAllZones,
   resetAllBuckets,
+  clearAllWeatherdata,
 } from "../../data/websockets";
 import { SubscribeMixin } from "../../subscribe-mixin";
 
@@ -137,6 +138,13 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       return;
     }
     resetAllBuckets(this.hass);
+  }
+
+  private handleClearAllWeatherdata(): void {
+    if (!this.hass) {
+      return;
+    }
+    clearAllWeatherdata(this.hass);
   }
 
   private handleAddZone(): void {
@@ -728,6 +736,10 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       )}</button>
                 <button @click="${this.handleResetAllBuckets}">${localize(
         "panels.zones.cards.zone-actions.actions.reset-all-buckets",
+        this.hass.language
+      )}</button>
+      <button @click="${this.handleClearAllWeatherdata}">${localize(
+        "panels.zones.cards.zone-actions.actions.clear-all-weatherdata",
         this.hass.language
       )}</button>
             </div>

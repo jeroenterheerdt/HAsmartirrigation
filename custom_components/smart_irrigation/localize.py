@@ -20,12 +20,12 @@ def localize(string, language):
                 data = json.load(f)
                 translated_string = get_string_from_data(stringpath,data)
         #fallback to english in case string wasn't found
-        if language == "en" or not translated_string:
+        if language == "en" or not isinstance(translated_string, str):
             with open(os.path.join(main_path, LANGUAGE_FILES_DIR+os.sep+"en.json")) as f:
                 data = json.load(f)
                 translated_string = get_string_from_data(stringpath,data)
         #if still not found, just return the string parameter
-        if translated_string:
+        if isinstance(translated_string, str):
             return translated_string
         else:
             return string
