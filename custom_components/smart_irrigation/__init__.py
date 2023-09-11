@@ -240,9 +240,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #    _LOGGER.warning("Schedule auto update time is not valid: {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
             #    raise ValueError("Time is not a valid time")
             #call update track time after waiting [update_delay] seconds
-            if int(data[const.CONF_AUTO_UPDATE_DELAY])>0:
-                _LOGGER.info("Delaying auto update with {} seconds".format(data[const.CONF_AUTO_UPDATE_DELAY]))
-            async_call_later(self.hass, timedelta(seconds=int(data[const.CONF_AUTO_UPDATE_DELAY])),self.track_update_time)
+            delay = 0
+            if const.CONF_AUTO_UPDATE_DELAY in data:
+                if int(data[const.CONF_AUTO_UPDATE_DELAY])>0:
+                    delay = int(data[const.CONF_AUTO_UPDATE_DELAY])
+                    _LOGGER.info("Delaying auto update with {} seconds".format(delay))
+            async_call_later(self.hass, timedelta(seconds=delay),self.track_update_time)
         else:
             # remove all time trackers for auto update
             if self._track_auto_update_time_unsub:
@@ -375,6 +378,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 data_by_sensor.pop(const.MAPPING_MAX_TEMP)
             if const.MAPPING_MIN_TEMP in data_by_sensor:
                 data_by_sensor.pop(const.MAPPING_MIN_TEMP)
+            if const.RETRIEVED_AT in data_by_sensor:
+                data_by_sensor.pop(const.RETRIEVED_AT)
             for key,d in data_by_sensor.items():
                 if len(d) > 1:
                     #apply aggregate
@@ -450,25 +455,29 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 mapping = self.store.async_get_mapping(mapping_id)
                 #if there is sensor data on the mapping, apply aggregates to it.
                 sensor_values = None
-                if const.MAPPING_DATA in mapping and mapping.get(const.MAPPING_DATA):
-                    sensor_values = await self.apply_aggregates_to_mapping_data(mapping)
-                if sensor_values:
-                    data = self.calculate_module(zone, weatherdata=sensor_values,forecastdata=forecastdata)
+                if mapping is not None:
+                    if const.MAPPING_DATA in mapping and mapping.get(const.MAPPING_DATA):
+                        sensor_values = await self.apply_aggregates_to_mapping_data(mapping)
+                    if sensor_values:
+                        data = self.calculate_module(zone, weatherdata=sensor_values,forecastdata=forecastdata)
 
-                    self.store.async_update_zone(zone.get(const.ZONE_ID), data)
-                    async_dispatcher_send(
-                        self.hass, const.DOMAIN + "_config_updated", zone.get(const.ZONE_ID)
-                    )
+                        self.store.async_update_zone(zone.get(const.ZONE_ID), data)
+                        async_dispatcher_send(
+                            self.hass, const.DOMAIN + "_config_updated", zone.get(const.ZONE_ID)
+                        )
+                    else:
+                        # no data to calculate with!
+                        _LOGGER.warning("Calculate for zone {} failed: no data available.".format(zone.get(const.ZONE_NAME)))
                 else:
-                    # no data to calculate with!
-                    _LOGGER.warning("Calculate for zone {} failed: no data available.".format(zone.get(const.ZONE_NAME)))
+                    _LOGGER.warning("Calculate for zone {} failed: invalid mapping specified".format(zone.get(const.ZONE_NAME)))
         #remove mapping data from all mappings used
         mappings = await self._get_unique_mappings_for_automatic_zones(zones)
         for mapping_id in mappings:
             #remove sensor data from mapping
             changes = {}
             changes[const.MAPPING_DATA] = []
-            self.store.async_update_mapping(mapping_id, changes=changes)
+            if mapping_id is not None:
+                self.store.async_update_mapping(mapping_id, changes=changes)
 
     def getModuleInstanceByID(self, module_id):
         m = self.store.async_get_module(module_id)
