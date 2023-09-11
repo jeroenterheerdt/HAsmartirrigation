@@ -167,6 +167,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.store = store
         self.use_OWM = hass.data[const.DOMAIN][const.CONF_USE_OWM]
+        self._OWMClient = None
         if self.use_OWM:
             self._OWMClient = OWMClient(hass.data[const.DOMAIN][const.CONF_OWM_API_KEY],
                                        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION],
