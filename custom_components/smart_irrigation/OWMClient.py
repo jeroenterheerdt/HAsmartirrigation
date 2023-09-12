@@ -69,7 +69,7 @@ class OWMClient:  # pylint: disable=invalid-name
             try:
                 req = requests.get(self.url,timeout=60) #60 seconds timeout
                 doc = json.loads(req.text)
-                _LOGGER.debug("OWMClient called {} and received {}".format(self.url, doc))
+                _LOGGER.debug("OWMClient get_forecast_data called API {} and received {}".format(self.url, doc))
                 if "cod" in doc:
                     if doc["cod"] != 200:
                         raise IOError("Cannot talk to OWM API, check API key.")
@@ -158,6 +158,7 @@ class OWMClient:  # pylint: disable=invalid-name
             try:
                 req = requests.get(self.url,timeout=60) #60 seconds timeout
                 doc = json.loads(req.text)
+                _LOGGER.debug("OWMClient get_data called API {} and received {}".format(self.url, doc))
                 if "cod" in doc:
                     if doc["cod"] != 200:
                         raise IOError("Cannot talk to OWM API, check API key.")
