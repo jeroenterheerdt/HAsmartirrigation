@@ -15,6 +15,7 @@
       "cards": {
         "automatic-duration-calculation": {
           "header": "Automatische berekening van irrigatietijd",
+          "description": "Bij het berekenen wordt de verzamelde weersinformatie gebruikt om the voorraad en irrigatieduur per zone aan te passen. Daarna wordt de verzamelde weersinformatie verwijderd.",
           "labels": {
             "auto-calc-enabled": "Automatisch irrigatietijd berekening voor elke zone",
             "auto-calc-time": "Berekenen op"
@@ -22,11 +23,12 @@
         },
         "automatic-update": {
           "errors": {
-            "warning-update-time-on-or-after-calc-time": "Let op: het automatisch bijwerken van weer gegevens vind plaats op of na de automatische berekening van irrigatietijd"
+            "warning-update-time-on-or-after-calc-time": "Let op: het automatisch bijwerken van weersinformatie vind plaats op of na de automatische berekening van irrigatietijd"
           },
-          "header": "Automatisch bijwerken van weer gegevens",
+          "header": "Automatisch bijwerken van weersinformatie",
+          "description": "Verzamel en bewaar weersinformatie automatisch. Weersinformatie is nodig om vorraad en irrigatieduur per zone te berekenen.",
           "labels": {
-            "auto-update-enabled": "Automatisch weergegevens bijwerken",
+            "auto-update-enabled": "Automatisch weersinformatie bijwerken",
             "auto-update-delay": "Vertraging",
             "auto-update-interval": "Sensor data bijwerken elke"
           },
@@ -38,6 +40,7 @@
         },
         "automatic-clear": {
           "header": "Automatisch weersinformatie opruimen",
+          "description": "Verwijder weersinformatie op het ingestelde moment. Dit zorgt ervoor dat er geen weersinformatie van de vorige dag gebruikt kan worden voor berekeningen. Let op: verwijder geen weersinformatie voordat de berekening heeft plaatsgevonden. Gebruik deze optie als je verwacht dat er weersinformatie zal worden verzameld nadat de berekeningen voor de dag gedaan zijn. Verwijder weersinformatie zo laat mogelijk op de dag.",
           "labels": {
             "automatic-clear-enabled": "Automatisch weersinformatie verwijderen",
             "automatic-clear-time": "Verwijder weersinformatie om"
