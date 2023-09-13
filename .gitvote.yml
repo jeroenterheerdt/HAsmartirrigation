@@ -53,7 +53,7 @@ profiles:
     #   days    | day    | d
     #   weeks   | week   | w
     #
-    duration: 5m
+    duration: 1w
 
     # Pass threshold (required)
     #
