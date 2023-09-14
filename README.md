@@ -153,7 +153,7 @@ If you let PyETO to estimate from temperature or sun hours, it will not ask OWM 
 
 #### Sensor groups
 
-For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides. You can choose which sensors to use like average, maximum, minimum etc.
+For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides. You can choose which sensors to use like average, maximum, minimum etc.  If you use your own air pressure sensor, enter the absolute air pressure. This sensor reflects local conditions. If you use Open Weather Map, make sure your home zone coordinates are set correctly so the data is correct.  This is especially true if you set the coordinates manually in the configuration.yaml
 
 #### HELP
 
