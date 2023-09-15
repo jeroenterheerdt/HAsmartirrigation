@@ -48,6 +48,9 @@ import {
   MAPPING_SOLRAD,
   MAPPING_TEMPERATURE,
   MAPPING_WINDSPEED,
+  MAPPING_CONF_PRESSURE_TYPE,
+  MAPPING_CONF_PRESSURE_ABSOLUTE,
+  MAPPING_CONF_PRESSURE_RELATIVE,
 } from "../../const";
 import { prettyPrint, getOptionsForMappingType } from "../../helpers";
 import { mdiDelete } from "@mdi/js";
@@ -428,6 +431,38 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
             ${this.renderUnitOptionsForMapping(value, mappingline)}
           </select>
         </div>`;
+
+      //specific case for pressure: absolute / relative
+      if (value == MAPPING_PRESSURE) {
+        r = html`${r}
+          <div class="mappingsettingline">
+            <label for="${value + index + MAPPING_CONF_PRESSURE_TYPE}"
+              >${localize(
+                "panels.mappings.cards.mapping.pressure-type",
+                this.hass.language
+              )}:</label
+            >
+            <select
+              type="text"
+              id="${value + index + MAPPING_CONF_PRESSURE_TYPE}"
+              @change="${(e: Event) =>
+                this.handleEditMapping(index, {
+                  ...mapping,
+                  mappings: {
+                    ...mapping.mappings,
+                    [value]: {
+                      ...mapping.mappings[value],
+                      [MAPPING_CONF_PRESSURE_TYPE]: (
+                        e.target as HTMLInputElement
+                      ).value,
+                    },
+                  },
+                })}"
+            >
+              ${this.renderPressureTypes(value, mappingline)}
+            </select>
+          </div>`;
+      }
     }
     if (mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_SENSOR) {
       r = html`${r}
@@ -508,6 +543,37 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       return html`<option value="${agg}" ?selected="${agg === selected}">
         ${localize(label_to_use, this.hass.language)}
       </option>`;
+    }
+  }
+
+  private renderPressureTypes(value: any, mappingline: any): TemplateResult {
+    if (!this.hass || !this.config) {
+      return html``;
+    } else {
+      let r = html``;
+      const selected = mappingline[MAPPING_CONF_PRESSURE_TYPE];
+      r = html`${r}
+        <option
+          value="${MAPPING_CONF_PRESSURE_ABSOLUTE}"
+          ?selected="${selected === MAPPING_CONF_PRESSURE_ABSOLUTE}"
+        >
+          ${localize(
+            "panels.mappings.cards.mapping.pressure_types." +
+              MAPPING_CONF_PRESSURE_ABSOLUTE,
+            this.hass.language
+          )}
+        </option>
+        <option
+          value="${MAPPING_CONF_PRESSURE_RELATIVE}"
+          ?selected="${selected === MAPPING_CONF_PRESSURE_RELATIVE}"
+        >
+          ${localize(
+            "panels.mappings.cards.mapping.pressure_types." +
+              MAPPING_CONF_PRESSURE_RELATIVE,
+            this.hass.language
+          )}
+        </option>`;
+      return r;
     }
   }
   private renderUnitOptionsForMapping(

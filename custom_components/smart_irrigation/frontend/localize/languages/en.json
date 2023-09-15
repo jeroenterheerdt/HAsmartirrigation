@@ -98,6 +98,11 @@
             "temperature": "Temperature",
             "windspeed": "Wind speed"
           },
+          "pressure_types": {
+            "absolute": "absolute",
+            "relative": "relative"
+          },
+          "pressure-type": "Pressure is",
           "sensor-aggregate-of-sensor-values-to-calculate": "of sensor values to calculate duration",
           "sensor-aggregate-use-the": "Use the",
           "sensor-entity": "Sensor entity",

@@ -2,10 +2,10 @@
 from datetime import timedelta, timezone
 import datetime
 import logging
+import math
 import os
 import asyncio
 import statistics
-
 
 from homeassistant.core import (
     callback,
@@ -30,6 +30,7 @@ from homeassistant.helpers.event import (
 from homeassistant.const import (
     CONF_LATITUDE,
     CONF_LONGITUDE,
+    CONF_ELEVATION,
 )
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
@@ -40,7 +41,7 @@ from .panel import (
     async_register_panel,
     async_unregister_panel,
 )
-from .helpers import (check_time, convert_between, convert_mapping_to_metric, loadModules)
+from .helpers import (altitudeToPressure, check_time, convert_between, convert_mapping_to_metric, loadModules, relative_to_absolute_pressure)
 from .websockets import async_register_websockets
 
 from .OWMClient import OWMClient
@@ -172,7 +173,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self._OWMClient = OWMClient(hass.data[const.DOMAIN][const.CONF_OWM_API_KEY],
                                        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION],
                                     self.hass.config.as_dict().get(CONF_LATITUDE),
-                                    self.hass.config.as_dict().get(CONF_LONGITUDE))
+                                    self.hass.config.as_dict().get(CONF_LONGITUDE),
+                                    self.hass.config.as_dict().get(CONF_ELEVATION))
         self._subscriptions = []
 
         self._subscriptions.append(
@@ -365,6 +367,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if static_in_mapping:
                 static_values = self.build_static_values_for_mapping(mapping)
                 weatherdata = await self.merge_weatherdata_and_sensor_values(weatherdata, static_values)
+            if sensor_in_mapping or static_in_mapping:
+                #if pressure type is set to relative, replace it with absolute. not necessary for OWM as it already happened
+                #convert the relative pressure to absolute or estimate from height
+                if mapping.get(const.MAPPING_MAPPINGS).get(const.MAPPING_PRESSURE).get(const.MAPPING_CONF_PRESSURE_TYPE) == const.MAPPING_CONF_PRESSURE_RELATIVE:
+                    if const.MAPPING_PRESSURE in weatherdata:
+                        weatherdata[const.MAPPING_PRESSURE] = relative_to_absolute_pressure(weatherdata[const.MAPPING_PRESSURE],self.hass.config.as_dict().get(CONF_ELEVATION))
+                    else:
+                        weatherdata[const.MAPPING_PRESSURE] = altitudeToPressure(self.hass.config.as_dict().get(CONF_ELEVATION))
+
             #add the weatherdata value to the mappings sensor values
             if mapping is not None:
                 weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
@@ -495,6 +506,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     if const.MAPPING_DATA in mapping and mapping.get(const.MAPPING_DATA):
                         sensor_values = await self.apply_aggregates_to_mapping_data(mapping)
                     if sensor_values:
+                        #make sure we convert forecast data pressure to absolute!
                         data = self.calculate_module(zone, weatherdata=sensor_values,forecastdata=forecastdata)
 
                         self.store.async_update_zone(zone.get(const.ZONE_ID), data)
@@ -514,6 +526,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             changes[const.MAPPING_DATA] = []
             if mapping_id is not None:
                 self.store.async_update_mapping(mapping_id, changes=changes)
+
+        #update start_event
+        self.register_start_event()
 
     def getModuleInstanceByID(self, module_id):
         m = self.store.async_get_module(module_id)
@@ -815,6 +830,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     weatherdata = await self.merge_weatherdata_and_sensor_values(weatherdata, static_values)
                 else:
                     weatherdata = static_values
+            if sensor_in_mapping or static_in_mapping:
+                #if pressure type is set to relative, replace it with absolute. not necessary for OWM as it already happened
+                if mapping.get(const.MAPPING_MAPPINGS).get(const.MAPPING_PRESSURE).get(const.MAPPING_CONF_PRESSURE_TYPE) == const.MAPPING_CONF_PRESSURE_RELATIVE:
+                    #convert the relative pressure to absolute or estimate from height
+                    if const.MAPPING_PRESSURE in weatherdata:
+                        weatherdata[const.MAPPING_PRESSURE] = relative_to_absolute_pressure(weatherdata[const.MAPPING_PRESSURE],self.hass.config.as_dict().get(CONF_ELEVATION))
+                    else:
+                        weatherdata[const.MAPPING_PRESSURE] = altitudeToPressure(self.hass.config.as_dict().get(CONF_ELEVATION))
+
+
+
             #add the weatherdata value to the mappings sensor values
             mapping_data = mapping[const.MAPPING_DATA]
             weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()

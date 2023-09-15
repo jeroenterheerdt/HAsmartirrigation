@@ -1,4 +1,4 @@
-export const VERSION = "v2023.9.0-beta18";
+export const VERSION = "v2023.9.0-beta19";
 export const REPO = "https://github.com/jeroenterheerdt/HASmartIrrigation;";
 export const ISSUES_URL = REPO + "/issues";
 
@@ -36,6 +36,9 @@ export const MAPPING_WINDSPEED = "Windspeed";
 export const MAPPING_CONF_SOURCE_OWM = "owm";
 export const MAPPING_CONF_SOURCE_SENSOR = "sensor";
 export const MAPPING_CONF_SOURCE_STATIC_VALUE = "static";
+export const MAPPING_CONF_PRESSURE_TYPE = "pressure_type";
+export const MAPPING_CONF_PRESSURE_ABSOLUTE = "absolute";
+export const MAPPING_CONF_PRESSURE_RELATIVE = "relative";
 export const MAPPING_CONF_SOURCE_NONE = "none";
 export const MAPPING_CONF_SOURCE = "source";
 export const MAPPING_CONF_SENSOR = "sensorentity";

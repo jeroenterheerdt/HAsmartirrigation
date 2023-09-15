@@ -2,6 +2,7 @@ import os
 import sys
 import importlib
 import logging
+import pvlib
 from .const import CUSTOM_COMPONENTS, DOMAIN, GALLON_TO_LITER_FACTOR, INCH_TO_MM_FACTOR, INHG_TO_HPA_FACTOR, INHG_TO_PSI_FACTOR, K_TO_C_FACTOR, KMH_TO_MILESH_FACTOR, KMH_TO_MS_FACTOR, LITER_TO_GALLON_FACTOR, M2_TO_SQ_FT_FACTOR, MAPPING_DEWPOINT, MAPPING_EVAPOTRANSPIRATION, MAPPING_HUMIDITY, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_SOLRAD, MAPPING_TEMPERATURE, MAPPING_WINDSPEED, MBAR_TO_INHG_FACTOR, MBAR_TO_PSI_FACTOR, MILESH_TO_KMH_FACTOR, MILESH_TO_MS_FACTOR, MM_TO_INCH_FACTOR, MS_TO_KMH_FACTOR, MS_TO_MILESH_FACTOR, PSI_TO_HPA_FACTOR, PSI_TO_INHG_FACTOR, SQ_FT_TO_M2_FACTOR, UNIT_DEGREES_C, UNIT_DEGREES_F, UNIT_DEGREES_K, UNIT_GPM, UNIT_HPA, UNIT_INCH, UNIT_INHG, UNIT_KMH, UNIT_LPM, UNIT_M2, UNIT_MBAR, UNIT_MH, UNIT_MJ_DAY_M2, UNIT_MJ_DAY_SQFT, UNIT_MM, UNIT_MS, UNIT_PERCENT, UNIT_PSI, UNIT_SECONDS, UNIT_SQ_FT, UNIT_W_M2, UNIT_W_SQFT, W_M2_TO_W_SQ_FT_FACTOR, W_SQ_FT_TO_W_M2_FACTOR, W_TO_MJ_DAY_FACTOR
 from homeassistant import exceptions
 
@@ -278,6 +279,29 @@ def check_reference_et(reference_et):
     except Exception:  # pylint: disable=broad-except
         return False
 
+def relative_to_absolute_pressure(pressure, height):
+    """
+    Convert relative pressure to absolute pressure.
+    """
+    # Constants
+    g = 9.80665  # m/s^2
+    M = 0.0289644  # kg/mol
+    R = 8.31447  # J/(mol*K)
+    T0 = 288.15  # K
+    p0 = 101325  # Pa
+
+    # Calculate temperature at given height
+    temperature = T0 - (g * M * height) / (R * T0)
+
+    # Calculate absolute pressure at given height
+    absolute_pressure = pressure * (T0 / temperature) ** (g * M / (R * 287))
+
+    return absolute_pressure
+
+def altitudeToPressure(alt):
+    """Take altitude in meters and convert it to hPa = mbar."""
+    return pvlib.atmosphere.alt2pres(alt)/100
+
 async def test_api_key(hass,api_key, api_version):
     """Test access to Open Weather Map API here."""
     client = OWMClient(
@@ -285,6 +309,7 @@ async def test_api_key(hass,api_key, api_version):
         api_version=api_version.strip(),
         latitude=52.353218,
         longitude=5.0027695,
+        elevation=1,
     )
     try:
         await hass.async_add_executor_job(client.get_data)

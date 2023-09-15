@@ -183,7 +183,6 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
     let r = html`<label for="${name + index}"
       >${prettyName} </label
     `;
-    console.log("name: " + name, "val: " + val);
     if (schemaline["type"] == "boolean") {
       r = html`${r}<input
           type="checkbox"

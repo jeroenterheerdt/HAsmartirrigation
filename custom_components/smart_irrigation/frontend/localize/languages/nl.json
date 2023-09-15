@@ -98,6 +98,11 @@
             "temperature": "Temperatuur",
             "windspeed": "Wind snelheid"
           },
+          "pressure_types": {
+            "absolute": "absoluut",
+            "relative": "relatief"
+          },
+          "pressure-type": "Druk is",
           "sensor-aggregate-of-sensor-values-to-calculate": "van de sensor waardes om irrigatietijd te berekenen",
           "sensor-aggregate-use-the": "Gebruik de/het",
           "sensor-entity": "Sensor entiteit",
