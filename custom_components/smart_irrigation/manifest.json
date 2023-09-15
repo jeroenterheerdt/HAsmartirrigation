@@ -7,6 +7,6 @@
   "documentation": "https://github.com/jeroenterheerdt/HASmartIrrigation",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/jeroenterheerdt/HASmartIrrigation/issues",
-  "requirements": ["pvlib"],
-  "version": "v2023.9.0-beta19"
+  "requirements": ["pvlib==0.10.1"],
+  "version": "v2023.9.0-beta20"
 }
