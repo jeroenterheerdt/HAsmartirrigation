@@ -5,7 +5,6 @@ import requests
 import json
 import logging
 import math
-import pvlib
 
 from .const import MAPPING_DEWPOINT, MAPPING_HUMIDITY, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_TEMPERATURE, MAPPING_WINDSPEED, RETRIEVED_AT
 
@@ -121,7 +120,7 @@ class OWMClient:  # pylint: disable=invalid-name
                                     data[OWM_wind_speed_key_name] = data[OWM_wind_speed_key_name] * (4.87 / math.log((67.8 * 10) - 5.42))
                                 elif k is OWM_pressure_key_name:
                                     #OWM provides relative pressure, replace it with estimated absolute pressure returning!
-                                    data[OWM_pressure_key_name] = pvlib.atmosphere.alt2pres(self.elevation)
+                                    data[OWM_pressure_key_name] = self.relative_to_absolute_pressure(data[OWM_pressure_key_name], self.elevation)
                         parsed_data[MAPPING_WINDSPEED] = data[OWM_wind_speed_key_name]
 
                         parsed_data[MAPPING_PRESSURE] = data[OWM_pressure_key_name]
@@ -159,6 +158,23 @@ class OWMClient:  # pylint: disable=invalid-name
             _LOGGER.info("Returning cached OWM forecastdata")
             return self._cached_forecast_data
 
+    def relative_to_absolute_pressure(self, pressure, height):
+        """
+        Convert relative pressure to absolute pressure.
+        """
+        # Constants
+        g = 9.80665  # m/s^2
+        M = 0.0289644  # kg/mol
+        R = 8.31447  # J/(mol*K)
+        T0 = 288.15  # K
+        p0 = 101325  # Pa
+
+        # Calculate temperature at given height
+        temperature = T0 - (g * M * height) / (R * T0)
+        # Calculate absolute pressure at given height
+        absolute_pressure = pressure * (T0 / temperature) ** (g * M / (R * 287))
+        return absolute_pressure
+
     def get_data(self):
         """Validate and return data."""
         if self._cached_data is None or self.override_cache or datetime.datetime.now() >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds):
@@ -179,7 +195,7 @@ class OWMClient:  # pylint: disable=invalid-name
                             self.raiseIOError(k)
                         else:
                             # check value
-                            if k is not [OWM_wind_speed_key_name, OWM_pressure_key_name]:
+                            if k not in [OWM_wind_speed_key_name, OWM_pressure_key_name]:
                                 if (
                                     data[k] < OWM_validators[k]["min"]
                                     or data[k] > OWM_validators[k]["max"]
@@ -195,7 +211,7 @@ class OWMClient:  # pylint: disable=invalid-name
                                 data[OWM_wind_speed_key_name] = data[OWM_wind_speed_key_name] * (4.87 / math.log((67.8 * 10) - 5.42))
                             elif k is OWM_pressure_key_name:
                                     #OWM provides relative pressure, replace it with estimated absolute pressure returning!
-                                    data[OWM_pressure_key_name] = pvlib.atmosphere.alt2pres(self.elevation)
+                                    data[OWM_pressure_key_name] = self.relative_to_absolute_pressure(data[OWM_pressure_key_name], self.elevation)
                     parsed_data[MAPPING_WINDSPEED] = data[OWM_wind_speed_key_name]
                     parsed_data[MAPPING_PRESSURE] = data[OWM_pressure_key_name]
                     parsed_data[MAPPING_HUMIDITY] = data[OWM_humidity_key_name]
