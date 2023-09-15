@@ -27,7 +27,7 @@ This integration uses reference evapotranspiration values and calculates water b
 
 The integration uses the [PyETo module to calculate the evapotranspiration value (fao56)](https://pyeto.readthedocs.io/en/latest/fao56_penman_monteith.html). Also, please see the [How this works](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) Wiki page. But also other modules are available and can be extended by the community.
 
-This is all the integration does, and this is on purpose to provide maximum flexibility. Users are expected to use the value of `sensor.[zone_name]` to interact with their irrigation system and afterwards call the `smart_irrigation.reset_bucket` service. [See the example automations below](#step-4-creating-automations).
+This is all the integration does, and this is on purpose to provide maximum flexibility. Users are expected to use the value of `sensor.smart_irrigation_[zone_name]` to interact with their irrigation system and afterwards call the `smart_irrigation.reset_bucket` service. [See the example automations below](#step-4-creating-automations).
 
 > **Note - use this integration at your own risk - we do not assume responsibility for any inconvience caused by using this integration. Always use common sense before deciding to irrigate using the calculations this integration provides. For example, irrigating during excessive rainfall might cause flooding. Again - we assume no responsibility for any inconvience caused.**
 
@@ -43,7 +43,7 @@ This is all the integration does, and this is on purpose to provide maximum flex
 
 4. Once a day (time is configurable) the `netto precipitation` is added/substracted from the `bucket,` which starts as empty. If the `bucket` is below zero, irrigation is required. 
 
-5. Irrigation should be run for `sensor.[zone_name]`, which is 0 if `bucket`  >=0. Afterwards, the `bucket` needs to be reset (using `reset_bucket`). It's up to the user of the integration to build the automation for this final step. See [Example automation](#step-4-creating-automations)
+5. Irrigation should be run for `sensor.smart_irrigation_[zone_name]`, which is 0 if `bucket`  >=0. Afterwards, the `bucket` needs to be reset (using `reset_bucket`). It's up to the user of the integration to build the automation for this final step. See [Example automation](#step-4-creating-automations)
 
 There are many more options available, see below. To understand how `precipitation`, `netto precipitation`, the `bucket` and irrigation interact, see [example behavior on the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week).
 
@@ -167,7 +167,7 @@ Once the integration is installed, the following entities, services and events w
 
 #### Entities
 
-##### sensor.[zone_name]
+##### sensor.smart_irrigation_[zone_name]
 
 Attributes:
 
@@ -184,7 +184,7 @@ Attributes:
 
 Sample screenshot:
 
-![](images/sensor.[zone_name].png?raw=true)
+![](images/sensor.smart_irrigation_[zone_name].png?raw=true)
 
 #### Services
 
@@ -214,22 +214,22 @@ The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigat
 
 ### Step 4: Creating Automations
 
-Since this integration does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom integration with any irrigation system you might have, regardless of how that interfaces with Home Assistant. In order for this to work correctly, you should base your automation on the value of `sensor.[zone_name]` as long as you run your automation after it was updated (e.g. 11:00 PM/23:00 hours local time). If that value is above 0 it is time to irrigate. Note that the value is the run time in seconds. Also, after irrigation, you need to call the `smart_irrigation.reset_bucket` service to reset the net irrigation tracking to 0.
+Since this integration does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom integration with any irrigation system you might have, regardless of how that interfaces with Home Assistant. In order for this to work correctly, you should base your automation on the value of `sensor.smart_irrigation_[zone_name]` as long as you run your automation after it was updated (e.g. 11:00 PM/23:00 hours local time). If that value is above 0 it is time to irrigate. Note that the value is the run time in seconds. Also, after irrigation, you need to call the `smart_irrigation.reset_bucket` service to reset the net irrigation tracking to 0.
 
 > **The last step in any automation is very important, since you will need to let the integration know you have finished irrigating and the evaporation counter can be reset by calling the `smart_irrigation.reset_bucket` service**
 
 #### Example Automation 1: one valve, potentially daily irrigation
-Here is an example automation that runs when the `smart_irrigation_start_irrigation_all_zones` event is fired. It checks if `sensor.[zone_name]` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.[zone_name]` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service. If you have multiple instances you will need to adjust the event, entities and service names accordingly.
+Here is an example automation that runs when the `smart_irrigation_start_irrigation_all_zones` event is fired. It checks if `sensor.smart_irrigation_[zone_name]` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_[zone_name]` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service. If you have multiple instances you will need to adjust the event, entities and service names accordingly.
 
 ```
 - alias: Smart Irrigation
-  description: 'Start Smart Irrigation at 06:00 and run it only if the `sensor.[zone_name]` is >0 and run it for precisely that many seconds'
+  description: 'Start Smart Irrigation at 06:00 and run it only if the `sensor.smart_irrigation_[zone_name]` is >0 and run it for precisely that many seconds'
 trigger:
   - platform: event
     event_type: smart_irrigation_start_irrigation_all_zones
 condition:
   - condition: numeric_state
-    entity_id: sensor.[zone_name]
+    entity_id: sensor.smart_irrigation_[zone_name]
     above: 0
   action:
   - service: switch.turn_on
@@ -242,7 +242,7 @@ condition:
     entity_id: switch.irrigation_tap1
   - service: smart_irrigation.reset_bucket
     data: {}
-    entity_id: sensor.[zone_name]
+    entity_id: sensor.smart_irrigation_[zone_name]
 ```
 
 [See more advanced examples in the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Automation-examples).
