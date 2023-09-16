@@ -153,7 +153,9 @@ If you let PyETO to estimate from temperature or sun hours, it will not ask OWM 
 
 #### Sensor groups
 
-For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides. You can choose which sensors to use like average, maximum, minimum etc.  If you use your own air pressure sensor, enter the absolute air pressure. This sensor reflects local conditions. If you use Open Weather Map, make sure your home zone coordinates are set correctly so the data is correct.  This is especially true if you set the coordinates manually in the configuration.yaml
+For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides. You can choose which sensors to use like average, maximum, minimum etc.  If you use Open Weather Map, make sure your home zone coordinates are set correctly so the data is correct.  This is especially true if you set the coordinates manually in the configuration.yaml. 
+
+If you are using your own barometric pressure sensor, enter either the absolute or relative barometric pressure. Absolute barometric pressure is the actual pressure measured at your location and relative barometric pressure is the pressure calculated at sea level. Make this clear in the selection box.
 
 #### HELP
 
