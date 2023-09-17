@@ -26,6 +26,7 @@ from homeassistant.helpers.event import (
     async_track_point_in_utc_time,
     async_track_time_change,
     async_track_time_interval,
+    async_track_sunrise,
 )
 from homeassistant.const import (
     CONF_LATITUDE,
@@ -198,6 +199,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             hass.loop.create_task(self.set_up_auto_clear_time(the_config))
 
         #set up sunrise tracking
+        _LOGGER.debug("calling register start event from init")
         self.register_start_event()
 
         super().__init__(hass, _LOGGER, name=const.DOMAIN)
@@ -528,6 +530,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 self.store.async_update_mapping(mapping_id, changes=changes)
 
         #update start_event
+        _LOGGER.debug("calling register start event from async_calculate_all")
         self.register_start_event()
 
     def getModuleInstanceByID(self, module_id):
@@ -893,35 +896,36 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self.store.async_get_config()
 
         # update the start event
+        _LOGGER.debug("calling register start event from async_update_zone_config")
         self.register_start_event()
 
     def register_start_event(self):
-        sun_state = self.hass.states.get("sun.sun")
-        if sun_state is not None:
-            sun_rise = sun_state.attributes.get("next_rising")
-            if sun_rise is not None:
-                try:
-                    sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S.%f%z")
-                except(ValueError):
-                    sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S%z")
-                total_duration = self.get_total_duration_all_enabled_zones()
-                if total_duration > 0:
+        #sun_state = self.hass.states.get("sun.sun")
+        #if sun_state is not None:
+        #    sun_rise = sun_state.attributes.get("next_rising")
+        #    if sun_rise is not None:
+        #        try:
+        #            sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S.%f%z")
+        #        except(ValueError):
+        #            sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S%z")
+        total_duration = self.get_total_duration_all_enabled_zones()
+        if self._track_sunrise_event_unsub:
+            self._track_sunrise_event_unsub()
+        if total_duration > 0:
                     #time_to_wait = sun_rise - datetime.datetime.now(timezone.utc) - datetime.timedelta(seconds=total_duration)
                     #time_to_fire = datetime.datetime.now(timezone.utc) + time_to_wait
-                    time_to_fire = sun_rise - datetime.timedelta(seconds=total_duration)
+                    #time_to_fire = sun_rise - datetime.timedelta(seconds=total_duration)
                     #time_to_wait = total_duration
 
                     #time_to_fire = datetime.datetime.now(timezone.utc)+datetime.timedelta(seconds=total_duration)
 
-                    if self._track_sunrise_event_unsub:
-                        self._track_sunrise_event_unsub()
-                    self._track_sunrise_event_unsub = None
-                    self._track_sunrise_event_unsub = async_track_point_in_utc_time(
-                        self.hass, self._fire_start_event, point_in_time=time_to_fire
-                    )
+                    #self._track_sunrise_event_unsub = async_track_point_in_utc_time(
+                    #    self.hass, self._fire_start_event, point_in_time=time_to_fire
+                    #)
+            self._track_sunrise_event_unsub = async_track_sunrise(self.hass, self._fire_start_event,datetime.timedelta(seconds=total_duration))
                     #self._track_sunrise_event_unsub = async_call_later(self.hass, time_to_wait,self._fire_start_event)
-                    event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
-                    _LOGGER.info("Start irrigation event {} will fire at {}".format(event_to_fire, time_to_fire))
+            event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
+            _LOGGER.info("Start irrigation event {} will fire at {} seconds before sunrise".format(event_to_fire, total_duration))
 
     def get_total_duration_all_enabled_zones(self):
         total_duration = 0
