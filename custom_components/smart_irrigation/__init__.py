@@ -922,7 +922,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     #self._track_sunrise_event_unsub = async_track_point_in_utc_time(
                     #    self.hass, self._fire_start_event, point_in_time=time_to_fire
                     #)
-            self._track_sunrise_event_unsub = async_track_sunrise(self.hass, self._fire_start_event,datetime.timedelta(seconds=total_duration))
+            self._track_sunrise_event_unsub = async_track_sunrise(self.hass, self._fire_start_event,datetime.timedelta(seconds=0-total_duration))
                     #self._track_sunrise_event_unsub = async_call_later(self.hass, time_to_wait,self._fire_start_event)
             event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
             _LOGGER.info("Start irrigation event {} will fire at {} seconds before sunrise".format(event_to_fire, total_duration))
