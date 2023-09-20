@@ -62,6 +62,7 @@ from .const import (
     MODULE_NAME,
     MODULE_DESCRIPTION,
     MODULE_SCHEMA,
+    START_EVENT_FIRED_TODAY,
     ZONE_BUCKET,
     ZONE_ID,
     ZONE_LEAD_TIME,
@@ -84,7 +85,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DATA_REGISTRY = f"{DOMAIN}_storage"
 STORAGE_KEY = f"{DOMAIN}.storage"
-STORAGE_VERSION = 2
+STORAGE_VERSION = 3
 SAVE_DELAY = 10
 
 
@@ -144,12 +145,11 @@ class Config:
     autoupdateinterval = attr.ib(type=str, default=CONF_DEFAULT_AUTO_UPDATE_INTERVAL)
     autoclearenabled =attr.ib(type=bool,default=CONF_DEFAULT_AUTO_CLEAR_ENABLED)
     cleardatatime = attr.ib(type=str, default=CONF_DEFAULT_CLEAR_TIME)
+    starteventfiredtoday = attr.ib(type=bool, default=False)
 
 class MigratableStore(Store):
     async def _async_migrate_func(self, old_version, data: dict):
         return data
-
-
 
 class SmartIrrigationStorage:
     """Class to hold Smart Irrigation configuration data."""
@@ -175,7 +175,8 @@ class SmartIrrigationStorage:
                                 autoupdatedelay = CONF_DEFAULT_AUTO_UPDATE_DELAY,
                                 autoupdateinterval = CONF_DEFAULT_AUTO_UPDATE_INTERVAL,
                                 autoclearenabled = CONF_DEFAULT_AUTO_CLEAR_ENABLED,
-                                cleardatatime = CONF_DEFAULT_CLEAR_TIME
+                                cleardatatime = CONF_DEFAULT_CLEAR_TIME,
+                                starteventfiredtoday = False
                                 )
         zones: "OrderedDict[str, ZoneEntry]" = OrderedDict()
         modules: "OrderedDict[str, ModuleEntry]" = OrderedDict()
@@ -191,9 +192,9 @@ class SmartIrrigationStorage:
                             autoupdatedelay=data["config"].get(CONF_AUTO_UPDATE_DELAY, CONF_DEFAULT_AUTO_UPDATE_DELAY),
                             autoupdateinterval=data["config"].get(CONF_AUTO_UPDATE_INTERVAL, CONF_DEFAULT_AUTO_UPDATE_INTERVAL),
                             autoclearenabled=data["config"].get(CONF_AUTO_CLEAR_ENABLED, CONF_DEFAULT_AUTO_CLEAR_ENABLED),
-                            cleardatatime=data["config"].get(CONF_CLEAR_TIME, CONF_DEFAULT_CLEAR_TIME)
+                            cleardatatime=data["config"].get(CONF_CLEAR_TIME, CONF_DEFAULT_CLEAR_TIME),
+                            starteventfiredtoday = data["config"].get(START_EVENT_FIRED_TODAY, False)
             )
-
 
             if "zones" in data:
                 for zone in data["zones"]:

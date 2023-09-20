@@ -189,6 +189,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self._track_auto_update_time_unsub = None
         self._track_auto_clear_time_unsub = None
         self._track_sunrise_event_unsub = None
+        self._track_midnight_time_unsub = None
         # set up auto calc time and auto update time from data
         the_config = self.store.async_get_config()
         if the_config[const.CONF_AUTO_UPDATE_ENABLED]:
@@ -197,10 +198,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             hass.loop.create_task(self.set_up_auto_calc_time(the_config))
         if the_config[const.CONF_AUTO_CLEAR_ENABLED]:
             hass.loop.create_task(self.set_up_auto_clear_time(the_config))
-
+        if the_config[const.START_EVENT_FIRED_TODAY]:
+            self._start_event_fired_today = True
+        else:
+            self._start_event_fired_today = False
         #set up sunrise tracking
         _LOGGER.debug("calling register start event from init")
         self.register_start_event()
+
+        #set up midnight tracking
+        self._track_midnight_time_unsub = async_track_time_change(hass, self._reset_event_fired_today, 0, 0, 0)
 
         super().__init__(hass, _LOGGER, name=const.DOMAIN)
 
@@ -909,7 +916,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         #        except(ValueError):
         #            sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S%z")
         total_duration = self.get_total_duration_all_enabled_zones()
-        if self._track_sunrise_event_unsub:
+        if self._track_sunrise_event_unsub is not None:
             self._track_sunrise_event_unsub()
         if total_duration > 0:
                     #time_to_wait = sun_rise - datetime.datetime.now(timezone.utc) - datetime.timedelta(seconds=total_duration)
@@ -937,9 +944,23 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     @callback
     def _fire_start_event(self, *args):
-        event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
-        self.hass.bus.fire(event_to_fire, {})
-        _LOGGER.info("Fired start event: {}".format(event_to_fire))
+        if not self._start_event_fired_today:
+            event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
+            self.hass.bus.fire(event_to_fire, {})
+            _LOGGER.info("Fired start event: {}".format(event_to_fire))
+            self._start_event_fired_today = True
+            #save config
+            self.store.async_update_config({const.START_EVENT_FIRED_TODAY: self._start_event_fired_today})
+        else:
+            _LOGGER.info("Did not fire start event, it was already fired today")
+
+    @callback
+    def _reset_event_fired_today(self, *args):
+        if self._start_event_fired_today:
+            _LOGGER.info("Resetting start event fired today tracker")
+            self._start_event_fired_today = False
+            #save config
+            self.store.async_update_config({const.START_EVENT_FIRED_TODAY: self._start_event_fired_today})
 
     @callback
     def async_get_all_modules(self):
