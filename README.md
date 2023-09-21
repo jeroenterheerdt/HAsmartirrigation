@@ -96,7 +96,8 @@ You will need to specify the following:
 
 This page provides global settings.
 - Automatic duration calculation: If enabled set the time of calculation (HH:MM).
-- Automatic weather data update: If enabled specify how often sensor update should happen (minutes, hours, days). Warning: weatherdata update time must be on or after calculation time! 
+- Automatic weather data update: If enabled specify how often sensor update should happen (minutes, hours, days). Warning: weatherdata update time must be on or after calculation time!
+- Automatic  weather data pruning: If enabled configure time of pruning weather data. Use this to make sure that there is no left over weatherdata from previous days. Don't remove the weatherdata before you calculate and only use this option if you expect the automatic update to collect weatherdata after you calculated for the day. Ideally, you want to prune as late in the day as possible.
 
 #### ZONES
 
