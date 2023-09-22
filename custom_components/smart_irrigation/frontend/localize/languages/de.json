@@ -15,7 +15,6 @@
       "cards": {
         "automatic-duration-calculation": {
           "header": "Automatische Berechnung der Bewässerungsdauer",
-          "description": "Die Berechnung berücksichtigt die bis zu diesem Zeitpunkt gesammelten Wetterdaten und aktualisiert den Vorrat für jede automatische Zone. Anschließend wird die Dauer basierend auf dem neuen Vorrat angepasst und die gesammelten Wetterdaten entfernt.",
           "labels": {
             "auto-calc-enabled": "Automatische Berechnung der Dauer pro Zone",
             "auto-calc-time": "Berechne um"
@@ -26,7 +25,6 @@
             "warning-update-time-on-or-after-calc-time": "Hinweis: Die automatische Aktualisierung der Wetterdaten erfolgt bei oder nach der automatischen Berechnung der Bewässerungsdauer"
           },
           "header": "Automatische Aktualisierung der Wetterdaten",
-          "description": "Die Wetterdaten werden automatisch gesammelt und gespeichert. Zur Berechnung der Zonen und Bewässerungsdauer sind Wetterdaten erforderlich.",
           "labels": {
             "auto-update-enabled": "Automatisches Update der Wetterdaten",
             "auto-update-first-update": "(Erster) Update um",
@@ -36,14 +34,6 @@
             "days": "Tage",
             "hours": "Stunden",
             "minutes": "Minuten"
-          }
-        },
-        "automatic-clear": {
-          "header": "Automatisches Löschen der Wetterdaten",
-          "description": "Gesammelte Wetterdaten zu einem bestimmten Zeitpunkt automatisch entfernen. Damit wird sicher gestellt, dass keine Wetterdaten von vergangenen Tagen übrig bleiben. Entferne die Wetterdaten nicht vor der Berechnung und verwende diese Option nur, wenn Sie erwarten, dass das automatische Update Wetterdaten erfasst hat, nachdem der Tag berechnet wurde. Idealerweise sollte dieser Schnitt so spät wie möglich Tag durchgeführt werden.",
-          "labels": {
-            "automatic-clear-enabled": "Automatisches Löschen der Wetterdaten",
-            "automatic-clear-time": "Löschen der Wetterdaten um"
           }
         }
       },

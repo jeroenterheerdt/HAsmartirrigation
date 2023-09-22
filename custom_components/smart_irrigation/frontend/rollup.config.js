@@ -25,7 +25,7 @@ export default [
       dir: 'dist',
       format: 'iife',
       inlineDynamicImports: true,
-      sourcemap: true,
+      sourcemap: false,
     },
     plugins: [...plugins],
     context: 'window'

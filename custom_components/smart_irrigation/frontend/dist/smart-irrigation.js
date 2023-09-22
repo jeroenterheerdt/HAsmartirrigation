@@ -234,40 +234,51 @@ function me(e,t){return(({finisher:e,descriptor:t})=>(a,i)=>{var n;if(void 0===i
   ha-dialog div.description {
     margin-bottom: 10px;
   }
-`;var vi="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z",bi="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z";let yi=class extends(tt(le)){hassSubscribe(){return this._fetchData(),[this.hass.connection.subscribeMessage((()=>this._fetchData()),{type:_e+"_config_updated"})]}async _fetchData(){var e,t;this.hass&&(this.config=await Xe(this.hass),this.data=(e=this.config,t=["calctime","autocalcenabled","autoupdateenabled","autoupdateschedule","autoupdatefirsttime","autoupdateinterval","autoclearenabled","cleardatatime"],e?Object.entries(e).filter((([e])=>t.includes(e))).reduce(((e,[t,a])=>Object.assign(e,{[t]:a})),{}):{}))}firstUpdated(){(async()=>{await ye()})()}render(){if(this.hass&&this.config&&this.data){let e=Y` <div class="card-content"><svg
-      style="width:24px;height:24px"
-      viewBox="0 0 24 24"
-      id="showcalcresults"
-    >
-      <title>
-        ${oi("panels.general.cards.automatic-duration-calculation.description",this.hass.language)}
-      </title>
-      <path fill="#404040" d="${bi}" />
-    </svg></div><div class="card-content">
-        <label for="autocalcenabled"
-          >${oi("panels.general.cards.automatic-duration-calculation.labels.auto-calc-enabled",this.hass.language)}:</label
-        >
-        <input
-          type="radio"
-          id="autocalcon"
-          name="autocalcenabled"
-          value="True"
-          ?checked="${this.config.autocalcenabled}"
-          @change="${e=>{this.saveData({autocalcenabled:di(e.target.value)})}}"
-        /><label for="autocalcon"
-          >${oi("common.labels.yes",this.hass.language)}</label
-        >
-        <input
-          type="radio"
-          id="autocalcoff"
-          name="autocalcenabled"
-          value="False"
-          ?checked="${!this.config.autocalcenabled}"
-          @change="${e=>{this.saveData({autocalcenabled:di(e.target.value)})}}"
-        /><label for="autocalcoff"
-          >${oi("common.labels.no",this.hass.language)}</label
-        >
-      </div>`;this.data.autocalcenabled&&(e=Y`${e}
+`;var vi="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z",bi="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z";let yi=class extends(tt(le)){hassSubscribe(){return this._fetchData(),[this.hass.connection.subscribeMessage((()=>this._fetchData()),{type:_e+"_config_updated"})]}async _fetchData(){var e,t;this.hass&&(this.config=await Xe(this.hass),this.data=(e=this.config,t=["calctime","autocalcenabled","autoupdateenabled","autoupdateschedule","autoupdatefirsttime","autoupdateinterval","autoclearenabled","cleardatatime"],e?Object.entries(e).filter((([e])=>t.includes(e))).reduce(((e,[t,a])=>Object.assign(e,{[t]:a})),{}):{}))}firstUpdated(){(async()=>{await ye()})()}render(){if(this.hass&&this.config&&this.data){let e=Y` <div class="card-content">
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showautocalcdescription"
+            @click="${()=>this.toggleInformation("autocalcdescription")}"
+          >
+            >
+            <title>
+              ${oi("panels.zones.actions.information",this.hass.language)}
+            </title>
+            <path fill="#404040" d="${bi}" />
+          </svg>
+        </div>
+
+        <div class="card-content">
+          <label class="hidden" id="autocalcdescription">
+            ${oi("panels.general.cards.automatic-duration-calculation.description",this.hass.language)}
+          </label>
+        </div>
+        <div class="card-content">
+          <label for="autocalcenabled"
+            >${oi("panels.general.cards.automatic-duration-calculation.labels.auto-calc-enabled",this.hass.language)}:</label
+          >
+          <input
+            type="radio"
+            id="autocalcon"
+            name="autocalcenabled"
+            value="True"
+            ?checked="${this.config.autocalcenabled}"
+            @change="${e=>{this.saveData({autocalcenabled:di(e.target.value)})}}"
+          /><label for="autocalcon"
+            >${oi("common.labels.yes",this.hass.language)}</label
+          >
+          <input
+            type="radio"
+            id="autocalcoff"
+            name="autocalcenabled"
+            value="False"
+            ?checked="${!this.config.autocalcenabled}"
+            @change="${e=>{this.saveData({autocalcenabled:di(e.target.value)})}}"
+          /><label for="autocalcoff"
+            >${oi("common.labels.no",this.hass.language)}</label
+          >
+        </div>`;this.data.autocalcenabled&&(e=Y`${e}
           <div class="card-content">
             <label for="calctime"
               >${oi("panels.general.cards.automatic-duration-calculation.labels.auto-calc-time",this.hass.language)}</label
@@ -279,19 +290,30 @@ function me(e,t){return(({finisher:e,descriptor:t})=>(a,i)=>{var n;if(void 0===i
               .value="${this.config.calctime}"
               @input=${e=>{this.saveData({calctime:e.target.value})}}
             />
-          </div>`),e=Y`<ha-card header="${oi("panels.general.cards.automatic-duration-calculation.header",this.hass.language)}">
-
-    ${e}</ha-card>`;let t=Y` <div class="card-content">
-      <svg
-      style="width:24px;height:24px"
-      viewBox="0 0 24 24"
-      id="showcalcresults"
-    >
-      <title>
-        ${oi("panels.general.cards.automatic-update.description",this.hass.language)}
-      </title>
-      <path fill="#404040" d="${bi}" />
-      </svg></div><div class="card-content">
+          </div>`),e=Y`<ha-card
+        header="${oi("panels.general.cards.automatic-duration-calculation.header",this.hass.language)}"
+      >
+        ${e}</ha-card
+      >`;let t=Y` <div class="card-content">
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showautoupdatedescription"
+            @click="${()=>this.toggleInformation("autoupdatedescription")}"
+          >
+            >
+            <title>
+              ${oi("panels.zones.actions.information",this.hass.language)}
+            </title>
+            <path fill="#404040" d="${bi}" />
+          </svg>
+        </div>
+        <div class="card-content">
+          <label class="hidden" id="autoupdatedescription">
+            ${oi("panels.general.cards.automatic-update.description",this.hass.language)}
+          </label>
+        </div>
+        <div class="card-content">
           <label for="autoupdateenabled"
             >${oi("panels.general.cards.automatic-update.labels.auto-update-enabled",this.hass.language)}:</label
           >
@@ -366,17 +388,24 @@ function me(e,t){return(({finisher:e,descriptor:t})=>(a,i)=>{var n;if(void 0===i
             />
           </div>`),t=Y`<ha-card header="${oi("panels.general.cards.automatic-update.header",this.hass.language)}",
       this.hass.language)}">${t}</ha-card>`;let a=Y` <div class="card-content">
-      <svg
-      style="width:24px;height:24px"
-      viewBox="0 0 24 24"
-      id="showcalcresults"
-    >
-      <title>
-        ${oi("panels.general.cards.automatic-clear.description",this.hass.language)}
-      </title>
-      <path fill="#404040" d="${bi}" />
-      </svg></div>
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showautocleardescription"
+            @click="${()=>this.toggleInformation("autocleardescription")}"
+          >
+            <title>
+              ${oi("panels.zones.actions.information",this.hass.language)}
+            </title>
 
+            <path fill="#404040" d="${bi}" />
+          </svg>
+        </div>
+        <div class="card-content">
+          <label class="hidden" id="autocleardescription">
+            ${oi("panels.general.cards.automatic-clear.description",this.hass.language)}
+          </label>
+        </div>
         <div class="card-content">
           <label for="autoclearenabled"
             >${oi("panels.general.cards.automatic-clear.labels.automatic-clear-enabled",this.hass.language)}:</label
@@ -427,7 +456,7 @@ function me(e,t){return(({finisher:e,descriptor:t})=>(a,i)=>{var n;if(void 0===i
       .shortinput {
         width: 50px;
       }
-      .description {
+      .information {
         margin-left: 20px;
         margin-top: 5px;
       }
@@ -1026,7 +1055,7 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=hs,a.
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${oi("title",this.hass.language)}</div>
-          <div class="version">${"v2023.9.0-beta22"}</div>
+          <div class="version">${"v2023.9.0-beta23"}</div>
         </div>
 
         <ha-tabs
@@ -1196,4 +1225,3 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=hs,a.
      * Copyright 2017 Google LLC
      * SPDX-License-Identifier: BSD-3-Clause
      */()],Hi.prototype,"_params",void 0),Hi=n([he("error-dialog")],Hi);var Di=Object.freeze({__proto__:null,get ErrorDialog(){return Hi}});Object.defineProperty(e,"__esModule",{value:!0})}({});
-//# sourceMappingURL=smart-irrigation.js.map

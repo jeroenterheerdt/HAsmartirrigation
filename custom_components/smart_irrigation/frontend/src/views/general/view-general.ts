@@ -72,55 +72,72 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
   render() {
     if (!this.hass || !this.config || !this.data) return html``;
     else {
-      let r1 = html` <div class="card-content"><svg
-      style="width:24px;height:24px"
-      viewBox="0 0 24 24"
-      id="showcalcresults"
-    >
-      <title>
-        ${localize("panels.general.cards.automatic-duration-calculation.description", this.hass.language)}
-      </title>
-      <path fill="#404040" d="${mdiInformationOutline}" />
-    </svg></div><div class="card-content">
-        <label for="autocalcenabled"
-          >${localize(
-            "panels.general.cards.automatic-duration-calculation.labels.auto-calc-enabled",
-            this.hass.language
-          )}:</label
-        >
-        <input
-          type="radio"
-          id="autocalcon"
-          name="autocalcenabled"
-          value="True"
-          ?checked="${this.config.autocalcenabled}"
-          @change="${(e: Event) => {
-            this.saveData({
-              autocalcenabled: parseBoolean(
-                (e.target as HTMLInputElement).value
-              ),
-            });
-          }}"
-        /><label for="autocalcon"
-          >${localize("common.labels.yes", this.hass.language)}</label
-        >
-        <input
-          type="radio"
-          id="autocalcoff"
-          name="autocalcenabled"
-          value="False"
-          ?checked="${!this.config.autocalcenabled}"
-          @change="${(e: Event) => {
-            this.saveData({
-              autocalcenabled: parseBoolean(
-                (e.target as HTMLInputElement).value
-              ),
-            });
-          }}"
-        /><label for="autocalcoff"
-          >${localize("common.labels.no", this.hass.language)}</label
-        >
-      </div>`;
+      let r1 = html` <div class="card-content">
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showautocalcdescription"
+            @click="${() => this.toggleInformation("autocalcdescription")}"
+          >
+            >
+            <title>
+              ${localize(
+                "panels.zones.actions.information",
+                this.hass.language
+              )}
+            </title>
+            <path fill="#404040" d="${mdiInformationOutline}" />
+          </svg>
+        </div>
+
+        <div class="card-content">
+          <label class="hidden" id="autocalcdescription">
+            ${localize(
+              "panels.general.cards.automatic-duration-calculation.description",
+              this.hass.language
+            )}
+          </label>
+        </div>
+        <div class="card-content">
+          <label for="autocalcenabled"
+            >${localize(
+              "panels.general.cards.automatic-duration-calculation.labels.auto-calc-enabled",
+              this.hass.language
+            )}:</label
+          >
+          <input
+            type="radio"
+            id="autocalcon"
+            name="autocalcenabled"
+            value="True"
+            ?checked="${this.config.autocalcenabled}"
+            @change="${(e: Event) => {
+              this.saveData({
+                autocalcenabled: parseBoolean(
+                  (e.target as HTMLInputElement).value
+                ),
+              });
+            }}"
+          /><label for="autocalcon"
+            >${localize("common.labels.yes", this.hass.language)}</label
+          >
+          <input
+            type="radio"
+            id="autocalcoff"
+            name="autocalcenabled"
+            value="False"
+            ?checked="${!this.config.autocalcenabled}"
+            @change="${(e: Event) => {
+              this.saveData({
+                autocalcenabled: parseBoolean(
+                  (e.target as HTMLInputElement).value
+                ),
+              });
+            }}"
+          /><label for="autocalcoff"
+            >${localize("common.labels.no", this.hass.language)}</label
+          >
+        </div>`;
       if (this.data.autocalcenabled) {
         r1 = html`${r1}
           <div class="card-content">
@@ -143,23 +160,40 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
             />
           </div>`;
       }
-      r1 = html`<ha-card header="${localize(
-        "panels.general.cards.automatic-duration-calculation.header",
-        this.hass.language
-      )}">
-
-    ${r1}</ha-card>`;
+      r1 = html`<ha-card
+        header="${localize(
+          "panels.general.cards.automatic-duration-calculation.header",
+          this.hass.language
+        )}"
+      >
+        ${r1}</ha-card
+      >`;
       let r2 = html` <div class="card-content">
-      <svg
-      style="width:24px;height:24px"
-      viewBox="0 0 24 24"
-      id="showcalcresults"
-    >
-      <title>
-        ${localize("panels.general.cards.automatic-update.description", this.hass.language)}
-      </title>
-      <path fill="#404040" d="${mdiInformationOutline}" />
-      </svg></div><div class="card-content">
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showautoupdatedescription"
+            @click="${() => this.toggleInformation("autoupdatedescription")}"
+          >
+            >
+            <title>
+              ${localize(
+                "panels.zones.actions.information",
+                this.hass.language
+              )}
+            </title>
+            <path fill="#404040" d="${mdiInformationOutline}" />
+          </svg>
+        </div>
+        <div class="card-content">
+          <label class="hidden" id="autoupdatedescription">
+            ${localize(
+              "panels.general.cards.automatic-update.description",
+              this.hass.language
+            )}
+          </label>
+        </div>
+        <div class="card-content">
           <label for="autoupdateenabled"
             >${localize(
               "panels.general.cards.automatic-update.labels.auto-update-enabled",
@@ -293,17 +327,30 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       this.hass.language)}">${r2}</ha-card>`;
 
       let r3 = html` <div class="card-content">
-      <svg
-      style="width:24px;height:24px"
-      viewBox="0 0 24 24"
-      id="showcalcresults"
-    >
-      <title>
-        ${localize("panels.general.cards.automatic-clear.description", this.hass.language)}
-      </title>
-      <path fill="#404040" d="${mdiInformationOutline}" />
-      </svg></div>
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showautocleardescription"
+            @click="${() => this.toggleInformation("autocleardescription")}"
+          >
+            <title>
+              ${localize(
+                "panels.zones.actions.information",
+                this.hass.language
+              )}
+            </title>
 
+            <path fill="#404040" d="${mdiInformationOutline}" />
+          </svg>
+        </div>
+        <div class="card-content">
+          <label class="hidden" id="autocleardescription">
+            ${localize(
+              "panels.general.cards.automatic-clear.description",
+              this.hass.language
+            )}
+          </label>
+        </div>
         <div class="card-content">
           <label for="autoclearenabled"
             >${localize(
@@ -398,7 +445,8 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
   }
 
   toggleInformation(item: string) {
-    const el = this.shadowRoot?.querySelector("#"+item);
+    const el = this.shadowRoot?.querySelector("#" + item);
+
     //const bt = this.shadowRoot?.querySelector("#showcalcresults" + index);
     //if (!el || !bt) {
     if (!el) {
@@ -422,7 +470,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       .shortinput {
         width: 50px;
       }
-      .description {
+      .information {
         margin-left: 20px;
         margin-top: 5px;
       }
