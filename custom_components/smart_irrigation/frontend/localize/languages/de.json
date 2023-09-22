@@ -96,8 +96,13 @@
             "pressure": "Luftdruck",
             "solar radiation": "Sonnenstrahlung",
             "temperature": "Temperatur",
-            "windspeed": "Windgeschwindikeit"
+            "windspeed": "Windgeschwindigkeit"
           },
+          "pressure_types": {
+            "absolute": "absolut",
+            "relative": "relativ"
+          },
+          "pressure-type": "Der Luftdruck ist",
           "sensor-aggregate-of-sensor-values-to-calculate": "des Sensors für die Berechnung.",
           "sensor-aggregate-use-the": "Nutze den/die/das",
           "sensor-entity": "Sensor Entität",
@@ -165,7 +170,8 @@
           "actions": {
             "calculate-all": "Alle Zonen berechnen",
             "update-all": "Alle Zonen aktualisieren",
-            "reset-all-buckets": "Alle Vorräte zurücksetzen"
+            "reset-all-buckets": "Alle Vorräte zurücksetzen",
+            "clear-all-weatherdata": "Clear all weatherdata"
           },
           "header": "Aktionen für alle Zonen"
         }
@@ -187,7 +193,10 @@
           "manual": "Manuell"
         },
         "throughput": "Durchfluss",
-        "maximum-bucket": "Maximaler Vorrat"
+        "maximum-bucket": "Maximaler Vorrat",
+        "last_calculated": "Zuletzt berechnet",
+        "data-last-updated": "Daten zuletzt aktualisiert",
+        "data-number-of-data-points": "Anzahl der Messungen"
       },
       "no_items": "Es ist noch keine Zone vorhanden.",
       "title": "Zonen"
