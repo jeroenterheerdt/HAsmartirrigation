@@ -103,7 +103,7 @@ This page provides global settings.
 
 Specify one or more irrigation zones here. The integration calculates irrigation duration per zone, depending on size, throughput, state, module and sensor group. A zone can be _disabled_ (so it doesn't do anything), _automatic_ or _manual_. If in automatic, duration is automatically calculated. If in manual, you specify the duration yourself. Duration isn't reset by the reset_bucket services. If disabled, the zone is not included in any calculation.
 
-> **When entering any values in the configuration of this integration, keep in mind that the integration will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system).
+> When entering any values in the configuration of this integration, keep in mind that the integration will expect inches, sq ft, gallons, gallons per minute, or mm, m<sup>2</sup>, liters, liters per minute respectively depending on the settings in Home Assistant (imperial vs metric system). Note that these are values per minute.
 
 **Multi-zone support**: For irrigation systems that have multiple zones which you want to run in series or independently, one zone must be created in each case. Of course, the configuration should be done for each zone, including the area the zone covers and the corresponding settings.
 
