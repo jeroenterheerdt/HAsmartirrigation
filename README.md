@@ -254,7 +254,6 @@ condition:
 [See more advanced examples in the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Automation-examples).
 
 ## Example Behavior in a Week
-
 This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week) provides insight into how this integration should behave in certain weather conditions. With this you should be able to do a sanity check against your configuration and make sure everything is working correctly.
 
 ## How this works
