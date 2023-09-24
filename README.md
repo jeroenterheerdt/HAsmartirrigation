@@ -10,10 +10,13 @@
 [buymeacoffee]: https://www.buymeacoffee.com/dutchdatadude
 [buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png
 
-
 # Smart Irrigation
 
 ![](logo.png?raw=true)
+
+| :warning: WARNING Are you upgrading from v0.0.X (aka V1) to V2023.X.X (aka V2)? |
+|:---------------------------|
+| Stop what you're doing and [capture your V1 configuration](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Migrating-from-version-1-(v0.0.X)-to-version-2-(202X.X.X)) _before_ installing V2. V2 is a complete overhaul of this integration and there is no upgrade path. This means that effectively you will have to start over. See the [Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Migrating-from-version-1-(v0.0.X)-to-version-2-(202X.X.X)) for instructions. We will not be able to recover your V1 configuration if you don't capture it before installing V2. |
 
 This integration calculates the time to run your irrigation system to compensate for moisture loss by [evaporation](https://en.wikipedia.org/wiki/Evaporation) and [evapotranspiration](https://en.wikipedia.org/wiki/Evapotranspiration). Using this integration you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain,snow) and evapotranspiration and adjusts accordingly, so if it rains or snows less or no irrigation is required including optinal weather forecast. Multiple zones can be supported as each zone will have its own flow configuration. 
 
