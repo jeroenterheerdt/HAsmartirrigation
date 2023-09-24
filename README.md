@@ -14,7 +14,7 @@
 
 ![](logo.png?raw=true)
 ```diff
--! Warning !-
+- WARNING: upgrading from V1 (V0.0.X) to V2 (V2023.X.X)? Read the instructions below!
 ```
 | :warning: WARNING Are you upgrading from v0.0.X (aka V1) to V2023.X.X (aka V2)? |
 |:---------------------------|
