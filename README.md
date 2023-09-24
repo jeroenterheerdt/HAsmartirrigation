@@ -13,6 +13,7 @@
 # Smart Irrigation
 
 ![](logo.png?raw=true)
+
 ```diff
 - WARNING: upgrading from V1 (V0.0.X) to V2 (V2023.X.X)? Read the instructions below!
 ```
