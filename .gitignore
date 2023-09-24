@@ -348,3 +348,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# JSON Translation Manager, The fastest and simplest way manage your translation files
+jtmConfig.json

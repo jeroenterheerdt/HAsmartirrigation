@@ -1,0 +1,98 @@
+{
+  "config": {
+    "abort": {
+      "single_instance_allowed": "Es ist nur eine Integration für Smart Irrigation zulässig."
+    },
+    "error": {
+      "auth": "Open Weather API Key oder Version falsch.",
+      "name": "Gebe einen eindeutigen Namen für die Integration ein."
+    },
+    "step": {
+      "user": {
+        "title": "Allgemein",
+        "description": "Falls du Hilfe benötigst, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "name": "Eindeutiger Namen der Integration",
+          "use_owm": "Willst du Open Weather Map für Wetterdaten und/oder Vorhersagen nutzen? Deaktiviere diesen Dienst, wenn du ausschließlich deine eigene Wetterstation nutzen willst. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktiviere diesen Dienst, falls du beabsichtigst, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen zu nutzen."
+        }
+      },
+      "step1": {
+        "title": "Open Weather API Key Einstellungen",
+        "description": "Falls du Hilfe benötigst, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "owm_api_key": "API Key für Open Weather Map",
+          "owm_api_version": "Open Weather Map API Version (3.0 für eine neue Konfigurstion.)"
+        }
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "auth": "Open Weather API Key oder Version falsch."
+    },
+    "step": {
+      "init": {
+        "title": "Open Weather Map API Einstellungen",
+        "description": "Falls du Hilfe benötigst, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "use_owm": "Willst du Open Weather Map für Wetterdaten oder -vorhersagen nutzen? Deaktiviere diesen Dienst, wenn du ausschließlich deine eigene Wetterstation nutzern willst. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktiviere diesen Dienst, falls du beabsichtigst, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen zu nutzen."
+        }
+      },
+      "step1": {
+        "title": "Open Weather Map API Einstellungen",
+        "description": "Falls du Hilfe benötigst, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
+        "data": {
+          "owm_api_key": "API Key für Open Weather Map",
+          "owm_api_version": "Open Weather Map API Version (3.0 für eine neue Konfigurstion.)"
+        }
+      }
+    }
+  },
+  "common": {
+    "attributes": {
+      "size": "Größe",
+      "throughput": "Durchfluss",
+      "state": "Zustand"
+    }
+  },
+  "defaults": {
+    "default-zone": "Standard Zone",
+    "default-mapping": "Standard Sensorgruppe"
+  },
+  "module": {
+    "calculation": {
+      "explanation": {
+        "module-returned-evapotranspiration-deficiency": "Beachte: Diese Beschreibung nutzt '.' als Dezimalzeichen und zeigt gerundete Werte. Das Modul berechnete einen Evapotranspirationsmangel von",
+        "bucket-was": "Der alte Vorrat war",
+        "new-bucket-values-is": "Der neue Vorrat ist",
+        "old-bucket-variable": "alter_Vorrat",
+        "delta": "Veränderung",
+        "bucket-less-than-zero-irrigation-necessary": "Wenn der Vorrat < 0 ist, ist eine Bewässerung nötig.",
+        "steps-taken-to-calculate-duration": "Für eine exakte Berechnung der Dauer, wurden folgende Schritte durchgeführt",
+        "precipitation-rate-defined-as": "Der Niederschlag ist",
+        "duration-is-calculated-as": "Die Dauer ist",
+        "bucket": "Vorrat",
+        "precipitation-rate-variable": "Niederschlag",
+        "multiplier-is-applied": "Der Multiplikator wird angewendet. Der Multiplikator ist",
+        "duration-after-multiplier-is": "also ist die Dauer",
+        "maximum-duration-is-applied": "Die maximale Dauer wird angewendet. Diese ist",
+        "duration-after-maximum-duration-is": "also ist die Dauer",
+        "lead-time-is-applied": "Zuletzt wird die Vorlaufzeit angewendet. Die Vorlaufzeit ist",
+        "duration-after-lead-time-is": "also ist die Dauer",
+        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Wenn der Vorrat >= 0 ist, ist keine Bewässerung nötig und die Dauer ist gleich",
+        "maximum-bucket-is": "Der maximale Vorrat ist"
+      }
+    }
+  },
+  "calcmodules": {
+    "pyeto": {
+      "description": "Die Berechnung der Dauer basiert auf der FAO56-Formel aus der PyETO-Bibliothek"
+    },
+    "static": {
+      "description": "'Dummy'-Modul mit einer statisch konfigurierbaren Veränderung."
+    },
+    "passthrough": {
+      "description": "Passthrough-Modul, das den Wert eines Evapotranspirationssensors als Delta zurückgibt."
+    }
+  }
+}

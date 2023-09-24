@@ -1,0 +1,13 @@
+{
+  "calcmodules": {
+    "pyeto": {
+      "description": "Calculate duration based on the FAO56 calculation from the PyETO library"
+    },
+    "static": {
+      "description": "'Dummy' module with a static configurable duration"
+    },
+    "passthrough": {
+      "description": "Passthrough module that returns the value of an Evapotranspiration sensor as delta"
+    }
+  }
+}

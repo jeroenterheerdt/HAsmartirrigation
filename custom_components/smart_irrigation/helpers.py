@@ -1,201 +1,265 @@
-"""Helper functions."""
+import os
+import sys
+import importlib
+import logging
+from .const import CUSTOM_COMPONENTS, DOMAIN, GALLON_TO_LITER_FACTOR, INCH_TO_MM_FACTOR, INHG_TO_HPA_FACTOR, INHG_TO_PSI_FACTOR, K_TO_C_FACTOR, KMH_TO_MILESH_FACTOR, KMH_TO_MS_FACTOR, LITER_TO_GALLON_FACTOR, M2_TO_SQ_FT_FACTOR, MAPPING_DEWPOINT, MAPPING_EVAPOTRANSPIRATION, MAPPING_HUMIDITY, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_SOLRAD, MAPPING_TEMPERATURE, MAPPING_WINDSPEED, MBAR_TO_INHG_FACTOR, MBAR_TO_PSI_FACTOR, MILESH_TO_KMH_FACTOR, MILESH_TO_MS_FACTOR, MM_TO_INCH_FACTOR, MS_TO_KMH_FACTOR, MS_TO_MILESH_FACTOR, PSI_TO_HPA_FACTOR, PSI_TO_INHG_FACTOR, SQ_FT_TO_M2_FACTOR, UNIT_DEGREES_C, UNIT_DEGREES_F, UNIT_DEGREES_K, UNIT_GPM, UNIT_HPA, UNIT_INCH, UNIT_INHG, UNIT_KMH, UNIT_LPM, UNIT_M2, UNIT_MBAR, UNIT_MH, UNIT_MJ_DAY_M2, UNIT_MJ_DAY_SQFT, UNIT_MM, UNIT_MS, UNIT_PERCENT, UNIT_PSI, UNIT_SECONDS, UNIT_SQ_FT, UNIT_W_M2, UNIT_W_SQFT, W_M2_TO_W_SQ_FT_FACTOR, W_SQ_FT_TO_W_M2_FACTOR, W_TO_MJ_DAY_FACTOR
+from homeassistant import exceptions
 
-from .const import (
-    SETTING_METRIC,
-    UNIT_OF_MEASUREMENT_LITERS,
-    LITER_TO_GALLON_FACTOR,
-    UNIT_OF_MEASUREMENT_GALLONS,
-    UNIT_OF_MEASUREMENT_LPM,
-    UNIT_OF_MEASUREMENT_GPM,
-    UNIT_OF_MEASUREMENT_MMS,
-    MM_TO_INCH_FACTOR,
-    UNIT_OF_MEASUREMENT_INCHES,
-    UNIT_OF_MEASUREMENT_MMS_HOUR,
-    UNIT_OF_MEASUREMENT_INCHES_HOUR,
-    UNIT_OF_MEASUREMENT_M2,
-    M2_TO_SQ_FT_FACTOR,
-    UNIT_OF_MEASUREMENT_SQ_FT,
-    CONF_SWITCH_SOURCE_PRECIPITATION,
-    CONF_SWITCH_SOURCE_DAILY_TEMPERATURE,
-    CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE,
-    CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE,
-    CONF_SWITCH_SOURCE_DEWPOINT,
-    CONF_SWITCH_SOURCE_PRESSURE,
-    CONF_SWITCH_SOURCE_HUMIDITY,
-    CONF_SWITCH_SOURCE_WINDSPEED,
-    CONF_SENSOR_PRECIPITATION,
-    CONF_SENSOR_DAILY_TEMPERATURE,
-    CONF_SENSOR_DEWPOINT,
-    CONF_SENSOR_HUMIDITY,
-    CONF_SENSOR_MAXIMUM_TEMPERATURE,
-    CONF_SENSOR_MINIMUM_TEMPERATURE,
-    CONF_SENSOR_PRESSURE,
-    CONF_SENSOR_WINDSPEED,
-    CONF_SENSOR_SOLAR_RADIATION,
-    CONF_SWITCH_SOURCE_SOLAR_RADIATION,
-    CONF_SWITCH_CALCULATE_ET,
-    CONF_SENSOR_ET,
+from homeassistant.core import (
+    HomeAssistant,
 )
 
-from ..smart_irrigation import pyeto
+from .OWMClient import OWMClient
+
+_LOGGER = logging.getLogger(__name__)
 
 
-def show_liter_or_gallon(value, som, show_units):
-    """Return nicely formatted liters or gallons."""
-    if value is None:
-        return "unknown"
-    factor = 1.0
-    unit_of_measurement = UNIT_OF_MEASUREMENT_LITERS
-    if not som == SETTING_METRIC:
-        factor = LITER_TO_GALLON_FACTOR
-        unit_of_measurement = UNIT_OF_MEASUREMENT_GALLONS
-    retval = f"{round(float(value) * factor,2)}"
-    if show_units:
-        retval = retval + f" {unit_of_measurement}"
-    return retval
+def friendly_name_for_entity_id(entity_id: str, hass: HomeAssistant):
+    """helper to get friendly name for entity"""
+    state = hass.states.get(entity_id)
+    if state and state.attributes.get("friendly_name"):
+        return state.attributes["friendly_name"]
+
+    return entity_id
 
 
-def show_liter_or_gallon_per_minute(value, som, show_units):
-    """Return nicely formatted liters or gallons."""
-    if value is None:
-        return "unknown"
-    factor = 1.0
-    unit_of_measurement = UNIT_OF_MEASUREMENT_LPM
-    if not som == SETTING_METRIC:
-        factor = LITER_TO_GALLON_FACTOR
-        unit_of_measurement = UNIT_OF_MEASUREMENT_GPM
-    retval = f"{round(float(value) * factor,2)}"
-    if show_units:
-        retval = retval + f" {unit_of_measurement}"
-    return retval
+def omit(obj: dict, blacklisted_keys: list):
+    return {key: val for key, val in obj.items() if key not in blacklisted_keys}
 
+def check_time(itime):
+    """Check time."""
+    timesplit = itime.split(":")
+    if len(timesplit) != 2:
+        return False
+    try:
+        hours = int(timesplit[0])
+        minutes = int(timesplit[1])
+        if hours in range(0, 24) and minutes in range(
+            0, 60
+        ):  # range does not include upper bound
+            return True
+        return False
+    except ValueError:
+        return False
 
-def show_mm_or_inch(value, som, show_units):
-    """Return nicely formatted mm or inches."""
-    if value is None:
-        return "unknown"
-    factor = 1.0
-    unit_of_measurement = UNIT_OF_MEASUREMENT_MMS
-    if not som == SETTING_METRIC:
-        factor = MM_TO_INCH_FACTOR
-        unit_of_measurement = UNIT_OF_MEASUREMENT_INCHES
-    if isinstance(value, list):
-        retval = f"{[round(float(x) * factor,2) for x in value]}"
+def convert_mapping_to_metric(val, mapping, unit, system_is_metric):
+    if mapping == MAPPING_HUMIDITY:
+        #humidity unit is same in metric and imperial: %
+        return val
+    if mapping in [MAPPING_DEWPOINT, MAPPING_TEMPERATURE, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP]:
+        #either Celsius or F. If celsius, no need to convert.
+        if unit:
+            #a unit was set, convert it
+            return convert_between(from_unit=unit, to_unit=UNIT_DEGREES_C, val=val)
+        # no unit was set, so it's dependent on system_is_metric if we need to convert
+        elif system_is_metric:
+            return val
+        else:
+            #assume the unit is in F
+            return convert_between(from_unit=UNIT_DEGREES_F, to_unit=UNIT_DEGREES_C, val=val)
+    elif mapping in [MAPPING_PRECIPITATION, MAPPING_EVAPOTRANSPIRATION]:
+        #either mm or inch. If mm no need to convert.
+        if unit:
+            return convert_between(from_unit=unit,to_unit=UNIT_MM, val=val)
+        elif system_is_metric:
+            return val
+        else:
+            #assume the unit is in inch
+            return convert_between(from_unit=UNIT_INCH, to_unit=UNIT_MM, val=val)
+    elif mapping == MAPPING_PRESSURE:
+        #either: mbar, hpa (default for metric), psi or inhg (default for imperial)
+        if unit:
+            return convert_between(from_unit=unit, to_unit=UNIT_HPA, val=val)
+        elif system_is_metric:
+            return val
+        else:
+            #assume it's inHG
+            return convert_between(from_unit=UNIT_INHG, to_unit=UNIT_HPA, val=val)
+    elif mapping == MAPPING_SOLRAD:
+        #either: assume w/m2 for metric, w/sqft for imperial
+        if unit:
+            return convert_between(from_unit=unit, to_unit=UNIT_MJ_DAY_M2,val=val)
+        elif system_is_metric:
+            #assume it's w/m2
+            return convert_between(from_unit=UNIT_W_M2, to_unit=UNIT_MJ_DAY_M2, val=val)
+        else:
+            #assume it's w/sqft
+            return convert_between(from_unit=UNIT_W_SQFT, to_unit=UNIT_MJ_DAY_M2,val=val)
+    elif mapping == MAPPING_WINDSPEED:
+        #either UNIT_KMH, unit: UNIT_MS (Default for metric), m/h (imperial)
+        if unit:
+            return convert_between(from_unit=unit, to_unit=UNIT_MS, val=val)
+        elif system_is_metric:
+            return val
+        else:
+            #assume it's m/h
+            return convert_between(from_unit=UNIT_MH, to_unit=UNIT_MS, val=val)
     else:
-        retval = f"{round(float(value) * factor,2)}"
-    if show_units:
-        retval = retval + f" {unit_of_measurement}"
-    return retval
+        return None
 
-
-def show_mm_or_inch_per_hour(value, som, show_units):
-    """Return nicely formatted mm or inches per hour."""
-    if value is None:
-        return "unknown"
-    factor = 1.0
-    unit_of_measurement = UNIT_OF_MEASUREMENT_MMS_HOUR
-    if not som == SETTING_METRIC:
-        factor = MM_TO_INCH_FACTOR
-        unit_of_measurement = UNIT_OF_MEASUREMENT_INCHES_HOUR
-    if isinstance(value, list):
-        retval = f"{[round(float(x) * factor,2) for x in value]}"
-    else:
-        retval = f"{round(float(value) * factor,2)}"
-    if show_units:
-        retval = retval + f" {unit_of_measurement}"
-    return retval
-
-
-def show_m2_or_sq_ft(value, som, show_units):
-    """Return nicely formatted m2 or sq ft."""
-    if value is None:
-        return "unknown"
-    factor = 1.0
-    unit_of_measurement = UNIT_OF_MEASUREMENT_M2
-    if not som == SETTING_METRIC:
-        factor = M2_TO_SQ_FT_FACTOR
-        unit_of_measurement = UNIT_OF_MEASUREMENT_SQ_FT
-    retval = f"{round(float(value) * factor,2)}"
-    if show_units:
-        retval = retval + f" {unit_of_measurement}"
-    return retval
-
-
-def show_percentage(value, show_units):
-    """Return nicely formatted percentages."""
-    if value is None:
-        return "unknown"
-    retval = round(float(value) * 100.0, 2)
-    if show_units:
-        return f"{retval} %"
-    return retval
-
-
-def show_seconds(value, show_units):
-    """Return nicely formatted seconds."""
-    if value is None:
-        return "unknown"
-    if show_units:
-        return f"{value} s"
-    return value
-
-
-def show_minutes(value, show_units):
-    """Return nicely formatted minutes."""
-    if value is None:
-        return "unknown"
-    retval = round(float(value) / 60.0, 2)
-    if show_units:
-        return f"{retval} min"
-    return retval
-
-
-def map_source_to_sensor(source):
-    """Return the sensor setting for the source."""
-    if source == CONF_SWITCH_SOURCE_PRECIPITATION:
-        return CONF_SENSOR_PRECIPITATION
-    if source == CONF_SWITCH_SOURCE_DAILY_TEMPERATURE:
-        return CONF_SENSOR_DAILY_TEMPERATURE
-    if source == CONF_SWITCH_SOURCE_DEWPOINT:
-        return CONF_SENSOR_DEWPOINT
-    if source == CONF_SWITCH_SOURCE_HUMIDITY:
-        return CONF_SENSOR_HUMIDITY
-    if source == CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE:
-        return CONF_SENSOR_MAXIMUM_TEMPERATURE
-    if source == CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE:
-        return CONF_SENSOR_MINIMUM_TEMPERATURE
-    if source == CONF_SWITCH_SOURCE_PRESSURE:
-        return CONF_SENSOR_PRESSURE
-    if source == CONF_SWITCH_SOURCE_WINDSPEED:
-        return CONF_SENSOR_WINDSPEED
-    if source == CONF_SWITCH_SOURCE_SOLAR_RADIATION:
-        return CONF_SENSOR_SOLAR_RADIATION
-    if source == CONF_SWITCH_CALCULATE_ET:
-        return CONF_SENSOR_ET
+def convert_between(from_unit,to_unit,val):
+    if from_unit == to_unit or from_unit in [UNIT_PERCENT, UNIT_SECONDS]:
+        #no conversion necessary here!
+        return val
+    #convert temperatures
+    elif from_unit in [UNIT_DEGREES_C, UNIT_DEGREES_F, UNIT_DEGREES_K]:
+        return convert_temperatures(from_unit,to_unit, val)
+    #convert lengths
+    elif from_unit in [UNIT_MM, UNIT_INCH]:
+        return convert_length(from_unit,to_unit,val)
+    #convert volumes
+    elif from_unit in [UNIT_LPM, UNIT_GPM]:
+        return convert_volume(from_unit, to_unit, val)
+    #convert areas
+    elif from_unit in [UNIT_M2, UNIT_SQ_FT]:
+        return convert_area(from_unit, to_unit, val)
+    #convert pressures
+    elif from_unit in [UNIT_MBAR, UNIT_HPA, UNIT_PSI, UNIT_INHG]:
+        return convert_pressure(from_unit, to_unit, val)
+    #convert speeds
+    elif from_unit in [UNIT_KMH, UNIT_MS, UNIT_MH]:
+        return convert_speed(from_unit, to_unit, val)
+    #convert production/area
+    elif from_unit in [UNIT_W_M2, UNIT_MJ_DAY_M2,UNIT_W_SQFT,UNIT_MJ_DAY_SQFT]:
+        return convert_production(from_unit, to_unit, val)
+    #unexpected from_unit
+    _LOGGER.warning("Unexpected conversion of {} from {} to {}".format(val, from_unit, to_unit))
     return None
 
+def convert_production(from_unit, to_unit, val):
+    if to_unit == from_unit:
+        return val
+    if to_unit == UNIT_MJ_DAY_M2:
+        if from_unit == UNIT_W_M2:
+            return float(float(val)*W_TO_MJ_DAY_FACTOR)
+        elif from_unit == UNIT_W_SQFT:
+            return float((float(val)*W_SQ_FT_TO_W_M2_FACTOR)*W_TO_MJ_DAY_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_SQFT:
+            return float(float(val)*SQ_FT_TO_M2_FACTOR)
+    elif to_unit == UNIT_MJ_DAY_SQFT:
+        if from_unit == UNIT_W_M2:
+            return float((float(val)*W_M2_TO_W_SQ_FT_FACTOR)*W_TO_MJ_DAY_FACTOR)
+        elif from_unit == UNIT_W_SQFT:
+            return float(float(val)*W_TO_MJ_DAY_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_M2:
+            return float(float(val)*M2_TO_SQ_FT_FACTOR)
+    elif to_unit == UNIT_W_M2:
+        if from_unit == UNIT_W_SQFT:
+            return float(float(val)*W_SQ_FT_TO_W_M2_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_SQFT:
+            return float((float(val)/W_TO_MJ_DAY_FACTOR)*W_SQ_FT_TO_W_M2_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_M2:
+            return float(float(val)/W_TO_MJ_DAY_FACTOR)
+    elif to_unit == UNIT_W_SQFT:
+        if from_unit == UNIT_W_M2:
+            return float(float(val)*W_M2_TO_W_SQ_FT_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_M2:
+            return float((float(val)/W_TO_MJ_DAY_FACTOR)*W_M2_TO_W_SQ_FT_FACTOR)
+        elif from_unit == UNIT_MJ_DAY_SQFT:
+            return float(float(val)/W_TO_MJ_DAY_FACTOR)
+    #unknown conversion
+    return None
 
-def convert_F_to_C(value):  # pylint: disable=invalid-name
-    """Convert Fahrenheit to Celcius."""
-    return float((float(value) - 32.0) / 1.8)
+def convert_speed(from_unit, to_unit, val):
+    if to_unit == from_unit:
+        return val
+    if to_unit == UNIT_KMH:
+        if from_unit == UNIT_MS:
+            return float(float(val)*MS_TO_KMH_FACTOR)
+        elif from_unit == UNIT_MH:
+            return float(float(val)*MILESH_TO_KMH_FACTOR)
+    elif to_unit == UNIT_MS:
+        if from_unit == UNIT_KMH:
+            return float(float(val)*KMH_TO_MS_FACTOR)
+        elif from_unit == UNIT_MH:
+            return float(float(val)*MILESH_TO_MS_FACTOR)
+    elif to_unit == UNIT_MH:
+        if from_unit == UNIT_KMH:
+            return float(float(val)*KMH_TO_MILESH_FACTOR)
+        elif from_unit == UNIT_MS:
+            return float(float(val)*MS_TO_MILESH_FACTOR)
+    #unknown conversion
+    return None
 
+def convert_pressure(from_unit, to_unit, val):
+    if to_unit == from_unit:
+        return val
+    if to_unit in [UNIT_MBAR, UNIT_HPA]:
+        if from_unit in [UNIT_HPA, UNIT_MBAR]:
+            #1 mbar = 1hpa
+            return val
+        elif from_unit == UNIT_PSI:
+            return float(float(val)*PSI_TO_HPA_FACTOR)
+        elif from_unit == UNIT_INHG:
+            return float(float(val)*INHG_TO_HPA_FACTOR)
+    if to_unit == UNIT_PSI:
+        if from_unit in [UNIT_HPA,UNIT_MBAR]:
+            return float(float(val)*MBAR_TO_PSI_FACTOR)
+        elif from_unit == UNIT_INHG:
+            return float(float(val)*INHG_TO_PSI_FACTOR)
+    if to_unit == UNIT_INHG:
+        if from_unit in [UNIT_HPA, UNIT_MBAR]:
+            return float(float(val)*MBAR_TO_INHG_FACTOR)
+        elif from_unit == UNIT_PSI:
+            return float(float(val)*PSI_TO_INHG_FACTOR)
+    #unknown conversion
+    return None
 
-def check_all(settings, boolval):
-    """Return true if all of the elements in the dictionary are equal to b (true/false)."""
-    retval = True
-    for aval in settings:
-        if settings[aval] != boolval:
-            retval = False
-            break
-    return retval
+def convert_area(from_unit, to_unit, val):
+    if to_unit == from_unit:
+        return val
+    if to_unit == UNIT_M2:
+        if from_unit == UNIT_SQ_FT:
+            return float(float(val)*SQ_FT_TO_M2_FACTOR)
+    elif to_unit == UNIT_SQ_FT:
+        if from_unit == UNIT_M2:
+            return float(float(val)*M2_TO_SQ_FT_FACTOR)
+    #unexpected conversion
+    return None
+def convert_volume(from_unit, to_unit, val):
+    if to_unit == from_unit:
+        return val
+    if to_unit == UNIT_LPM:
+        if from_unit == UNIT_GPM:
+            return float(float(val)*GALLON_TO_LITER_FACTOR)
+    elif to_unit == UNIT_GPM:
+        if from_unit == UNIT_LPM:
+            return float(float(val)*LITER_TO_GALLON_FACTOR)
+    #unknown conversion
+    return
 
+def convert_length(from_unit, to_unit, val):
+    if to_unit == from_unit:
+        return val
+    if to_unit == UNIT_MM:
+        if from_unit == UNIT_INCH:
+            return float(float(val)*INCH_TO_MM_FACTOR)
+    elif to_unit == UNIT_INCH:
+        if from_unit == UNIT_MM:
+            return float(float(val)*MM_TO_INCH_FACTOR)
+    #unknown conversion
+    return None
 
-def reset_to(settings, boolval):
-    """Reset all values in the dictionary to the specified bool value."""
-    for setting in settings:
-        settings[setting] = boolval
-    return settings
-
+def convert_temperatures(from_unit, to_unit,val):
+    if to_unit == from_unit:
+        return val
+    if to_unit == UNIT_DEGREES_C:
+        if from_unit == UNIT_DEGREES_F:
+            return float((float(val) - 32.0) / 1.8)
+        elif from_unit == UNIT_DEGREES_K:
+            return val - K_TO_C_FACTOR
+    elif to_unit == UNIT_DEGREES_F:
+        if from_unit == UNIT_DEGREES_C:
+            return float((val*1.8)+32.0)
+        elif from_unit == UNIT_DEGREES_K:
+            return float(1.8*(val-273)+32)
+    elif to_unit == UNIT_DEGREES_K:
+        if from_unit == UNIT_DEGREES_F:
+            return (val+459.67) * (5.0/9.0)
+        elif from_unit == UNIT_DEGREES_C:
+            return val+ K_TO_C_FACTOR
+    #unable to do conversion because of unexpected to or from unit
+    return None
 
 def check_reference_et(reference_et):
     """Check reference et values here."""
@@ -214,104 +278,79 @@ def check_reference_et(reference_et):
     except Exception:  # pylint: disable=broad-except
         return False
 
+def relative_to_absolute_pressure(pressure, height):
+    """
+    Convert relative pressure to absolute pressure.
+    """
+    # Constants
+    g = 9.80665  # m/s^2
+    M = 0.0289644  # kg/mol
+    R = 8.31447  # J/(mol*K)
+    T0 = 288.15  # K
+    p0 = 101325  # Pa
 
-def check_time(itime):
-    """Check time."""
-    timesplit = itime.split(":")
-    if len(timesplit) != 2:
-        return False
-    try:
-        hours = int(timesplit[0])
-        minutes = int(timesplit[1])
-        if hours in range(0, 24) and minutes in range(
-            0, 60
-        ):  # range does not include upper bound
-            return True
-        return False
-    except ValueError:
-        return False
+    # Calculate temperature at given height
+    temperature = T0 - (g * M * height) / (R * T0)
 
+    # Calculate absolute pressure at given height
+    absolute_pressure = pressure * (T0 / temperature) ** (g * M / (R * 287))
 
-def convert_to_float(float_value):
-    """Try to convert to float, otherwise returns 0."""
-    try:
-        return float(float_value)
-    except ValueError:
-        return 0
+    return absolute_pressure
 
+def altitudeToPressure(alt):
+    """Take altitude in meters and convert it to hPa = mbar."""
+    return (100 * ((44331.514 - alt) / 11880.516) ** (1 / 0.1902632)/100)
 
-def average_of_list(the_list):
-    """Return average of provided list."""
-    if len(the_list) == 0:
-        return 0
-    return (sum(the_list) * 1.0) / len(the_list)
-
-def last_of_list(the_list):
-    """Return the last item of the provided list."""
-    if len(the_list) == 0:
-        return None
-    return the_list[len(the_list) - 1]
-
-def estimate_fao56_daily(  # pylint: disable=invalid-name
-    day_of_year,
-    temp_c,
-    temp_c_min,
-    temp_c_max,
-    tdew,
-    elevation,
-    latitude,
-    rh,
-    wind_m_s,
-    atmos_pres,
-    coastal=False,
-    calculate_solar_radiation=True,
-    estimate_solrad_from_temp=True,
-    sol_rad=None,
-):
-    """Estimate fao56 from weather."""
-    sha = pyeto.sunset_hour_angle(pyeto.deg2rad(latitude), pyeto.sol_dec(day_of_year))
-    daylight_hours = pyeto.daylight_hours(sha)
-
-    ird = pyeto.inv_rel_dist_earth_sun(day_of_year)
-    et_rad = pyeto.et_rad(pyeto.deg2rad(latitude), pyeto.sol_dec(day_of_year), sha, ird)
-
-    cs_rad = pyeto.cs_rad(elevation, et_rad)
-
-    # if we need to calculate solar_radiation we need to override the value passed in.
-    if calculate_solar_radiation or sol_rad is None:
-        if estimate_solrad_from_temp:
-            sol_rad = pyeto.sol_rad_from_t(
-                et_rad, cs_rad, temp_c_min, temp_c_max, coastal
-            )
-        else:
-            # this is the default behavior for version < 0.0.50
-            sol_rad = pyeto.sol_rad_from_sun_hours(
-                daylight_hours, 0.8 * daylight_hours, et_rad
-            )
-    net_in_sol_rad = pyeto.net_in_sol_rad(sol_rad=sol_rad, albedo=0.23)
-    avp = pyeto.avp_from_tdew(tdew)
-    net_out_lw_rad = pyeto.net_out_lw_rad(
-        pyeto.convert.celsius2kelvin(temp_c_min),
-        pyeto.convert.celsius2kelvin(temp_c_max),
-        sol_rad,
-        cs_rad,
-        avp,
+async def test_api_key(hass,api_key, api_version):
+    """Test access to Open Weather Map API here."""
+    client = OWMClient(
+        api_key=api_key.strip(),
+        api_version=api_version.strip(),
+        latitude=52.353218,
+        longitude=5.0027695,
+        elevation=1,
     )
-    net_rad = pyeto.net_rad(net_in_sol_rad, net_out_lw_rad)
+    try:
+        await hass.async_add_executor_job(client.get_data)
+    except OSError:
+        raise InvalidAuth
+    except Exception:
+        raise CannotConnect
 
-    # experiment in v0.0.71: do not pass in day temperature (temp_c) but instead the average of temp_max and temp_min
-    # see https://github.com/jeroenterheerdt/HAsmartirrigation/issues/70
-    temp_c = (temp_c_min + temp_c_max) / 2.0
+def loadModules(moduleDir=None):
+    if moduleDir:
+        res = {}
+        moduleDirFullPath = os.path.dirname(os.path.realpath(__file__))+os.sep+moduleDir
+        if moduleDirFullPath not in sys.path:
+            sys.path.append(moduleDirFullPath)
+        #check subfolders
+        lst = os.listdir(moduleDirFullPath)
+        #lst = os.listdir(os.path.abspath(moduleDir))
+        thedir = []
+        for d in lst:
+            s = os.path.abspath(moduleDirFullPath) + os.sep + d
+            if os.path.isdir(s) and os.path.exists(s + os.sep + "__init__.py"):
+                thedir.append(d)
+        # load the detected modules
 
-    eto = pyeto.fao56_penman_monteith(
-        net_rad=net_rad,
-        t=pyeto.convert.celsius2kelvin(temp_c),
-        ws=wind_m_s,
-        svp=pyeto.svp_from_t(temp_c),
-        avp=avp,
-        delta_svp=pyeto.delta_svp(temp_c),
-        psy=pyeto.psy_const(
-            atmos_pres / 10
-        ),  # value stored is in hPa, but needs to be provided in kPa
-    )
-    return eto
+        for d in thedir:
+            if moduleDirFullPath+os.sep+d not in sys.path:
+                sys.path.append(moduleDirFullPath+os.sep+d)
+            mod = importlib.import_module("."+d,package=CUSTOM_COMPONENTS+"."+DOMAIN+"."+moduleDir)
+            if mod:
+                theclasses = [mod.__dict__[c] for c in mod.__dict__ if (isinstance(mod.__dict__[c], type) and mod.__dict__[c].__module__ == mod.__name__)]
+                if theclasses:
+                    for theclass in theclasses:
+                        if "__init__" in theclass.__dict__:
+                            classname = str(theclass.__dict__["__init__"]).split(".")[0].split(" ")[1]
+                            res[d] = {"module":mod, "class":classname}
+        return res
+    return None
+
+
+class CannotConnect(exceptions.HomeAssistantError):
+    """Error to indicate we cannot connect."""
+
+
+class InvalidAuth(exceptions.HomeAssistantError):
+    """Error to indicate there is invalid auth."""

@@ -1,0 +1,97 @@
+{
+    "config": {
+      "abort": {
+        "single_instance_allowed": "Kun én konfigurasjon av Smart Irrigation er tillatt."
+      },
+      "error": {
+        "auth": "Open Weather API-nøkkel eller versjon er feil.",
+        "name": "Spesifiser et unikt navn for integrasjonen."
+      },
+      "step": {
+        "user": {
+          "title": "Generell oppsett",
+          "description": "Hvis du trenger hjelp med konfigurasjonen, kan du se https://github.com/jeroenterheerdt/HASmartIrrigation",
+          "data": {
+            "name": "Unikt navn for integrasjonen",
+            "use_owm": "Bruker du Open Weather Map for værdata eller prognoser? Deaktiver dette hvis du ønsker å bruke en annen kilde, for eksempel din egen værstasjon, eksklusivt. Hvis du slår det av, vil du ikke kunne bruke prognoser. La dette være på hvis du har til hensikt å bruke Open Weather Map for minst en del av værdataene, inkludert prognoser."
+          }
+        },
+        "step1": {
+          "title": "Oppsett av Open Weather Map API",
+          "description": "Hvis du trenger hjelp med konfigurasjonen, kan du se https://github.com/jeroenterheerdt/HASmartIrrigation",
+          "data": {
+            "owm_api_key": "API-nøkkel for Open Weather Map",
+            "owm_api_version": "Open Weather Map API-versjon (velg 3.0 for nye konfigurasjoner)"
+          }
+        }
+      }
+    },
+    "options": {
+      "error": {
+        "auth": "Open Weather API-nøkkel eller versjon er feil."
+      },
+      "step": {
+        "init": {
+          "title": "Oppsett av Open Weather Map API",
+          "description": "Hvis du trenger hjelp med konfigurasjonen, kan du se https://github.com/jeroenterheerdt/HASmartIrrigation",
+          "data": {
+            "use_owm": "Vil du bruke Open Weather Map for værdata eller prognoser? Deaktiver dette hvis du ønsker å bruke en annen kilde, for eksempel din egen værstasjon, eksklusivt. Hvis du slår det av, vil du ikke kunne bruke prognoser. La dette være på hvis du har til hensikt å bruke Open Weather Map for minst en del av værdataene, inkludert prognoser."
+          }
+        },
+        "step1": {
+          "title": "Oppsett av Open Weather Map API",
+          "description": "Hvis du trenger hjelp med konfigurasjonen, kan du se https://github.com/jeroenterheerdt/HASmartIrrigation",
+          "data": {
+            "owm_api_key": "API-nøkkel for Open Weather Map",
+            "owm_api_version": "Open Weather Map API-versjon (velg 3.0 for nye konfigurasjoner)"
+          }
+        }
+      }
+    },
+    "common": {
+      "attributes": {
+        "size": "størrelse",
+        "throughput": "kapasitet",
+        "state": "status"
+      }
+    },
+    "defaults": {
+      "default-zone": "Standard sone",
+      "default-mapping": "Standard sensorguppe"
+    },
+    "module": {
+      "calculation": {
+        "explanation": {
+          "module-returned-evapotranspiration-deficiency": "Merk: Denne forklaringen bruker '.' som desimaltegn og viser avrundede verdier. Modulen returnerte evapotranspirasjonsunderskudd på",
+          "bucket-was": "Bucket var",
+          "new-bucket-values-is": "Ny bucket verdien er",
+          "old-bucket-variable": "gammel_bucket",
+          "delta": "delta",
+          "bucket-less-than-zero-irrigation-necessary": "Siden bucket < 0, Vanning er nødvendig.",
+          "steps-taken-to-calculate-duration": "For å beregne nøyaktig varighet, ble følgende trinn utført",
+          "precipitation-rate-defined-as": "Nedbørshastigheten er definert som",
+          "duration-is-calculated-as": "Varigheten beregnes som",
+          "bucket": "bucket",
+          "precipitation-rate-variable": "nedbørshastighet",
+          "multiplier-is-applied": "Nå blir multiplikatoren brukt. Multiplikatoren er",
+          "duration-after-multiplier-is": "derfor er varigheten",
+          "maximum-duration-is-applied": "Deretter blir den maksimale varigheten brukt. Den maksimale varigheten er",
+          "duration-after-maximum-duration-is": "derfor er varigheten",
+          "lead-time-is-applied": "Til slutt blir ledetiden brukt. Ledetiden er",
+          "duration-after-lead-time-is": "derfor er den endelige varigheten",
+          "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Siden bucket >= 0, Ingen vanning er nødvendig, og varigheten er satt til",
+          "maximum-bucket-is": "maksimum bucket stærrelse er"
+        }
+      }
+    },
+    "calcmodules": {
+      "pyeto": {
+        "description": "Beregn varigheten basert på FAO56-beregningen fra PyETO-biblioteket"
+      },
+      "static": {
+        "description": "'Dummy'-modul med en statisk konfigurerbar endring (delta)"
+      },
+      "passthrough": {
+        "description": "En 'Passthrough'-modul som returnerer verdien av en Evapotranspiration-sensor som delta"
+      }
+    }

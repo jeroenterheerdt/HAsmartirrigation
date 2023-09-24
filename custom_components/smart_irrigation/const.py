@@ -1,22 +1,21 @@
-"""Constants for the Smart Irrigation integration."""
+"""Store constants."""
+
+
+VERSION = "v2023.9.0-beta23"
+NAME = "Smart Irrigation"
+MANUFACTURER = "@jeroenterheerdt"
 
 DOMAIN = "smart_irrigation"
-NAME = "Smart Irrigation"
-DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.82"
+CUSTOM_COMPONENTS = "custom_components"
 
-ISSUE_URL = "https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
+LANGUAGE_FILES_DIR = "translations"
+SUPPORTED_LANGUAGES = ["de","en","es","fr","it","nl","no"]
 
-# Icons
-ICON = "mdi:sprinkler"
+START_EVENT_FIRED_TODAY = "starteventfiredtoday"
 
-# Platforms
-SENSOR = "sensor"
-PLATFORMS = [SENSOR]
-
-# Configuration and options
-CONF_API_KEY = "api_key"
-CONF_API_VERSION = "api_version"
+CONF_OWM_API_KEY = "owm_api_key"
+CONF_OWM_API_VERSION = "owm_api_version"
+CONF_INSTANCE_NAME = "name"
 CONF_REFERENCE_ET = "reference_evapotranspiration"
 CONF_REFERENCE_ET_1 = "reference_evapotranspiration_1"
 CONF_REFERENCE_ET_2 = "reference_evapotranspiration_2"
@@ -30,143 +29,208 @@ CONF_REFERENCE_ET_9 = "reference_evapotranspiration_9"
 CONF_REFERENCE_ET_10 = "reference_evapotranspiration_10"
 CONF_REFERENCE_ET_11 = "reference_evapotranspiration_11"
 CONF_REFERENCE_ET_12 = "reference_evapotranspiration_12"
-CONF_NUMBER_OF_SPRINKLERS = "number_of_sprinklers"
-CONF_FLOW = "flow"
-CONF_AREA = "area"
-CONF_THROUGHPUT = "throughput"
-CONF_PEAK_ET = "peak_evapotranspiration"
-CONF_SYSTEM_OF_MEASUREMENT = "system_of_measurement"
-CONF_PRECIPITATION_RATE = "precipitation_rate"
-CONF_RAIN = "rain"
-CONF_SNOW = "snow"
-CONF_PRECIPITATION = "precipitation"
-CONF_EVAPOTRANSPIRATION = "evapotranspiration"
-CONF_WATER_BUDGET = "water_budget"
-CONF_BUCKET = "bucket"
-CONF_NETTO_PRECIPITATION = "netto_precipitation"
-CONF_LEAD_TIME = "lead_time"
-CONF_MAXIMUM_DURATION = "maximum_duration"
-CONF_FORCE_MODE_DURATION = "force_mode_duration"
-CONF_ADJUSTED_RUN_TIME_MINUTES = "adjusted_run_time_minutes"
-CONF_BASE_SCHEDULE_INDEX_MINUTES = "base_schedule_index_minutes"
-CONF_SHOW_UNITS = "show_units"
-CONF_AUTO_REFRESH = "auto_refresh"
-CONF_AUTO_REFRESH_TIME = "auto_refresh_time"
-CONF_NAME = "name"
-CONF_CONFIG = "config"
-CONF_SOURCE_SWITCHES = "sources"
-CONF_SENSORS = "sensors"
-CONF_FORCE_MODE_ENABLED = "force_mode_enabled"
-CONF_CHANGE_PERCENT = "change_percent"
-CONF_INITIAL_UPDATE_DELAY = "initial_update_delay"
-CONF_UNIT_OF_MEASUREMENT = (
-    "unit_of_measurement"  # used to set attributes on entities in events
-)
-CONF_ICON = "icon"  # used to set attributes on entities in events
-CONF_SPRINKLER_ICON = "mdi:sprinkler"
-CONF_COASTAL = "coastal"
-CONF_ESTIMATE_SOLRAD_FROM_TEMP = "estimate_solrad_from_temp"
+CONF_DEFAULT_REFERENCE_ET = 0.0
+#V1 only, no longer used in V2
+#CONF_MAXIMUM_ET = "maximum_et"
+#DEFAULT_MAXIMUM_ET = 0
 
-# Settings switches (True = OWM, False is own sensors)
-CONF_SWITCH_SOURCE_PRECIPITATION = "use_owm_precipitation"
-CONF_SWITCH_SOURCE_DAILY_TEMPERATURE = "use_owm_temperature"
-CONF_SWITCH_SOURCE_MINIMUM_TEMPERATURE = "use_owm_min_temperature"
-CONF_SWITCH_SOURCE_MAXIMUM_TEMPERATURE = "use_owm_max_temperature"
-CONF_SWITCH_SOURCE_DEWPOINT = "use_owm_dewpoint"
-CONF_SWITCH_SOURCE_PRESSURE = "use_owm_pressure"
-CONF_SWITCH_SOURCE_HUMIDITY = "use_owm_humidity"
-CONF_SWITCH_SOURCE_WINDSPEED = "use_owm_windspeed"
-CONF_SWITCH_SOURCE_SOLAR_RADIATION = "calculate_solar_radiation"
-CONF_SWITCH_CALCULATE_ET = "calculate_ET_value"
+CONF_DEFAULT_USE_OWM = False
+CONF_CALC_TIME = "calctime"
+CONF_DEFAULT_CALC_TIME = "23:00"
+CONF_AUTO_CALC_ENABLED = "autocalcenabled"
+CONF_DEFAULT_AUTO_CALC_ENABLED = True
+CONF_AUTO_UPDATE_ENABLED = "autoupdateenabled"
+CONF_AUTO_UPDATE_SCHEDULE = "autoupdateschedule"
+CONF_AUTO_UPDATE_MINUTELY = "minutes"
+CONF_AUTO_UPDATE_HOURLY = "hours"
+CONF_AUTO_UPDATE_DAILY = "days"
+CONF_DEFAULT_AUTO_UPDATE_SCHEDULE=CONF_AUTO_UPDATE_HOURLY
+CONF_DEFAULT_AUTO_UPDATED_ENABLED = True
+CONF_AUTO_UPDATE_DELAY = "autoupdatedelay"
+CONF_DEFAULT_AUTO_UPDATE_DELAY = "0"
+CONF_AUTO_UPDATE_INTERVAL = "autoupdateinterval"
+CONF_AUTO_CLEAR_ENABLED = "autoclearenabled"
+CONF_DEFAULT_AUTO_CLEAR_ENABLED = True
+CONF_CLEAR_TIME = "cleardatatime"
+CONF_DEFAULT_CLEAR_TIME = "23:59"
+CONF_DEFAULT_AUTO_UPDATE_INTERVAL = "1"
+CONF_UNITS = "units"
+CONF_IMPERIAL = "imperial"
+CONF_METRIC = "metric"
+CONF_USE_OWM = "use_owm"
+CONF_DEFAULT_MAXIMUM_DURATION = 3600 #default maximum duration to one hour == 3600 seconds
+CONF_DEFAULT_MAXIMUM_BUCKET = 50 #default maximum bucket of 50
 
-# Sensors setting labels
-CONF_SENSOR_PRECIPITATION = "sensor_precipitation"
-CONF_SENSOR_DAILY_TEMPERATURE = "sensor_temperature"
-CONF_SENSOR_DEWPOINT = "sensor_dewpoint"
-CONF_SENSOR_HUMIDITY = "sensor_humidity"
-CONF_SENSOR_MAXIMUM_TEMPERATURE = "sensor_max_temperature"
-CONF_SENSOR_MINIMUM_TEMPERATURE = "sensor_min_temperature"
-CONF_SENSOR_PRESSURE = "sensor_pressure"
-CONF_SENSOR_WINDSPEED = "sensor_windspeed"
-CONF_SENSOR_SOLAR_RADIATION = "sensor_solar_radiation"
-CONF_SENSOR_ET = "sensor_et"
+CUSTOM_COMPONENTS = "custom_components"
+INTEGRATION_FOLDER = DOMAIN
+PANEL_FOLDER = "frontend"
+PANEL_FILENAME = "dist/smart-irrigation.js"
 
-# Events
-EVENT_BUCKET_UPDATED = "bucketUpd"
-EVENT_HOURLY_DATA_UPDATED = "hourlyUpd"
-EVENT_FORCE_MODE_TOGGLED = "forceModeTog"
-EVENT_IRRIGATE_START = "start"
+PANEL_URL = "/api/panel_custom/smart-irrigation"
+PANEL_TITLE = NAME
+PANEL_ICON = "mdi:sprinkler"
+PANEL_NAME = "smart-irrigation"
 
-# Services
-SERVICE_RESET_BUCKET = "reset_bucket"
-SERVICE_SET_BUCKET = "set_bucket"
-SERVICE_CALCULATE_DAILY_ADJUSTED_RUN_TIME = "calculate_daily_adjusted_run_time"
-SERVICE_CALCULATE_HOURLY_ADJUSTED_RUN_TIME = "calculate_hourly_adjusted_run_time"
-SERVICE_ENABLE_FORCE_MODE = "enable_force_mode"
-SERVICE_DISABLE_FORCE_MODE = "disable_force_mode"
+ATTR_REMOVE = "remove"
+ATTR_CALCULATE = "calculate"
+ATTR_CALCULATE_ALL = "calculate_all"
+ATTR_SET_BUCKET = "set_bucket"
+ATTR_NEW_BUCKET_VALUE = "new_bucket_value"
+ATTR_UPDATE = "update"
+ATTR_UPDATE_ALL = "update_all"
+ATTR_OVERRIDE_CACHE = "override_cache"
+ATTR_RESET_ALL_BUCKETS = "reset_all_buckets"
+ATTR_CLEAR_ALL_WEATHERDATA = "clear_all_weatherdata"
 
-# Systems of measurement
-SETTING_METRIC = "metric"
-SETTING_US = "us"
+ZONE_ID = "id"
+ZONE_NAME = "name"
+ZONE_SIZE = "size"
+ZONE_THROUGHPUT = "throughput"
+ZONE_STATE = "state"
+ZONE_DURATION = "duration"
+ZONE_STATE_DISABLED = "disabled"
+ZONE_STATE_MANUAL = "manual"
+ZONE_STATE_AUTOMATIC = "automatic"
+ZONE_STATES = [ZONE_STATE_DISABLED, ZONE_STATE_MANUAL, ZONE_STATE_AUTOMATIC]
+ZONE_MODULE = "module"
+ZONE_BUCKET = "bucket"
+ZONE_OLD_BUCKET = "old_bucket"
+ZONE_DELTA = "delta"
+ZONE_EXPLANATION = "explanation"
+ZONE_MULTIPLIER = "multiplier"
+ZONE_MAPPING = "mapping"
+ZONE_LEAD_TIME = "lead_time"
+ZONE_MAXIMUM_DURATION = "maximum_duration"
+ZONE_MAXIMUM_BUCKET = "maximum_bucket"
+ZONE_LAST_CALCULATED = "last_calculated"
+
+MODULE_DIR = "calcmodules"
+MODULE_ID = "id"
+MODULE_NAME = "name"
+MODULE_DESCRIPTION = "description"
+MODULE_CONFIG = "config"
+MODULE_SCHEMA = "schema"
+
+CONF_IMPERIAL = "imperial"
+CONF_METRIC = "metric"
+
+MAPPING_ID = "id"
+MAPPING_NAME = "name"
+MAPPING_DATA = "data"
+MAPPING_DATA_LAST_UPDATED = "data_last_updated"
+MAPPING_MAPPINGS = "mappings"
+MAPPING_DEWPOINT = "Dewpoint"
+MAPPING_EVAPOTRANSPIRATION = "Evapotranspiration"
+MAPPING_HUMIDITY = "Humidity"
+MAPPING_MAX_TEMP = "Maximum Temperature"
+MAPPING_MIN_TEMP = "Minimum Temperature"
+MAPPING_PRECIPITATION = "Precipitation"
+MAPPING_PRESSURE = "Pressure"
+MAPPING_SOLRAD = "Solar Radiation"
+MAPPING_TEMPERATURE = "Temperature"
+MAPPING_WINDSPEED = "Windspeed"
+
+MAPPING_CONF_SOURCE_OWM = "owm"
+MAPPING_CONF_SOURCE_SENSOR = "sensor"
+MAPPING_CONF_SOURCE_NONE = "none"
+MAPPING_CONF_SOURCE_STATIC_VALUE = "static"
+
+MAPPING_CONF_SOURCE = "source"
+MAPPING_CONF_SENSOR = "sensorentity"
+MAPPING_CONF_STATIC_VALUE = "static_value"
+MAPPING_CONF_UNIT = "unit"
+MAPPING_CONF_PRESSURE_TYPE = "pressure_type"
+MAPPING_CONF_PRESSURE_ABSOLUTE = "absolute"
+MAPPING_CONF_PRESSURE_RELATIVE = "relative"
+MAPPING_CONF_AGGREGATE = "aggregate"
+MAPPING_CONF_AGGREGATE_AVERAGE = "average"
+MAPPING_CONF_AGGREGATE_FIRST = "first"
+MAPPING_CONF_AGGREGATE_LAST = "last"
+MAPPING_CONF_AGGREGATE_MAXIMUM = "maximum"
+MAPPING_CONF_AGGREGATE_MEDIAN = "median"
+MAPPING_CONF_AGGREGATE_MINIMUM = "minimum"
+MAPPING_CONF_AGGREGATE_SUM = "sum"
+MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT = MAPPING_CONF_AGGREGATE_AVERAGE
+MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION = MAPPING_CONF_AGGREGATE_LAST
+MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP = MAPPING_CONF_AGGREGATE_MAXIMUM
+MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP = MAPPING_CONF_AGGREGATE_MINIMUM
+MAPPING_CONF_AGGREGATE_OPTIONS = [
+  MAPPING_CONF_AGGREGATE_AVERAGE,
+  MAPPING_CONF_AGGREGATE_FIRST,
+  MAPPING_CONF_AGGREGATE_LAST,
+  MAPPING_CONF_AGGREGATE_MAXIMUM,
+  MAPPING_CONF_AGGREGATE_MEDIAN,
+  MAPPING_CONF_AGGREGATE_MINIMUM,
+  MAPPING_CONF_AGGREGATE_SUM,
+]
+
+#For timestamps
+RETRIEVED_AT = "retrieved" #on weatherdata
+
+EVENT_IRRIGATE_START = "start_irrigation_all_zones"
+
+UNIT_M2 = "m<sup>2</sup>"
+UNIT_SQ_FT = "sq ft"
+UNIT_LPM = "l/m"
+UNIT_GPM = "gal/m"
+UNIT_SECONDS = "s"
+UNIT_DEGREES_C = "°C"
+UNIT_DEGREES_F = "°F"
+UNIT_DEGREES_K = "K"
+UNIT_MM = "mm"
+UNIT_INCH = "in"
+UNIT_PERCENT = "%"
+UNIT_MBAR = "mbar"
+UNIT_HPA = "hPa"
+UNIT_PSI = "psi"
+UNIT_INHG = "inch Hg"
+UNIT_KMH = "km/h"
+UNIT_MH = "mile/h"
+UNIT_MS = "meter/s"
+UNIT_W_M2 = "W/m2"
+UNIT_W_SQFT = "W/sq ft"
+UNIT_MJ_DAY_M2 = "MJ/day/m2"
+UNIT_MJ_DAY_SQFT = "MJ/day/sq ft"
 
 # METRIC TO IMPERIAL (US) FACTORS
-MM_TO_INCH_FACTOR = 0.03937008
-LITER_TO_GALLON_FACTOR = 0.26417205
-M2_TO_SQ_FT_FACTOR = 10.7639104
-M_TO_FT_FACTOR = 3.2808399
-KMH_TO_MS_FACTOR = 3.6
-MILESH_TO_MS_FACTOR = 2.23693629
-PSI_TO_HPA_FACTOR = 0.0145037737796859
-W_TO_J_DAY_FACTOR = 86400
-J_TO_MJ_FACTOR = 1000000
-# Defaults
-DEFAULT_NAME = NAME
+MM_TO_INCH_FACTOR = 0.03937008 #mm * factor = inch
+LITER_TO_GALLON_FACTOR = 0.26417205 #l * factor = gal
+M2_TO_SQ_FT_FACTOR = 10.7639104 #m2 * factor = sq ft
+M_TO_FT_FACTOR = 3.2808399 #m * factor = ft
+MBAR_TO_PSI_FACTOR = 0.01450377 #mbar = hpa * factor = psi
+MBAR_TO_INHG_FACTOR = 0.029529983071445 #mbar = hpa * factor = inhg
+KMH_TO_MILESH_FACTOR = 0.62137119 #kmh * factor = mph
+MS_TO_MILESH_FACTOR =2.23693629 #ms * factor = mph
+W_M2_TO_W_SQ_FT_FACTOR = 0.09290304 #w/m2 * factor = w/sqft
 
-# Types
-TYPE_PRECIPITATION = "Precipitation"
-TYPE_RAIN = "Rain"
-TYPE_SNOW = "Snow"
-TYPE_THROUGHPUT = "Throughput"
-TYPE_PEAK_ET = "Peak Evapotranspiration"
-TYPE_PRECIPITATION_RATE = TYPE_PRECIPITATION + " Rate"
-TYPE_BASE_SCHEDULE_INDEX = "Base Schedule Index"
-TYPE_EVAPOTRANSPIRATION = "Evapotranspiration"
-TYPE_ADJUSTED_RUN_TIME = "Daily Adjusted Run Time"
-TYPE_CURRENT_ADJUSTED_RUN_TIME = "Hourly Adjusted Run Time"
+# IMPERIAL (US) TO METRIC FACTORS
+INCH_TO_MM_FACTOR = 25.4 # inch * factor = mm
+GALLON_TO_LITER_FACTOR = 3.78541178 # gal * factor = l
+SQ_FT_TO_M2_FACTOR = 0.0929030401442212 #sq ft * factor = m2
+MILESH_TO_MS_FACTOR = 0.4470400004105615 #m/h * factor = ms
+MILESH_TO_KMH_FACTOR = 1.609344 #m/h * factor = kmh
+PSI_TO_HPA_FACTOR = 68.9475729 #psi * factor = hpa = mbar
+INHG_TO_HPA_FACTOR = 33.8639 #inhg * factor = hpa = mbar
+W_SQ_FT_TO_W_M2_FACTOR = 10.76391042 #w/sqft * factor = w/m2
 
-# UNITS
-UNIT_OF_MEASUREMENT_SECONDS = "s"
-UNIT_OF_MEASUREMENT_MINUTES = "min"
-UNIT_OF_MEASUREMENT_UNKNOWN = "unknown"
-UNIT_OF_MEASUREMENT_LITERS = "l"
-UNIT_OF_MEASUREMENT_GALLONS = "gallon"
-UNIT_OF_MEASUREMENT_MMS = "mm"
-UNIT_OF_MEASUREMENT_INCHES = "inch"
-UNIT_OF_MEASUREMENT_M2 = "m2"
-UNIT_OF_MEASUREMENT_SQ_FT = "sq ft"
-UNIT_OF_MEASUREMENT_INCHES_HOUR = "inch/h"
-UNIT_OF_MEASUREMENT_MMS_HOUR = "mm/hr"
-UNIT_OF_MEASUREMENT_GPM = "gpm"
-UNIT_OF_MEASUREMENT_LPM = "l/min"
+#OTHER FACTORS
+KMH_TO_MS_FACTOR = 0.0277777777777778 #kmh * factor = ms
+MS_TO_KMH_FACTOR = 3.6 #m/s * factor = kmh
+W_TO_MJ_DAY_FACTOR = 0.0864 #w * factor = mj/day, same for w/m2 to mj/day/m2
+K_TO_C_FACTOR = 273.15 # K-factor = C, C+factor=K
+INHG_TO_PSI_FACTOR = 0.49115420057253 #inhg * factor = PSI
+PSI_TO_INHG_FACTOR = 2.0360206576012 #psi * factor = inhg
 
-# OPTIONS DEFAULTS
-DEFAULT_LEAD_TIME = 0  # seconds
-DEFAULT_MAXIMUM_DURATION = -1  # seconds
-DEFAULT_FORCE_MODE_DURATION = 0  # seconds
-DEFAULT_SHOW_UNITS = False  # bool
-DEFAULT_AUTO_REFRESH = True  # bool
-DEFAULT_AUTO_REFRESH_TIME = "23:00"  # time
-DEFAULT_CHANGE_PERCENT = 1  # % so this really represents 100%
-DEFAULT_INITIAL_UPDATE_DELAY = 300  # seconds, 5 minutes
-DEFAULT_REFERENCE_ET = 0.0
-DEFAULT_COASTAL = False  # bool
-DEFAULT_ESTIMATE_SOLRAD_FROM_TEMP = True  # bool
+SENSOR_ICON = "mdi:sprinkler"
 
-STARTUP_MESSAGE = f"""
--------------------------------------------------------------------
-{NAME}
-Version: {VERSION}
-If you have any issues with this you need to open an issue here:
-{ISSUE_URL}
--------------------------------------------------------------------
-"""
+#Services
+SERVICE_CALCULATE_ALL_ZONES = "calculate_all_zones"
+SERVICE_CALCULATE_ZONE = "calculate_zone"
+SERVICE_UPDATE_ALL_ZONES = "update_all_zones"
+SERVICE_UPDATE_ZONE = "update_zone"
+SERVICE_RESET_BUCKET = "reset_bucket"
+SERVICE_RESET_ALL_BUCKETS = "reset_all_buckets"
+SERVICE_SET_BUCKET = "set_bucket"
+SERVICE_SET_ALL_BUCKETS = "set_all_buckets"
+SERVICE_ENTITY_ID = "entity_id"
+SERVICE_CLEAR_WEATHERDATA = "clear_all_weather_data"
