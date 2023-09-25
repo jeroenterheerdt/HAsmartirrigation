@@ -153,7 +153,7 @@ If you let PyETO to estimate from temperature or sun hours, it will not ask OWM 
   - Forecast days: How many forecast days taken into account
 - 1:Static: static configurable netto precipitation.
   - Delta: netto precipitation
-- Passthrough: Passthrough module returns the value of an evapotranspiration sensor as delta.  
+- Passthrough: Passthrough module returns the value of an evapotranspiration sensor as delta. Pass through takes your evapotranspiration sensor and returns its value. It bypasses all calculation that way (except applying aggregates) 
 
 #### Sensor groups
 
