@@ -92,7 +92,7 @@
       "description": "Modul mit einer statisch konfigurierbaren Verdunstungsrate."
     },
     "passthrough": {
-      "description": "Passthrough-Modul, gibt an, dass den Wert eines Evapotranspirationssensors zurückgegeben wird."
+      "description": "Passthrough-Modul, gibt an, dass der Wert eines Evapotranspirationssensors zurückgegeben wird."
     }
   }
 }
