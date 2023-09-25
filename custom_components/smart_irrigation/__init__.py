@@ -1023,8 +1023,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     #find zone_id for zone with name
                     zone_id = state.attributes.get(const.ZONE_ID)
                     if not zone_id is None:
-                        data = []
-                        data.append(const.ATTR_CALCULATE)
+                        data = {}
+                        data[const.ATTR_CALCULATE] = const.ATTR_CALCULATE
                         await self.async_update_zone_config(zone_id=zone_id,data=data)
 
     async def handle_update_all_zones(self, call):
@@ -1043,8 +1043,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     #find zone_id for zone with name
                     zone_id = state.attributes.get(const.ZONE_ID)
                     if not zone_id is None:
-                        data = []
-                        data.append(const.ATTR_UPDATE)
+                        data = {}
+                        data[const.ATTR_UPDATE] = const.ATTR_UPDATE
                         await self.async_update_zone_config(zone_id=zone_id,data=data)
 
     async def handle_reset_bucket(self, call):

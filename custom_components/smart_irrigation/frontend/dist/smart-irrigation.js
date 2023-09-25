@@ -282,7 +282,7 @@ function me(e,t){return(({finisher:e,descriptor:t})=>(a,i)=>{var n;if(void 0===i
           <div class="card-content">
             <label for="calctime"
               >${oi("panels.general.cards.automatic-duration-calculation.labels.auto-calc-time",this.hass.language)}</label
-            >
+            >:
             <input
               id="calctime"
               type="text"
@@ -434,7 +434,7 @@ function me(e,t){return(({finisher:e,descriptor:t})=>(a,i)=>{var n;if(void 0===i
           <div class="card-content">
             <label for="calctime"
               >${oi("panels.general.cards.automatic-clear.labels.automatic-clear-time",this.hass.language)}</label
-            >
+            >:
             <input
               id="cleardatatime"
               type="text"
@@ -1055,7 +1055,7 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=hs,a.
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${oi("title",this.hass.language)}</div>
-          <div class="version">${"v2023.9.1"}</div>
+          <div class="version">${"v2023.9.2"}</div>
         </div>
 
         <ha-tabs

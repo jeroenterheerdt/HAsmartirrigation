@@ -146,7 +146,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                 "panels.general.cards.automatic-duration-calculation.labels.auto-calc-time",
                 this.hass.language
               )}</label
-            >
+            >:
             <input
               id="calctime"
               type="text"
@@ -399,7 +399,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                 "panels.general.cards.automatic-clear.labels.automatic-clear-time",
                 this.hass.language
               )}</label
-            >
+            >:
             <input
               id="cleardatatime"
               type="text"
