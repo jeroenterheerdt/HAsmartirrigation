@@ -29,7 +29,7 @@
           "description": "Die Wetterdaten werden automatisch gesammelt und gespeichert. Zur Berechnung der Zonen und Bewässerungsdauer sind Wetterdaten erforderlich.",
           "labels": {
             "auto-update-enabled": "Automatisches Update der Wetterdaten",
-            "auto-update-first-update": "(Erster) Update um",
+            "auto-update-delay": "Update Verzögerung",
             "auto-update-interval": "Update der Sensordaten alle"
           },
           "options": {
@@ -40,7 +40,7 @@
         },
         "automatic-clear": {
           "header": "Automatisches Löschen der Wetterdaten",
-          "description": "Gesammelte Wetterdaten zu einem bestimmten Zeitpunkt automatisch entfernen. Damit wird sicher gestellt, dass keine Wetterdaten von vergangenen Tagen übrig bleiben. Entferne die Wetterdaten nicht vor der Berechnung und verwende diese Option nur, wenn Sie erwarten, dass das automatische Update Wetterdaten erfasst hat, nachdem der Tag berechnet wurde. Idealerweise sollte dieser Schnitt so spät wie möglich Tag durchgeführt werden.",
+          "description": "Gesammelte Wetterdaten zu einem bestimmten Zeitpunkt automatisch entfernen. Damit wird sicher gestellt, dass keine Wetterdaten von vergangenen Tagen übrig bleiben. Entferne die Wetterdaten nicht vor der Berechnung und verwende diese Option nur, wenn du erwartest, dass das automatische Update Wetterdaten erfasst hat, nachdem der Tag berechnet wurde. Idealerweise sollte dieser Schnitt so spät wie möglich Tag durchgeführt werden.",
           "labels": {
             "automatic-clear-enabled": "Automatisches Löschen der Wetterdaten",
             "automatic-clear-time": "Löschen der Wetterdaten um"
@@ -110,7 +110,7 @@
           "input-units": "Sensor Werte in",
           "source": "Quelle",
           "sources": {
-            "none": "Kein",
+            "none": "Keine",
             "openweathermap": "OpenWeatherMap",
             "sensor": "Sensor",
             "static": "Fester Wert"
@@ -171,7 +171,7 @@
             "calculate-all": "Alle Zonen berechnen",
             "update-all": "Alle Zonen aktualisieren",
             "reset-all-buckets": "Alle Vorräte zurücksetzen",
-            "clear-all-weatherdata": "Clear all weatherdata"
+            "clear-all-weatherdata": "Alle Wetterdaten löschen"
           },
           "header": "Aktionen für alle Zonen"
         }
@@ -180,7 +180,7 @@
       "labels": {
         "bucket": "Vorrat",
         "duration": "Dauer",
-        "lead-time": "Anlaufzeit",
+        "lead-time": "Vorlaufzeit",
         "mapping": "Sensorgruppe",
         "maximum-duration": "Maximale Dauer",
         "multiplier": "Multiplikator",
