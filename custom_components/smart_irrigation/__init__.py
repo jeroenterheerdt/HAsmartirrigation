@@ -390,6 +390,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
                 mapping_data = mapping[const.MAPPING_DATA]
                 mapping_data.append(weatherdata)
+                _LOGGER.debug("async_update_all new mapping_data: {}".format(weatherdata))
                 changes = {"data": mapping_data,const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now()}
                 self.store.async_update_mapping(mapping_id,changes)
             else:
@@ -403,7 +404,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         else:
             retval = wd
             for key, val in sv.items():
+                _LOGGER.debug("merge_weatherdata_and_sensor_values, overriding {} from OWM with {} from sensors".format(retval[key],val))
                 retval[key] =val
+
             return retval
 
     async def apply_aggregates_to_mapping_data(self, mapping):
@@ -720,13 +723,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 if the_map.get(const.MAPPING_CONF_SOURCE)==const.MAPPING_CONF_SOURCE_SENSOR and the_map.get(const.MAPPING_CONF_SENSOR):
                     #this mapping maps to a sensor, so retrieve its value from HA
                     if self.hass.states.get(the_map.get(const.MAPPING_CONF_SENSOR)):
-                        val = float(self.hass.states.get(the_map.get(const.MAPPING_CONF_SENSOR)).state)
-                        #make sure to store the val as metric
-                        #first check we are not in metric mode already.
-                        if not self.hass.config.units is METRIC_SYSTEM:
-                            val = convert_mapping_to_metric(val, key,the_map.get(const.MAPPING_CONF_UNIT), False)
-                        # add val to sensor values
-                        sensor_values[key]= val
+                        try:
+                            val = float(self.hass.states.get(the_map.get(const.MAPPING_CONF_SENSOR)).state)
+                            #make sure to store the val as metric
+                            #first check we are not in metric mode already.
+                            if not self.hass.config.units is METRIC_SYSTEM:
+                                val = convert_mapping_to_metric(val, key,the_map.get(const.MAPPING_CONF_UNIT), False)
+                            # add val to sensor values
+                            sensor_values[key]= val
+                        except Exception as ex:
+                            _LOGGER.warning("No / unknown value for sensor {}".format(the_map.get(const.MAPPING_CONF_SENSOR)))
+
         return sensor_values
 
     def build_static_values_for_mapping(self, mapping):
@@ -849,12 +856,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     else:
                         weatherdata[const.MAPPING_PRESSURE] = altitudeToPressure(self.hass.config.as_dict().get(CONF_ELEVATION))
 
-
-
             #add the weatherdata value to the mappings sensor values
             mapping_data = mapping[const.MAPPING_DATA]
             weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
             mapping_data.append(weatherdata)
+            _LOGGER.debug("async_update_zone_config new mapping_data: {}".format(weatherdata))
             changes = {"data": mapping_data, const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now()}
             self.store.async_update_mapping(mapping_id,changes)
         elif const.ATTR_UPDATE_ALL in data:

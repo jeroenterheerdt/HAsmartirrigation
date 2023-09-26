@@ -234,6 +234,7 @@ class OWMClient:  # pylint: disable=invalid-name
                         if "snow" in dailydata:
                             snow = float(dailydata["snow"])
                         parsed_data[MAPPING_PRECIPITATION] = rain+snow
+                        _LOGGER.debug("OWMCLIENT daily rain: {}".format(rain))
 
                         #get max temp and min temp and store
                         #removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
@@ -241,6 +242,7 @@ class OWMClient:  # pylint: disable=invalid-name
                         #parsed_data[MAPPING_MAX_TEMP] = dailydata[OWM_temp_key_name]["max"]
                     else:
                         parsed_data[MAPPING_PRECIPITATION] = 0.0
+                    _LOGGER.debug("OWMCLIENT daily precipitation: {}".format(parsed_data[MAPPING_PRECIPITATION]))
 
                     self._cached_data = parsed_data
                     self._last_time_called = datetime.datetime.now()
