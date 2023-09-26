@@ -390,7 +390,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
                 mapping_data = mapping[const.MAPPING_DATA]
                 mapping_data.append(weatherdata)
-                _LOGGER.debug("async_update_all new mapping_data: {}".format(weatherdata))
+                _LOGGER.debug("async_update_all for mapping {} new mapping_data: {}".format(mapping_id,weatherdata))
                 changes = {"data": mapping_data,const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now()}
                 self.store.async_update_mapping(mapping_id,changes)
             else:
@@ -404,7 +404,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         else:
             retval = wd
             for key, val in sv.items():
-                _LOGGER.debug("merge_weatherdata_and_sensor_values, overriding {} from OWM with {} from sensors".format(retval[key],val))
+                _LOGGER.debug("merge_weatherdata_and_sensor_values, overriding {} value {} from OWM with {} from sensors".format(key,retval[key],val))
                 retval[key] =val
 
             return retval
@@ -714,6 +714,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         sensor_in_mapping = True
                     if the_map.get(const.MAPPING_CONF_SOURCE) == const.MAPPING_CONF_SOURCE_STATIC_VALUE:
                         static_in_mapping = True
+        _LOGGER.debug("check_mapping_sources for mapping_id {} returns OWM: {}, sensor: {}, static: {}".format(mapping_id,owm_in_mapping,sensor_in_mapping,static_in_mapping))
         return owm_in_mapping, sensor_in_mapping, static_in_mapping
 
     def build_sensor_values_for_mapping(self, mapping):
@@ -860,7 +861,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             mapping_data = mapping[const.MAPPING_DATA]
             weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
             mapping_data.append(weatherdata)
-            _LOGGER.debug("async_update_zone_config new mapping_data: {}".format(weatherdata))
+            _LOGGER.debug("async_update_zone_config for mapping {} new mapping_data: {}".format(mapping_id,weatherdata))
             changes = {"data": mapping_data, const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now()}
             self.store.async_update_mapping(mapping_id,changes)
         elif const.ATTR_UPDATE_ALL in data:
