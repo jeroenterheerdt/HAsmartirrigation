@@ -63,15 +63,15 @@
     "calculation": {
       "explanation": {
         "module-returned-evapotranspiration-deficiency": "NB: cette explication utilise '.' comme séparateur décimal, et affiche des valeurs arrondies. Le module a donné un manque d'Évapotranspiration de",
-        "bucket-was": "Le bucket (sceau) était de",
-        "new-bucket-values-is": "La nouvelle valeur de bucket (sceau) est",
+        "bucket-was": "Le seau (bucket) était de",
+        "new-bucket-values-is": "La nouvelle valeur du seau (bucket) est",
         "old-bucket-variable": "ancien_bucket",
         "delta": "delta",
-        "bucket-less-than-zero-irrigation-necessary": "Puisque le bucket (sceau) est < 0, l'irrigation est nécessaire",
+        "bucket-less-than-zero-irrigation-necessary": "Puisque le seau (bucket) est < 0, l'irrigation est nécessaire",
         "steps-taken-to-calculate-duration": "Pour calculer la durée d'irrigation, les étapes suivantes ont été réalisées",
         "precipitation-rate-defined-as": "Le taux de précipitation est défini comme",
         "duration-is-calculated-as": "La durée d'irrigation est calculée avec",
-        "bucket": "bucket (sceau)",
+        "bucket": "seau (bucket)",
         "precipitation-rate-variable": "taux_precipitation",
         "multiplier-is-applied": "Le multiplicateur est appliqué. Le multiplicateur est",
         "duration-after-multiplier-is": "donc la durée d'irrigation est de",
@@ -79,7 +79,8 @@
         "duration-after-maximum-duration-is": "donc la durée d'irrigation est de",
         "lead-time-is-applied": "Enfin, le délai est appliqué. Le délai est de",
         "duration-after-lead-time-is": "et donc la durée finale est de",
-        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Puisque le bucket (sceau) est >= 0, l'irrigation n'est pas nécessaire, et la durée est réglée à"
+        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Puisque le seau (bucket) est >= 0, l'irrigation n'est pas nécessaire, et la durée est réglée à",
+        "maximum-bucket-is": "la taille du seau (bucket) maximale est"
       }
     }
   },
