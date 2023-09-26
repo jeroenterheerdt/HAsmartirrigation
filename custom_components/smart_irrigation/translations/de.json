@@ -86,13 +86,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Die Berechnung der Dauer basiert auf der FAO56-Formel aus der PyETO-Bibliothek"
+      "description": "Die Berechnung der Verunstungsrate basiert auf der FAO56-Formel aus der PyETO-Bibliothek"
     },
     "static": {
-      "description": "'Dummy'-Modul mit einer statisch konfigurierbaren Veränderung."
+      "description": "Modul mit einer statisch konfigurierbaren Verdunstungsrate."
     },
     "passthrough": {
-      "description": "Passthrough-Modul, das den Wert eines Evapotranspirationssensors als Delta zurückgibt."
+      "description": "Pass Through übernimmt den Evapotranspirationssensor und gibt seinen Wert zurück. Auf diese Weise werden alle Berechnungen der Verdunstung umgangen, außer der Anwendung von Aggregaten wie Summe, Durchschnitt etc)."
     }
   }
 }

@@ -18,7 +18,8 @@
           "labels": {
             "auto-calc-enabled": "Calcule automatiquement la durée par zone",
             "auto-calc-time": "Calcule à"
-          }
+          },
+          "description": "Le calcul prend en compte les données météo jusqu'à ce point et met à jour le seau (bucket) pour chaque zone automatique. Ensuite, la durée est ajustée par la nouvelle valeur de seau (bucket) et les données météo sont supprimées."
         },
         "automatic-update": {
           "errors": {
@@ -28,12 +29,22 @@
           "labels": {
             "auto-update-enabled": "Met à jour les données météo automatiquement",
             "auto-update-first-update": "(Première) Mise à jour à",
-            "auto-update-interval": "Mettre à jour les données des capteurs toutes les"
+            "auto-update-interval": "Mettre à jour les données des capteurs toutes les",
+            "auto-update-delay": "Délai de mise à jour"
           },
           "options": {
             "days": "jours",
             "hours": "heures",
             "minutes": "minutes"
+          },
+          "description": "Récupère et stocke les données météo automatiquement. Des données météo sont nécessaires pour calculer les seaux (buckets) par zone et les durées."
+        },
+        "automatic-clear": {
+          "header": "Délestage automatique des données météo",
+          "description": "Suppression automatique des données météo collectées à une heure données. Utilisez ceci pour être sûr qu'il n'y ait plus de restes des données météo des jours précédents. Ne supprimez pas les données météo avant le calcul et n'utilisez cette option que si vous vous attendez à ce que les données météo soient récupérées après le calcul du jour. Idéalement, vous voudrez \"élaguer\" les données les plus tard possible dans la journée.",
+          "labels": {
+            "automatic-clear-enabled": "Suppression automatique des données météo collectées",
+            "automatic-clear-time": "Supprimer les données météo à"
           }
         }
       },
@@ -99,7 +110,13 @@
             "openweathermap": "OpenWeatherMap",
             "sensor": "Capteur",
             "static": "Valeur statique"
-          }
+          },
+          "pressure_types": {
+            "relative": "relative",
+            "absolute": "absolue"
+          },
+          "pressure-type": "La pression est",
+          "sensor-units": "Le capteur fournit les valeurs en"
         }
       },
       "description": "Ajouter un ou plusieurs groupes de capteurs qui récupèrent les données météo de OpenWeatherMap, de capteurs locaux ou d'une combinaison de tous ceux-ci. Vous pouvez associer chaque groupe de capteurs avec une ou plusieurs zones",
@@ -155,7 +172,8 @@
           "actions": {
             "calculate-all": "Calculer pour toutes les zones",
             "update-all": "Mise à jour de toutes les zones",
-            "reset-all-buckets": "Mise à zéro de tous les seaux (buckets)"
+            "reset-all-buckets": "Mise à zéro de tous les seaux (buckets)",
+            "clear-all-weatherdata": "Mise à zéro de toutes les données météo"
           },
           "header": "Actions sur toutes les zones"
         }
@@ -165,7 +183,7 @@
         "bucket": "Seau",
         "duration": "Durée",
         "lead-time": "Délai",
-        "mapping": "Groupe de capteur",
+        "mapping": "Groupe de capteurs",
         "maximum-duration": "Durée maximale",
         "multiplier": "Multiplicateur",
         "name": "Nom",
@@ -177,7 +195,10 @@
           "manual": "Manuel"
         },
         "throughput": "Débit",
-        "maximum-bucket": "Seau (bucket) maximum"
+        "maximum-bucket": "Seau (bucket) maximum",
+        "last_calculated": "Dernier calcul",
+        "data-last-updated": "Dernière mise à jour",
+        "data-number-of-data-points": "Nombre de points de données"
       },
       "no_items": "Il n'y a pas encore de zone définie.",
       "title": "Zones"
