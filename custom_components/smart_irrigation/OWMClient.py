@@ -60,6 +60,8 @@ class OWMClient:  # pylint: disable=invalid-name
         #defaults to no cache
         self.cache_seconds = cache_seconds
         self.override_cache = override_cache
+        #disabling cache for now
+        self.override_cache = True
         self._last_time_called = datetime.datetime(1900,1,1,0,0,0)
         self._cached_data = None
         self._cached_forecast_data = None
