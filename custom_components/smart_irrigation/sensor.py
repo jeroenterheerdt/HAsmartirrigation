@@ -51,6 +51,7 @@ async def async_setup_entry(
             throughput=config["throughput"],
             state=config["state"],
             duration=config["duration"],
+            bucket=config["bucket"]
         )
 
         hass.data[const.DOMAIN]["zones"][config["id"]] = sensor_entity
@@ -75,6 +76,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         throughput: float,
         state: str,
         duration: int,
+        bucket : float,
             ) -> None:
         """Initialize the sensor entity."""
         self._hass = hass
@@ -85,6 +87,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         self._throughput = throughput
         self._state = state
         self._duration = duration
+        self._bucket = bucket
         async_dispatcher_connect(
         hass, const.DOMAIN+"_config_updated", self.async_update_sensor_entity
     )
@@ -100,6 +103,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             self._throughput = zone["throughput"]
             self._state = zone["state"]
             self._duration = zone["duration"]
+            self._bucket = zone["bucket"]
             self.async_schedule_update_ha_state()
 
     @property
@@ -167,9 +171,10 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
 
         return {
             "id": self._id,
-            localize("common.attributes.size", self.hass.config.language): self._size,
-            localize("common.attributes.throughput", self.hass.config.language): self._throughput,
-            localize("common.attributes.state", self.hass.config.language): self._state,
+            localize("common.attributes.size", "en"): self._size,
+            localize("common.attributes.throughput", "en"): self._throughput,
+            localize("common.attributes.state", "en"): self._state,
+            localize("common.attributes.bucket", "en"): self._bucket,
         }
 
     async def async_added_to_hass(self):
