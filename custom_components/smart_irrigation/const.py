@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2023.9.3-alpha-4"
+VERSION = "v2023.9.3-beta-1"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -118,6 +118,7 @@ MAPPING_ID = "id"
 MAPPING_NAME = "name"
 MAPPING_DATA = "data"
 MAPPING_DATA_LAST_UPDATED = "data_last_updated"
+MAPPING_DATA_MULTIPLIER = "data_multiplier"
 MAPPING_MAPPINGS = "mappings"
 MAPPING_DEWPOINT = "Dewpoint"
 MAPPING_EVAPOTRANSPIRATION = "Evapotranspiration"

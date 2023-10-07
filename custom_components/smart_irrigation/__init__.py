@@ -431,7 +431,28 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if const.MAPPING_MIN_TEMP in data_by_sensor:
                 data_by_sensor.pop(const.MAPPING_MIN_TEMP)
             if const.RETRIEVED_AT in data_by_sensor:
-                data_by_sensor.pop(const.RETRIEVED_AT)
+                retrieved_ats = data_by_sensor.pop(const.RETRIEVED_AT)
+                #multiply the delta by the number of hours (24=1) between the first and last weatherdata in scope
+                hour_multiplier = 1.0
+                date_format_string = "%Y-%m-%dT%H:%M:%S.%f"
+                formatted_retrieved_ats = []
+                for item in retrieved_ats:
+                    if isinstance(item, datetime.datetime):
+                        formatted_retrieved_ats.append(item)
+                    elif isinstance(item, str):
+                        formatted_retrieved_ats.append(datetime.datetime.strptime(item, date_format_string))
+                #first_retrieved_at = datetime.datetime.strptime(weatherdata[0].get(const.RETRIEVED_AT),date_format_string)
+                #last_retrieved_at = datetime.datetime.strptime(weatherdata[len(weatherdata)-1].get(const.RETRIEVED_AT),date_format_string)
+                first_retrieved_at = min(formatted_retrieved_ats)
+                last_retrieved_at = max(formatted_retrieved_ats)
+                # Get interval between two timstamps as timedelta object
+                diff = first_retrieved_at - last_retrieved_at
+                # Get interval between two timstamps in hours
+                diff_in_hours = diff.total_seconds() / 3600
+                diff_in_hours = abs(diff_in_hours)
+                hour_multiplier = diff_in_hours / 24
+                resultdata[const.MAPPING_DATA_MULTIPLIER] = hour_multiplier
+
             for key,d in data_by_sensor.items():
                 if len(d) > 1:
                     #apply aggregate
@@ -469,6 +490,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         resultdata[key] = sum(d)
                 else:
                     resultdata[key] = d[0]
+            _LOGGER.debug("apply_aggregates_to_mapping_data returns {}".format(resultdata))
             return resultdata
         return None
 
@@ -594,8 +616,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #if maximum bucket configured, limit bucket with that.
             if zone.get(const.ZONE_MAXIMUM_BUCKET) is not None and data[const.ZONE_BUCKET]> zone.get(const.ZONE_MAXIMUM_BUCKET):
                 data[const.ZONE_BUCKET] = float(zone.get(const.ZONE_MAXIMUM_BUCKET))
-
-            data[const.ZONE_DELTA] = delta
+            hour_multiplier = weatherdata.get(const.MAPPING_DATA_MULTIPLIER,1.0)
+            data[const.ZONE_DELTA] = delta*hour_multiplier
         else:
             _LOGGER.error("Unknown module for zone {}".format(zone.get(const.ZONE_NAME)))
             return
