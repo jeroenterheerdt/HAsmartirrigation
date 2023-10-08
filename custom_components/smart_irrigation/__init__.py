@@ -612,12 +612,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
             #data[const.ZONE_BUCKET] = round(bucket+delta,1)
             #data[const.ZONE_DELTA] = round(delta,1)
-            data[const.ZONE_BUCKET] = bucket+delta
+            hour_multiplier = weatherdata.get(const.MAPPING_DATA_MULTIPLIER,1.0)
+            data[const.ZONE_DELTA] = delta*hour_multiplier
+            data[const.ZONE_BUCKET] = bucket+(delta*hour_multiplier)
             #if maximum bucket configured, limit bucket with that.
             if zone.get(const.ZONE_MAXIMUM_BUCKET) is not None and data[const.ZONE_BUCKET]> zone.get(const.ZONE_MAXIMUM_BUCKET):
                 data[const.ZONE_BUCKET] = float(zone.get(const.ZONE_MAXIMUM_BUCKET))
-            hour_multiplier = weatherdata.get(const.MAPPING_DATA_MULTIPLIER,1.0)
-            data[const.ZONE_DELTA] = delta*hour_multiplier
+
         else:
             _LOGGER.error("Unknown module for zone {}".format(zone.get(const.ZONE_NAME)))
             return
