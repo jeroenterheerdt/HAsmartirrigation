@@ -946,7 +946,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         #        except(ValueError):
         #            sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S%z")
         total_duration = self.get_total_duration_all_enabled_zones()
-        if self._track_sunrise_event_unsub is not None:
+        if self._track_sunrise_event_unsub:
             self._track_sunrise_event_unsub()
         if total_duration > 0:
                     #time_to_wait = sun_rise - datetime.datetime.now(timezone.utc) - datetime.timedelta(seconds=total_duration)
