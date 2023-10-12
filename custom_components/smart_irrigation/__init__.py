@@ -266,6 +266,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # remove all time trackers for auto update
             if self._track_auto_update_time_unsub:
                 self._track_auto_update_time_unsub()
+                self._track_auto_update_time_unsub = None
             self.store.async_update_config(data)
 
     async def set_up_auto_calc_time(self, data):
@@ -277,6 +278,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 #unsubscribe from any existing track_time_changes
                 if self._track_auto_calc_time_unsub:
                     self._track_auto_calc_time_unsub()
+                    self._track_auto_calc_time_unsub = None
                 self._track_auto_calc_time_unsub = async_track_time_change(
                     self.hass,
                     self._async_calculate_all,
@@ -295,6 +297,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #remove all time trackers
             if self._track_auto_calc_time_unsub:
                 self._track_auto_calc_time_unsub()
+                self._track_auto_calc_time_unsub = None
             self.store.async_update_config(data)
 
     async def set_up_auto_clear_time(self, data):
@@ -305,6 +308,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 #unsubscribe from any existing track_time_changes
                 if self._track_auto_clear_time_unsub:
                     self._track_auto_clear_time_unsub()
+                    self._track_auto_clear_time_unsub = None
                 self._track_auto_clear_time_unsub = async_track_time_change(
                     self.hass,
                     self._async_clear_all_weatherdata,
@@ -320,6 +324,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #remove all time trackers
             if self._track_auto_clear_time_unsub:
                 self._track_auto_clear_time_unsub()
+                self._track_auto_clear_time_unsub = None
             self.store.async_update_config(data)
     @callback
     def track_update_time(self, *args):
@@ -344,6 +349,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         if self._track_auto_update_time_unsub:
             self._track_auto_update_time_unsub()
+            self._track_auto_update_time_unsub = None
         self._track_auto_update_time_unsub = async_track_time_interval(self.hass, self._async_update_all,the_time_delta)
         _LOGGER.info("Scheduled auto update time interval for each {}".format(the_time_delta))
 
@@ -948,6 +954,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         total_duration = self.get_total_duration_all_enabled_zones()
         if self._track_sunrise_event_unsub:
             self._track_sunrise_event_unsub()
+            self._track_sunrise_event_unsub = None
         if total_duration > 0:
                     #time_to_wait = sun_rise - datetime.datetime.now(timezone.utc) - datetime.timedelta(seconds=total_duration)
                     #time_to_fire = datetime.datetime.now(timezone.utc) + time_to_wait
