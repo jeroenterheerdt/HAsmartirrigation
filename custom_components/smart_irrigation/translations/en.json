@@ -13,7 +13,7 @@
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Unique name of the integration",
-          "use_owm": "Use Open Weather Map for weather data or forecasting? Disable this is you want to use another source, such as your own weather station, exclusively. If you turn it off, you will not be able to use forecasts. Leave this on if you intent to use Open Weather Map for at least part of the weather data, including forecasting."
+          "use_owm": "Use Open Weather Map for weather data or forecasting. Enable this option if you intent to use Open Weather Map for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
         }
       },
       "step1": {
@@ -35,7 +35,7 @@
         "title": "Open Weather Map API set up",
         "description": "If you need help with the configuration, please see https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "use_owm": "Use Open Weather Map for weather data or forecasting? Disable this is you want to use another source, such as your own weather station, exclusively. If you turn it off, you will not be able to use forecasts. Leave this on if you intent to use Open Weather Map for at least part of the weather data, including forecasting."
+          "use_owm": "Use Open Weather Map for weather data or forecasting. Enable this option if you intent to use Open Weather Map for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
         }
       },
       "step1": {

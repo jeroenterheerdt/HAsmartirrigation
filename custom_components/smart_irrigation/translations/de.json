@@ -13,7 +13,7 @@
         "description": "Falls du Hilfe benötigst, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Eindeutiger Namen der Integration",
-          "use_owm": "Willst du Open Weather Map für Wetterdaten und/oder Vorhersagen nutzen? Deaktiviere diesen Dienst, wenn du ausschließlich deine eigene Wetterstation nutzen willst. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktiviere diesen Dienst, falls du beabsichtigst, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen zu nutzen."
+          "use_owm": "Verwende Open Weather Map für Wetterdaten und Wettervorhersagen. Aktiviere diese Option, falls du beabsichtigst Open Weather Map für einen Teil der Wetterdaten, einschließlich Wettervorhersagen, zu nutzen. Deaktiviere diese Option, wenn du ausschließlich eine andere Datenquelle, beispielsweise deine eigene Wetterstation, nutzen möchtest. In diesem Fall kann Smart Irrigation nicht auf Wettervorhersagen zugreifen."
         }
       },
       "step1": {
@@ -35,7 +35,7 @@
         "title": "Open Weather Map API Einstellungen",
         "description": "Falls du Hilfe benötigst, siehe https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "use_owm": "Willst du Open Weather Map für Wetterdaten oder -vorhersagen nutzen? Deaktiviere diesen Dienst, wenn du ausschließlich deine eigene Wetterstation nutzern willst. Ist dieser Dienst nicht aktiviert, sind keine Wettervorhersagen möglich. Aktiviere diesen Dienst, falls du beabsichtigst, Open Weather Map für einen Teil der Wetterdaten einschließlich der Vorhersagen zu nutzen."
+          "use_owm": "Verwende Open Weather Map für Wetterdaten und Wettervorhersagen. Aktiviere diese Option, falls du beabsichtigst Open Weather Map für einen Teil der Wetterdaten, einschließlich Wettervorhersagen, zu nutzen. Deaktiviere diese Option, wenn du ausschließlich eine andere Datenquelle, beispielsweise deine eigene Wetterstation, nutzen möchtest. In diesem Fall kann Smart Irrigation nicht auf Wettervorhersagen zugreifen."
         }
       },
       "step1": {
