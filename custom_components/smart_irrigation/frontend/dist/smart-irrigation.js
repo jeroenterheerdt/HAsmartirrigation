@@ -986,7 +986,7 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=hs,a.
           <label for="${t+e+Fe}"
             >${oi("panels.mappings.cards.mapping.sensor-aggregate-of-sensor-values-to-calculate",this.hass.language)}</label
           >
-        </div>`),o=Y`<div class="mappingline">${o}</div>`,o}renderAggregateOptionsForMapping(e,t){if(this.hass&&this.config){let a=Y``,i="average";e===Te&&(i="last"),t[Fe]&&(i=t[Fe]);for(const e of Ve){const t=this.renderAggregateOption(e,i);a=Y`${a}${t}`}return a}return Y``}renderAggregateOption(e,t){if(this.hass&&this.config){return Y`<option value="${e}" ?selected="${e===t}">
+        </div>`),o=Y`<div class="mappingline">${o}</div>`,o}renderAggregateOptionsForMapping(e,t){if(this.hass&&this.config){let a=Y``,i="average";e===Te&&(i="maximum"),t[Fe]&&(i=t[Fe]);for(const e of Ve){const t=this.renderAggregateOption(e,i);a=Y`${a}${t}`}return a}return Y``}renderAggregateOption(e,t){if(this.hass&&this.config){return Y`<option value="${e}" ?selected="${e===t}">
         ${oi("panels.mappings.cards.mapping.aggregates."+e,this.hass.language)}
       </option>`}return Y``}renderPressureTypes(e,t){if(this.hass&&this.config){let e=Y``;const a=t[Le];return e=Y`${e}
         <option
@@ -1055,7 +1055,7 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=hs,a.
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${oi("title",this.hass.language)}</div>
-          <div class="version">${"v2023.9.3-beta-5"}</div>
+          <div class="version">${"v2023.9.3"}</div>
         </div>
 
         <ha-tabs
