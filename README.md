@@ -232,7 +232,7 @@ Here is an example automation that runs when the `smart_irrigation_start_irrigat
 
 ```
 - alias: Smart Irrigation
-  description: 'Start Smart Irrigation at 06:00 and run it only if the `sensor.smart_irrigation_[zone_name]` is >0 and run it for precisely that many seconds'
+  description: 'Start Smart Irrigation based on event and run it only if the `sensor.smart_irrigation_[zone_name]` is >0 and run it for precisely that many seconds'
 trigger:
   - platform: event
     event_type: smart_irrigation_start_irrigation_all_zones
