@@ -53,6 +53,8 @@ This is all the integration does, and this is on purpose to provide maximum flex
 
 There are many more options available, see below. To understand how `precipitation`, `netto precipitation`, the `bucket` and irrigation interact, see [example behavior on the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week).
 
+Also available: [tutorial videos on Youtube](https://youtube.com/playlist?list=PLUHIAUPJHMiakbda92--fgb6A0hFReAo7&si=82Xc6mHoLDwFBfCP).
+
 ## Operation Modes
 
 You can use this integration in various modes:
