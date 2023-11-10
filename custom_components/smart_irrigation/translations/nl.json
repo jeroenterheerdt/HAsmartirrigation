@@ -62,7 +62,7 @@
   "module": {
     "calculation": {
       "explanation": {
-        "module-returned-evapotranspiration-deficiency": "NB: in deze uitleg wordt de '.' as decimaalscheidingsteken gebruikt en worden afgeronde getalleng getoond. Module berekende ET waarde van",
+        "module-returned-evapotranspiration-deficiency": "NB: in deze uitleg wordt de '.' as decimaalscheidingsteken gebruikt, worden afgeronde en metrische getallen getoond. Module berekende ET waarde van",
         "bucket-was": "Voorraad was",
         "new-bucket-values-is": "Nieuwe voorraad is",
         "old-bucket-variable": "oude_voorraad",

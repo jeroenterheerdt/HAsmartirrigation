@@ -63,7 +63,7 @@
   "module": {
     "calculation": {
       "explanation": {
-        "module-returned-evapotranspiration-deficiency": "Note: this explanation uses '.' as decimal separator and shows rounded values. Module returned Evapotranspiration deficiency of",
+        "module-returned-evapotranspiration-deficiency": "Note: this explanation uses '.' as decimal separator, shows rounded and metric values. Module returned Evapotranspiration deficiency of",
         "bucket-was": "Bucket was",
         "new-bucket-values-is": "New bucket value is",
         "old-bucket-variable": "old_bucket",
