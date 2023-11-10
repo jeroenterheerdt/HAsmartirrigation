@@ -58,7 +58,7 @@ function me(e,t){return(({finisher:e,descriptor:t})=>(a,i)=>{var n;if(void 0===i
      * @license
      * Copyright 2017 Google LLC
      * SPDX-License-Identifier: BSD-3-Clause
-     */class hi extends ui{constructor(e){if(super(e),this.et=F,e.type!==li)throw Error(this.constructor.directiveName+"() can only be used in child bindings")}render(e){if(e===F||null==e)return this.ft=void 0,this.et=e;if(e===G)return e;if("string"!=typeof e)throw Error(this.constructor.directiveName+"() called with a non-string value");if(e===this.et)return this.ft;this.et=e;const t=[e];return t.raw=t,this.ft={_$litType$:this.constructor.resultType,strings:t,values:[]}}}hi.directiveName="unsafeHTML",hi.resultType=1;const ci=(e=>(...t)=>({_$litDirective$:e,values:t}))(hi);function di(e){return"true"===(e=null==e?void 0:e.toString().toLowerCase())||"1"===e}function pi(e,t){return(e=e.toString()).split(",")[t]}function mi(e,t){switch(t){case We:return e.units==ke?Y`${ci("m<sup>2</sup>")}`:Y`${ci("sq ft")}`;case Ze:return e.units==ke?Y`${ci("l/minute")}`:Y`${ci("gal/minute")}`;default:return Y``}}function gi(e,t){!function(e,t){const a=e.hasOwnProperty("tagName")?e:e.target;be(a,"show-dialog",{dialogTag:"error-dialog",dialogImport:()=>Promise.resolve().then((function(){return Hi})),dialogParams:{error:t}})}(t,Y`
+     */class hi extends ui{constructor(e){if(super(e),this.et=F,e.type!==li)throw Error(this.constructor.directiveName+"() can only be used in child bindings")}render(e){if(e===F||null==e)return this.ft=void 0,this.et=e;if(e===G)return e;if("string"!=typeof e)throw Error(this.constructor.directiveName+"() called with a non-string value");if(e===this.et)return this.ft;this.et=e;const t=[e];return t.raw=t,this.ft={_$litType$:this.constructor.resultType,strings:t,values:[]}}}hi.directiveName="unsafeHTML",hi.resultType=1;const ci=(e=>(...t)=>({_$litDirective$:e,values:t}))(hi);function di(e){return"true"===(e=null==e?void 0:e.toString().toLowerCase())||"1"===e}function pi(e,t){return(e=e.toString()).split(",")[t]}function mi(e,t){switch(t){case Ke:return e.units==ke?Y`${ci("mm")}`:Y`${ci("in")}`;case We:return e.units==ke?Y`${ci("m<sup>2</sup>")}`:Y`${ci("sq ft")}`;case Ze:return e.units==ke?Y`${ci("l/minute")}`:Y`${ci("gal/minute")}`;default:return Y``}}function gi(e,t){!function(e,t){const a=e.hasOwnProperty("tagName")?e:e.target;be(a,"show-dialog",{dialogTag:"error-dialog",dialogImport:()=>Promise.resolve().then((function(){return Hi})),dialogParams:{error:t}})}(t,Y`
     <b>Something went wrong!</b>
     <br />
     ${e.body.message?Y`
@@ -609,7 +609,8 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=hs,a.
             </div>
             <div class="zoneline">
               <label for="bucket${t}"
-                >${oi("panels.zones.labels.bucket",this.hass.language)}:</label
+                >${oi("panels.zones.labels.bucket",this.hass.language)}
+                (${mi(this.config,Ke)}):</label
               >
               <input
                 class="shortinput"
@@ -619,7 +620,8 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=hs,a.
                 @input="${a=>this.handleEditZone(t,Object.assign(Object.assign({},e),{[Ke]:parseFloat(a.target.value)}))}"
               />
               <label for="maximum-bucket${t}"
-                >${oi("panels.zones.labels.maximum-bucket",this.hass.language)}:</label
+                >${oi("panels.zones.labels.maximum-bucket",this.hass.language)}
+                (${mi(this.config,Ke)}):</label
               >
               <input
                 class="shortinput"
@@ -1055,7 +1057,7 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=hs,a.
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${oi("title",this.hass.language)}</div>
-          <div class="version">${"v2023.11.1"}</div>
+          <div class="version">${"v2023.11.2"}</div>
         </div>
 
         <ha-tabs

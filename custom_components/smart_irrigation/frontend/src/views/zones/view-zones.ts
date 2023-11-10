@@ -334,7 +334,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         if (the_mapping != undefined) {
           if (the_mapping.data_last_updated != undefined) {
             mapping_last_updated = moment(the_mapping.data_last_updated).format(
-              "YYYY-MM-DD HH:mm:ss");
+              "YYYY-MM-DD HH:mm:ss"
+            );
             if (the_mapping.data != undefined) {
               mapping_number_of_datapoints = the_mapping.data.length;
             }
@@ -511,10 +512,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
             </div>
             <div class="zoneline">
               <label for="bucket${index}"
-                >${localize(
-                  "panels.zones.labels.bucket",
-                  this.hass.language
-                )}:</label
+                >${localize("panels.zones.labels.bucket", this.hass.language)}
+                (${output_unit(this.config, ZONE_BUCKET)}):</label
               >
               <input
                 class="shortinput"
@@ -533,7 +532,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 >${localize(
                   "panels.zones.labels.maximum-bucket",
                   this.hass.language
-                )}:</label
+                )}
+                (${output_unit(this.config, ZONE_BUCKET)}):</label
               >
               <input
                 class="shortinput"

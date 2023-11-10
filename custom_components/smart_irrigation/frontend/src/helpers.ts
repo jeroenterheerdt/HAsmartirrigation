@@ -36,6 +36,7 @@ import {
   UNIT_SQ_FT,
   UNIT_W_M2,
   UNIT_W_SQFT,
+  ZONE_BUCKET,
   ZONE_SIZE,
   ZONE_THROUGHPUT,
 } from "./const";
@@ -62,6 +63,11 @@ export function getPart(value: any, index: number) {
 }
 export function output_unit(config, arg0: string): TemplateResult {
   switch (arg0) {
+    case ZONE_BUCKET:
+      if (config.units == CONF_METRIC) {
+        return html`${unsafeHTML(UNIT_MM)}`;
+      } else return html`${unsafeHTML(UNIT_INCH)}`;
+      break;
     case ZONE_SIZE:
       if (config.units == CONF_METRIC) {
         return html`${unsafeHTML(UNIT_M2)}`;

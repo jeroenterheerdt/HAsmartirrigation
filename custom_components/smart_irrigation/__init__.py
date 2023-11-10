@@ -592,7 +592,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             return
         modinst = self.getModuleInstanceByID(mod_id)
         #precip = 0
+        ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
         bucket = zone.get(const.ZONE_BUCKET)
+        if zone.get(const.ZONE_MAXIMUM_BUCKET) is not None:
+            maximum_bucket = zone.get(const.ZONE_MAXIMUM_BUCKET)
+        if not ha_config_is_metric:
+            bucket = convert_between(const.UNIT_INCH,const.UNIT_MM,bucket)
+            if zone.get(const.ZONE_MAXIMUM_BUCKET) is not None:
+                maximum_bucket = convert_between(const.UNIT_INCH,const.UNIT_MM,zone.get(const.ZONE_MAXIMUM_BUCKET))
         data = {}
         data[const.ZONE_OLD_BUCKET]=bucket
         self.hass
@@ -620,24 +627,24 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #data[const.ZONE_DELTA] = round(delta,1)
             hour_multiplier = weatherdata.get(const.MAPPING_DATA_MULTIPLIER,1.0)
             data[const.ZONE_DELTA] = delta*hour_multiplier
-            data[const.ZONE_BUCKET] = bucket+(delta*hour_multiplier)
+            newbucket = bucket+(delta*hour_multiplier)
             #if maximum bucket configured, limit bucket with that.
-            if zone.get(const.ZONE_MAXIMUM_BUCKET) is not None and data[const.ZONE_BUCKET]> zone.get(const.ZONE_MAXIMUM_BUCKET):
-                data[const.ZONE_BUCKET] = float(zone.get(const.ZONE_MAXIMUM_BUCKET))
+            if zone.get(const.ZONE_MAXIMUM_BUCKET) is not None and newbucket> maximum_bucket:
+                newbucket = float(maximum_bucket)
 
         else:
             _LOGGER.error("Unknown module for zone {}".format(zone.get(const.ZONE_NAME)))
             return
         explanation = localize("module.calculation.explanation.module-returned-evapotranspiration-deficiency", self.hass.config.language)+" {}. ".format(round(data[const.ZONE_DELTA],1))
         explanation += localize("module.calculation.explanation.bucket-was", self.hass.config.language)+" {}".format(round(data[const.ZONE_OLD_BUCKET],1))
-        explanation += ".<br/>"+localize("module.calculation.explanation.maximum-bucket-is", self.hass.config.language)+" {}".format(round(float(zone.get(const.ZONE_MAXIMUM_BUCKET)),1))
+        explanation += ".<br/>"+localize("module.calculation.explanation.maximum-bucket-is", self.hass.config.language)+" {}".format(round(float(maximum_bucket),1))
         explanation += "."+localize("module.calculation.explanation.new-bucket-values-is", self.hass.config.language)+" ["
         explanation += localize("module.calculation.explanation.old-bucket-variable", self.hass.config.language)+"]+["
-        explanation += localize("module.calculation.explanation.delta", self.hass.config.language)+"]={}+{}={}.<br/>".format(round(data[const.ZONE_OLD_BUCKET],1),round(data[const.ZONE_DELTA],1),round(data[const.ZONE_BUCKET],1))
+        explanation += localize("module.calculation.explanation.delta", self.hass.config.language)+"]={}+{}={}.<br/>".format(round(data[const.ZONE_OLD_BUCKET],1),round(data[const.ZONE_DELTA],1),round(newbucket,1))
 
-        if data[const.ZONE_BUCKET] < 0:
+        if newbucket < 0:
             # calculate duration
-            ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
+
             tput = zone.get(const.ZONE_THROUGHPUT)
             sz = zone.get(const.ZONE_SIZE)
             if not ha_config_is_metric:
@@ -655,17 +662,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #duration = water_budget * base_schedule_index
             #new version (2.0): ART = W * BSI = ( |B| / ETpeak ) * ( ETpeak / PR * 3600 ) = |B| / PR * 3600 = ( ET - P ) / PR * 3600
             #so duration = |B| / PR * 3600
-            duration = abs(data[const.ZONE_BUCKET])/precipitation_rate*3600
+            duration = abs(newbucket)/precipitation_rate*3600
             explanation += localize("module.calculation.explanation.bucket-less-than-zero-irrigation-necessary", self.hass.config.language)+".<br/>"+localize("module.calculation.explanation.steps-taken-to-calculate-duration", self.hass.config.language)+":<br/>"
             # v1 only
             # explanation += "<ol><li>Water budget is defined as abs([bucket])/max(ET)={}</li>".format(water_budget)
             #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
-            explanation += "<li>"+localize("module.calculation.explanation.precipitation-rate-defined-as",self.hass.config.language)+" ["+localize("common.attributes.throughput",self.hass.config.language)+"]*60/["+localize("common.attributes.size",self.hass.config.language)+"]={}*60/{}={}</li>".format(tput,sz,round(precipitation_rate,1))
+            explanation += "<li>"+localize("module.calculation.explanation.precipitation-rate-defined-as",self.hass.config.language)+" ["+localize("common.attributes.throughput",self.hass.config.language)+"]*60/["+localize("common.attributes.size",self.hass.config.language)+"]={}*60/{}={}</li>".format(round(tput,1),round(sz,1),round(precipitation_rate,1))
             # v1 only
             # explanation += "<li>The base schedule index is defined as (max(ET)/[precipitation rate]*60)*60=({}/{}*60)*60={}</li>".format(mod.maximum_et,precipitation_rate,round(base_schedule_index,1))
             # explanation += "<li>the duration is calculated as [water_budget]*[base_schedule_index]={}*{}={}</li>".format(water_budget,round(base_schedule_index,1),round(duration))
             #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
-            explanation += "<li>"+localize("module.calculation.explanation.duration-is-calculated-as",self.hass.config.language)+" abs(["+localize("module.calculation.explanation.bucket",self.hass.config.language)+"])/["+localize("module.calculation.explanation.precipitation-rate-variable",self.hass.config.language)+"]*3600={}/{}*3600={}</li>".format(abs(round(data[const.ZONE_BUCKET],1)),round(precipitation_rate,1),round(duration))
+            explanation += "<li>"+localize("module.calculation.explanation.duration-is-calculated-as",self.hass.config.language)+" abs(["+localize("module.calculation.explanation.bucket",self.hass.config.language)+"])/["+localize("module.calculation.explanation.precipitation-rate-variable",self.hass.config.language)+"]*3600={}/{}*3600={}</li>".format(abs(round(newbucket,1)),round(precipitation_rate,1),round(duration))
             duration = zone.get(const.ZONE_MULTIPLIER) * duration
             explanation += "<li>"+localize("module.calculation.explanation.multiplier-is-applied",self.hass.config.language)+" {}, ".format(zone.get(const.ZONE_MULTIPLIER))
             #beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
@@ -685,7 +692,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             duration = 0
             explanation += localize("module.calculation.explanation.bucket-larger-than-or-equal-to-zero-no-irrigation-necessary",self.hass.config.language)+" {}".format(duration)
 
-
+        data[const.ZONE_BUCKET] = newbucket
+        if not ha_config_is_metric:
+            data[const.ZONE_BUCKET] = convert_between(const.UNIT_MM, const.UNIT_INCH, data[const.ZONE_BUCKET])
         data[const.ZONE_DURATION] = duration
         data[const.ZONE_EXPLANATION] = explanation
         data[const.ZONE_LAST_CALCULATED] = datetime.datetime.now()
