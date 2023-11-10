@@ -640,7 +640,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
             tput = zone.get(const.ZONE_THROUGHPUT)
             sz = zone.get(const.ZONE_SIZE)
-            #v2023.9.4: disabling this since this conversion should not matter. the duration is not dependent on metric/imperial
+            #v2023.11.0: disabling this since this conversion should not matter. the duration is not dependent on metric/imperial
             #if not ha_config_is_metric:
                 # throughput is in gpm and size is in sq ft since HA is not in metric, so we need to adjust those first!
             #    tput = convert_between(const.UNIT_GPM,const.UNIT_LPM,tput)
