@@ -410,7 +410,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         else:
             retval = wd
             for key, val in sv.items():
-                _LOGGER.debug("merge_weatherdata_and_sensor_values, overriding {} value {} from OWM with {} from sensors".format(key,retval[key],val))
+                if key in retval:
+                    _LOGGER.debug("merge_weatherdata_and_sensor_values, overriding {} value {} from OWM with {} from sensors".format(key,retval[key],val))
+                else:
+                    _LOGGER.debug("merge_weatherdata_and_sensor_values, adding {} value {} from sensors".format(key,val))
                 retval[key] =val
 
             return retval
