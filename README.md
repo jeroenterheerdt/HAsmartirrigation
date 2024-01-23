@@ -102,7 +102,7 @@ After the integration has been installed, you will find a new panel named 'Smart
 #### GENERAL
 
 This page provides global settings.
-- Automatic duration calculation: If enabled, set the time of calculation (HH:MM).
+- Automatic duration calculation: If enabled, set the time of calculation (HH:MM). After automatic calculation has happened used weatherdata is deleted.
 - Automatic weather data update: If enabled, specify how often sensor update should happen (minutes, hours, days). Warning: weatherdata update time must be on or after calculation time!
 - Automatic  weather data pruning: If enabled configure time of pruning weather data. Use this to make sure that there is no left over weatherdata from previous days. Don't remove the weatherdata before you calculate and only use this option if you expect the automatic update to collect weatherdata after you calculated for the day. Ideally, you want to prune as late in the day as possible.
 
@@ -123,7 +123,7 @@ You can update and calculate all automatic zones.
 
 **Actions on all Zones**
 - Update all zones with weather data from sensors.
-- Calculate irrigation duration for all zones.
+- Calculate irrigation duration for all zones. This will also delete weather data after calculation.
 
 **Per Zone Settings**
 You can change any value mentioned before. Additionally there are some more options. 
@@ -143,7 +143,7 @@ You can change any value mentioned before. Additionally there are some more opti
 - Multiplier: Multiplies the duration of the irrigation or divides if you do 0.5 for example.
 - Duration: Either calculated or manually set.
 
-Below each zone there are some buttons to update with weather data, calculate irrigation duration or to delete that zone. After a calculation there is also a button to get some information how duration was calculated.
+Below each zone there are some buttons to update with weather data, calculate irrigation duration or to delete that zone. Note that if you calculate irrigation duration using the buttons per zone, the weather data for that zone is deleted. After a calculation there is also a button to get some information how duration was calculated.
 
 #### MODULES
 
@@ -202,8 +202,8 @@ Sample screenshot:
 
 | Service | Description|
 | --- | --- |
-|`Smart Irrigation: calculate_zone`|Triggers the calculation of one specific zone.|
-|`Smart Irrigation: calculate_all_zones`|Triggers the calculation of all automatic zones. Use only if you disabled automatic refresh in the options.|
+|`Smart Irrigation: calculate_zone`|Triggers the calculation of one specific zone. Note that used weather data is deleted afterwards.|
+|`Smart Irrigation: calculate_all_zones`|Triggers the calculation of all automatic zones. Use only if you disabled automatic refresh in the options. Note that after calculation weather data is deleted.|
 |`Smart Irrigation: update_zone`|Updates one specific zone with weather data|
 |`Smart Irrigation: update_all_zones`|Updates all automatic zones with weather data|
 |`Smart Irrigation: reset_bucket`|Resets one specific bucket.|
@@ -218,11 +218,6 @@ Sample screenshot:
 |`smart_irrigation_start_irrigation_all_zones`|Fires on the total of the durations of all non-disabled zones and sunrise (event is scheduled at: sunrise - sum(duration for all non-disabled zones)). You can listen to this event to optimize the moment you irrigate so your irrigation starts just before sunrise and is completed at sunrise. See below for examples on how to use this.|
 
 The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/How-this-component-works) describes the entities, the attributes and the calculations.
-
-#### Showing other Attributes as Entities (Sensors)
-
-[See the Wiki for more information on how to expose other values this integrations calculates as sensors](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Showing-other-sensors).
-
 
 ### Step 4: Creating Automations
 
