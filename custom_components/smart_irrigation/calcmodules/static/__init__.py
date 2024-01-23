@@ -9,7 +9,7 @@ _LOGGER = logging.getLogger(__name__)
 
 CONF_DELTA = "delta"
 
-DEFAULT_DELTA = 0
+DEFAULT_DELTA = 0.0
 SCHEMA = vol.Schema(
     {
         vol.Required(CONF_DELTA, default=DEFAULT_DELTA): vol.Coerce(float),
