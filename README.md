@@ -196,6 +196,7 @@ Attributes:
 |`friendly_name`|Name of your zone.|
 
 Sample screenshot:
+
 ![](images/sensor.[zone_name].png?raw=true)
 
 If you want to expose these attributes as separate sensors, you can add [template sensors](https://www.home-assistant.io/integrations/template/#state-based-template-binary-sensors-buttons-images-numbers-selects-and-sensors) using a template like the following example for `bucket`:
