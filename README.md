@@ -196,8 +196,7 @@ Attributes:
 |`friendly_name`|Name of your zone.|
 
 Sample screenshot:
-
-![](images/sensor.smart_irrigation_[zone_name].png?raw=true)
+![](images/sensor.[zone_name].png?raw=true)
 
 If you want to expose these attributes as separate sensors, you can add [template sensors](https://www.home-assistant.io/integrations/template/#state-based-template-binary-sensors-buttons-images-numbers-selects-and-sensors) using a template like the following example for `bucket`:
 ```{{state_attr('sensor.smart_irrigation_your_zone_sensor_name', 'bucket')}}```
