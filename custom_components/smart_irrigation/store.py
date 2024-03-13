@@ -248,9 +248,8 @@ class SmartIrrigationStorage:
                         name=mapping[MAPPING_NAME],
                         mappings=the_map,
                         data=mapping.get(MAPPING_DATA),
-                        data_last_updated = mapping.get(MAPPING_DATA_LAST_UPDATED, None)
+                        data_last_updated=mapping.get(MAPPING_DATA_LAST_UPDATED, None)
                     )
-
 
         self.config = config
         self.zones = zones
@@ -275,6 +274,7 @@ class SmartIrrigationStorage:
         #self.zones[0] = new_zone1
         #self.zones[1] = new_zone2
         #self.async_schedule_save()
+        return
 
     async def async_factory_default_modules(self):
 
