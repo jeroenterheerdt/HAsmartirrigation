@@ -1,17 +1,18 @@
 calculate_all_zones:
 calculate_zone:
-  fields:
+  target:
     entity:
       domain: sensor
 update_all_zones:
 update_zone:
-  fields:
+  target:
     entity:
       domain: sensor
 set_bucket:
-  fields:
+  target:
     entity:
       domain: sensor
+  fields:
     new_bucket_value:
       required: true
       example: -10
@@ -23,7 +24,7 @@ set_all_buckets:
       example: -10
       default: 0
 reset_bucket:
-  fields:
+  target:
     entity:
       domain: sensor
 reset_all_buckets:
