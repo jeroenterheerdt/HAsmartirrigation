@@ -108,7 +108,6 @@
         "entity": {
           "name": "Entity",
           "description": "Zone to calculate",
-          "domain": "sensor"
         }
       }
     },
@@ -123,7 +122,6 @@
         "entity": {
           "name": "Entity",
           "description": "Zone to update",
-          "domain": "sensor"
         }
       }
     },
@@ -134,14 +132,10 @@
         "entity": {
           "name": "Entity",
           "description": "Zone to set bucket for",
-          "domain": "sensor"
         },
         "new_bucket_value": {
           "name": "New bucket value",
           "description": "new value of the bucket",
-          "required": "true",
-          "example": "-10",
-          "default": "0"
         }
       }
     },
@@ -152,9 +146,6 @@
         "new_bucket_value": {
           "name": "New bucket value",
           "description": "new value of the bucket",
-          "required": "true",
-          "example": "-10",
-          "default": "0"
         }
       }
     },
@@ -165,7 +156,6 @@
         "entity": {
           "name": "Entity",
           "description": "Zone to reset bucket for",
-          "domain": "sensor"
         }
       }
     },
