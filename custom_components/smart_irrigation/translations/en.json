@@ -95,5 +95,87 @@
     "passthrough": {
       "description": "Passthrough module that returns the value of an Evapotranspiration sensor as delta"
     }
+  },
+  "services": {
+    "calculate_all_zones": {
+      "name": "Calculate all zones",
+      "description": "Calculate all zones in automatic mode"
+    },
+    "calculate_zone": {
+      "name": "Calculate zone",
+      "description": "Calculate specified zone",
+      "fields": {
+        "entity": {
+          "name": "Entity",
+          "description": "Zone to calculate",
+          "domain": "sensor"
+        }
+      }
+    },
+    "update_all_zones": {
+      "name": "Update all zones",
+      "description": "Update weatherdata for all zones in automatic mode"
+    },
+    "update_zone": {
+      "name": "Update zone",
+      "description": "Update weatherdata for specified zone",
+      "fields": {
+        "entity": {
+          "name": "Entity",
+          "description": "Zone to update",
+          "domain": "sensor"
+        }
+      }
+    },
+    "set_bucket": {
+      "name": "Set bucket",
+      "description": "Set bucket for a zone to a specific value",
+      "fields": {
+        "entity": {
+          "name": "Entity",
+          "description": "Zone to set bucket for",
+          "domain": "sensor"
+        },
+        "new_bucket_value": {
+          "name": "New bucket value",
+          "description": "new value of the bucket",
+          "required": "true",
+          "example": "-10",
+          "default": "0"
+        }
+      }
+    },
+    "set_all_buckets": {
+      "name": "Set all buckets",
+      "description": "Set buckets for all zones to a specific value",
+      "fields": {
+        "new_bucket_value": {
+          "name": "New bucket value",
+          "description": "new value of the bucket",
+          "required": "true",
+          "example": "-10",
+          "default": "0"
+        }
+      }
+    },
+    "reset_bucket": {
+      "name": "Reset bucket",
+      "description": "Reset bucket for a zone to 0",
+      "fields": {
+        "entity": {
+          "name": "Entity",
+          "description": "Zone to reset bucket for",
+          "domain": "sensor"
+        }
+      }
+    },
+    "reset_all_buckets": {
+      "name": "Reset all buckets",
+      "description": "Reset bucket for all zones to 0"
+    },
+    "clear_all_weather_data": {
+      "name": "Clear all weather data",
+      "description": "Clear weather data for all zones"
+    }
   }
 }
