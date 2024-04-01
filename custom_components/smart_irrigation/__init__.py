@@ -1275,6 +1275,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         elif const.ATTR_UPDATE_ALL in data:
             _LOGGER.info("Updating all zones.")
             await self._async_update_all()
+        elif const.ATTR_SET_MULTIPLIER in data:
+            # set a multiplier to a new vlue
+            new_multiplier_value = 0
+            if const.ATTR_NEW_MULTIPLIER_VALUE in data:
+                new_multiplier_value = data[const.ATTR_NEW_MULTIPLIER_VALUE]
+            res = self.store.async_get_zone(zone_id)
+            if not res:
+                return
+            data[const.ZONE_MULTIPLIER] = new_multiplier_value
+            data.pop(const.ATTR_SET_MULTIPLIER)
+            self.store.async_update_zone(zone_id, data)
+            async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
         elif const.ATTR_SET_BUCKET in data:
             # set a bucket to a new value
             new_bucket_value = 0
@@ -1448,6 +1460,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 zone_id=zone.get(const.ZONE_ID), data=data
             )
 
+    async def _async_set_all_multipliers(self, val=0):
+        """Sets all multipliers to val"""
+        zones = self.store.async_get_zones()
+        data = {}
+        data[const.ATTR_SET_MULTIPLIER] = {}
+        data[const.ATTR_NEW_MULTIPLIER_VALUE] = val
+
+        for zone in zones:
+            await self.async_update_zone_config(
+                zone_id=zone.get(const.ZONE_ID), data=data
+            )
+
     async def handle_calculate_all_zones(self, call):
         """Calculate all zones."""
         _LOGGER.info("Calculate all zones service called.")
@@ -1546,9 +1570,45 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         if const.ATTR_NEW_BUCKET_VALUE in call.data:
             new_value = call.data[const.ATTR_NEW_BUCKET_VALUE]
             _LOGGER.info(
-                "Reset all buckets service called, new value: {}".format(new_value)
+                "Set all buckets service called, new value: {}".format(new_value)
             )
             await self._async_set_all_buckets(new_value)
+
+    async def handle_set_multiplier(self, call):
+        """Reset a specific zone multiplier to new value"""
+        if (
+            const.SERVICE_ENTITY_ID in call.data
+            and const.ATTR_NEW_MULTIPLIER_VALUE in call.data
+        ):
+            new_value = call.data[const.ATTR_NEW_MULTIPLIER_VALUE]
+            eid = call.data[const.SERVICE_ENTITY_ID]
+            if not isinstance(eid, list):
+                eid = [call.data[const.SERVICE_ENTITY_ID]]
+            for entity in eid:
+                _LOGGER.info(
+                    "Set multiplier service called for zone {}, new value: {}.".format(
+                        entity, new_value
+                    )
+                )
+                # find entity zone id and call calculate on the zone
+                state = self.hass.states.get(entity)
+                if state:
+                    # find zone_id for zone with name
+                    zone_id = state.attributes.get(const.ZONE_ID)
+                    if not zone_id is None:
+                        data = {}
+                        data[const.ATTR_SET_MULTIPLIER] = {}
+                        data[const.ATTR_NEW_MULTIPLIER_VALUE] = new_value
+                        await self.async_update_zone_config(zone_id=zone_id, data=data)
+
+    async def handle_set_all_multipliers(self, call):
+        """Reset all multipliers to new value"""
+        if const.ATTR_NEW_MULTIPLIER_VALUE in call.data:
+            new_value = call.data[const.ATTR_NEW_MULTIPLIER_VALUE]
+            _LOGGER.info(
+                "Set all multipliers service called, new value: {}".format(new_value)
+            )
+            await self._async_set_all_multipliers(new_value)
 
     async def handle_clear_weatherdata(self, call):
         """Clear all collected weatherdata"""
@@ -1600,4 +1660,14 @@ def register_services(hass):
         const.DOMAIN,
         const.SERVICE_CLEAR_WEATHERDATA,
         coordinator.handle_clear_weatherdata,
+    )
+
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_SET_ALL_MULTIPLIERS,
+        coordinator.handle_set_all_multipliers,
+    )
+
+    hass.services.async_register(
+        const.DOMAIN, const.SERVICE_SET_MULTIPLIER, coordinator.handle_set_multiplier
     )

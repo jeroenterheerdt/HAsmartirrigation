@@ -10,6 +10,7 @@ from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from .const import (
     ATTR_NEW_BUCKET_VALUE,
+    ATTR_NEW_MULTIPLIER_VALUE,
     CONF_AUTO_CALC_ENABLED,
     CONF_AUTO_CLEAR_ENABLED,
     CONF_AUTO_UPDATE_DELAY,
@@ -498,6 +499,10 @@ class SmartIrrigationStorage:
         zone_id = int(zone_id)
         old = self.zones[zone_id]
         if changes:
+            # handle multiplier value change
+            if ATTR_NEW_MULTIPLIER_VALUE in changes:
+                changes[ZONE_MULTIPLIER] = changes[ATTR_NEW_MULTIPLIER_VALUE]
+                changes.pop(ATTR_NEW_MULTIPLIER_VALUE)
             # handle bucket value change
             if ATTR_NEW_BUCKET_VALUE in changes:
                 changes[ZONE_BUCKET] = changes[ATTR_NEW_BUCKET_VALUE]

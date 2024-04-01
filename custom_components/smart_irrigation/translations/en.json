@@ -169,6 +169,30 @@
     "clear_all_weather_data": {
       "name": "Clear all weather data",
       "description": "Clear weather data for all zones"
+    },
+    "set_multiplier": {
+      "name": "Set multiplier",
+      "description": "Set multiplier for a zone to a specific value",
+      "fields": {
+        "entity": {
+          "name": "Entity",
+          "description": "Zone to set multiplier for"
+        },
+        "new_multiplier_value": {
+          "name": "New multiplier value",
+          "description": "new value of the multiplier"
+        }
+      }
+    },
+    "set_all_multipliers": {
+      "name": "Set all multipliers",
+      "description": "Set multipliers for all zones to a specific value",
+      "fields": {
+        "new_multiplier_value": {
+          "name": "New multiplier value",
+          "description": "new value of the multiplier"
+        }
+      }
     }
   }
 }
