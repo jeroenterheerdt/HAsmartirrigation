@@ -1,8 +1,66 @@
+from datetime import datetime
 import os
 import sys
 import importlib
 import logging
-from .const import CUSTOM_COMPONENTS, DOMAIN, GALLON_TO_LITER_FACTOR, INCH_TO_MM_FACTOR, INHG_TO_HPA_FACTOR, INHG_TO_PSI_FACTOR, K_TO_C_FACTOR, KMH_TO_MILESH_FACTOR, KMH_TO_MS_FACTOR, LITER_TO_GALLON_FACTOR, M2_TO_SQ_FT_FACTOR, MAPPING_DEWPOINT, MAPPING_EVAPOTRANSPIRATION, MAPPING_HUMIDITY, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_SOLRAD, MAPPING_TEMPERATURE, MAPPING_WINDSPEED, MBAR_TO_INHG_FACTOR, MBAR_TO_PSI_FACTOR, MILESH_TO_KMH_FACTOR, MILESH_TO_MS_FACTOR, MM_TO_INCH_FACTOR, MS_TO_KMH_FACTOR, MS_TO_MILESH_FACTOR, PSI_TO_HPA_FACTOR, PSI_TO_INHG_FACTOR, SQ_FT_TO_M2_FACTOR, UNIT_DEGREES_C, UNIT_DEGREES_F, UNIT_DEGREES_K, UNIT_GPM, UNIT_HPA, UNIT_INCH, UNIT_INHG, UNIT_KMH, UNIT_LPM, UNIT_M2, UNIT_MBAR, UNIT_MH, UNIT_MJ_DAY_M2, UNIT_MJ_DAY_SQFT, UNIT_MM, UNIT_MS, UNIT_PERCENT, UNIT_PSI, UNIT_SECONDS, UNIT_SQ_FT, UNIT_W_M2, UNIT_W_SQFT, W_M2_TO_W_SQ_FT_FACTOR, W_SQ_FT_TO_W_M2_FACTOR, W_TO_MJ_DAY_FACTOR
+from .const import (
+    CUSTOM_COMPONENTS,
+    DOMAIN,
+    GALLON_TO_LITER_FACTOR,
+    INCH_TO_MM_FACTOR,
+    INHG_TO_HPA_FACTOR,
+    INHG_TO_PSI_FACTOR,
+    K_TO_C_FACTOR,
+    KMH_TO_MILESH_FACTOR,
+    KMH_TO_MS_FACTOR,
+    LITER_TO_GALLON_FACTOR,
+    M2_TO_SQ_FT_FACTOR,
+    MAPPING_DEWPOINT,
+    MAPPING_EVAPOTRANSPIRATION,
+    MAPPING_HUMIDITY,
+    MAPPING_MAX_TEMP,
+    MAPPING_MIN_TEMP,
+    MAPPING_PRECIPITATION,
+    MAPPING_PRESSURE,
+    MAPPING_SOLRAD,
+    MAPPING_TEMPERATURE,
+    MAPPING_WINDSPEED,
+    MBAR_TO_INHG_FACTOR,
+    MBAR_TO_PSI_FACTOR,
+    MILESH_TO_KMH_FACTOR,
+    MILESH_TO_MS_FACTOR,
+    MM_TO_INCH_FACTOR,
+    MS_TO_KMH_FACTOR,
+    MS_TO_MILESH_FACTOR,
+    PSI_TO_HPA_FACTOR,
+    PSI_TO_INHG_FACTOR,
+    SQ_FT_TO_M2_FACTOR,
+    UNIT_DEGREES_C,
+    UNIT_DEGREES_F,
+    UNIT_DEGREES_K,
+    UNIT_GPM,
+    UNIT_HPA,
+    UNIT_INCH,
+    UNIT_INHG,
+    UNIT_KMH,
+    UNIT_LPM,
+    UNIT_M2,
+    UNIT_MBAR,
+    UNIT_MH,
+    UNIT_MJ_DAY_M2,
+    UNIT_MJ_DAY_SQFT,
+    UNIT_MM,
+    UNIT_MS,
+    UNIT_PERCENT,
+    UNIT_PSI,
+    UNIT_SECONDS,
+    UNIT_SQ_FT,
+    UNIT_W_M2,
+    UNIT_W_SQFT,
+    W_M2_TO_W_SQ_FT_FACTOR,
+    W_SQ_FT_TO_W_M2_FACTOR,
+    W_TO_MJ_DAY_FACTOR,
+)
 from homeassistant import exceptions
 
 from homeassistant.core import (
@@ -26,6 +84,7 @@ def friendly_name_for_entity_id(entity_id: str, hass: HomeAssistant):
 def omit(obj: dict, blacklisted_keys: list):
     return {key: val for key, val in obj.items() if key not in blacklisted_keys}
 
+
 def check_time(itime):
     """Check time."""
     timesplit = itime.split(":")
@@ -42,205 +101,236 @@ def check_time(itime):
     except ValueError:
         return False
 
+
+def convert_timestamp(val):
+    outputformat = "%Y-%m-%d %H:%M:%S"
+    if isinstance(val, str):
+        return (datetime.fromisoformat(val).strftime(outputformat),)
+    elif isinstance(val, datetime):
+        return val.strftime(outputformat)
+    else:
+        return None
+
+
 def convert_mapping_to_metric(val, mapping, unit, system_is_metric):
     if mapping == MAPPING_HUMIDITY:
-        #humidity unit is same in metric and imperial: %
+        # humidity unit is same in metric and imperial: %
         return val
-    if mapping in [MAPPING_DEWPOINT, MAPPING_TEMPERATURE, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP]:
-        #either Celsius or F. If celsius, no need to convert.
+    if mapping in [
+        MAPPING_DEWPOINT,
+        MAPPING_TEMPERATURE,
+        MAPPING_MAX_TEMP,
+        MAPPING_MIN_TEMP,
+    ]:
+        # either Celsius or F. If celsius, no need to convert.
         if unit:
-            #a unit was set, convert it
+            # a unit was set, convert it
             return convert_between(from_unit=unit, to_unit=UNIT_DEGREES_C, val=val)
         # no unit was set, so it's dependent on system_is_metric if we need to convert
         elif system_is_metric:
             return val
         else:
-            #assume the unit is in F
-            return convert_between(from_unit=UNIT_DEGREES_F, to_unit=UNIT_DEGREES_C, val=val)
+            # assume the unit is in F
+            return convert_between(
+                from_unit=UNIT_DEGREES_F, to_unit=UNIT_DEGREES_C, val=val
+            )
     elif mapping in [MAPPING_PRECIPITATION, MAPPING_EVAPOTRANSPIRATION]:
-        #either mm or inch. If mm no need to convert.
+        # either mm or inch. If mm no need to convert.
         if unit:
-            return convert_between(from_unit=unit,to_unit=UNIT_MM, val=val)
+            return convert_between(from_unit=unit, to_unit=UNIT_MM, val=val)
         elif system_is_metric:
             return val
         else:
-            #assume the unit is in inch
+            # assume the unit is in inch
             return convert_between(from_unit=UNIT_INCH, to_unit=UNIT_MM, val=val)
     elif mapping == MAPPING_PRESSURE:
-        #either: mbar, hpa (default for metric), psi or inhg (default for imperial)
+        # either: mbar, hpa (default for metric), psi or inhg (default for imperial)
         if unit:
             return convert_between(from_unit=unit, to_unit=UNIT_HPA, val=val)
         elif system_is_metric:
             return val
         else:
-            #assume it's inHG
+            # assume it's inHG
             return convert_between(from_unit=UNIT_INHG, to_unit=UNIT_HPA, val=val)
     elif mapping == MAPPING_SOLRAD:
-        #either: assume w/m2 for metric, w/sqft for imperial
+        # either: assume w/m2 for metric, w/sqft for imperial
         if unit:
-            return convert_between(from_unit=unit, to_unit=UNIT_MJ_DAY_M2,val=val)
+            return convert_between(from_unit=unit, to_unit=UNIT_MJ_DAY_M2, val=val)
         elif system_is_metric:
-            #assume it's w/m2
+            # assume it's w/m2
             return convert_between(from_unit=UNIT_W_M2, to_unit=UNIT_MJ_DAY_M2, val=val)
         else:
-            #assume it's w/sqft
-            return convert_between(from_unit=UNIT_W_SQFT, to_unit=UNIT_MJ_DAY_M2,val=val)
+            # assume it's w/sqft
+            return convert_between(
+                from_unit=UNIT_W_SQFT, to_unit=UNIT_MJ_DAY_M2, val=val
+            )
     elif mapping == MAPPING_WINDSPEED:
-        #either UNIT_KMH, unit: UNIT_MS (Default for metric), m/h (imperial)
+        # either UNIT_KMH, unit: UNIT_MS (Default for metric), m/h (imperial)
         if unit:
             return convert_between(from_unit=unit, to_unit=UNIT_MS, val=val)
         elif system_is_metric:
             return val
         else:
-            #assume it's m/h
+            # assume it's m/h
             return convert_between(from_unit=UNIT_MH, to_unit=UNIT_MS, val=val)
     else:
         return None
 
-def convert_between(from_unit,to_unit,val):
+
+def convert_between(from_unit, to_unit, val):
     if from_unit == to_unit or from_unit in [UNIT_PERCENT, UNIT_SECONDS]:
-        #no conversion necessary here!
+        # no conversion necessary here!
         return val
-    #convert temperatures
+    # convert temperatures
     elif from_unit in [UNIT_DEGREES_C, UNIT_DEGREES_F, UNIT_DEGREES_K]:
-        return convert_temperatures(from_unit,to_unit, val)
-    #convert lengths
+        return convert_temperatures(from_unit, to_unit, val)
+    # convert lengths
     elif from_unit in [UNIT_MM, UNIT_INCH]:
-        return convert_length(from_unit,to_unit,val)
-    #convert volumes
+        return convert_length(from_unit, to_unit, val)
+    # convert volumes
     elif from_unit in [UNIT_LPM, UNIT_GPM]:
         return convert_volume(from_unit, to_unit, val)
-    #convert areas
+    # convert areas
     elif from_unit in [UNIT_M2, UNIT_SQ_FT]:
         return convert_area(from_unit, to_unit, val)
-    #convert pressures
+    # convert pressures
     elif from_unit in [UNIT_MBAR, UNIT_HPA, UNIT_PSI, UNIT_INHG]:
         return convert_pressure(from_unit, to_unit, val)
-    #convert speeds
+    # convert speeds
     elif from_unit in [UNIT_KMH, UNIT_MS, UNIT_MH]:
         return convert_speed(from_unit, to_unit, val)
-    #convert production/area
-    elif from_unit in [UNIT_W_M2, UNIT_MJ_DAY_M2,UNIT_W_SQFT,UNIT_MJ_DAY_SQFT]:
+    # convert production/area
+    elif from_unit in [UNIT_W_M2, UNIT_MJ_DAY_M2, UNIT_W_SQFT, UNIT_MJ_DAY_SQFT]:
         return convert_production(from_unit, to_unit, val)
-    #unexpected from_unit
-    _LOGGER.warning("Unexpected conversion of {} from {} to {}".format(val, from_unit, to_unit))
+    # unexpected from_unit
+    _LOGGER.warning(
+        "Unexpected conversion of {} from {} to {}".format(val, from_unit, to_unit)
+    )
     return None
+
 
 def convert_production(from_unit, to_unit, val):
     if to_unit == from_unit:
         return val
     if to_unit == UNIT_MJ_DAY_M2:
         if from_unit == UNIT_W_M2:
-            return float(float(val)*W_TO_MJ_DAY_FACTOR)
+            return float(float(val) * W_TO_MJ_DAY_FACTOR)
         elif from_unit == UNIT_W_SQFT:
-            return float((float(val)*W_SQ_FT_TO_W_M2_FACTOR)*W_TO_MJ_DAY_FACTOR)
+            return float((float(val) * W_SQ_FT_TO_W_M2_FACTOR) * W_TO_MJ_DAY_FACTOR)
         elif from_unit == UNIT_MJ_DAY_SQFT:
-            return float(float(val)*SQ_FT_TO_M2_FACTOR)
+            return float(float(val) * SQ_FT_TO_M2_FACTOR)
     elif to_unit == UNIT_MJ_DAY_SQFT:
         if from_unit == UNIT_W_M2:
-            return float((float(val)*W_M2_TO_W_SQ_FT_FACTOR)*W_TO_MJ_DAY_FACTOR)
+            return float((float(val) * W_M2_TO_W_SQ_FT_FACTOR) * W_TO_MJ_DAY_FACTOR)
         elif from_unit == UNIT_W_SQFT:
-            return float(float(val)*W_TO_MJ_DAY_FACTOR)
+            return float(float(val) * W_TO_MJ_DAY_FACTOR)
         elif from_unit == UNIT_MJ_DAY_M2:
-            return float(float(val)*M2_TO_SQ_FT_FACTOR)
+            return float(float(val) * M2_TO_SQ_FT_FACTOR)
     elif to_unit == UNIT_W_M2:
         if from_unit == UNIT_W_SQFT:
-            return float(float(val)*W_SQ_FT_TO_W_M2_FACTOR)
+            return float(float(val) * W_SQ_FT_TO_W_M2_FACTOR)
         elif from_unit == UNIT_MJ_DAY_SQFT:
-            return float((float(val)/W_TO_MJ_DAY_FACTOR)*W_SQ_FT_TO_W_M2_FACTOR)
+            return float((float(val) / W_TO_MJ_DAY_FACTOR) * W_SQ_FT_TO_W_M2_FACTOR)
         elif from_unit == UNIT_MJ_DAY_M2:
-            return float(float(val)/W_TO_MJ_DAY_FACTOR)
+            return float(float(val) / W_TO_MJ_DAY_FACTOR)
     elif to_unit == UNIT_W_SQFT:
         if from_unit == UNIT_W_M2:
-            return float(float(val)*W_M2_TO_W_SQ_FT_FACTOR)
+            return float(float(val) * W_M2_TO_W_SQ_FT_FACTOR)
         elif from_unit == UNIT_MJ_DAY_M2:
-            return float((float(val)/W_TO_MJ_DAY_FACTOR)*W_M2_TO_W_SQ_FT_FACTOR)
+            return float((float(val) / W_TO_MJ_DAY_FACTOR) * W_M2_TO_W_SQ_FT_FACTOR)
         elif from_unit == UNIT_MJ_DAY_SQFT:
-            return float(float(val)/W_TO_MJ_DAY_FACTOR)
-    #unknown conversion
+            return float(float(val) / W_TO_MJ_DAY_FACTOR)
+    # unknown conversion
     return None
+
 
 def convert_speed(from_unit, to_unit, val):
     if to_unit == from_unit:
         return val
     if to_unit == UNIT_KMH:
         if from_unit == UNIT_MS:
-            return float(float(val)*MS_TO_KMH_FACTOR)
+            return float(float(val) * MS_TO_KMH_FACTOR)
         elif from_unit == UNIT_MH:
-            return float(float(val)*MILESH_TO_KMH_FACTOR)
+            return float(float(val) * MILESH_TO_KMH_FACTOR)
     elif to_unit == UNIT_MS:
         if from_unit == UNIT_KMH:
-            return float(float(val)*KMH_TO_MS_FACTOR)
+            return float(float(val) * KMH_TO_MS_FACTOR)
         elif from_unit == UNIT_MH:
-            return float(float(val)*MILESH_TO_MS_FACTOR)
+            return float(float(val) * MILESH_TO_MS_FACTOR)
     elif to_unit == UNIT_MH:
         if from_unit == UNIT_KMH:
-            return float(float(val)*KMH_TO_MILESH_FACTOR)
+            return float(float(val) * KMH_TO_MILESH_FACTOR)
         elif from_unit == UNIT_MS:
-            return float(float(val)*MS_TO_MILESH_FACTOR)
-    #unknown conversion
+            return float(float(val) * MS_TO_MILESH_FACTOR)
+    # unknown conversion
     return None
+
 
 def convert_pressure(from_unit, to_unit, val):
     if to_unit == from_unit:
         return val
     if to_unit in [UNIT_MBAR, UNIT_HPA]:
         if from_unit in [UNIT_HPA, UNIT_MBAR]:
-            #1 mbar = 1hpa
+            # 1 mbar = 1hpa
             return val
         elif from_unit == UNIT_PSI:
-            return float(float(val)*PSI_TO_HPA_FACTOR)
+            return float(float(val) * PSI_TO_HPA_FACTOR)
         elif from_unit == UNIT_INHG:
-            return float(float(val)*INHG_TO_HPA_FACTOR)
+            return float(float(val) * INHG_TO_HPA_FACTOR)
     if to_unit == UNIT_PSI:
-        if from_unit in [UNIT_HPA,UNIT_MBAR]:
-            return float(float(val)*MBAR_TO_PSI_FACTOR)
+        if from_unit in [UNIT_HPA, UNIT_MBAR]:
+            return float(float(val) * MBAR_TO_PSI_FACTOR)
         elif from_unit == UNIT_INHG:
-            return float(float(val)*INHG_TO_PSI_FACTOR)
+            return float(float(val) * INHG_TO_PSI_FACTOR)
     if to_unit == UNIT_INHG:
         if from_unit in [UNIT_HPA, UNIT_MBAR]:
-            return float(float(val)*MBAR_TO_INHG_FACTOR)
+            return float(float(val) * MBAR_TO_INHG_FACTOR)
         elif from_unit == UNIT_PSI:
-            return float(float(val)*PSI_TO_INHG_FACTOR)
-    #unknown conversion
+            return float(float(val) * PSI_TO_INHG_FACTOR)
+    # unknown conversion
     return None
+
 
 def convert_area(from_unit, to_unit, val):
     if to_unit == from_unit:
         return val
     if to_unit == UNIT_M2:
         if from_unit == UNIT_SQ_FT:
-            return float(float(val)*SQ_FT_TO_M2_FACTOR)
+            return float(float(val) * SQ_FT_TO_M2_FACTOR)
     elif to_unit == UNIT_SQ_FT:
         if from_unit == UNIT_M2:
-            return float(float(val)*M2_TO_SQ_FT_FACTOR)
-    #unexpected conversion
+            return float(float(val) * M2_TO_SQ_FT_FACTOR)
+    # unexpected conversion
     return None
+
+
 def convert_volume(from_unit, to_unit, val):
     if to_unit == from_unit:
         return val
     if to_unit == UNIT_LPM:
         if from_unit == UNIT_GPM:
-            return float(float(val)*GALLON_TO_LITER_FACTOR)
+            return float(float(val) * GALLON_TO_LITER_FACTOR)
     elif to_unit == UNIT_GPM:
         if from_unit == UNIT_LPM:
-            return float(float(val)*LITER_TO_GALLON_FACTOR)
-    #unknown conversion
+            return float(float(val) * LITER_TO_GALLON_FACTOR)
+    # unknown conversion
     return
+
 
 def convert_length(from_unit, to_unit, val):
     if to_unit == from_unit:
         return val
     if to_unit == UNIT_MM:
         if from_unit == UNIT_INCH:
-            return float(float(val)*INCH_TO_MM_FACTOR)
+            return float(float(val) * INCH_TO_MM_FACTOR)
     elif to_unit == UNIT_INCH:
         if from_unit == UNIT_MM:
-            return float(float(val)*MM_TO_INCH_FACTOR)
-    #unknown conversion
+            return float(float(val) * MM_TO_INCH_FACTOR)
+    # unknown conversion
     return None
 
-def convert_temperatures(from_unit, to_unit,val):
+
+def convert_temperatures(from_unit, to_unit, val):
     if to_unit == from_unit:
         return val
     if to_unit == UNIT_DEGREES_C:
@@ -250,16 +340,17 @@ def convert_temperatures(from_unit, to_unit,val):
             return val - K_TO_C_FACTOR
     elif to_unit == UNIT_DEGREES_F:
         if from_unit == UNIT_DEGREES_C:
-            return float((val*1.8)+32.0)
+            return float((val * 1.8) + 32.0)
         elif from_unit == UNIT_DEGREES_K:
-            return float(1.8*(val-273)+32)
+            return float(1.8 * (val - 273) + 32)
     elif to_unit == UNIT_DEGREES_K:
         if from_unit == UNIT_DEGREES_F:
-            return (val+459.67) * (5.0/9.0)
+            return (val + 459.67) * (5.0 / 9.0)
         elif from_unit == UNIT_DEGREES_C:
-            return val+ K_TO_C_FACTOR
-    #unable to do conversion because of unexpected to or from unit
+            return val + K_TO_C_FACTOR
+    # unable to do conversion because of unexpected to or from unit
     return None
+
 
 def check_reference_et(reference_et):
     """Check reference et values here."""
@@ -277,6 +368,7 @@ def check_reference_et(reference_et):
         return all_floats
     except Exception:  # pylint: disable=broad-except
         return False
+
 
 def relative_to_absolute_pressure(pressure, height):
     """
@@ -297,11 +389,13 @@ def relative_to_absolute_pressure(pressure, height):
 
     return absolute_pressure
 
+
 def altitudeToPressure(alt):
     """Take altitude in meters and convert it to hPa = mbar."""
-    return (100 * ((44331.514 - alt) / 11880.516) ** (1 / 0.1902632)/100)
+    return 100 * ((44331.514 - alt) / 11880.516) ** (1 / 0.1902632) / 100
 
-async def test_api_key(hass,api_key, api_version):
+
+async def test_api_key(hass, api_key, api_version):
     """Test access to Open Weather Map API here."""
     client = OWMClient(
         api_key=api_key.strip(),
@@ -317,15 +411,18 @@ async def test_api_key(hass,api_key, api_version):
     except Exception:
         raise CannotConnect
 
+
 def loadModules(moduleDir=None):
     if moduleDir:
         res = {}
-        moduleDirFullPath = os.path.dirname(os.path.realpath(__file__))+os.sep+moduleDir
+        moduleDirFullPath = (
+            os.path.dirname(os.path.realpath(__file__)) + os.sep + moduleDir
+        )
         if moduleDirFullPath not in sys.path:
             sys.path.append(moduleDirFullPath)
-        #check subfolders
+        # check subfolders
         lst = os.listdir(moduleDirFullPath)
-        #lst = os.listdir(os.path.abspath(moduleDir))
+        # lst = os.listdir(os.path.abspath(moduleDir))
         thedir = []
         for d in lst:
             s = os.path.abspath(moduleDirFullPath) + os.sep + d
@@ -334,16 +431,29 @@ def loadModules(moduleDir=None):
         # load the detected modules
 
         for d in thedir:
-            if moduleDirFullPath+os.sep+d not in sys.path:
-                sys.path.append(moduleDirFullPath+os.sep+d)
-            mod = importlib.import_module("."+d,package=CUSTOM_COMPONENTS+"."+DOMAIN+"."+moduleDir)
+            if moduleDirFullPath + os.sep + d not in sys.path:
+                sys.path.append(moduleDirFullPath + os.sep + d)
+            mod = importlib.import_module(
+                "." + d, package=CUSTOM_COMPONENTS + "." + DOMAIN + "." + moduleDir
+            )
             if mod:
-                theclasses = [mod.__dict__[c] for c in mod.__dict__ if (isinstance(mod.__dict__[c], type) and mod.__dict__[c].__module__ == mod.__name__)]
+                theclasses = [
+                    mod.__dict__[c]
+                    for c in mod.__dict__
+                    if (
+                        isinstance(mod.__dict__[c], type)
+                        and mod.__dict__[c].__module__ == mod.__name__
+                    )
+                ]
                 if theclasses:
                     for theclass in theclasses:
                         if "__init__" in theclass.__dict__:
-                            classname = str(theclass.__dict__["__init__"]).split(".")[0].split(" ")[1]
-                            res[d] = {"module":mod, "class":classname}
+                            classname = (
+                                str(theclass.__dict__["__init__"])
+                                .split(".")[0]
+                                .split(" ")[1]
+                            )
+                            res[d] = {"module": mod, "class": classname}
         return res
     return None
 

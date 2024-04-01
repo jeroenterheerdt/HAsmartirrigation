@@ -505,7 +505,7 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=cs,a.
             ${hi("panels.zones.actions.reset-bucket",this.hass.language)}
           </title>
           <path fill="#404040" d="${"M12.5 9.36L4.27 14.11C3.79 14.39 3.18 14.23 2.9 13.75C2.62 13.27 2.79 12.66 3.27 12.38L11.5 7.63C11.97 7.35 12.58 7.5 12.86 8C13.14 8.47 12.97 9.09 12.5 9.36M13 19C13 15.82 15.47 13.23 18.6 13L20 6H21V4H3V6H4L4.76 9.79L10.71 6.36C11.09 6.13 11.53 6 12 6C13.38 6 14.5 7.12 14.5 8.5C14.5 9.44 14 10.26 13.21 10.69L5.79 14.97L7 21H13.35C13.13 20.37 13 19.7 13 19M21.12 15.46L19 17.59L16.88 15.46L15.47 16.88L17.59 19L15.47 21.12L16.88 22.54L19 20.41L21.12 22.54L22.54 21.12L20.41 19L22.54 16.88L21.12 15.46Z"}" />
-        </svg>`;let r,o="-",l=0;return null!=e.mapping&&(r=this.mappings.filter((t=>t.id===e.mapping))[0],null!=r&&null!=r.data_last_updated&&(o=Di(r.data_last_updated).format("YYYY-MM-DD HH:mm:ss"),null!=r.data&&(l=r.data.length))),Y`
+        </svg>`;let r;return null!=e.mapping&&(r=this.mappings.filter((t=>t.id===e.mapping))[0],null!=r&&null!=r.data_last_updated&&(e.last_updated=r.data_last_updated,null!=r.data&&(e.number_of_data_points=r.data.length))),Y`
         <ha-card header="${e.name}">
           <div class="card-content">
             <label for="last_calculated${t}"
@@ -516,13 +516,13 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=cs,a.
           <div class="card-content">
             <label for="last_updated${t}"
               >${hi("panels.zones.labels.data-last-updated",this.hass.language)}:
-              ${o}</label
+              ${e.last_updated?Di(e.last_updated).format("YYYY-MM-DD HH:mm:ss"):"-"}</label
             >
           </div>
           <div class="card-content">
             <label for="last_updated${t}"
               >${hi("panels.zones.labels.data-number-of-data-points",this.hass.language)}:
-              ${l}</label
+              ${e.number_of_data_points}</label
             >
           </div>
           <div class="card-content">
@@ -1057,7 +1057,7 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=cs,a.
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${hi("title",this.hass.language)}</div>
-          <div class="version">${"v2024.3.2"}</div>
+          <div class="version">${"v2024.4.0"}</div>
         </div>
 
         <ha-tabs

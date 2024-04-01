@@ -333,11 +333,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         the_mapping = this.mappings.filter((o) => o.id === zone.mapping)[0];
         if (the_mapping != undefined) {
           if (the_mapping.data_last_updated != undefined) {
-            mapping_last_updated = moment(the_mapping.data_last_updated).format(
-              "YYYY-MM-DD HH:mm:ss"
-            );
+            zone.last_updated = the_mapping.data_last_updated;
             if (the_mapping.data != undefined) {
-              mapping_number_of_datapoints = the_mapping.data.length;
+              zone.number_of_data_points = the_mapping.data.length;
             }
           }
         }
@@ -361,7 +359,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 "panels.zones.labels.data-last-updated",
                 this.hass.language
               )}:
-              ${mapping_last_updated}</label
+              ${zone.last_updated
+        ? moment(zone.last_updated).format("YYYY-MM-DD HH:mm:ss")
+            : "-"}</label
             >
           </div>
           <div class="card-content">
@@ -370,7 +370,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 "panels.zones.labels.data-number-of-data-points",
                 this.hass.language
               )}:
-              ${mapping_number_of_datapoints}</label
+              ${zone.number_of_data_points}</label
             >
           </div>
           <div class="card-content">

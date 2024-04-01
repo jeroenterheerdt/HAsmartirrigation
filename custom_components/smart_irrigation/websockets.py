@@ -61,11 +61,9 @@ class SmartIrrigationConfigView(HomeAssistantView):
                 vol.Optional(const.CONF_AUTO_UPDATE_INTERVAL): cv.string,
                 vol.Optional(const.CONF_AUTO_CLEAR_ENABLED): cv.boolean,
                 vol.Optional(const.CONF_CLEAR_TIME): cv.string,
-
             }
         )
     )
-
     async def post(self, request, data):
         """Handle config update request."""
         hass = request.app["hass"]
@@ -109,6 +107,7 @@ class SmartIrrigationAllModuleView(HomeAssistantView):
     url = "/api/" + const.DOMAIN + "/allmodules"
     name = "api:" + const.DOMAIN + ":allmodules"
 
+
 class SmartIrrigationMappingView(HomeAssistantView):
     url = "/api/" + const.DOMAIN + "/mappings"
     name = "api:" + const.DOMAIN + ":mapping"
@@ -121,7 +120,9 @@ class SmartIrrigationMappingView(HomeAssistantView):
                 vol.Optional(const.MAPPING_MAPPINGS): vol.Coerce(dict),
                 vol.Optional(const.ATTR_REMOVE): cv.boolean,
                 vol.Optional(const.MAPPING_DATA): vol.Coerce(list),
-                vol.Optional(const.MAPPING_DATA_LAST_UPDATED): vol.Or(None, str, datetime.datetime),
+                vol.Optional(const.MAPPING_DATA_LAST_UPDATED): vol.Or(
+                    None, str, datetime.datetime
+                ),
             }
         )
     )
@@ -137,6 +138,7 @@ class SmartIrrigationMappingView(HomeAssistantView):
         await coordinator.async_update_mapping_config(mapping, data)
         async_dispatcher_send(hass, const.DOMAIN + "_update_frontend")
         return self.json({"success": True})
+
 
 class SmartIrrigationZoneView(HomeAssistantView):
     url = "/api/" + const.DOMAIN + "/zones"
@@ -154,7 +156,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
                 vol.Optional(const.ZONE_BUCKET): vol.Or(float, int, str, None),
                 vol.Optional(const.ZONE_OLD_BUCKET): vol.Or(float, int, str, None),
                 vol.Optional(const.ZONE_DELTA): vol.Or(float, int, str, None),
-                vol.Optional(const.ZONE_MODULE): vol.Or(int,str,None),
+                vol.Optional(const.ZONE_MODULE): vol.Or(int, str, None),
                 vol.Optional(const.ATTR_REMOVE): cv.boolean,
                 vol.Optional(const.ATTR_CALCULATE): cv.boolean,
                 vol.Optional(const.ATTR_CALCULATE_ALL): cv.boolean,
@@ -164,11 +166,17 @@ class SmartIrrigationZoneView(HomeAssistantView):
                 vol.Optional(const.ATTR_OVERRIDE_CACHE): cv.boolean,
                 vol.Optional(const.ZONE_EXPLANATION): vol.Coerce(str),
                 vol.Optional(const.ZONE_MULTIPLIER): vol.Coerce(float),
-                vol.Optional(const.ZONE_MAPPING): vol.Or(int,str,None),
+                vol.Optional(const.ZONE_MAPPING): vol.Or(int, str, None),
                 vol.Optional(const.ZONE_LEAD_TIME): vol.Coerce(float),
                 vol.Optional(const.ZONE_MAXIMUM_DURATION): vol.Coerce(float),
                 vol.Optional(const.ZONE_MAXIMUM_BUCKET): vol.Or(float, int, None),
-                vol.Optional(const.ZONE_LAST_CALCULATED): vol.Or(None, str, datetime.datetime),
+                vol.Optional(const.ZONE_LAST_CALCULATED): vol.Or(
+                    None, str, datetime.datetime
+                ),
+                vol.Optional(const.ZONE_LAST_UPDATED): vol.Or(
+                    None, str, datetime.datetime
+                ),
+                vol.Optional(const.ZONE_NUMBER_OF_DATA_POINTS): vol.Or(int, None),
                 vol.Optional(const.ATTR_CLEAR_ALL_WEATHERDATA): cv.boolean,
             }
         )
@@ -186,6 +194,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
         async_dispatcher_send(hass, const.DOMAIN + "_update_frontend")
         return self.json({"success": True})
 
+
 @callback
 def websocket_get_config(hass, connection, msg):
     """Publish config data."""
@@ -201,12 +210,14 @@ def websocket_get_zones(hass, connection, msg):
     zones = coordinator.store.async_get_zones()
     connection.send_result(msg["id"], zones)
 
+
 @callback
 def websocket_get_modules(hass, connection, msg):
     """Publish module data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
     modules = coordinator.store.async_get_modules()
     connection.send_result(msg["id"], modules)
+
 
 @callback
 def websocket_get_all_modules(hass, connection, msg):
@@ -215,12 +226,14 @@ def websocket_get_all_modules(hass, connection, msg):
     modules = coordinator.async_get_all_modules()
     connection.send_result(msg["id"], modules)
 
+
 @callback
 def websocket_get_mappings(hass, connection, msg):
     """Publish mapping data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
     mappings = coordinator.store.async_get_mappings()
     connection.send_result(msg["id"], mappings)
+
 
 async def async_register_websockets(hass):
     hass.http.register_view(SmartIrrigationConfigView)

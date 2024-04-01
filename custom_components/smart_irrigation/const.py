@@ -1,7 +1,7 @@
 """Store constants."""
 
 
-VERSION = "v2024.3.2"
+VERSION = "v2024.4.0"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -9,7 +9,7 @@ DOMAIN = "smart_irrigation"
 CUSTOM_COMPONENTS = "custom_components"
 
 LANGUAGE_FILES_DIR = "translations"
-SUPPORTED_LANGUAGES = ["de","en","es","fr","it","nl","no", "sk"]
+SUPPORTED_LANGUAGES = ["de", "en", "es", "fr", "it", "nl", "no", "sk"]
 
 START_EVENT_FIRED_TODAY = "starteventfiredtoday"
 
@@ -30,9 +30,9 @@ CONF_REFERENCE_ET_10 = "reference_evapotranspiration_10"
 CONF_REFERENCE_ET_11 = "reference_evapotranspiration_11"
 CONF_REFERENCE_ET_12 = "reference_evapotranspiration_12"
 CONF_DEFAULT_REFERENCE_ET = 0.0
-#V1 only, no longer used in V2
-#CONF_MAXIMUM_ET = "maximum_et"
-#DEFAULT_MAXIMUM_ET = 0
+# V1 only, no longer used in V2
+# CONF_MAXIMUM_ET = "maximum_et"
+# DEFAULT_MAXIMUM_ET = 0
 
 CONF_DEFAULT_USE_OWM = False
 CONF_CALC_TIME = "calctime"
@@ -44,7 +44,7 @@ CONF_AUTO_UPDATE_SCHEDULE = "autoupdateschedule"
 CONF_AUTO_UPDATE_MINUTELY = "minutes"
 CONF_AUTO_UPDATE_HOURLY = "hours"
 CONF_AUTO_UPDATE_DAILY = "days"
-CONF_DEFAULT_AUTO_UPDATE_SCHEDULE=CONF_AUTO_UPDATE_HOURLY
+CONF_DEFAULT_AUTO_UPDATE_SCHEDULE = CONF_AUTO_UPDATE_HOURLY
 CONF_DEFAULT_AUTO_UPDATED_ENABLED = True
 CONF_AUTO_UPDATE_DELAY = "autoupdatedelay"
 CONF_DEFAULT_AUTO_UPDATE_DELAY = "0"
@@ -58,8 +58,10 @@ CONF_UNITS = "units"
 CONF_IMPERIAL = "imperial"
 CONF_METRIC = "metric"
 CONF_USE_OWM = "use_owm"
-CONF_DEFAULT_MAXIMUM_DURATION = 3600 #default maximum duration to one hour == 3600 seconds
-CONF_DEFAULT_MAXIMUM_BUCKET = 50 #default maximum bucket of 50
+CONF_DEFAULT_MAXIMUM_DURATION = (
+    3600  # default maximum duration to one hour == 3600 seconds
+)
+CONF_DEFAULT_MAXIMUM_BUCKET = 50  # default maximum bucket of 50
 
 CUSTOM_COMPONENTS = "custom_components"
 INTEGRATION_FOLDER = DOMAIN
@@ -103,6 +105,8 @@ ZONE_LEAD_TIME = "lead_time"
 ZONE_MAXIMUM_DURATION = "maximum_duration"
 ZONE_MAXIMUM_BUCKET = "maximum_bucket"
 ZONE_LAST_CALCULATED = "last_calculated"
+ZONE_LAST_UPDATED = "last_updated"
+ZONE_NUMBER_OF_DATA_POINTS = "number_of_data_points"
 
 MODULE_DIR = "calcmodules"
 MODULE_ID = "id"
@@ -156,17 +160,17 @@ MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION = MAPPING_CONF_AGGREGATE_MA
 MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP = MAPPING_CONF_AGGREGATE_MAXIMUM
 MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP = MAPPING_CONF_AGGREGATE_MINIMUM
 MAPPING_CONF_AGGREGATE_OPTIONS = [
-  MAPPING_CONF_AGGREGATE_AVERAGE,
-  MAPPING_CONF_AGGREGATE_FIRST,
-  MAPPING_CONF_AGGREGATE_LAST,
-  MAPPING_CONF_AGGREGATE_MAXIMUM,
-  MAPPING_CONF_AGGREGATE_MEDIAN,
-  MAPPING_CONF_AGGREGATE_MINIMUM,
-  MAPPING_CONF_AGGREGATE_SUM,
+    MAPPING_CONF_AGGREGATE_AVERAGE,
+    MAPPING_CONF_AGGREGATE_FIRST,
+    MAPPING_CONF_AGGREGATE_LAST,
+    MAPPING_CONF_AGGREGATE_MAXIMUM,
+    MAPPING_CONF_AGGREGATE_MEDIAN,
+    MAPPING_CONF_AGGREGATE_MINIMUM,
+    MAPPING_CONF_AGGREGATE_SUM,
 ]
 
-#For timestamps
-RETRIEVED_AT = "retrieved" #on weatherdata
+# For timestamps
+RETRIEVED_AT = "retrieved"  # on weatherdata
 
 EVENT_IRRIGATE_START = "start_irrigation_all_zones"
 
@@ -194,37 +198,37 @@ UNIT_MJ_DAY_M2 = "MJ/day/m2"
 UNIT_MJ_DAY_SQFT = "MJ/day/sq ft"
 
 # METRIC TO IMPERIAL (US) FACTORS
-MM_TO_INCH_FACTOR = 0.03937008 #mm * factor = inch
-LITER_TO_GALLON_FACTOR = 0.26417205 #l * factor = gal
-M2_TO_SQ_FT_FACTOR = 10.7639104 #m2 * factor = sq ft
-M_TO_FT_FACTOR = 3.2808399 #m * factor = ft
-MBAR_TO_PSI_FACTOR = 0.01450377 #mbar = hpa * factor = psi
-MBAR_TO_INHG_FACTOR = 0.029529983071445 #mbar = hpa * factor = inhg
-KMH_TO_MILESH_FACTOR = 0.62137119 #kmh * factor = mph
-MS_TO_MILESH_FACTOR =2.23693629 #ms * factor = mph
-W_M2_TO_W_SQ_FT_FACTOR = 0.09290304 #w/m2 * factor = w/sqft
+MM_TO_INCH_FACTOR = 0.03937008  # mm * factor = inch
+LITER_TO_GALLON_FACTOR = 0.26417205  # l * factor = gal
+M2_TO_SQ_FT_FACTOR = 10.7639104  # m2 * factor = sq ft
+M_TO_FT_FACTOR = 3.2808399  # m * factor = ft
+MBAR_TO_PSI_FACTOR = 0.01450377  # mbar = hpa * factor = psi
+MBAR_TO_INHG_FACTOR = 0.029529983071445  # mbar = hpa * factor = inhg
+KMH_TO_MILESH_FACTOR = 0.62137119  # kmh * factor = mph
+MS_TO_MILESH_FACTOR = 2.23693629  # ms * factor = mph
+W_M2_TO_W_SQ_FT_FACTOR = 0.09290304  # w/m2 * factor = w/sqft
 
 # IMPERIAL (US) TO METRIC FACTORS
-INCH_TO_MM_FACTOR = 25.4 # inch * factor = mm
-GALLON_TO_LITER_FACTOR = 3.78541178 # gal * factor = l
-SQ_FT_TO_M2_FACTOR = 0.0929030401442212 #sq ft * factor = m2
-MILESH_TO_MS_FACTOR = 0.4470400004105615 #m/h * factor = ms
-MILESH_TO_KMH_FACTOR = 1.609344 #m/h * factor = kmh
-PSI_TO_HPA_FACTOR = 68.9475729 #psi * factor = hpa = mbar
-INHG_TO_HPA_FACTOR = 33.8639 #inhg * factor = hpa = mbar
-W_SQ_FT_TO_W_M2_FACTOR = 10.76391042 #w/sqft * factor = w/m2
+INCH_TO_MM_FACTOR = 25.4  # inch * factor = mm
+GALLON_TO_LITER_FACTOR = 3.78541178  # gal * factor = l
+SQ_FT_TO_M2_FACTOR = 0.0929030401442212  # sq ft * factor = m2
+MILESH_TO_MS_FACTOR = 0.4470400004105615  # m/h * factor = ms
+MILESH_TO_KMH_FACTOR = 1.609344  # m/h * factor = kmh
+PSI_TO_HPA_FACTOR = 68.9475729  # psi * factor = hpa = mbar
+INHG_TO_HPA_FACTOR = 33.8639  # inhg * factor = hpa = mbar
+W_SQ_FT_TO_W_M2_FACTOR = 10.76391042  # w/sqft * factor = w/m2
 
-#OTHER FACTORS
-KMH_TO_MS_FACTOR = 0.0277777777777778 #kmh * factor = ms
-MS_TO_KMH_FACTOR = 3.6 #m/s * factor = kmh
-W_TO_MJ_DAY_FACTOR = 0.0864 #w * factor = mj/day, same for w/m2 to mj/day/m2
-K_TO_C_FACTOR = 273.15 # K-factor = C, C+factor=K
-INHG_TO_PSI_FACTOR = 0.49115420057253 #inhg * factor = PSI
-PSI_TO_INHG_FACTOR = 2.0360206576012 #psi * factor = inhg
+# OTHER FACTORS
+KMH_TO_MS_FACTOR = 0.0277777777777778  # kmh * factor = ms
+MS_TO_KMH_FACTOR = 3.6  # m/s * factor = kmh
+W_TO_MJ_DAY_FACTOR = 0.0864  # w * factor = mj/day, same for w/m2 to mj/day/m2
+K_TO_C_FACTOR = 273.15  # K-factor = C, C+factor=K
+INHG_TO_PSI_FACTOR = 0.49115420057253  # inhg * factor = PSI
+PSI_TO_INHG_FACTOR = 2.0360206576012  # psi * factor = inhg
 
 SENSOR_ICON = "mdi:sprinkler"
 
-#Services
+# Services
 SERVICE_CALCULATE_ALL_ZONES = "calculate_all_zones"
 SERVICE_CALCULATE_ZONE = "calculate_zone"
 SERVICE_UPDATE_ALL_ZONES = "update_all_zones"

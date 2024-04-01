@@ -1,4 +1,7 @@
+from datetime import datetime
 import logging
+from time import strftime, strptime
+from config.custom_components.smart_irrigation.helpers import convert_timestamp
 from homeassistant.components.sensor.const import SensorDeviceClass
 
 from homeassistant.config_entries import ConfigEntry
@@ -10,7 +13,7 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
-    async_dispatcher_send
+    async_dispatcher_send,
 )
 from homeassistant.util import slugify
 from homeassistant.components.sensor import (
@@ -21,6 +24,7 @@ from . import const
 from .localize import localize
 
 _LOGGER = logging.getLogger(__name__)
+
 
 def setup_platform(
     hass: HomeAssistant,
@@ -40,7 +44,9 @@ async def async_setup_entry(
     @callback
     def async_add_sensor_entity(config: dict):
         """Add each zone as Sensor entity."""
-        entity_id = "{}.{}".format(PLATFORM, const.DOMAIN+"_"+slugify(config["name"]))
+        entity_id = "{}.{}".format(
+            PLATFORM, const.DOMAIN + "_" + slugify(config["name"])
+        )
 
         sensor_entity = SmartIrrigationZoneEntity(
             hass=hass,
@@ -51,16 +57,19 @@ async def async_setup_entry(
             throughput=config["throughput"],
             state=config["state"],
             duration=config["duration"],
-            bucket=config["bucket"]
+            bucket=config["bucket"],
+            last_updated=config["last_updated"],
+            last_calculated=config["last_calculated"],
+            number_of_data_points=config["number_of_data_points"],
         )
 
         hass.data[const.DOMAIN]["zones"][config["id"]] = sensor_entity
         async_add_devices([sensor_entity])
 
     async_dispatcher_connect(
-        hass, const.DOMAIN+"_register_entity", async_add_sensor_entity
+        hass, const.DOMAIN + "_register_entity", async_add_sensor_entity
     )
-    async_dispatcher_send(hass, const.DOMAIN+"_platform_loaded")
+    async_dispatcher_send(hass, const.DOMAIN + "_platform_loaded")
 
     # register services if any here
 
@@ -76,11 +85,16 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         throughput: float,
         state: str,
         duration: int,
-        bucket : float,
-            ) -> None:
+        bucket: float,
+        last_updated: str,
+        last_calculated: str,
+        number_of_data_points: int,
+    ) -> None:
         """Initialize the sensor entity."""
         self._hass = hass
-        self.entity_id = generate_entity_id(entity_id_format="sensor.{}", name=entity_id.split(".")[1],hass=hass)
+        self.entity_id = generate_entity_id(
+            entity_id_format="sensor.{}", name=entity_id.split(".")[1], hass=hass
+        )
         self._id = id
         self._name = name
         self._size = size
@@ -88,9 +102,12 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         self._state = state
         self._duration = duration
         self._bucket = bucket
+        self._last_updated = last_updated
+        self._last_calculated = last_calculated
+        self._number_of_data_points = number_of_data_points
         async_dispatcher_connect(
-        hass, const.DOMAIN+"_config_updated", self.async_update_sensor_entity
-    )
+            hass, const.DOMAIN + "_config_updated", self.async_update_sensor_entity
+        )
 
     @callback
     def async_update_sensor_entity(self, id=None):
@@ -104,6 +121,9 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             self._state = zone["state"]
             self._duration = zone["duration"]
             self._bucket = zone["bucket"]
+            self._last_updated = zone["last_updated"]
+            self._last_calculated = zone["last_calculated"]
+            self._number_of_data_points = zone["number_of_data_points"]
             self.async_schedule_update_ha_state()
 
     @property
@@ -175,6 +195,15 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             localize("common.attributes.throughput", "en"): self._throughput,
             localize("common.attributes.state", "en"): self._state,
             localize("common.attributes.bucket", "en"): self._bucket,
+            localize("common.attributes.last_updated", "en"): convert_timestamp(
+                self._last_updated
+            ),
+            localize("common.attributes.last_calculated", "en"): convert_timestamp(
+                self._last_calculated
+            ),
+            localize(
+                "common.attributes.number_of_data_points", "en"
+            ): self._number_of_data_points,
         }
 
     async def async_added_to_hass(self):

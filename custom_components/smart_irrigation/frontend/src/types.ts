@@ -76,6 +76,8 @@ export class SmartIrrigationZone {
   maximum_duration?: number;
   maximum_bucket?: number;
   last_calculated?: Date;
+  last_updated?: Date;
+  number_of_data_points?: number;
 
   constructor(
     i: number,
