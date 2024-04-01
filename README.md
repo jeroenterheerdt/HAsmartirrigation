@@ -258,6 +258,10 @@ condition:
 
 [See more advanced examples in the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Automation-examples).
 
+## Showing attributes as separate sensors
+Not specific to this integration, but you can easily add template sensors for any attribute you'd like to see as separate sensor, such as the following example that creates a template sensor the `bucket` attribute of Zone 1:
+```{{state_attr('sensor.smart_irrigation_zone_1','bucket')}}```
+
 ## Example Behavior in a Week
 This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week) provides insight into how this integration should behave in certain weather conditions. With this you should be able to do a sanity check against your configuration and make sure everything is working correctly.
 
