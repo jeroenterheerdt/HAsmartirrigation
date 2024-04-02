@@ -2,3 +2,4 @@
 pytest
 pytest-cov
 pytest-homeassistant-custom-component
+pyyaml>=5.4 # not directly required, pinned by Snyk to avoid a vulnerability
