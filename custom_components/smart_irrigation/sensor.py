@@ -1,7 +1,5 @@
-from datetime import datetime
 import logging
-from time import strftime, strptime
-from config.custom_components.smart_irrigation.helpers import convert_timestamp
+
 from homeassistant.components.sensor.const import SensorDeviceClass
 
 from homeassistant.config_entries import ConfigEntry
@@ -22,6 +20,7 @@ from homeassistant.components.sensor import (
 
 from . import const
 from .localize import localize
+from .helpers import convert_timestamp
 
 _LOGGER = logging.getLogger(__name__)
 

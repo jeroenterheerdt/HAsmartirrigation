@@ -758,6 +758,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # else:
             #    precip = precip_from_sensor
             if m[const.MODULE_NAME] == "PyETO":
+                # pyeto expects pressure in hpa, solar radiation in mj/m2/day and wind speed in m/s
+
                 delta = modinst.calculate(
                     weather_data=weatherdata, forecast_data=forecastdata
                 )
@@ -1059,15 +1061,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                     the_map.get(const.MAPPING_CONF_SENSOR)
                                 ).state
                             )
-                            # make sure to store the val as metric
-                            # first check we are not in metric mode already.
-                            if not self.hass.config.units is METRIC_SYSTEM:
-                                val = convert_mapping_to_metric(
-                                    val,
-                                    key,
-                                    the_map.get(const.MAPPING_CONF_UNIT),
-                                    False,
-                                )
+                            # make sure to store the val as metric and do necessary conversions along the way
+                            val = convert_mapping_to_metric(
+                                val,
+                                key,
+                                the_map.get(const.MAPPING_CONF_UNIT),
+                                self.hass.config.units is METRIC_SYSTEM,
+                            )
                             # add val to sensor values
                             sensor_values[key] = val
                         except Exception as ex:
@@ -1147,6 +1147,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             sensor_values = None
             if const.MAPPING_DATA in mapping and mapping.get(const.MAPPING_DATA):
                 sensor_values = await self.apply_aggregates_to_mapping_data(mapping)
+            # do conversions for pressure/solar radiation/wind speed here based on units. data in sensor_values should already be in metric
+            # pressure is expected in hPa
+            # solar radiation is expected in MJ/m2/day
+            # windspeed is expected in m/s
+
             # precip_from_sensor = None
             # sol_rad_from_sensor = None
             # et_data = None
