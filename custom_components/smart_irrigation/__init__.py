@@ -147,13 +147,17 @@ async def options_update_listener(hass, config_entry):
     hass.data[const.DOMAIN][const.CONF_USE_OWM] = config_entry.options.get(
         const.CONF_USE_OWM
     )
-    if const.CONF_OWM_API_KEY in config_entry.options:
-        hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = config_entry.options.get(
-            const.CONF_OWM_API_KEY
-        ).strip()
-    hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = config_entry.options.get(
-        const.CONF_OWM_API_VERSION
-    )
+    if hass.data[const.DOMAIN][const.CONF_USE_OWM]:
+        if const.CONF_OWM_API_KEY in config_entry.options:
+            hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = config_entry.options.get(
+                const.CONF_OWM_API_KEY
+            ).strip()
+        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = config_entry.options.get(
+            const.CONF_OWM_API_VERSION
+        )
+    else:
+        hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = None
+        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = None
     await hass.config_entries.async_reload(config_entry.entry_id)
 
 
