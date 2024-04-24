@@ -510,6 +510,7 @@ class SmartIrrigationStorage:
             # apply maximum bucket value
             if (
                 ZONE_MAXIMUM_BUCKET in changes
+                and changes[ZONE_BUCKET] is not None
                 and changes[ZONE_BUCKET] > changes[ZONE_MAXIMUM_BUCKET]
             ):
                 changes[ZONE_BUCKET] = changes[ZONE_MAXIMUM_BUCKET]

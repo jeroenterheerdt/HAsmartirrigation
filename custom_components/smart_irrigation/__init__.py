@@ -947,19 +947,21 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "module.calculation.explanation.duration-after-maximum-duration-is",
                     self.hass.config.language,
                 ) + " {}</li>".format(round(duration))
-            duration = round(zone.get(const.ZONE_LEAD_TIME) + duration)
-            explanation += (
-                "<li>"
-                + localize(
-                    "module.calculation.explanation.lead-time-is-applied",
-                    self.hass.config.language,
+            # add the lead time but only if duration is > 0 at this point
+            if duration > 0.0:
+                duration = round(zone.get(const.ZONE_LEAD_TIME) + duration)
+                explanation += (
+                    "<li>"
+                    + localize(
+                        "module.calculation.explanation.lead-time-is-applied",
+                        self.hass.config.language,
+                    )
+                    + " {}, ".format(zone.get(const.ZONE_LEAD_TIME))
                 )
-                + " {}, ".format(zone.get(const.ZONE_LEAD_TIME))
-            )
-            explanation += localize(
-                "module.calculation.explanation.duration-after-lead-time-is",
-                self.hass.config.language,
-            ) + " {}</li></ol>".format(duration)
+                explanation += localize(
+                    "module.calculation.explanation.duration-after-lead-time-is",
+                    self.hass.config.language,
+                ) + " {}</li></ol>".format(duration)
         else:
             # no need to irrigate, set duration to 0
             duration = 0
@@ -1312,6 +1314,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 new_bucket_value = res[const.ZONE_MAXIMUM_BUCKET]
             data[const.ZONE_BUCKET] = new_bucket_value
             data.pop(const.ATTR_SET_BUCKET)
+
             self.store.async_update_zone(zone_id, data)
             async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
         elif const.ATTR_RESET_ALL_BUCKETS in data:
