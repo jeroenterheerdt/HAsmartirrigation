@@ -24,6 +24,7 @@ class SOLRAD_behavior(Enum):
     EstimateFromTemp="1"
     EstimateFromSunHours="2"
     DontEstimate="3"
+    EstimateFromSunHoursAndTemperature="4"
 
 CONF_COASTAL = "coastal"
 CONF_SOLRAD_BEHAVIOR = "solrad_behavior"
@@ -102,11 +103,18 @@ class PyETO(SmartIrrigationCalculationModule):
                 cs_radvar = cs_rad(self._elevation, et_radvar)
 
                 # if we need to calculate solar_radiation we need to override the value passed in.
-                if self._solrad_behavior is SOLRAD_behavior.EstimateFromSunHours or self._solrad_behavior is SOLRAD_behavior.EstimateFromTemp or sol_rad is None:
+                if self._solrad_behavior is not SOLRAD_behavior.DontEstimate or sol_rad is None:
                     if self._solrad_behavior is SOLRAD_behavior.EstimateFromTemp:
                         sol_rad = sol_rad_from_t(
                             et_radvar, cs_radvar, temp_c_min, temp_c_max, self._coastal
                         )
+                    elif self._solrad_behavior is SOLRAD_behavior.EstimateFromSunHoursAndTemperature:
+                        sol_rad = (sol_rad_from_t(
+                            et_radvar, cs_radvar, temp_c_min, temp_c_max, self._coastal
+                        )
+                        + sol_rad_from_sun_hours(
+                            daylight_hoursvar, 0.8 * daylight_hoursvar, et_radvar
+                        )) / 2
                     else:
                         # this is the default behavior for version < 0.0.50
                         sol_rad = sol_rad_from_sun_hours(

@@ -17,6 +17,7 @@
 ```diff
 - WARNING: upgrading from V1 (V0.0.X) to V2 (V2023.X.X)? Read the instructions below!
 ```
+
 | :warning: WARNING Are you upgrading from v0.0.X (aka V1) to V2023.X.X (aka V2)? |
 |:---------------------------|
 | Stop what you're doing and [capture your V1 configuration](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Migrating-from-version-1-(v0.0.X)-to-version-2-(202X.X.X)) _before_ installing V2. V2 is a complete overhaul of this integration and there is no upgrade path. This means that effectively you will have to start over. See the [Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Migrating-from-version-1-(v0.0.X)-to-version-2-(202X.X.X)) for instructions. We will not be able to recover your V1 configuration if you don't capture it before installing V2. |
@@ -24,7 +25,7 @@
 This integration calculates the time to run your irrigation system to compensate for moisture loss by [evapotranspiration](https://en.wikipedia.org/wiki/Evapotranspiration). Using this integration you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain, snow) and moisture loss caused by evapotranspiration and adjusts accordingly.
 If it rains or snows less than the amount of moisture lost, then irrigation is required. Otherwise, no irrigation is required.
 The integration can take into account weather forecasts for the coming days and also keeps track of the total moisture lost or added ('bucket')
-Multiple zones are supported with each zone having it own configuration and set up. 
+Multiple zones are supported with each zone having it own configuration and set up.
 
 By default, the integration keeps track of weather data during the day by collecting it hourly. Then, at 23:00 (11:00 PM) the required zone irrigation runtime is calculated based on the collected weather data. All of this is configurable for maximum flexibility.
 
@@ -46,7 +47,7 @@ Calculating durations is all the integration does, and this is on purpose to pro
 
 3. The difference between `precipitation` and `evapotranspiration` is the `netto precipitation`: negative values mean more moisture is lost than gets added by rain/snow, while positive values mean more moisture is added by rain/snow than what evaporates.
 
-4. Once a day (time is configurable) the `netto precipitation` is added/substracted from the `bucket,` which starts as empty. If the `bucket` is below zero, irrigation is required. 
+4. Once a day (time is configurable) the `netto precipitation` is added/substracted from the `bucket,` which starts as empty. If the `bucket` is below zero, irrigation is required.
 
 5. Irrigation should be run for `sensor.smart_irrigation_[zone_name]`, which is 0 if `bucket`  >=0. Afterwards, the `bucket` needs to be reset (using `reset_bucket`). It's up to the user of the integration to build the automation for this final step. See [Example automation](https://github.com/jeroenterheerdt/HAsmartirrigation#step-4-creating-automations)
 
@@ -67,6 +68,7 @@ You can use this integration in various modes:
 4. **Not Calculating**. Precipitation and evapotranspiration are not calculated but taken from a dedicated weather service or weather station.
 
 ## Getting the best Results
+
 In order to get the most accurate results using sensors is preferable either from your own weather station or from another, from example through [Weatherflow Smart Weather](https://github.com/briis/hass-weatherflow). If you have a weather station that provides evapotranspiration (ET) values, use that.  If you do not have access to a sensor that provides solar radiation, let this integration estimate it but use sensors for the other inputs. If you do have access to limited amount of sensors (say only temperature) use that and use Open Weather Map for the rest (mode 2). If you do not have access to any sensors at all use Open Weather Map (mode 1).
 
 Since this integration provides multiple configuration options it might get confusing about in which scenario what behavior can be expected and what input is required. In the table below we summarize the configuration modes, their accuracy, the required input and how daily run time is calculated. Keep in mind that run time is based on the netto precipitation (precipitation - evapotranspiration) and the bucket value for previous days.
@@ -102,6 +104,7 @@ After the integration has been installed, you will find a new panel named 'Smart
 #### GENERAL
 
 This page provides global settings.
+
 - Automatic duration calculation: If enabled, set the time of calculation (HH:MM). After automatic calculation has happened used weatherdata is deleted.
 - Automatic weather data update: If enabled, specify how often sensor update should happen (minutes, hours, days). Warning: weatherdata update time must be on or after calculation time!
 - Automatic  weather data pruning: If enabled configure time of pruning weather data. Use this to make sure that there is no left over weatherdata from previous days. Don't remove the weatherdata before you calculate and only use this option if you expect the automatic update to collect weatherdata after you calculated for the day. Ideally, you want to prune as late in the day as possible.
@@ -126,12 +129,12 @@ You can update and calculate all automatic zones.
 - Calculate irrigation duration for all zones. This will also delete weather data after calculation.
 
 **Per Zone Settings**
-You can change any value mentioned before. Additionally there are some more options. 
+You can change any value mentioned before. Additionally there are some more options.
 
 - Name: change the name of a zone
 - Size: change the size of a zone
 - Throughput: change the throughput of a zone
-- State: 
+- State:
   - 'Automatic': Automatic updating and calculation of that zone. Module and sensor group is mandatory.
   - 'Manual': Only manual updating and calculation of that zone. No module and sensor group is required.
   - 'Disabled': The zone is disabled. No updating and calculation of that zone. Module and sensor group is optional.
@@ -149,11 +152,11 @@ Below each zone there are some buttons to update with weather data, calculate ir
 
 Add one or more modules that calculate irrigation duration. Each module comes with its own configuration and can be used to calculate duration for one or more zones. The maximum days of the weather forecast can also be set. Modules can't be deleted if they are used by one or more zones.
 
-- PyETO: Calculate duration based on the FAO56 calculation from the PyETO library. 
+- PyETO: Calculate duration based on the FAO56 calculation from the PyETO library.
   - If you set PyETO to not estimate, it will look for a solar radiation sensor in the sensor group and will use that value. If there is none, it will use OWMs value (assuming you have OWM configured).
 If you let PyETO to estimate from temperature or sun hours, it will not ask OWM for a solar radiation value nor will it ask a sensor for a solar radiation value, even if you configured it in the sensor group.
   - Coastal: If the location you are tracking is situated on or adjacent to coast of a large land mass or anywhere else where air masses are influenced by a nearby water body, enable this setting.
-  - Solrad behaviour: Should solar radiation estimated from temperature or sun hours or disabled 
+  - Solrad behaviour: Should solar radiation estimated from temperature or sun hours or a average value of both or disabled.
   - Forecast days: How many forecast days taken into account
 - Static: static configurable netto precipitation.
   - Delta: netto precipitation
@@ -161,7 +164,7 @@ If you let PyETO to estimate from temperature or sun hours, it will not ask OWM 
 
 #### Sensor groups
 
-For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides. You can choose which aggregation to use like average, maximum, minimum etc.  If you use Open Weather Map, make sure your home zone coordinates are set correctly so the data is correct. This is especially true if you set the coordinates manually in the configuration.yaml. 
+For sensor configuration take care to make sure the unit the integration expects is the same as your sensor provides. You can choose which aggregation to use like average, maximum, minimum etc.  If you use Open Weather Map, make sure your home zone coordinates are set correctly so the data is correct. This is especially true if you set the coordinates manually in the configuration.yaml.
 
 If you are using your own barometric pressure sensor, enter either the absolute or relative barometric pressure. Absolute barometric pressure is the actual pressure measured at your location and relative barometric pressure is the pressure calculated at sea level. Make this clear in the selection box.
 
@@ -230,9 +233,10 @@ Since this integration does not interface with your irrigation system directly, 
 > **The last step in any automation is very important, since you will need to let the integration know you have finished irrigating and the evaporation counter can be reset by calling the `smart_irrigation.reset_bucket` service**
 
 #### Example Automation 1: one valve, potentially daily irrigation
+
 Here is an example automation that runs when the `smart_irrigation_start_irrigation_all_zones` event is fired. It checks if `sensor.smart_irrigation_[zone_name]` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_[zone_name]` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service. If you have multiple instances you will need to adjust the event, entities and service names accordingly.
 
-```
+```yaml
 - alias: Smart Irrigation
   description: 'Start Smart Irrigation based on event and run it only if the `sensor.smart_irrigation_[zone_name]` is >0 and run it for precisely that many seconds'
 trigger:
@@ -259,10 +263,12 @@ condition:
 [See more advanced examples in the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Automation-examples).
 
 ## Showing attributes as separate sensors
+
 Not specific to this integration, but you can easily add template sensors for any attribute you'd like to see as separate sensor, such as the following example that creates a template sensor the `bucket` attribute of Zone 1:
 ```{{state_attr('sensor.smart_irrigation_zone_1','bucket')}}```
 
 ## Example Behavior in a Week
+
 This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week) provides insight into how this integration should behave in certain weather conditions. With this you should be able to do a sanity check against your configuration and make sure everything is working correctly.
 
 ## How this works
@@ -271,4 +277,4 @@ This [Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Examp
 
 ## Getting Open Weather Map API Key
 
-Go to https://openweathermap.org and create an account. You can enter any company and purpose while creating an account. After creating your account, You will need to sign up for the paid (but free for limited API calls) OneCall API 3.0 plan if you do not have a key already. Make sure to enter credit card information to get the API truly activated. Then, go to API Keys and get your key. If the key does not work right away, no worries. The email you should have received from OpenWeaterMap says it will be activated 'within the next couple of hours'. So if it does not work right away, be patient a bit.  You can use a key for the 3.0 and 2.5 version of the API. If you are worried about the cost of the API, You can put a rate limit below the paid threshold in the "Billing plans" page of your profile.
+Go to [OpenWeatherMap](https://openweathermap.org) and create an account. You can enter any company and purpose while creating an account. After creating your account, You will need to sign up for the paid (but free for limited API calls) OneCall API 3.0 plan if you do not have a key already. Make sure to enter credit card information to get the API truly activated. Then, go to API Keys and get your key. If the key does not work right away, no worries. The email you should have received from OpenWeaterMap says it will be activated 'within the next couple of hours'. So if it does not work right away, be patient a bit.  You can use a key for the 3.0 and 2.5 version of the API. If you are worried about the cost of the API, You can put a rate limit below the paid threshold in the "Billing plans" page of your profile.
