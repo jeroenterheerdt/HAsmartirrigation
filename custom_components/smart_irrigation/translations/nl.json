@@ -20,7 +20,7 @@
         "title": "Open Weather Map API configuratie",
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigationn",
         "data": {
-          "owm_api_key": "API sleutel voor Open Weather Map",
+          "owm_api_key": "API sleutel voor Open Weather Map voor versie 3.0",
           "owm_api_version": "Open Weather Map API versie (kies 3.0 voor nieuwe installaties)"
         }
       }
@@ -40,9 +40,9 @@
       },
       "step1": {
         "title": "Open Weather Map API configuratie",
-        "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigationn",
+        "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "owm_api_key": "API sleutel voor Open Weather Map",
+          "owm_api_key": "API sleutel voor Open Weather Map (versie 3.0)",
           "owm_api_version": "Open Weather Map API versie (kies 3.0 voor nieuwe installaties)"
         }
       }

@@ -1057,7 +1057,7 @@ a.version="2.29.4",i(Wa),a.fn=us,a.min=Xa,a.max=Ja,a.now=Qa,a.utc=p,a.unix=cs,a.
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${hi("title",this.hass.language)}</div>
-          <div class="version">${"v2024.4.4"}</div>
+          <div class="version">${"v2024.4.5"}</div>
         </div>
 
         <ha-tabs

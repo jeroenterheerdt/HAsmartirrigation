@@ -20,7 +20,7 @@
         "title": "Otvorte nastavenie rozhrania Weather Map API",
         "description": "Ak potrebujete pomoc s konfiguráciou, pozrite si https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "owm_api_key": "API kľúč pre Open Weather Map",
+          "owm_api_key": "API kľúč pre Open Weather Map (3.0)",
           "owm_api_version": "Otvorte verziu rozhrania Weather Map API (pre nové konfigurácie vyberte 3.0)"
         }
       }
@@ -42,7 +42,7 @@
         "title": "Otvorte nastavenie rozhrania Weather Map API",
         "description": "Ak potrebujete pomoc s konfiguráciou, pozrite si https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "owm_api_key": "API kľúč pre Open Weather Map",
+          "owm_api_key": "API kľúč pre Open Weather Map (3.0)",
           "owm_api_version": "Otvorte verziu rozhrania Weather Map API (pre nové konfigurácie vyberte 3.0)"
         }
       }

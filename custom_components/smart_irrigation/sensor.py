@@ -61,9 +61,9 @@ async def async_setup_entry(
             last_calculated=config["last_calculated"],
             number_of_data_points=config["number_of_data_points"],
         )
-
-        hass.data[const.DOMAIN]["zones"][config["id"]] = sensor_entity
-        async_add_devices([sensor_entity])
+        if const.DOMAIN in hass.data:
+            hass.data[const.DOMAIN]["zones"][config["id"]] = sensor_entity
+            async_add_devices([sensor_entity])
 
     async_dispatcher_connect(
         hass, const.DOMAIN + "_register_entity", async_add_sensor_entity

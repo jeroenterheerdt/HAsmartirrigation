@@ -20,7 +20,7 @@
         "title": "Impostazioni API Open Weather Map",
         "description": "Se hai bisogno di aiuto con la configurazione, dai un'occhiata qui https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "owm_api_key": "Chiave API per Open Weather Map",
+          "owm_api_key": "Chiave API per Open Weather Map (3.0)",
           "owm_api_version": "Apri la versione API Weather Map (seleziona 3.0 per nuove configurazioni)"
         }
       }
@@ -42,7 +42,7 @@
         "title": "Apri la configurazione dell'API Weather Map",
         "description": "Se hai bisogno di aiuto con la configurazione, consulta https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "owm_api_key": "Chiave API per Open Weather Map",
+          "owm_api_key": "Chiave API per Open Weather Map (3.0)",
           "owm_api_version": "Apri la versione API Weather Map (seleziona 3.0 per nuove configurazioni)"
         }
       }
@@ -84,7 +84,7 @@
         "maximum-bucket-is": "la dimensione massima del secchio è"
       }
     }
-},
+  },
   "calcmodules": {
     "pyeto": {
       "description": "Calcola la durata in base al calcolo FAO56 dalla libreria PyETO"

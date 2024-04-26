@@ -98,6 +98,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             const.CONF_OWM_API_VERSION
         )
 
+    # check if API version is 2.5, force it to be 3.0. API keys should still be valid.
+    if hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] == "2.5":
+        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = "3.0"
     coordinator = SmartIrrigationCoordinator(hass, session, entry, store)
 
     device_registry = dr.async_get(hass)
@@ -144,21 +147,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 async def options_update_listener(hass, config_entry):
     """Handle options update."""
     # copy the api key and version to the hass data
-    hass.data[const.DOMAIN][const.CONF_USE_OWM] = config_entry.options.get(
-        const.CONF_USE_OWM
-    )
-    if hass.data[const.DOMAIN][const.CONF_USE_OWM]:
-        if const.CONF_OWM_API_KEY in config_entry.options:
-            hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = config_entry.options.get(
-                const.CONF_OWM_API_KEY
-            ).strip()
-        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = config_entry.options.get(
-            const.CONF_OWM_API_VERSION
+    if const.DOMAIN in hass.data:
+        hass.data[const.DOMAIN][const.CONF_USE_OWM] = config_entry.options.get(
+            const.CONF_USE_OWM
         )
-    else:
-        hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = None
-        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = None
-    await hass.config_entries.async_reload(config_entry.entry_id)
+        if hass.data[const.DOMAIN][const.CONF_USE_OWM]:
+            if const.CONF_OWM_API_KEY in config_entry.options:
+                hass.data[const.DOMAIN][
+                    const.CONF_OWM_API_KEY
+                ] = config_entry.options.get(const.CONF_OWM_API_KEY).strip()
+            hass.data[const.DOMAIN][
+                const.CONF_OWM_API_VERSION
+            ] = config_entry.options.get(const.CONF_OWM_API_VERSION)
+        else:
+            hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = None
+            hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = None
+        await hass.config_entries.async_reload(config_entry.entry_id)
 
 
 async def async_unload_entry(hass, entry):
@@ -181,8 +185,9 @@ async def async_remove_entry(hass, entry):
     """Remove Smart Irrigation config entry."""
     async_unregister_panel(hass)
     if const.DOMAIN in hass.data:
-        coordinator = hass.data[const.DOMAIN]["coordinator"]
-        await coordinator.async_delete_config()
+        if "coordinator" in hass.data[const.DOMAIN]:
+            coordinator = hass.data[const.DOMAIN]["coordinator"]
+            await coordinator.async_delete_config()
         del hass.data[const.DOMAIN]
 
 

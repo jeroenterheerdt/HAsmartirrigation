@@ -6,7 +6,17 @@ import json
 import logging
 import math
 
-from .const import MAPPING_DEWPOINT, MAPPING_HUMIDITY, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_TEMPERATURE, MAPPING_WINDSPEED, RETRIEVED_AT
+from .const import (
+    MAPPING_DEWPOINT,
+    MAPPING_HUMIDITY,
+    MAPPING_MAX_TEMP,
+    MAPPING_MIN_TEMP,
+    MAPPING_PRECIPITATION,
+    MAPPING_PRESSURE,
+    MAPPING_TEMPERATURE,
+    MAPPING_WINDSPEED,
+    RETRIEVED_AT,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,38 +59,57 @@ OWM_validators = {
 class OWMClient:  # pylint: disable=invalid-name
     """Open Weather Map Client."""
 
-    def __init__(self,api_key, api_version, latitude, longitude, elevation, cache_seconds=0, override_cache = False):
+    def __init__(
+        self,
+        api_key,
+        api_version,
+        latitude,
+        longitude,
+        elevation,
+        cache_seconds=0,
+        override_cache=False,
+    ):
         """Init."""
-        self.api_key = api_key.strip().replace(" ","")
+        self.api_key = api_key.strip().replace(" ", "")
+        # This should only be 3.0 going forward because of OWM Sunsetting 2.5 API.
         self.api_version = api_version.strip()
         self.longitude = longitude
         self.latitude = latitude
         self.elevation = elevation
         self.url = OWM_URL.format(api_version, "metric", latitude, longitude, api_key)
-        #defaults to no cache
+        # defaults to no cache
         self.cache_seconds = cache_seconds
         self.override_cache = override_cache
-        #disabling cache for now
+        # disabling cache for now
         self.override_cache = True
-        self._last_time_called = datetime.datetime(1900,1,1,0,0,0)
+        self._last_time_called = datetime.datetime(1900, 1, 1, 0, 0, 0)
         self._cached_data = None
         self._cached_forecast_data = None
 
     def get_forecast_data(self):
         """Validate and return forecast data"""
-        if self._cached_forecast_data is None or self.override_cache or datetime.datetime.now() >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds):
+        if (
+            self._cached_forecast_data is None
+            or self.override_cache
+            or datetime.datetime.now()
+            >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds)
+        ):
             try:
-                req = requests.get(self.url,timeout=60) #60 seconds timeout
+                req = requests.get(self.url, timeout=60)  # 60 seconds timeout
                 doc = json.loads(req.text)
-                _LOGGER.debug("OWMClient get_forecast_data called API {} and received {}".format(self.url, doc))
+                _LOGGER.debug(
+                    "OWMClient get_forecast_data called API {} and received {}".format(
+                        self.url, doc
+                    )
+                )
                 if "cod" in doc:
                     if doc["cod"] != 200:
                         raise IOError("Cannot talk to OWM API, check API key.")
-                #parse out values from daily
+                # parse out values from daily
                 if "daily" in doc:
                     parsed_data_total = []
-                    #get the required values from daily.
-                    for x in range(1, len(doc["daily"])-1):
+                    # get the required values from daily.
+                    for x in range(1, len(doc["daily"]) - 1):
                         data = doc["daily"][x]
                         parsed_data = {}
                         for k in OWM_required_keys:
@@ -88,7 +117,11 @@ class OWMClient:  # pylint: disable=invalid-name
                                 self.raiseIOError(k)
                             else:
                                 # check value
-                                if k not in [OWM_wind_speed_key_name, OWM_temp_key_name, OWM_pressure_key_name]:
+                                if k not in [
+                                    OWM_wind_speed_key_name,
+                                    OWM_temp_key_name,
+                                    OWM_pressure_key_name,
+                                ]:
                                     if (
                                         data[k] < OWM_validators[k]["min"]
                                         or data[k] > OWM_validators[k]["max"]
@@ -119,21 +152,29 @@ class OWMClient:  # pylint: disable=invalid-name
                                                 )
                                 elif k is OWM_wind_speed_key_name:
                                     # OWM reports wind speed at 10m height, so need to convert to 2m:
-                                    data[OWM_wind_speed_key_name] = data[OWM_wind_speed_key_name] * (4.87 / math.log((67.8 * 10) - 5.42))
+                                    data[OWM_wind_speed_key_name] = data[
+                                        OWM_wind_speed_key_name
+                                    ] * (4.87 / math.log((67.8 * 10) - 5.42))
                                 elif k is OWM_pressure_key_name:
-                                    #OWM provides relative pressure, replace it with estimated absolute pressure returning!
-                                    data[OWM_pressure_key_name] = self.relative_to_absolute_pressure(data[OWM_pressure_key_name], self.elevation)
+                                    # OWM provides relative pressure, replace it with estimated absolute pressure returning!
+                                    data[
+                                        OWM_pressure_key_name
+                                    ] = self.relative_to_absolute_pressure(
+                                        data[OWM_pressure_key_name], self.elevation
+                                    )
                         parsed_data[MAPPING_WINDSPEED] = data[OWM_wind_speed_key_name]
 
                         parsed_data[MAPPING_PRESSURE] = data[OWM_pressure_key_name]
 
                         parsed_data[MAPPING_HUMIDITY] = data[OWM_humidity_key_name]
-                        parsed_data[MAPPING_TEMPERATURE] = data[OWM_temp_key_name]['day']
-                        #also put in min/max here
-                        parsed_data[MAPPING_MAX_TEMP] = data[OWM_temp_key_name]['max']
-                        parsed_data[MAPPING_MIN_TEMP] = data[OWM_temp_key_name]['min']
+                        parsed_data[MAPPING_TEMPERATURE] = data[OWM_temp_key_name][
+                            "day"
+                        ]
+                        # also put in min/max here
+                        parsed_data[MAPPING_MAX_TEMP] = data[OWM_temp_key_name]["max"]
+                        parsed_data[MAPPING_MIN_TEMP] = data[OWM_temp_key_name]["min"]
                         parsed_data[MAPPING_DEWPOINT] = data[OWM_dew_point_key_name]
-                        #add precip from daily
+                        # add precip from daily
                         # if rain or snow are missing from the OWM data set them to 0
                         rain = 0.0
                         snow = 0.0
@@ -142,7 +183,7 @@ class OWMClient:  # pylint: disable=invalid-name
                             rain = float(data["rain"])
                         if "snow" in data:
                             snow = float(data["snow"])
-                        parsed_data[MAPPING_PRECIPITATION] = rain+snow
+                        parsed_data[MAPPING_PRECIPITATION] = rain + snow
                         parsed_data_total.append(parsed_data)
                     self._cached_forecast_data = parsed_data_total
                     self._last_time_called = datetime.datetime.now()
@@ -156,7 +197,7 @@ class OWMClient:  # pylint: disable=invalid-name
                 _LOGGER.warning(ex)
                 raise ex
         else:
-            #return cached_data
+            # return cached_data
             _LOGGER.info("Returning cached OWM forecastdata")
             return self._cached_forecast_data
 
@@ -179,25 +220,37 @@ class OWMClient:  # pylint: disable=invalid-name
 
     def get_data(self):
         """Validate and return data."""
-        if self._cached_data is None or self.override_cache or datetime.datetime.now() >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds):
+        if (
+            self._cached_data is None
+            or self.override_cache
+            or datetime.datetime.now()
+            >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds)
+        ):
             try:
-                req = requests.get(self.url,timeout=60) #60 seconds timeout
+                req = requests.get(self.url, timeout=60)  # 60 seconds timeout
                 doc = json.loads(req.text)
-                _LOGGER.debug("OWMClient get_data called API {} and received {}".format(self.url, doc))
+                _LOGGER.debug(
+                    "OWMClient get_data called API {} and received {}".format(
+                        self.url, doc
+                    )
+                )
                 if "cod" in doc:
                     if doc["cod"] != 200:
                         raise IOError("Cannot talk to OWM API, check API key.")
-                #parse out values for current and rain/snow from daily[0].
+                # parse out values for current and rain/snow from daily[0].
                 if "current" in doc and "daily" in doc:
                     parsed_data = {}
-                    #get the required values from current and daily.
+                    # get the required values from current and daily.
                     data = doc["current"]
                     for k in OWM_required_keys:
                         if k not in data:
                             self.raiseIOError(k)
                         else:
                             # check value
-                            if k not in [OWM_wind_speed_key_name, OWM_pressure_key_name]:
+                            if k not in [
+                                OWM_wind_speed_key_name,
+                                OWM_pressure_key_name,
+                            ]:
                                 if (
                                     data[k] < OWM_validators[k]["min"]
                                     or data[k] > OWM_validators[k]["max"]
@@ -210,22 +263,28 @@ class OWMClient:  # pylint: disable=invalid-name
                                     )
                             elif k is OWM_wind_speed_key_name:
                                 # OWM reports wind speed at 10m height, so need to convert to 2m:
-                                data[OWM_wind_speed_key_name] = data[OWM_wind_speed_key_name] * (4.87 / math.log((67.8 * 10) - 5.42))
+                                data[OWM_wind_speed_key_name] = data[
+                                    OWM_wind_speed_key_name
+                                ] * (4.87 / math.log((67.8 * 10) - 5.42))
                             elif k is OWM_pressure_key_name:
-                                    #OWM provides relative pressure, replace it with estimated absolute pressure returning!
-                                    data[OWM_pressure_key_name] = self.relative_to_absolute_pressure(data[OWM_pressure_key_name], self.elevation)
+                                # OWM provides relative pressure, replace it with estimated absolute pressure returning!
+                                data[
+                                    OWM_pressure_key_name
+                                ] = self.relative_to_absolute_pressure(
+                                    data[OWM_pressure_key_name], self.elevation
+                                )
                     parsed_data[MAPPING_WINDSPEED] = data[OWM_wind_speed_key_name]
                     parsed_data[MAPPING_PRESSURE] = data[OWM_pressure_key_name]
                     parsed_data[MAPPING_HUMIDITY] = data[OWM_humidity_key_name]
                     parsed_data[MAPPING_TEMPERATURE] = data[OWM_temp_key_name]
                     parsed_data[MAPPING_DEWPOINT] = data[OWM_dew_point_key_name]
 
-                    #NOT used: also put in min/max here as just the current temp
-                    #removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
-                    #parsed_data[MAPPING_MAX_TEMP] = data[OWM_temp_key_name]
-                    #parsed_data[MAPPING_MIN_TEMP] = data[OWM_temp_key_name]
+                    # NOT used: also put in min/max here as just the current temp
+                    # removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
+                    # parsed_data[MAPPING_MAX_TEMP] = data[OWM_temp_key_name]
+                    # parsed_data[MAPPING_MIN_TEMP] = data[OWM_temp_key_name]
 
-                    #add precip from daily
+                    # add precip from daily
                     dailydata = doc["daily"][0]
                     if dailydata is not None:
                         # if rain or snow are missing from the OWM data set them to 0
@@ -235,16 +294,20 @@ class OWMClient:  # pylint: disable=invalid-name
                             rain = float(dailydata["rain"])
                         if "snow" in dailydata:
                             snow = float(dailydata["snow"])
-                        parsed_data[MAPPING_PRECIPITATION] = rain+snow
+                        parsed_data[MAPPING_PRECIPITATION] = rain + snow
                         _LOGGER.debug("OWMCLIENT daily rain: {}".format(rain))
 
-                        #get max temp and min temp and store
-                        #removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
-                        #parsed_data[MAPPING_MIN_TEMP] = dailydata[OWM_temp_key_name]["min"]
-                        #parsed_data[MAPPING_MAX_TEMP] = dailydata[OWM_temp_key_name]["max"]
+                        # get max temp and min temp and store
+                        # removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
+                        # parsed_data[MAPPING_MIN_TEMP] = dailydata[OWM_temp_key_name]["min"]
+                        # parsed_data[MAPPING_MAX_TEMP] = dailydata[OWM_temp_key_name]["max"]
                     else:
                         parsed_data[MAPPING_PRECIPITATION] = 0.0
-                    _LOGGER.debug("OWMCLIENT daily precipitation: {}".format(parsed_data[MAPPING_PRECIPITATION]))
+                    _LOGGER.debug(
+                        "OWMCLIENT daily precipitation: {}".format(
+                            parsed_data[MAPPING_PRECIPITATION]
+                        )
+                    )
 
                     self._cached_data = parsed_data
                     self._last_time_called = datetime.datetime.now()
@@ -258,7 +321,7 @@ class OWMClient:  # pylint: disable=invalid-name
                 _LOGGER.warning(ex)
                 raise ex
         else:
-            #return cached_data
+            # return cached_data
             _LOGGER.info("Returning cached OWM data")
             return self._cached_data
 

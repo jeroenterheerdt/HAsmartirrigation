@@ -61,6 +61,9 @@ class SmartIrrigationConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             try:
                 # store values entered
                 self._owm_api_key = user_input[const.CONF_OWM_API_KEY].strip()
+                # v2024.4.5: removing handling of 2.5 API version of sunsetting by OWM in June 2024.
+                # self._owm_api_version = user_input[const.CONF_OWM_API_VERSION]
+                user_input[const.CONF_OWM_API_VERSION] = "3.0"
                 self._owm_api_version = user_input[const.CONF_OWM_API_VERSION]
                 user_input[const.CONF_USE_OWM] = self._use_owm
                 user_input[const.CONF_INSTANCE_NAME] = self._name
@@ -81,9 +84,9 @@ class SmartIrrigationConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(const.CONF_OWM_API_KEY): str,
-                    vol.Required(const.CONF_OWM_API_VERSION, default="3.0"): selector(
-                        {"select": {"options": ["2.5", "3.0"]}}
-                    ),
+                    # vol.Required(const.CONF_OWM_API_VERSION, default="3.0"): selector(
+                    #    {"select": {"options": ["2.5", "3.0"]}}
+                    # ),
                 }
             ),
             errors=self._errors,
