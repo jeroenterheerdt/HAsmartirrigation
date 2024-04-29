@@ -169,6 +169,8 @@ For sensor configuration take care to make sure the unit the integration expects
 
 If you are using your own barometric pressure sensor, enter either the absolute or relative barometric pressure. Absolute barometric pressure is the actual pressure measured at your location and relative barometric pressure is the pressure calculated at sea level. Make this clear in the selection box.
 
+Note that the humidity sensor mentioned is the air humidity / atmospheric humidity, _not_ soil humidity.
+
 #### HELP
 
 Read the [Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki), the [Discussions](https://github.com/jeroenterheerdt/HAsmartirrigation/discussions) and the [Home Assistant community](https://community.home-assistant.io/t/smart-irrigation-save-water-by-precisely-watering-your-lawn-garden/).
