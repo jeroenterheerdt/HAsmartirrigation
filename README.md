@@ -54,6 +54,7 @@ Calculating durations is all the integration does, and this is on purpose to pro
 There are many more options available, see below. To understand how `precipitation`, `netto precipitation`, the `bucket` and irrigation interact, see [example behavior on the Wiki](https://github.com/jeroenterheerdt/HAsmartirrigation/wiki/Example-behavior-in-a-week).
 
 Also available: [tutorial videos on Youtube](https://youtube.com/playlist?list=PLUHIAUPJHMiakbda92--fgb6A0hFReAo7&si=82Xc6mHoLDwFBfCP).
+Also some in [german](https://youtu.be/1AYLuIs7_Pw) by Tristan 
 
 ## Operation Modes
 
