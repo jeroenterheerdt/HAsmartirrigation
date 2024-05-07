@@ -53,7 +53,10 @@
       "size": "size",
       "throughput": "throughput",
       "state": "state",
-      "bucket": "secchio"
+      "bucket": "secchio",
+      "last_updated": "ultimo aggiornamento",
+      "last_calculated": "ultimo calcolo",
+      "number_of_data_points": "numero di punti dati"
     }
   },
   "defaults": {
@@ -94,6 +97,102 @@
     },
     "passthrough": {
       "description": "Modulo passthrough che restituisce il valore di un sensore di Evapotraspirazione sotto forma di delta"
+}
+  },
+  "services": {
+    "calculate_all_zones": {
+      "name": "Calcola tutte le zone",
+      "description": "Calcola tutte le zone in modalità automatica"
+    },
+    "calculate_zone": {
+      "name": "Calcola zona",
+      "description": "Calcola una zona specifica",
+      "fields": {
+        "entity": {
+          "name": "Entitità",
+          "description": "Zona da calcolare"
+        }
+      }
+    },
+    "update_all_zones": {
+      "name": "Aggiorna tutte le zone",
+      "description": "Aggiorna i dati meteo di tutte le zone in modo automatico"
+    },
+    "update_zone": {
+      "name": "Aggiorna zona",
+      "description": "Aggiorna i dati meteo di una zona specifica",
+      "fields": {
+        "entity": {
+          "name": "Entità",
+          "description": "Zona da aggiornare"
+        }
+      }
+    },
+    "set_bucket": {
+      "name": "Imposta secchio",
+      "description": "Imposta il secchio per una zona ad uno specifico valore",
+      "fields": {
+        "entity": {
+          "name": "Entità",
+          "description": "Secchio da impostare per la zona"
+        },
+        "new_bucket_value": {
+          "name": "Nuovo valore del secchio",
+          "description": "nuovo valore del secchio"
+        }
+      }
+    },
+    "set_all_buckets": {
+      "name": "Imposta tutti i secchi",
+      "description": "Imposta tutti i secchi per tutte le zona ad uno specifico valore",
+      "fields": {
+        "new_bucket_value": {
+          "name": "Nuovo valore secchio",
+          "description": "nuovo valore del secchio"
+        }
+      }
+    },
+    "reset_bucket": {
+      "name": "Reimposta secchio",
+      "description": "Reimposta il secchio per una zona a 0",
+      "fields": {
+        "entity": {
+          "name": "Entità",
+          "description": "Secchio da reimpostare per la zona"
+        }
+      }
+    },
+    "reset_all_buckets": {
+      "name": "Reimposta tutti i secchi",
+      "description": "Reimposta tutti i secchi per tutte le zone a 0"
+    },
+    "clear_all_weather_data": {
+      "name": "Cancella tutti i dati meteo",
+      "description": "Cancella tutti i dati meteo per tutte le zone"
+    },
+    "set_multiplier": {
+      "name": "Imposta moltiplicatore",
+      "description": "Imposta moltiplicatore per una zona ad uno specifico valore",
+      "fields": {
+        "entity": {
+          "name": "Entità",
+          "description": "Moltiplicatore da impostare per la zona"
+        },
+        "new_multiplier_value": {
+          "name": "Nuovo valore di moltiplicazione",
+          "description": "nuovo valore di moltiplicazione"
+        }
+      }
+    },
+    "set_all_multipliers": {
+      "name": "Imposta tutti i moltiplicatori",
+      "description": "Imposta i moltiplicatori per tutte le zone ad uno specifico valore",
+      "fields": {
+        "new_multiplier_value": {
+          "name": "Nuovo valore di moltiplicazione",
+          "description": "nuovo valore di moltiplicazione"
+        }
+      }
     }
   }
 }
