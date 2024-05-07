@@ -13,7 +13,7 @@
         "description": "Se hai bisogno di aiuto con la configurazione, dai un'occhiata qui https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Nome univoco per questa istanza",
-          "use_owm": "Usi Open Weather Map per i dati meteo? Disativva questo se vuoi utilizzare un'altra fonte, come ad esempio la tua stazione meteorologica soltanto. Lascia attivo se il tuo intento è di usare Open Weather Map per almeno una parte dei dati meteorologici."
+          "use_owm": "Usi Open Weather Map per i dati meteo? Disativa questo se vuoi utilizzare un'altra fonte, come ad esempio la tua stazione meteorologica soltanto. Lascia attivo se il tuo intento è di usare Open Weather Map per almeno una parte dei dati meteorologici."
         }
       },
       "step1": {
