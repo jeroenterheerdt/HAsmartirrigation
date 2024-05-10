@@ -93,14 +93,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         if const.CONF_OWM_API_KEY in entry.options:
             hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = entry.options.get(
                 const.CONF_OWM_API_KEY
-            ).strip()
-        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = entry.options.get(
-            const.CONF_OWM_API_VERSION
-        )
+            )
+            if hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] is not None:
+                hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = hass.data[
+                    const.DOMAIN
+                ][const.CONF_OWM_API_KEY].strip()
+        if const.CONF_OWM_API_VERSION in entry.options:
+            hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = entry.options.get(
+                const.CONF_OWM_API_VERSION
+            )
 
     # check if API version is 2.5, force it to be 3.0. API keys should still be valid.
-    if hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] == "2.5":
-        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = "3.0"
+    if const.CONF_OWM_API_VERSION in hass.data[const.DOMAIN]:
+        if hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] == "2.5":
+            hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = "3.0"
     coordinator = SmartIrrigationCoordinator(hass, session, entry, store)
 
     device_registry = dr.async_get(hass)
@@ -1426,7 +1432,55 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     @callback
     def async_get_all_modules(self):
         """Get all ModuleEntries"""
+        # disabling the use of loadModules here because of HA DEV warning ("Detected blocking call to import_module inside the event loop") and I don't know how to fix it
         res = []
+        """res.append(
+            {
+                "name": "PyETO",
+                "description": "Calculate duration based on the FAO56 calculation from the PyETO library.",
+                "config": {},
+                "schema": [
+                    {
+                        "type": "boolean",
+                        "name": "coastal",
+                        "optional": True,
+                        "default": False,
+                    },
+                    {
+                        "type": "select",
+                        "options": [...],
+                        "name": "solrad_behavior",
+                        "required": True,
+                        "default": {"name": "EstimateFromTemp", "value": "1"},
+                    },
+                    {
+                        "type": "integer",
+                        "name": "forecast_days",
+                        "required": True,
+                        "default": 0,
+                    },
+                ],
+            }
+        )
+        res.append(
+            {
+                "name": "Static",
+                "description": "'Dummy' module with a static configurable delta.",
+                "config": {},
+                "schema": [
+                    {"type": "float", "name": "delta", "required": True, "default": 0.0}
+                ],
+            }
+        )
+        res.append(
+            {
+                "name": "Passthrough",
+                "description": "Passthrough module that returns the value of an Evapotranspiration sensor as delta.",
+                "config": {},
+                "schema": [],
+            }
+        )"""
+
         mods = loadModules(const.MODULE_DIR)
         for mod in mods:
             m = getattr(mods[mod]["module"], mods[mod]["class"])
@@ -1439,7 +1493,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "schema": s.schema_serialized(),
                 }
             )
-
         return res
 
     async def async_remove_entity(self, zone_id: str):
