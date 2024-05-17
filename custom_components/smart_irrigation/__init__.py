@@ -238,7 +238,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         super().__init__(hass, _LOGGER, name=const.DOMAIN)
 
     @callback
-    def setup_SmartIrrigation_entities(self):
+    def setup_SmartIrrigation_entities(self):  # noqa: D102
         zones = self.store.async_get_zones()
         # self.store.async_get_modules()
         # self.store.async_get_config()
@@ -247,7 +247,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # self.async_create_zone(zone)
             async_dispatcher_send(self.hass, const.DOMAIN + "_register_entity", zone)
 
-    async def async_update_config(self, data):
+    async def async_update_config(self, data):  # noqa: D102
         # handle auto calc changes
         await self.set_up_auto_calc_time(data)
         # handle auto update changes, includings updating OWMClient cache settings
@@ -257,7 +257,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self.store.async_update_config(data)
         async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated")
 
-    async def set_up_auto_update_time(self, data):
+    async def set_up_auto_update_time(self, data):  # noqa: D102
         if data[const.CONF_AUTO_UPDATE_ENABLED]:
             # CONF_AUTO_UPDATE_SCHEDULE: minute, hour, day
             # CONF_AUTO_UPDATE_INTERVAL: X

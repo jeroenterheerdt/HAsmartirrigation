@@ -87,7 +87,7 @@ class OWMClient:  # pylint: disable=invalid-name
         self._cached_forecast_data = None
 
     def get_forecast_data(self):
-        """Validate and return forecast data"""
+        """Validate and return forecast data."""
         if (
             self._cached_forecast_data is None
             or self.override_cache
@@ -115,53 +115,49 @@ class OWMClient:  # pylint: disable=invalid-name
                         for k in OWM_required_keys:
                             if k not in data:
                                 self.raiseIOError(k)
-                            else:
-                                # check value
-                                if k not in [
-                                    OWM_wind_speed_key_name,
-                                    OWM_temp_key_name,
-                                    OWM_pressure_key_name,
-                                ]:
-                                    if (
-                                        data[k] < OWM_validators[k]["min"]
-                                        or data[k] > OWM_validators[k]["max"]
+                            elif k not in [
+                                OWM_wind_speed_key_name,
+                                OWM_temp_key_name,
+                                OWM_pressure_key_name,
+                            ]:
+                                if (
+                                    data[k] < OWM_validators[k]["min"]
+                                    or data[k] > OWM_validators[k]["max"]
+                                ):
+                                    self.validationError(
+                                        k,
+                                        data[k],
+                                        OWM_validators[k]["min"],
+                                        OWM_validators[k]["max"],
+                                    )
+                            elif k is OWM_temp_key_name:
+                                for kt in OWM_required_key_temp:
+                                    if kt not in data[OWM_temp_key_name]:
+                                        self.raiseIOError(kt)
+                                    elif (
+                                        data[OWM_temp_key_name][kt]
+                                        < OWM_validators["temp"]["min"]
+                                        or data[OWM_temp_key_name][kt]
+                                        > OWM_validators["temp"]["max"]
                                     ):
                                         self.validationError(
-                                            k,
-                                            data[k],
-                                            OWM_validators[k]["min"],
-                                            OWM_validators[k]["max"],
+                                            kt,
+                                            data[OWM_temp_key_name][kt],
+                                            OWM_validators["temp"]["min"],
+                                            OWM_validators["temp"]["max"],
                                         )
-                                elif k is OWM_temp_key_name:
-                                    for kt in OWM_required_key_temp:
-                                        if kt not in data[OWM_temp_key_name]:
-                                            self.raiseIOError(kt)
-                                        else:
-                                            # check value
-                                            if (
-                                                data[OWM_temp_key_name][kt]
-                                                < OWM_validators["temp"]["min"]
-                                                or data[OWM_temp_key_name][kt]
-                                                > OWM_validators["temp"]["max"]
-                                            ):
-                                                self.validationError(
-                                                    kt,
-                                                    data[OWM_temp_key_name][kt],
-                                                    OWM_validators["temp"]["min"],
-                                                    OWM_validators["temp"]["max"],
-                                                )
-                                elif k is OWM_wind_speed_key_name:
-                                    # OWM reports wind speed at 10m height, so need to convert to 2m:
-                                    data[OWM_wind_speed_key_name] = data[
-                                        OWM_wind_speed_key_name
-                                    ] * (4.87 / math.log((67.8 * 10) - 5.42))
-                                elif k is OWM_pressure_key_name:
-                                    # OWM provides relative pressure, replace it with estimated absolute pressure returning!
-                                    data[
-                                        OWM_pressure_key_name
-                                    ] = self.relative_to_absolute_pressure(
-                                        data[OWM_pressure_key_name], self.elevation
-                                    )
+                            elif k is OWM_wind_speed_key_name:
+                                # OWM reports wind speed at 10m height, so need to convert to 2m:
+                                data[OWM_wind_speed_key_name] = data[
+                                    OWM_wind_speed_key_name
+                                ] * (4.87 / math.log((67.8 * 10) - 5.42))
+                            elif k is OWM_pressure_key_name:
+                                # OWM provides relative pressure, replace it with estimated absolute pressure returning!
+                                data[
+                                    OWM_pressure_key_name
+                                ] = self.relative_to_absolute_pressure(
+                                    data[OWM_pressure_key_name], self.elevation
+                                )
                         parsed_data[MAPPING_WINDSPEED] = data[OWM_wind_speed_key_name]
 
                         parsed_data[MAPPING_PRESSURE] = data[OWM_pressure_key_name]
@@ -202,15 +198,12 @@ class OWMClient:  # pylint: disable=invalid-name
             return self._cached_forecast_data
 
     def relative_to_absolute_pressure(self, pressure, height):
-        """
-        Convert relative pressure to absolute pressure.
-        """
+        """Convert relative pressure to absolute pressure."""
         # Constants
         g = 9.80665  # m/s^2
         M = 0.0289644  # kg/mol
         R = 8.31447  # J/(mol*K)
         T0 = 288.15  # K
-        p0 = 101325  # Pa
 
         # Calculate temperature at given height
         temperature = T0 - (g * M * height) / (R * T0)
@@ -245,34 +238,32 @@ class OWMClient:  # pylint: disable=invalid-name
                     for k in OWM_required_keys:
                         if k not in data:
                             self.raiseIOError(k)
-                        else:
-                            # check value
-                            if k not in [
-                                OWM_wind_speed_key_name,
-                                OWM_pressure_key_name,
-                            ]:
-                                if (
-                                    data[k] < OWM_validators[k]["min"]
-                                    or data[k] > OWM_validators[k]["max"]
-                                ):
-                                    self.validationError(
-                                        k,
-                                        data[k],
-                                        OWM_validators[k]["min"],
-                                        OWM_validators[k]["max"],
-                                    )
-                            elif k is OWM_wind_speed_key_name:
-                                # OWM reports wind speed at 10m height, so need to convert to 2m:
-                                data[OWM_wind_speed_key_name] = data[
-                                    OWM_wind_speed_key_name
-                                ] * (4.87 / math.log((67.8 * 10) - 5.42))
-                            elif k is OWM_pressure_key_name:
-                                # OWM provides relative pressure, replace it with estimated absolute pressure returning!
-                                data[
-                                    OWM_pressure_key_name
-                                ] = self.relative_to_absolute_pressure(
-                                    data[OWM_pressure_key_name], self.elevation
+                        elif k not in [
+                            OWM_wind_speed_key_name,
+                            OWM_pressure_key_name,
+                        ]:
+                            if (
+                                data[k] < OWM_validators[k]["min"]
+                                or data[k] > OWM_validators[k]["max"]
+                            ):
+                                self.validationError(
+                                    k,
+                                    data[k],
+                                    OWM_validators[k]["min"],
+                                    OWM_validators[k]["max"],
                                 )
+                        elif k is OWM_wind_speed_key_name:
+                            # OWM reports wind speed at 10m height, so need to convert to 2m:
+                            data[OWM_wind_speed_key_name] = data[
+                                OWM_wind_speed_key_name
+                            ] * (4.87 / math.log((67.8 * 10) - 5.42))
+                        elif k is OWM_pressure_key_name:
+                            # OWM provides relative pressure, replace it with estimated absolute pressure returning!
+                            data[
+                                OWM_pressure_key_name
+                            ] = self.relative_to_absolute_pressure(
+                                data[OWM_pressure_key_name], self.elevation
+                            )
                     parsed_data[MAPPING_WINDSPEED] = data[OWM_wind_speed_key_name]
                     parsed_data[MAPPING_PRESSURE] = data[OWM_pressure_key_name]
                     parsed_data[MAPPING_HUMIDITY] = data[OWM_humidity_key_name]
@@ -326,11 +317,11 @@ class OWMClient:  # pylint: disable=invalid-name
             return self._cached_data
 
     def raiseIOError(self, key):
-        raise IOError("Missing required key {0} in OWM API return".format(key))
+        raise IOError("Missing required key {} in OWM API return".format(key))
 
     def validationError(self, key, value, minval, maxval):
         raise ValueError(
-            "Value {0} is not valid for {1}. Excepted range: {2}-{3}".format(
+            "Value {} is not valid for {}. Excepted range: {}-{}".format(
                 value, key, minval, maxval
             )
         )
