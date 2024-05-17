@@ -1,10 +1,11 @@
 """Client to talk to Open Weather Map API."""  # pylint: disable=invalid-name
 
 import datetime
-import requests
 import json
 import logging
 import math
+
+import requests
 
 from .const import (
     MAPPING_DEWPOINT,
@@ -15,7 +16,6 @@ from .const import (
     MAPPING_PRESSURE,
     MAPPING_TEMPERATURE,
     MAPPING_WINDSPEED,
-    RETRIEVED_AT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ class OWMClient:  # pylint: disable=invalid-name
         elevation,
         cache_seconds=0,
         override_cache=False,
-    ):
+    ) -> None:
         """Init."""
         self.api_key = api_key.strip().replace(" ", "")
         # This should only be 3.0 going forward because of OWM Sunsetting 2.5 API.

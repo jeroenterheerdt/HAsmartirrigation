@@ -1,8 +1,12 @@
 from datetime import datetime
-import os
-import sys
 import importlib
 import logging
+import os
+import sys
+
+from homeassistant import exceptions
+from homeassistant.core import HomeAssistant
+
 from .const import (
     CUSTOM_COMPONENTS,
     DOMAIN,
@@ -61,19 +65,13 @@ from .const import (
     W_SQ_FT_TO_W_M2_FACTOR,
     W_TO_MJ_DAY_FACTOR,
 )
-from homeassistant import exceptions
-
-from homeassistant.core import (
-    HomeAssistant,
-)
-
 from .OWMClient import OWMClient
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def friendly_name_for_entity_id(entity_id: str, hass: HomeAssistant):
-    """helper to get friendly name for entity"""
+    """Helper to get friendly name for entity."""
     state = hass.states.get(entity_id)
     if state and state.attributes.get("friendly_name"):
         return state.attributes["friendly_name"]
@@ -371,15 +369,12 @@ def check_reference_et(reference_et):
 
 
 def relative_to_absolute_pressure(pressure, height):
-    """
-    Convert relative pressure to absolute pressure.
-    """
+    """Convert relative pressure to absolute pressure."""
     # Constants
     g = 9.80665  # m/s^2
     M = 0.0289644  # kg/mol
     R = 8.31447  # J/(mol*K)
     T0 = 288.15  # K
-    p0 = 101325  # Pa
 
     # Calculate temperature at given height
     temperature = T0 - (g * M * height) / (R * T0)
@@ -395,7 +390,7 @@ def altitudeToPressure(alt):
     return 100 * ((44331.514 - alt) / 11880.516) ** (1 / 0.1902632) / 100
 
 
-async def test_api_key(hass, api_key, api_version):
+async def test_api_key(hass: HomeAssistant, api_key, api_version):
     """Test access to Open Weather Map API here."""
     client = OWMClient(
         api_key=api_key.strip(),

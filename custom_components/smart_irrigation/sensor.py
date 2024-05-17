@@ -1,26 +1,22 @@
 import logging
 
+from homeassistant.components.sensor import DOMAIN as PLATFORM, SensorEntity
 from homeassistant.components.sensor.const import SensorDeviceClass
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.components.sensor import SensorEntity
-from homeassistant.helpers.entity import generate_entity_id
-from homeassistant.helpers.restore_state import RestoreEntity
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
+from homeassistant.helpers.entity import generate_entity_id
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util import slugify
-from homeassistant.components.sensor import (
-    DOMAIN as PLATFORM,
-)
 
 from . import const
-from .localize import localize
 from .helpers import convert_timestamp
+from .localize import localize
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +32,9 @@ def setup_platform(
 
 @callback
 async def async_setup_entry(
-    hass, config_entry: ConfigEntry, async_add_devices: AddEntitiesCallback
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_devices: AddEntitiesCallback,
 ):
     """Set up the SmartIrrigation sensor entities."""
 

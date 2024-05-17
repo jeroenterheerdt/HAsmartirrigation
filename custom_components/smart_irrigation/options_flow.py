@@ -1,17 +1,19 @@
-from homeassistant.helpers.selector import selector
 import voluptuous as vol
+
 from homeassistant import config_entries
+from homeassistant.helpers.selector import selector
+
 from . import const
-from .helpers import test_api_key, InvalidAuth, CannotConnect
+from .helpers import CannotConnect, InvalidAuth, test_api_key
 
 
 class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
     """Smart Irrigation config flow options handler."""
 
-    # otpions flow should allow change of use OWM (boolean)
+    # options flow should allow change of use OWM (boolean)
     # options flow should allow update of API key (if set) and version (only if api key set)
 
-    def __init__(self, config_entry):
+    def __init__(self, config_entry) -> None:
         """Initialize HACS options flow."""
         self.config_entry = config_entry
         self.options = dict(config_entry.options)

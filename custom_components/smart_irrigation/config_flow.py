@@ -1,11 +1,12 @@
 """Config flow for the Smart Irrigation integration."""
 import voluptuous as vol
+
+from homeassistant import config_entries, exceptions
 from homeassistant.core import callback
 from homeassistant.helpers.selector import selector
-from homeassistant import config_entries, exceptions
 
 from . import const
-from .helpers import test_api_key, InvalidAuth, CannotConnect
+from .helpers import CannotConnect, InvalidAuth, test_api_key
 from .options_flow import SmartIrrigationOptionsFlowHandler
 
 
@@ -14,7 +15,7 @@ class SmartIrrigationConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
 
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._errors = {}
         self._name = ""
         self._owm_api_key = ""

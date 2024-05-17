@@ -1,14 +1,14 @@
 import datetime
-import voluptuous as vol
 import logging
 
-from homeassistant.components import websocket_api
-from homeassistant.core import callback
-from homeassistant.components.http.data_validator import RequestDataValidator
-from homeassistant.helpers import config_validation as cv
-from homeassistant.components.http import HomeAssistantView
-from homeassistant.components.websocket_api import decorators, async_register_command
+import voluptuous as vol
 
+from homeassistant.components import websocket_api
+from homeassistant.components.http import HomeAssistantView
+from homeassistant.components.http.data_validator import RequestDataValidator
+from homeassistant.components.websocket_api import async_register_command, decorators
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
@@ -26,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
     }
 )
 @decorators.async_response
-async def handle_subscribe_updates(hass, connection, msg):
+async def handle_subscribe_updates(hass: HomeAssistant, connection, msg):
     """Handle subscribe updates."""
 
     @callback
@@ -196,7 +196,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
 
 
 @callback
-def websocket_get_config(hass, connection, msg):
+def websocket_get_config(hass: HomeAssistant, connection, msg):
     """Publish config data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
     config = coordinator.store.async_get_config()
@@ -204,7 +204,7 @@ def websocket_get_config(hass, connection, msg):
 
 
 @callback
-def websocket_get_zones(hass, connection, msg):
+def websocket_get_zones(hass: HomeAssistant, connection, msg):
     """Publish zone data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
     zones = coordinator.store.async_get_zones()
@@ -212,7 +212,7 @@ def websocket_get_zones(hass, connection, msg):
 
 
 @callback
-def websocket_get_modules(hass, connection, msg):
+def websocket_get_modules(hass: HomeAssistant, connection, msg):
     """Publish module data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
     modules = coordinator.store.async_get_modules()
@@ -220,7 +220,7 @@ def websocket_get_modules(hass, connection, msg):
 
 
 @callback
-def websocket_get_all_modules(hass, connection, msg):
+def websocket_get_all_modules(hass: HomeAssistant, connection, msg):
     """Publish all module data. This is not retrieved from the store."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
     modules = coordinator.async_get_all_modules()
@@ -228,14 +228,14 @@ def websocket_get_all_modules(hass, connection, msg):
 
 
 @callback
-def websocket_get_mappings(hass, connection, msg):
+def websocket_get_mappings(hass: HomeAssistant, connection, msg):
     """Publish mapping data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
     mappings = coordinator.store.async_get_mappings()
     connection.send_result(msg["id"], mappings)
 
 
-async def async_register_websockets(hass):
+async def async_register_websockets(hass: HomeAssistant):
     hass.http.register_view(SmartIrrigationConfigView)
     hass.http.register_view(SmartIrrigationZoneView)
     hass.http.register_view(SmartIrrigationModuleView)

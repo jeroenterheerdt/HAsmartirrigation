@@ -1,11 +1,13 @@
+from collections import OrderedDict
 import datetime
 import logging
-import attr
-from collections import OrderedDict
 from typing import MutableMapping, cast
-from homeassistant.loader import bind_hass
-from homeassistant.core import callback, HomeAssistant
+
+import attr
+
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.storage import Store
+from homeassistant.loader import bind_hass
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from .const import (
@@ -35,8 +37,6 @@ from .const import (
     CONF_UNITS,
     CONF_USE_OWM,
     DOMAIN,
-    ZONE_LAST_CALCULATED,
-    MAPPING_DATA_LAST_UPDATED,
     MAPPING_CONF_SENSOR,
     MAPPING_CONF_SOURCE,
     MAPPING_CONF_SOURCE_NONE,
@@ -44,6 +44,7 @@ from .const import (
     MAPPING_CONF_SOURCE_SENSOR,
     MAPPING_CONF_UNIT,
     MAPPING_DATA,
+    MAPPING_DATA_LAST_UPDATED,
     MAPPING_DEWPOINT,
     MAPPING_EVAPOTRANSPIRATION,
     MAPPING_HUMIDITY,
@@ -58,14 +59,16 @@ from .const import (
     MAPPING_TEMPERATURE,
     MAPPING_WINDSPEED,
     MODULE_CONFIG,
+    MODULE_DESCRIPTION,
     MODULE_DIR,
     MODULE_ID,
     MODULE_NAME,
-    MODULE_DESCRIPTION,
     MODULE_SCHEMA,
     START_EVENT_FIRED_TODAY,
     ZONE_BUCKET,
+    ZONE_DURATION,
     ZONE_ID,
+    ZONE_LAST_CALCULATED,
     ZONE_LAST_UPDATED,
     ZONE_LEAD_TIME,
     ZONE_MAPPING,
@@ -76,13 +79,12 @@ from .const import (
     ZONE_NAME,
     ZONE_NUMBER_OF_DATA_POINTS,
     ZONE_SIZE,
+    ZONE_STATE,
     ZONE_STATE_AUTOMATIC,
     ZONE_THROUGHPUT,
-    ZONE_STATE,
-    ZONE_DURATION,
 )
-from .localize import localize
 from .helpers import loadModules
+from .localize import localize
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -462,14 +464,14 @@ class SmartIrrigationStorage:
 
     @callback
     def async_get_zones(self):
-        """Get all ZoneEntries"""
+        """Get all ZoneEntries."""
         # res = {}
         # for key, val in self.zones.items():
         #    res[key] = attr.asdict(val)
         # return res
 
         res = []
-        for key, val in self.zones.items():
+        for val in self.zones.values():
             res.append(attr.asdict(val))
         return res
 
@@ -538,14 +540,14 @@ class SmartIrrigationStorage:
 
     @callback
     def async_get_modules(self):
-        """Get all ModuleEntries"""
+        """Get all ModuleEntries."""
         # res = {}
         # for key, val in self.modules.items():
         #    res[key] = attr.asdict(val)
         # return res
 
         res = []
-        for key, val in self.modules.items():
+        for val in self.modules.values():
             res.append(attr.asdict(val))
         return res
 
@@ -588,14 +590,14 @@ class SmartIrrigationStorage:
 
     @callback
     def async_get_mappings(self):
-        """Get all MappingEntries"""
+        """Get all MappingEntries."""
         # res = {}
         # for key, val in self.modules.items():
         #    res[key] = attr.asdict(val)
         # return res
 
         res = []
-        for key, val in self.mappings.items():
+        for val in self.mappings.values():
             res.append(attr.asdict(val))
         return res
 
