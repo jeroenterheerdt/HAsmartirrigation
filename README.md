@@ -100,7 +100,7 @@ Although we recommend using Open Weather by providing an free API key, you _can_
 
 ### Step 2: Configuration
 
-After the integration has been installed, you will find a new panel named 'Smart Irrigaiton' in your side bar. Use it to configure your set up. Multiple pages are provided:
+After the integration has been installed, you will find a new panel named 'Smart Irrigation' in your side bar. Use it to configure your set up. Multiple pages are provided:
 
 #### GENERAL
 
