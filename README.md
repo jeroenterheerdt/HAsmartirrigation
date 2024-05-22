@@ -92,7 +92,7 @@ In this section:
 
 ### Step 1: Installation
 
-Install the custom integration (preferably using HACS). After downloading it from HACS, add the integration by searcing 'Smart Irrigaiton' in your configuration. Follow the steps:
+Install the custom integration (preferably using HACS). After downloading it from HACS, add the integration by searcing 'Smart Irrigation' in your configuration. Follow the steps:
 
 - API Key for Open Weather Map (optional). Only required in mode 1 and 3. See [Getting Open Weather Map API Key](https://github.com/jeroenterheerdt/HAsmartirrigation#getting-open-weather-map-api-key) below for instructions.
 
