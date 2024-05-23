@@ -47,52 +47,5 @@
         }
       }
     }
-  },
-  "common": {
-    "attributes": {
-      "size": "Größe",
-      "throughput": "Durchfluss",
-      "state": "Zustand"
-    }
-  },
-  "defaults": {
-    "default-zone": "Standard Zone",
-    "default-mapping": "Standard Sensorgruppe"
-  },
-  "module": {
-    "calculation": {
-      "explanation": {
-        "module-returned-evapotranspiration-deficiency": "Beachte: Diese Beschreibung nutzt '.' als Dezimalzeichen und zeigt gerundete Werte. Das Modul berechnete einen Evapotranspirationsmangel von",
-        "bucket-was": "Der alte Vorrat war",
-        "new-bucket-values-is": "Der neue Vorrat ist",
-        "old-bucket-variable": "alter_Vorrat",
-        "delta": "Veränderung",
-        "bucket-less-than-zero-irrigation-necessary": "Wenn der Vorrat < 0 ist, ist eine Bewässerung nötig.",
-        "steps-taken-to-calculate-duration": "Für eine exakte Berechnung der Dauer, wurden folgende Schritte durchgeführt",
-        "precipitation-rate-defined-as": "Der Niederschlag ist",
-        "duration-is-calculated-as": "Die Dauer ist",
-        "bucket": "Vorrat",
-        "precipitation-rate-variable": "Niederschlag",
-        "multiplier-is-applied": "Der Multiplikator wird angewendet. Der Multiplikator ist",
-        "duration-after-multiplier-is": "also ist die Dauer",
-        "maximum-duration-is-applied": "Die maximale Dauer wird angewendet. Diese ist",
-        "duration-after-maximum-duration-is": "also ist die Dauer",
-        "lead-time-is-applied": "Zuletzt wird die Vorlaufzeit angewendet. Die Vorlaufzeit ist",
-        "duration-after-lead-time-is": "also ist die Dauer",
-        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Wenn der Vorrat >= 0 ist, ist keine Bewässerung nötig und die Dauer ist gleich",
-        "maximum-bucket-is": "Der maximale Vorrat ist"
-      }
-    }
-  },
-  "calcmodules": {
-    "pyeto": {
-      "description": "Die Berechnung der Verunstungsrate basiert auf der FAO56-Formel aus der PyETO-Bibliothek"
-    },
-    "static": {
-      "description": "Modul mit einer statisch konfigurierbaren Verdunstungsrate."
-    },
-    "passthrough": {
-      "description": "Pass Through übernimmt den Evapotranspirationssensor und gibt seinen Wert zurück. Auf diese Weise werden alle Berechnungen der Verdunstung umgangen, außer der Anwendung von Aggregaten wie Summe, Durchschnitt etc)."
-    }
   }
 }

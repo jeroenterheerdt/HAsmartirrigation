@@ -47,52 +47,5 @@
         }
       }
     }
-  },
-  "common": {
-    "attributes": {
-      "size": "taille",
-      "throughput": "débit",
-      "state": "état"
-    }
-  },
-  "defaults": {
-    "default-zone": "Zone par défaut",
-    "default-mapping": "Groupe de capteurs par défaut"
-  },
-  "module": {
-    "calculation": {
-      "explanation": {
-        "module-returned-evapotranspiration-deficiency": "NB: cette explication utilise '.' comme séparateur décimal, et affiche des valeurs arrondies. Le module a donné un manque d'Évapotranspiration de",
-        "bucket-was": "Le seau (bucket) était de",
-        "new-bucket-values-is": "La nouvelle valeur du seau (bucket) est",
-        "old-bucket-variable": "ancien_bucket",
-        "delta": "delta",
-        "bucket-less-than-zero-irrigation-necessary": "Puisque le seau (bucket) est < 0, l'irrigation est nécessaire",
-        "steps-taken-to-calculate-duration": "Pour calculer la durée d'irrigation, les étapes suivantes ont été réalisées",
-        "precipitation-rate-defined-as": "Le taux de précipitation est défini comme",
-        "duration-is-calculated-as": "La durée d'irrigation est calculée avec",
-        "bucket": "seau (bucket)",
-        "precipitation-rate-variable": "taux_precipitation",
-        "multiplier-is-applied": "Le multiplicateur est appliqué. Le multiplicateur est",
-        "duration-after-multiplier-is": "donc la durée d'irrigation est de",
-        "maximum-duration-is-applied": "Ensuite la durée maximale est appliquée. La durée maximale est de",
-        "duration-after-maximum-duration-is": "donc la durée d'irrigation est de",
-        "lead-time-is-applied": "Enfin, le délai est appliqué. Le délai est de",
-        "duration-after-lead-time-is": "et donc la durée finale est de",
-        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Puisque le seau (bucket) est >= 0, l'irrigation n'est pas nécessaire, et la durée est réglée à",
-        "maximum-bucket-is": "la taille du seau (bucket) maximale est"
-      }
-    }
-  },
-  "calcmodules": {
-    "pyeto": {
-      "description": "Le calcul de durée est basée sur le calcul FAO56 de la bibliothèque PyETO"
-    },
-    "static": {
-      "description": "Module 'Dummy' avec un delta statique configurable"
-    },
-    "passthrough": {
-      "description": "Module passerelle qui renvoie la valeur d'un capteur d'Évapotranspiration comme delta"
-    }
   }
 }

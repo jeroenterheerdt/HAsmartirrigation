@@ -47,52 +47,5 @@
         }
       }
     }
-  },
-  "common": {
-    "attributes": {
-      "size": "størrelse",
-      "throughput": "kapasitet",
-      "state": "status"
-    }
-  },
-  "defaults": {
-    "default-zone": "Standard sone",
-    "default-mapping": "Standard sensorguppe"
-  },
-  "module": {
-    "calculation": {
-      "explanation": {
-        "module-returned-evapotranspiration-deficiency": "Merk: Denne forklaringen bruker '.' som desimaltegn og viser avrundede verdier. Modulen returnerte evapotranspirasjonsunderskudd på",
-        "bucket-was": "Bucket var",
-        "new-bucket-values-is": "Ny bucket verdien er",
-        "old-bucket-variable": "gammel_bucket",
-        "delta": "delta",
-        "bucket-less-than-zero-irrigation-necessary": "Siden bucket < 0, Vanning er nødvendig.",
-        "steps-taken-to-calculate-duration": "For å beregne nøyaktig varighet, ble følgende trinn utført",
-        "precipitation-rate-defined-as": "Nedbørshastigheten er definert som",
-        "duration-is-calculated-as": "Varigheten beregnes som",
-        "bucket": "bucket",
-        "precipitation-rate-variable": "nedbørshastighet",
-        "multiplier-is-applied": "Nå blir multiplikatoren brukt. Multiplikatoren er",
-        "duration-after-multiplier-is": "derfor er varigheten",
-        "maximum-duration-is-applied": "Deretter blir den maksimale varigheten brukt. Den maksimale varigheten er",
-        "duration-after-maximum-duration-is": "derfor er varigheten",
-        "lead-time-is-applied": "Til slutt blir ledetiden brukt. Ledetiden er",
-        "duration-after-lead-time-is": "derfor er den endelige varigheten",
-        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Siden bucket >= 0, Ingen vanning er nødvendig, og varigheten er satt til",
-        "maximum-bucket-is": "maksimum bucket stærrelse er"
-      }
-    }
-  },
-  "calcmodules": {
-    "pyeto": {
-      "description": "Beregn varigheten basert på FAO56-beregningen fra PyETO-biblioteket"
-    },
-    "static": {
-      "description": "'Dummy'-modul med en statisk konfigurerbar endring (delta)"
-    },
-    "passthrough": {
-      "description": "En 'Passthrough'-modul som returnerer verdien av en Evapotranspiration-sensor som delta"
-    }
   }
 }

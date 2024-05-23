@@ -48,57 +48,6 @@
       }
     }
   },
-  "common": {
-    "attributes": {
-      "size": "size",
-      "throughput": "throughput",
-      "state": "state",
-      "bucket": "secchio",
-      "last_updated": "ultimo aggiornamento",
-      "last_calculated": "ultimo calcolo",
-      "number_of_data_points": "numero di punti dati"
-    }
-  },
-  "defaults": {
-    "default-zone": "Zona predefinita",
-    "default-mapping": "Mappatura predefinita"
-  },
-  "module": {
-    "calculation": {
-      "explanation": {
-        "module-returned-evapotranspiration-deficiency": "Il modulo ha restituito un deficit di evapotraspirazione del",
-        "bucket-was": "Il secchio era",
-        "new-bucket-values-is": "Il nuovo valore del secchio è",
-        "old-bucket-variable": "old_bucket",
-        "delta": "delta",
-        "bucket-less-than-zero-irrigation-necessary": "Poiché secchio < 0, è necessaria l'irrigazione",
-        "steps-taken-to-calculate-duration": "Per calcolare la durata esatta, sono stati eseguiti i seguenti passaggi",
-        "precipitation-rate-defined-as": "Il tasso di precipitazione è definito come",
-        "duration-is-calculated-as": "La durata viene calcolata come",
-        "bucket": "bucket",
-        "precipitation-rate-variable": "precipitation_rate",
-        "multiplier-is-applied": "Ora viene applicato il moltiplicatore. Il moltiplicatore è",
-        "duration-after-multiplier-is": "quindi la durata è",
-        "maximum-duration-is-applied": "Quindi, viene applicata la durata massima. La durata massima è",
-        "duration-after-maximum-duration-is": "quindi la durata è",
-        "lead-time-is-applied": "Infine, viene applicato il lead time. Il tempo di consegna è",
-        "duration-after-lead-time-is": "quindi la durata finale è",
-        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Poiché secchio >= 0, non è necessaria alcuna irrigazione e la durata è impostata su",
-        "maximum-bucket-is": "la dimensione massima del secchio è"
-      }
-    }
-  },
-  "calcmodules": {
-    "pyeto": {
-      "description": "Calcola la durata in base al calcolo FAO56 dalla libreria PyETO"
-    },
-    "static": {
-      "description": "Modulo 'fittizio' con un delta configurabile statico"
-    },
-    "passthrough": {
-      "description": "Modulo passthrough che restituisce il valore di un sensore di Evapotraspirazione sotto forma di delta"
-}
-  },
   "services": {
     "calculate_all_zones": {
       "name": "Calcola tutte le zone",

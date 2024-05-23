@@ -8,6 +8,55 @@
       "no": "No",
       "select": "Select",
       "yes": "Yes"
+    },
+    "attributes": {
+      "size": "size",
+      "throughput": "throughput",
+      "state": "state",
+      "bucket": "bucket",
+      "last_updated": "last updated",
+      "last_calculated": "last calculated",
+      "number_of_data_points": "number of data points"
+    }
+  },
+  "defaults": {
+    "default-zone": "Default zone",
+    "default-mapping": "Default sensor group"
+  },
+  "module": {
+    "calculation": {
+      "explanation": {
+        "module-returned-evapotranspiration-deficiency": "Note: this explanation uses '.' as decimal separator, shows rounded and metric values. Module returned Evapotranspiration deficiency of",
+        "bucket-was": "Bucket was",
+        "new-bucket-values-is": "New bucket value is",
+        "old-bucket-variable": "old_bucket",
+        "delta": "delta",
+        "bucket-less-than-zero-irrigation-necessary": "Since bucket < 0, irrigation is necessary",
+        "steps-taken-to-calculate-duration": "To calculate the exact duration, the following steps were taken",
+        "precipitation-rate-defined-as": "The precipitation rate is defined as",
+        "duration-is-calculated-as": "The duration is calculated as",
+        "bucket": "bucket",
+        "precipitation-rate-variable": "precipitation_rate",
+        "multiplier-is-applied": "Now, the multiplier is applied. The multiplier is",
+        "duration-after-multiplier-is": "hence the duration is",
+        "maximum-duration-is-applied": "Then, the maximum duration is applied. The maximum duration is",
+        "duration-after-maximum-duration-is": "hence the duration is",
+        "lead-time-is-applied": "Finally, the lead time is applied. The lead time is",
+        "duration-after-lead-time-is": "hence the final duration is",
+        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Since bucket >= 0, no irrigation is necessary and duration is set to",
+        "maximum-bucket-is": "maximum bucket size is"
+      }
+    }
+  },
+  "calcmodules": {
+    "pyeto": {
+      "description": "Calculate duration based on the FAO56 calculation from the PyETO library"
+    },
+    "static": {
+      "description": "'Dummy' module with a static configurable delta"
+    },
+    "passthrough": {
+      "description": "Passthrough module that returns the value of an Evapotranspiration sensor as delta"
     }
   },
   "panels": {

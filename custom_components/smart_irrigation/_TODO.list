@@ -7,8 +7,8 @@ General:
 		source validation same as grill buddy
 2. UNIT_DEGREES_X --> UnitOfTemperature.CELSIUS
 	also do this for Smart IRRIGATION!
-3. Refactor language file  (move everything in one file (frontend)) to appease hassfest
-
+4. [CONFIG_SCHEMA] Integrations which implement 'async_setup' or 'setup' must define either 'CONFIG_SCHEMA', 'PLATFORM_SCHEMA' or 'PLATFORM_SCHEMA_BASE'. If the integration has no configuration parameters, can only be set up from platforms or can only be set up from config entries, one of the helpers cv.empty_config_schema, cv.platform_only_config_schema or cv.config_entry_only_config_schema can be used.
+5. Node.js 16 actions are deprecated. Please update the following actions to use Node.js 20: actions/checkout@v3. For more information see: https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/.
 Wishlist:
 - calculation algorithm: PyEto / PenMon /  ET_calc. See: https://github.com/jeroenterheerdt/HAsmartirrigation/issues/127
 - scheduler? or just use something like https://github.com/rgc99/irrigation_unlimited?

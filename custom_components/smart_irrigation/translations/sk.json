@@ -47,53 +47,5 @@
         }
       }
     }
-  },
-  "common": {
-    "attributes": {
-      "size": "size",
-      "throughput": "priepustnosť",
-      "state": "stav",
-      "bucket": "nádoba"
-    }
-  },
-  "defaults": {
-    "default-zone": "Predvolená zóna",
-    "default-mapping": "Predvolená skupina snímačov"
-  },
-  "module": {
-    "calculation": {
-      "explanation": {
-        "module-returned-evapotranspiration-deficiency": "Poznámka: toto vysvetlenie používa '.' ako oddeľovač desatinných miest zobrazuje zaokrúhlené a metrické hodnoty. Modul vrátil nedostatok evapotranspirácie",
-        "bucket-was": "Vedro bolo",
-        "new-bucket-values-is": "Hodnota nového vedra je",
-        "old-bucket-variable": "staré_vedro",
-        "delta": "delta",
-        "bucket-less-than-zero-irrigation-necessary": "Keďže vedro < 0, je potrebné zavlažovanie",
-        "steps-taken-to-calculate-duration": "Na výpočet presného trvania sa vykonali nasledujúce kroky",
-        "precipitation-rate-defined-as": "Miera zrážok je definovaná ako",
-        "duration-is-calculated-as": "Trvanie sa vypočíta ako",
-        "bucket": "vedro",
-        "precipitation-rate-variable": "úhrn zrážok",
-        "multiplier-is-applied": "Teraz sa použije multiplikátor. Násobiteľ je",
-        "duration-after-multiplier-is": "teda trvanie je",
-        "maximum-duration-is-applied": "Potom sa použije maximálne trvanie. Maximálne trvanie je",
-        "duration-after-maximum-duration-is": "teda trvanie je",
-        "lead-time-is-applied": "Nakoniec sa použije dodacia lehota. Dodacia lehota je",
-        "duration-after-lead-time-is": "teda konečné trvanie je",
-        "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Keďže vedro >= 0, nie je potrebné žiadne zavlažovanie a trvanie je nastavené na",
-        "maximum-bucket-is": "maximálna veľkosť vedra je"
-      }
-    }
-  },
-  "calcmodules": {
-    "pyeto": {
-      "description": "Vypočítajte trvanie na základe výpočtu FAO56 z knižnice PyETO"
-    },
-    "static": {
-      "description": "'Atrapa' modul so statickou konfigurovateľnou deltou"
-    },
-    "passthrough": {
-      "description": "Priechodný modul, ktorý vracia hodnotu evapotranspiračného senzora ako delta"
-    }
   }
 }

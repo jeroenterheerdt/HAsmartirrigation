@@ -1,14 +1,13 @@
 """Store constants."""
 
-
-VERSION = "v2024.5.1"
+VERSION = "v2024.5.2"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
 DOMAIN = "smart_irrigation"
 CUSTOM_COMPONENTS = "custom_components"
 
-LANGUAGE_FILES_DIR = "translations"
+LANGUAGE_FILES_DIR = "frontend/localize/languages"
 SUPPORTED_LANGUAGES = ["de", "en", "es", "fr", "it", "nl", "no", "sk"]
 
 START_EVENT_FIRED_TODAY = "starteventfiredtoday"
