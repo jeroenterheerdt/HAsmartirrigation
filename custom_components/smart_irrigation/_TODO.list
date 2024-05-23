@@ -3,7 +3,10 @@ General:
 
     hOW TO Listen to unit changes from HA?
         Was unable to make that work.
-
+1. Sensor groups
+		source validation same as grill buddy
+2. UNIT_DEGREES_X --> UnitOfTemperature.CELSIUS
+	also do this for Smart IRRIGATION!
 Modules:
 - calculation algorithm: PyEto / PenMon /  ET_calc. See: https://github.com/jeroenterheerdt/HAsmartirrigation/issues/127
 - scheduler? or just use something like https://github.com/rgc99/irrigation_unlimited?
