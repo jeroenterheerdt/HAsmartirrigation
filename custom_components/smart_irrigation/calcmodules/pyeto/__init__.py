@@ -1,4 +1,5 @@
 """The PyETO module for Smart Irrigation Integration."""
+
 import datetime
 import logging
 from statistics import mean
@@ -78,11 +79,10 @@ SCHEMA = vol.Schema(
 
 
 class PyETO(SmartIrrigationCalculationModule):
-    def __init__(self, hass, config: {}) -> None:
+    def __init__(self, hass, description, config: {}) -> None:
         super().__init__(
             name="PyETO",
-            description=localize("calcmodules.pyeto.description", hass.config.language)
-            + ".",
+            description=description,
             schema=SCHEMA,
             config=config,
         )

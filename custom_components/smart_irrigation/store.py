@@ -264,11 +264,13 @@ class SmartIrrigationStorage:
                     if MODULE_CONFIG in module:
                         modconfig = module[MODULE_CONFIG]
                     # load the calc modules and set up the schema
-                    mods = loadModules(MODULE_DIR)
+                    mods = await self.hass.async_add_executor_job(
+                        loadModules, MODULE_DIR
+                    )
                     for mod in mods:
                         if mods[mod]["class"] == module[MODULE_NAME]:
                             m = getattr(mods[mod]["module"], mods[mod]["class"])
-                            inst = m(self.hass, modconfig)
+                            inst = m(self.hass, module[MODULE_DESCRIPTION], modconfig)
                             schema_from_code = inst.schema_serialized()
                             break
                     modules[module[MODULE_ID]] = ModuleEntry(
@@ -323,7 +325,7 @@ class SmartIrrigationStorage:
         schema_from_code = None
         module0schema = None
         module1schema = None
-        mods = loadModules(MODULE_DIR)
+        mods = await self.hass.async_add_executor_job(loadModules, MODULE_DIR)
         for mod in mods:
             if mods[mod]["class"] in ["PyETO", "Static"]:
                 m = getattr(mods[mod]["module"], mods[mod]["class"])

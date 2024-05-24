@@ -133,7 +133,9 @@
             "sum": "Sum"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "You cannot delete this sensor group because there is at least one zone using it."
+            "cannot-delete-mapping-because-zones-use-it": "You cannot delete this sensor group because there is at least one zone using it.",
+            "invalid_source": "Invalid source",
+            "source_does_not_exist": "Source does not exist. Please enter a valid source, such as 'sensor.mysensor'."
           },
           "items": {
             "dewpoint": "Dewpoint",

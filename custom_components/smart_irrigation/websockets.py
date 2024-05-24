@@ -6,7 +6,11 @@ import voluptuous as vol
 from homeassistant.components import websocket_api
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.components.http.data_validator import RequestDataValidator
-from homeassistant.components.websocket_api import async_register_command, decorators
+from homeassistant.components.websocket_api import (
+    async_register_command,
+    async_response,
+    decorators,
+)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import (
@@ -220,10 +224,11 @@ def websocket_get_modules(hass: HomeAssistant, connection, msg):
 
 
 @callback
-def websocket_get_all_modules(hass: HomeAssistant, connection, msg):
+@async_response
+async def websocket_get_all_modules(hass: HomeAssistant, connection, msg):
     """Publish all module data. This is not retrieved from the store."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
-    modules = coordinator.async_get_all_modules()
+    modules = await coordinator.async_get_all_modules()
     connection.send_result(msg["id"], modules)
 
 

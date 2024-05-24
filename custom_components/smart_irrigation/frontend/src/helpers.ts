@@ -253,9 +253,10 @@ export function showErrorDialog(
   ev: Event | HTMLElement,
   error: string | TemplateResult
 ) {
-  const elem = ev.hasOwnProperty("tagName")
+  /*const elem = ev.hasOwnProperty("tagName")
     ? (ev as HTMLElement)
-    : ((ev as Event).target as HTMLElement);
+    : ((ev as Event).target as HTMLElement);*/
+  const elem = ev as HTMLElement;
   fireEvent(elem, "show-dialog", {
     dialogTag: "error-dialog",
     dialogImport: () => import("./dialogs/error-dialog"),
@@ -265,23 +266,7 @@ export function showErrorDialog(
 
 export function handleError(err: any, ev: Event | HTMLElement) {
   const errorMessage = html`
-    <b>Something went wrong!</b>
-    <br />
-    ${err.body.message
-      ? html`
-          ${err.body.message}
-          <br />
-          <br />
-        `
-      : ""}
-    ${err.error}
-    <br />
-    <br />
-    Please
-    <a href="https://github.com/jeroenterheerdt/HASmartIrrigation/issues"
-      >report</a
-    >
-    the bug.
+    ${err.error}:${err.body.message ? html` ${err.body.message} ` : ""}
   `;
   showErrorDialog(ev, errorMessage);
 }

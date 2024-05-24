@@ -1,4 +1,5 @@
 """The Smart Irrigation Integration."""
+
 import datetime
 from datetime import timedelta
 import logging
@@ -8,7 +9,7 @@ from homeassistant.components.sensor import DOMAIN as PLATFORM
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant, asyncio, callback
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
@@ -39,6 +40,8 @@ from .store import async_get_registry
 from .websockets import async_register_websockets
 
 _LOGGER = logging.getLogger(__name__)
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(const.DOMAIN)
 
 
 async def async_setup(hass: HomeAssistant, config):
@@ -143,12 +146,12 @@ async def options_update_listener(hass: HomeAssistant, config_entry):
         )
         if hass.data[const.DOMAIN][const.CONF_USE_OWM]:
             if const.CONF_OWM_API_KEY in config_entry.options:
-                hass.data[const.DOMAIN][
-                    const.CONF_OWM_API_KEY
-                ] = config_entry.options.get(const.CONF_OWM_API_KEY).strip()
-            hass.data[const.DOMAIN][
-                const.CONF_OWM_API_VERSION
-            ] = config_entry.options.get(const.CONF_OWM_API_VERSION)
+                hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = (
+                    config_entry.options.get(const.CONF_OWM_API_KEY).strip()
+                )
+            hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = (
+                config_entry.options.get(const.CONF_OWM_API_VERSION)
+            )
         else:
             hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = None
             hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = None
@@ -452,11 +455,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     == const.MAPPING_CONF_PRESSURE_RELATIVE
                 ):
                     if const.MAPPING_PRESSURE in weatherdata:
-                        weatherdata[
-                            const.MAPPING_PRESSURE
-                        ] = relative_to_absolute_pressure(
-                            weatherdata[const.MAPPING_PRESSURE],
-                            self.hass.config.as_dict().get(CONF_ELEVATION),
+                        weatherdata[const.MAPPING_PRESSURE] = (
+                            relative_to_absolute_pressure(
+                                weatherdata[const.MAPPING_PRESSURE],
+                                self.hass.config.as_dict().get(CONF_ELEVATION),
+                            )
                         )
                     else:
                         weatherdata[const.MAPPING_PRESSURE] = altitudeToPressure(
@@ -710,12 +713,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("calling register start event from async_calculate_all")
         self.register_start_event()
 
-    def getModuleInstanceByID(self, module_id):
+    async def getModuleInstanceByID(self, module_id):
         m = self.store.async_get_module(module_id)
         if m is None:
             return
         # load the module dynamically
-        mods = loadModules(const.MODULE_DIR)
+        mods = await self.hass.async_add_executor_job(loadModules, const.MODULE_DIR)
         modinst = None
         for mod in mods:
             if mods[mod]["class"] == m[const.MODULE_NAME]:
@@ -724,7 +727,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 break
         return modinst
 
-    def calculate_module(self, zone, weatherdata, forecastdata):
+    async def calculate_module(self, zone, weatherdata, forecastdata):
         _LOGGER.debug(
             f"calculate_module for zone: {zone}, weatherdata: {weatherdata}, forecastdata: {forecastdata}"
         )
@@ -732,7 +735,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         m = self.store.async_get_module(mod_id)
         if m is None:
             return
-        modinst = self.getModuleInstanceByID(mod_id)
+        modinst = await self.getModuleInstanceByID(mod_id)
         # precip = 0
         ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
         bucket = zone.get(const.ZONE_BUCKET)
@@ -1247,11 +1250,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 ):
                     # convert the relative pressure to absolute or estimate from height
                     if const.MAPPING_PRESSURE in weatherdata:
-                        weatherdata[
-                            const.MAPPING_PRESSURE
-                        ] = relative_to_absolute_pressure(
-                            weatherdata[const.MAPPING_PRESSURE],
-                            self.hass.config.as_dict().get(CONF_ELEVATION),
+                        weatherdata[const.MAPPING_PRESSURE] = (
+                            relative_to_absolute_pressure(
+                                weatherdata[const.MAPPING_PRESSURE],
+                                self.hass.config.as_dict().get(CONF_ELEVATION),
+                            )
                         )
                     else:
                         weatherdata[const.MAPPING_PRESSURE] = altitudeToPressure(
@@ -1422,61 +1425,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             )
 
     @callback
-    def async_get_all_modules(self):
+    async def async_get_all_modules(self):
         """Get all ModuleEntries."""
-        # disabling the use of loadModules here because of HA DEV warning ("Detected blocking call to import_module inside the event loop") and I don't know how to fix it
         res = []
-        """res.append(
-            {
-                "name": "PyETO",
-                "description": "Calculate duration based on the FAO56 calculation from the PyETO library.",
-                "config": {},
-                "schema": [
-                    {
-                        "type": "boolean",
-                        "name": "coastal",
-                        "optional": True,
-                        "default": False,
-                    },
-                    {
-                        "type": "select",
-                        "options": [...],
-                        "name": "solrad_behavior",
-                        "required": True,
-                        "default": {"name": "EstimateFromTemp", "value": "1"},
-                    },
-                    {
-                        "type": "integer",
-                        "name": "forecast_days",
-                        "required": True,
-                        "default": 0,
-                    },
-                ],
-            }
-        )
-        res.append(
-            {
-                "name": "Static",
-                "description": "'Dummy' module with a static configurable delta.",
-                "config": {},
-                "schema": [
-                    {"type": "float", "name": "delta", "required": True, "default": 0.0}
-                ],
-            }
-        )
-        res.append(
-            {
-                "name": "Passthrough",
-                "description": "Passthrough module that returns the value of an Evapotranspiration sensor as delta.",
-                "config": {},
-                "schema": [],
-            }
-        )"""
-
-        mods = loadModules(const.MODULE_DIR)
+        mods = await self.hass.async_add_executor_job(loadModules, const.MODULE_DIR)
         for mod in mods:
             m = getattr(mods[mod]["module"], mods[mod]["class"])
-            s = m(self.hass, {})
+            s = m(self.hass, None, {})
             res.append(
                 {
                     "name": s.name,

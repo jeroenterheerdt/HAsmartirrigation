@@ -5,6 +5,7 @@ import os
 import sys
 
 from homeassistant import exceptions
+from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 
 from .const import (
@@ -39,9 +40,6 @@ from .const import (
     PSI_TO_HPA_FACTOR,
     PSI_TO_INHG_FACTOR,
     SQ_FT_TO_M2_FACTOR,
-    UNIT_DEGREES_C,
-    UNIT_DEGREES_F,
-    UNIT_DEGREES_K,
     UNIT_GPM,
     UNIT_HPA,
     UNIT_INCH,
@@ -123,14 +121,18 @@ def convert_mapping_to_metric(val, mapping, unit, system_is_metric):
         # either Celsius or F. If celsius, no need to convert.
         if unit:
             # a unit was set, convert it
-            return convert_between(from_unit=unit, to_unit=UNIT_DEGREES_C, val=val)
+            return convert_between(
+                from_unit=unit, to_unit=UnitOfTemperature.CELSIUS, val=val
+            )
         # no unit was set, so it's dependent on system_is_metric if we need to convert
         elif system_is_metric:
             return val
         else:
             # assume the unit is in F
             return convert_between(
-                from_unit=UNIT_DEGREES_F, to_unit=UNIT_DEGREES_C, val=val
+                from_unit=UnitOfTemperature.FAHRENHEIT,
+                to_unit=UnitOfTemperature.CELSIUS,
+                val=val,
             )
     elif mapping in [MAPPING_PRECIPITATION, MAPPING_EVAPOTRANSPIRATION]:
         # either mm or inch. If mm no need to convert.
@@ -180,7 +182,11 @@ def convert_between(from_unit, to_unit, val):
         # no conversion necessary here!
         return val
     # convert temperatures
-    elif from_unit in [UNIT_DEGREES_C, UNIT_DEGREES_F, UNIT_DEGREES_K]:
+    elif from_unit in [
+        UnitOfTemperature.CELSIUS,
+        UnitOfTemperature.FAHRENHEIT,
+        UnitOfTemperature.KELVIN,
+    ]:
         return convert_temperatures(from_unit, to_unit, val)
     # convert lengths
     elif from_unit in [UNIT_MM, UNIT_INCH]:
@@ -331,20 +337,20 @@ def convert_length(from_unit, to_unit, val):
 def convert_temperatures(from_unit, to_unit, val):
     if to_unit == from_unit:
         return val
-    if to_unit == UNIT_DEGREES_C:
-        if from_unit == UNIT_DEGREES_F:
+    if to_unit == UnitOfTemperature.CELSIUS:
+        if from_unit == UnitOfTemperature.FAHRENHEIT:
             return float((float(val) - 32.0) / 1.8)
-        elif from_unit == UNIT_DEGREES_K:
+        elif from_unit == UnitOfTemperature.KELVIN:
             return val - K_TO_C_FACTOR
-    elif to_unit == UNIT_DEGREES_F:
-        if from_unit == UNIT_DEGREES_C:
+    elif to_unit == UnitOfTemperature.FAHRENHEIT:
+        if from_unit == UnitOfTemperature.CELSIUS:
             return float((val * 1.8) + 32.0)
-        elif from_unit == UNIT_DEGREES_K:
+        elif from_unit == UnitOfTemperature.KELVIN:
             return float(1.8 * (val - 273) + 32)
-    elif to_unit == UNIT_DEGREES_K:
-        if from_unit == UNIT_DEGREES_F:
+    elif to_unit == UnitOfTemperature.KELVIN:
+        if from_unit == UnitOfTemperature.FAHRENHEIT:
             return (val + 459.67) * (5.0 / 9.0)
-        elif from_unit == UNIT_DEGREES_C:
+        elif from_unit == UnitOfTemperature.CELSIUS:
             return val + K_TO_C_FACTOR
     # unable to do conversion because of unexpected to or from unit
     return None

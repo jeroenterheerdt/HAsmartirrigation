@@ -52,9 +52,8 @@ import {
   MAPPING_CONF_PRESSURE_ABSOLUTE,
   MAPPING_CONF_PRESSURE_RELATIVE,
 } from "../../const";
-import { prettyPrint, getOptionsForMappingType } from "../../helpers";
+import { getOptionsForMappingType, handleError } from "../../helpers";
 import { mdiDelete } from "@mdi/js";
-import moment from "moment";
 
 @customElement("smart-irrigation-view-mappings")
 class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
@@ -144,7 +143,34 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    saveMapping(this.hass, mapping);
+    //test if all sensorsources are in hass
+    let allsensorsvalid = true;
+    for (const m in mapping.mappings) {
+      if (mapping.mappings[m].sensorentity != "") {
+        if (!(mapping.mappings[m].sensorentity in this.hass.states)) {
+          allsensorsvalid = false;
+          handleError(
+            {
+              body: {
+                message: localize(
+                  "panels.mappings.cards.mapping.errors.source_does_not_exist",
+                  this.hass.language,
+                ),
+              },
+              error: localize(
+                "panels.mappings.cards.mapping.errors.invalid_source",
+                this.hass.language,
+              ),
+            },
+            this.shadowRoot!.querySelector("ha-card") as HTMLElement,
+          );
+          break;
+        }
+      }
+    }
+    if (allsensorsvalid) {
+      saveMapping(this.hass, mapping);
+    }
   }
   private renderMapping(
     mapping: SmartIrrigationMapping,
@@ -359,7 +385,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
             type="text"
             id="${value + index + MAPPING_CONF_SENSOR}"
             value="${mappingline[MAPPING_CONF_SENSOR]}"
-            @input="${(e: Event) =>
+            @change="${(e: Event) =>
               this.handleEditMapping(index, {
                 ...mapping,
                 mappings: {
