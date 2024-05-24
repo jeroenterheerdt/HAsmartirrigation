@@ -9,7 +9,11 @@ from homeassistant.components.sensor import DOMAIN as PLATFORM
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.core import HomeAssistant, asyncio, callback
-from homeassistant.helpers import config_validation as cv, device_registry as dr
+from homeassistant.helpers import (
+    config_validation as cv,
+    device_registry as dr,
+    entity_registry as er,
+)
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
@@ -1443,7 +1447,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         return res
 
     async def async_remove_entity(self, zone_id: str):
-        entity_registry = self.hass.helpers.entity_registry.async_get(self.hass)
+        entity_registry = er.async_get(self.hass)
         zone_id = int(zone_id)
         entity = self.hass.data[const.DOMAIN]["zones"][zone_id]
         entity_registry.async_remove(entity.entity_id)
