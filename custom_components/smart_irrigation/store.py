@@ -373,8 +373,6 @@ class SmartIrrigationStorage:
             MAPPING_DEWPOINT,
             MAPPING_EVAPOTRANSPIRATION,
             MAPPING_HUMIDITY,
-            MAPPING_MAX_TEMP,
-            MAPPING_MIN_TEMP,
             MAPPING_PRECIPITATION,
             MAPPING_PRESSURE,
             MAPPING_SOLRAD,
