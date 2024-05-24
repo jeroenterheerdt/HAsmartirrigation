@@ -148,6 +148,9 @@ class PyETO(SmartIrrigationCalculationModule):
                 _LOGGER.debug(f"[pyETO: calculate_et_for_day] et_radvar: {et_radvar}")
                 cs_radvar = cs_rad(self._elevation, et_radvar)
                 _LOGGER.debug(f"[pyETO: calculate_et_for_day] cs_radvar: {cs_radvar}")
+                _LOGGER.debug(
+                    f"[pyETO: solrad_behavior: {self._solrad_behavior} and sol_rad: {sol_rad}"
+                )
                 # if we need to calculate solar_radiation we need to override the value passed in.
                 if (
                     self._solrad_behavior is not SOLRAD_behavior.DontEstimate
