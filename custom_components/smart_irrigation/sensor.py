@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from homeassistant.components.sensor import DOMAIN as PLATFORM, SensorEntity
@@ -188,19 +189,35 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
 
         return {
             "id": self._id,
-            localize("common.attributes.size", "en"): self._size,
-            localize("common.attributes.throughput", "en"): self._throughput,
-            localize("common.attributes.state", "en"): self._state,
-            localize("common.attributes.bucket", "en"): self._bucket,
-            localize("common.attributes.last_updated", "en"): convert_timestamp(
-                self._last_updated
-            ),
-            localize("common.attributes.last_calculated", "en"): convert_timestamp(
-                self._last_calculated
-            ),
-            localize(
-                "common.attributes.number_of_data_points", "en"
-            ): self._number_of_data_points,
+            "size": self._size,
+            "throughput": self._throughput,
+            "state": self._state,
+            "bucket": self._bucket,
+            "last_updated": convert_timestamp(self._last_updated),
+            "last_calculated": convert_timestamp(self._last_calculated),
+            "number_of_data_points": self._number_of_data_points,
+            # asyncio.run_coroutine_threadsafe(
+            #    localize("common.attributes.size", "en"), self._hass.loop
+            # ).result(): self._size,
+            # asyncio.run_coroutine_threadsafe(
+            #    localize("common.attributes.throughput", "en"), self._hass.loop
+            # ).result(): self._throughput,
+            # asyncio.run_coroutine_threadsafe(
+            #    localize("common.attributes.state", "en"), self._hass.loop
+            # ).result(): self._state,
+            # asyncio.run_coroutine_threadsafe(
+            #    localize("common.attributes.bucket", "en"), self._hass.loop
+            # ).result(): self._bucket,
+            # asyncio.run_coroutine_threadsafe(
+            #    localize("common.attributes.last_updated", "en"), self._hass.loop
+            # ).result(): convert_timestamp(self._last_updated),
+            # asyncio.run_coroutine_threadsafe(
+            #    localize("common.attributes.last_calculated", "en"), self._hass.loop
+            # ).result(): convert_timestamp(self._last_calculated),
+            # asyncio.run_coroutine_threadsafe(
+            #    localize("common.attributes.number_of_data_points", "en"),
+            #    self._hass.loop,
+            # ).result(): self._number_of_data_points,
         }
 
     async def async_added_to_hass(self):
