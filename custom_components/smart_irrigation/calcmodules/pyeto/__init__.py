@@ -153,10 +153,10 @@ class PyETO(SmartIrrigationCalculationModule):
                 )
                 # if we need to calculate solar_radiation we need to override the value passed in.
                 if (
-                    self._solrad_behavior is not SOLRAD_behavior.DontEstimate
+                    self._solrad_behavior != SOLRAD_behavior.DontEstimate.value
                     or sol_rad is None
                 ):
-                    if self._solrad_behavior is SOLRAD_behavior.EstimateFromTemp:
+                    if self._solrad_behavior == SOLRAD_behavior.EstimateFromTemp.value:
                         sol_rad = sol_rad_from_t(
                             et_radvar, cs_radvar, temp_c_min, temp_c_max, self._coastal
                         )
@@ -165,7 +165,7 @@ class PyETO(SmartIrrigationCalculationModule):
                         )
                     elif (
                         self._solrad_behavior
-                        is SOLRAD_behavior.EstimateFromSunHoursAndTemperature
+                        == SOLRAD_behavior.EstimateFromSunHoursAndTemperature.value
                     ):
                         sol_rad = (
                             sol_rad_from_t(
