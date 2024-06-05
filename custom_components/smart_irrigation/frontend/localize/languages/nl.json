@@ -12,7 +12,11 @@
     "attributes": {
       "size": "afmeting",
       "throughput": "doorvoer",
-      "state": "status"
+      "state": "status",
+      "bucket": "bucket",
+      "last_updated": "last updated",
+      "last_calculated": "last calculated",
+      "number_of_data_points": "number of data points"
     }
   },
   "defaults": {
@@ -129,7 +133,9 @@
             "sum": "Totaal"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "Deze sensorgroep kan niet worden verwijderd omdat er minimaal een zone gebruik van maakt."
+            "cannot-delete-mapping-because-zones-use-it": "Deze sensorgroep kan niet worden verwijderd omdat er minimaal een zone gebruik van maakt.",
+            "invalid_source": "Invalid source",
+            "source_does_not_exist": "Source does not exist. Please enter a valid source, such as 'sensor.mysensor'."
           },
           "items": {
             "dewpoint": "Dauwpunt",
@@ -151,8 +157,8 @@
           "sensor-aggregate-of-sensor-values-to-calculate": "van de sensor waardes om irrigatietijd te berekenen",
           "sensor-aggregate-use-the": "Gebruik de/het",
           "sensor-entity": "Sensor entiteit",
-          "input-units": "Invoer geeft waardes in",
           "static_value": "Waarde",
+          "input-units": "Invoer geeft waardes in",
           "source": "Bron",
           "sources": {
             "none": "Geen",
@@ -188,7 +194,8 @@
           "translated-options": {
             "DontEstimate": "Niet berekenen",
             "EstimateFromSunHours": "Gebaseerd op zon uren",
-            "EstimateFromTemp": "Gebaseerd op temperatuur"
+            "EstimateFromTemp": "Gebaseerd op temperatuur",
+            "EstimateFromSunHoursAndTemperature": "Estimate from average of sun hours and temperature"
           }
         }
       },
