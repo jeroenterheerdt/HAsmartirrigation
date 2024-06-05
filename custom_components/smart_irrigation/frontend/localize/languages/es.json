@@ -12,7 +12,11 @@
     "attributes": {
       "size": "Tamaño",
       "throughput": "Rendimiento",
-      "state": "Estado"
+      "state": "Estado",
+      "bucket": "bucket",
+      "last_updated": "last updated",
+      "last_calculated": "last calculated",
+      "number_of_data_points": "number of data points"
     }
   },
   "defaults": {
@@ -60,6 +64,7 @@
       "cards": {
         "automatic-duration-calculation": {
           "header": "Cálculo automático de la duración",
+          "description": "Calculation takes collected weatherdata up to that point and updates the bucket for each automatic zone. Then, the duration is adjusted based on the new bucket value and the collected weatherdata is removed.",
           "labels": {
             "auto-calc-enabled": "Cálculo automático de la duración de las zonas",
             "auto-calc-time": "Calcular en"
@@ -70,15 +75,24 @@
             "warning-update-time-on-or-after-calc-time": "Advertencia: la hora de actualización de los datos meteorológicos es igual o posterior a la hora de cálculo"
           },
           "header": "Actualización automática de los datos meteorológicos",
+          "description": "Collect and store weather data automatically. Weather data is required to calculate zone buckets and durations.",
           "labels": {
             "auto-update-enabled": "Actualizar automáticamente los datos meteorológicos",
-            "auto-update-first-update": "(Primer) Actualización a las",
+            "auto-update-delay": "Update delay",
             "auto-update-interval": "Actualizar datos del sensor cada"
           },
           "options": {
             "days": "días",
             "hours": "horas",
             "minutes": "minutos"
+          }
+        },
+        "automatic-clear": {
+          "header": "Automatic weather data pruning",
+          "description": "Automatically remove collected weatherdata at a configured time. Use this to make sure that there is no left over weatherdata from previous days. Don't remove the weatherdata before you calculate and only use this option if you expect the automatic update to collect weatherdata after you calculated for the day. Ideally, you want to prune as late in the day as possible.",
+          "labels": {
+            "automatic-clear-enabled": "Automatically clear collected weather data",
+            "automatic-clear-time": "Clear weather data at"
           }
         }
       },
@@ -119,7 +133,9 @@
             "sum": "Suma"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "No puedes eliminar este grupo de sensores porque hay al menos una zona que lo está usando."
+            "cannot-delete-mapping-because-zones-use-it": "No puedes eliminar este grupo de sensores porque hay al menos una zona que lo está usando.",
+            "invalid_source": "Invalid source",
+            "source_does_not_exist": "Source does not exist. Please enter a valid source, such as 'sensor.mysensor'."
           },
           "items": {
             "dewpoint": "Punto de rocío",
@@ -133,6 +149,11 @@
             "temperature": "Temperatura",
             "windspeed": "Velocidad del viento"
           },
+          "pressure_types": {
+            "absolute": "absolute",
+            "relative": "relative"
+          },
+          "pressure-type": "Pressure is",
           "sensor-aggregate-of-sensor-values-to-calculate": "de los valores de los sensores para calcular la duración",
           "sensor-aggregate-use-the": "Usar la",
           "sensor-entity": "Entidad de sensor",
@@ -173,7 +194,8 @@
           "translated-options": {
             "DontEstimate": "No estimar",
             "EstimateFromSunHours": "Estimar desde horas de sol",
-            "EstimateFromTemp": "Estimar desde temperatura"
+            "EstimateFromTemp": "Estimar desde temperatura",
+            "EstimateFromSunHoursAndTemperature": "Estimate from average of sun hours and temperature"
           }
         }
       },
@@ -200,7 +222,8 @@
           "actions": {
             "calculate-all": "Calcular todas las zonas",
             "update-all": "Actualizar todas las zonas",
-            "reset-all-buckets": "Resetear todos los cubos"
+            "reset-all-buckets": "Resetear todos los cubos",
+            "clear-all-weatherdata": "Clear all weatherdata"
           },
           "header": "Acciones en todas las zonas"
         }
@@ -222,7 +245,10 @@
           "manual": "Manual"
         },
         "throughput": "Rendimiento",
-        "maximum-bucket": "Cubo máximo"
+        "maximum-bucket": "Cubo máximo",
+        "last_calculated": "Last calculated",
+        "data-last-updated": "Data last updated",
+        "data-number-of-data-points": "Number of data points"
       },
       "no_items": "Aún no hay zonas definidas.",
       "title": "Zonas"
