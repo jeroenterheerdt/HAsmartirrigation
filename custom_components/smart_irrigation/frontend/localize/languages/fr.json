@@ -12,7 +12,11 @@
     "attributes": {
       "size": "taille",
       "throughput": "débit",
-      "state": "état"
+      "state": "état",
+      "bucket": "bucket",
+      "last_updated": "last updated",
+      "last_calculated": "last calculated",
+      "number_of_data_points": "number of data points"
     }
   },
   "defaults": {
@@ -60,29 +64,28 @@
       "cards": {
         "automatic-duration-calculation": {
           "header": "Calcul automatique de la durée",
+          "description": "Le calcul prend en compte les données météo jusqu'à ce point et met à jour le seau (bucket) pour chaque zone automatique. Ensuite, la durée est ajustée par la nouvelle valeur de seau (bucket) et les données météo sont supprimées.",
           "labels": {
             "auto-calc-enabled": "Calcule automatiquement la durée par zone",
             "auto-calc-time": "Calcule à"
-          },
-          "description": "Le calcul prend en compte les données météo jusqu'à ce point et met à jour le seau (bucket) pour chaque zone automatique. Ensuite, la durée est ajustée par la nouvelle valeur de seau (bucket) et les données météo sont supprimées."
+          }
         },
         "automatic-update": {
           "errors": {
             "warning-update-time-on-or-after-calc-time": "Attention: mise à jour des données météo au moment du, ou après le, calcul"
           },
           "header": "Mise à jour automatique des données météo",
+          "description": "Récupère et stocke les données météo automatiquement. Des données météo sont nécessaires pour calculer les seaux (buckets) par zone et les durées.",
           "labels": {
             "auto-update-enabled": "Met à jour les données météo automatiquement",
-            "auto-update-first-update": "(Première) Mise à jour à",
-            "auto-update-interval": "Mettre à jour les données des capteurs toutes les",
-            "auto-update-delay": "Délai de mise à jour"
+            "auto-update-delay": "Délai de mise à jour",
+            "auto-update-interval": "Mettre à jour les données des capteurs toutes les"
           },
           "options": {
             "days": "jours",
             "hours": "heures",
             "minutes": "minutes"
-          },
-          "description": "Récupère et stocke les données météo automatiquement. Des données météo sont nécessaires pour calculer les seaux (buckets) par zone et les durées."
+          }
         },
         "automatic-clear": {
           "header": "Délestage automatique des données météo",
@@ -130,7 +133,9 @@
             "sum": "Somme"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "Vous ne pouvez pas supprimer ce groupe de capteurs car au moins une zone l'utilise."
+            "cannot-delete-mapping-because-zones-use-it": "Vous ne pouvez pas supprimer ce groupe de capteurs car au moins une zone l'utilise.",
+            "invalid_source": "Invalid source",
+            "source_does_not_exist": "Source does not exist. Please enter a valid source, such as 'sensor.mysensor'."
           },
           "items": {
             "dewpoint": "Point de rosée",
@@ -144,6 +149,11 @@
             "temperature": "Température",
             "windspeed": "Vitesse du vent"
           },
+          "pressure_types": {
+            "absolute": "absolue",
+            "relative": "relative"
+          },
+          "pressure-type": "La pression est",
           "sensor-aggregate-of-sensor-values-to-calculate": "des valeurs des capteurs pour calculer la durée",
           "sensor-aggregate-use-the": "Utiliser les",
           "sensor-entity": "Entité capteur",
@@ -155,13 +165,7 @@
             "openweathermap": "OpenWeatherMap",
             "sensor": "Capteur",
             "static": "Valeur statique"
-          },
-          "pressure_types": {
-            "relative": "relative",
-            "absolute": "absolue"
-          },
-          "pressure-type": "La pression est",
-          "sensor-units": "Le capteur fournit les valeurs en"
+          }
         }
       },
       "description": "Ajouter un ou plusieurs groupes de capteurs qui récupèrent les données météo de OpenWeatherMap, de capteurs locaux ou d'une combinaison de tous ceux-ci. Vous pouvez associer chaque groupe de capteurs avec une ou plusieurs zones",
@@ -190,7 +194,8 @@
           "translated-options": {
             "DontEstimate": "Ne fait pas d'estimation",
             "EstimateFromSunHours": "Estimation à partir des heures d'ensoleillement",
-            "EstimateFromTemp": "Estimation à partir de la température"
+            "EstimateFromTemp": "Estimation à partir de la température",
+            "EstimateFromSunHoursAndTemperature": "Estimate from average of sun hours and temperature"
           }
         }
       },
