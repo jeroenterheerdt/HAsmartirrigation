@@ -86,7 +86,7 @@ class SmartIrrigationModuleView(HomeAssistantView):
             {
                 vol.Optional(const.MODULE_ID): vol.Coerce(int),
                 vol.Optional(const.MODULE_NAME): cv.string,
-                vol.Optional(const.MODULE_DESCRIPTION): cv.string,
+                vol.Optional(const.MODULE_DESCRIPTION): vol.Or(None, cv.string),
                 vol.Optional(const.MODULE_CONFIG): vol.Coerce(dict),
                 vol.Optional(const.MODULE_SCHEMA): vol.Coerce(list),
                 vol.Optional(const.ATTR_REMOVE): cv.boolean,

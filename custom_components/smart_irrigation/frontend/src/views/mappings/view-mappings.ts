@@ -111,7 +111,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       [MAPPING_WINDSPEED]: "",
     };
     const newMapping: SmartIrrigationMapping = {
-      id: this.mappings.length,
+      id: this.mappings.length + 1,
       name: this.mappingNameInput.value,
       mappings: the_mappings,
     };
@@ -146,7 +146,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     //test if all sensorsources are in hass
     let allsensorsvalid = true;
     for (const m in mapping.mappings) {
-      if (mapping.mappings[m].sensorentity != "") {
+      if (mapping.mappings[m].sensorentity != undefined) {
+        console.log(mapping.mappings[m].sensorentity);
         if (!(mapping.mappings[m].sensorentity in this.hass.states)) {
           allsensorsvalid = false;
           handleError(

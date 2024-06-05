@@ -74,7 +74,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
       return;
     }
     const newModule: SmartIrrigationModule = {
-      id: this.modules.length,
+      id: this.modules.length + 1,
       name: this.moduleInput.selectedOptions[0].text,
       description: m.description,
       config: m.config,

@@ -82,7 +82,6 @@ export const clearAllWeatherdata = (hass: HomeAssistant): Promise<boolean> => {
   });
 };
 
-
 export const deleteZone = (
   hass: HomeAssistant,
   zone_id: string

@@ -102,7 +102,7 @@ class OWMClient:  # pylint: disable=invalid-name
                         self.url, doc
                     )
                 )
-                if "cod" in doc:
+                if doc and "cod" in doc:
                     if doc["cod"] != 200:
                         raise IOError("Cannot talk to OWM API, check API key.")
                 # parse out values from daily
@@ -153,10 +153,10 @@ class OWMClient:  # pylint: disable=invalid-name
                                 ] * (4.87 / math.log((67.8 * 10) - 5.42))
                             elif k is OWM_pressure_key_name:
                                 # OWM provides relative pressure, replace it with estimated absolute pressure returning!
-                                data[
-                                    OWM_pressure_key_name
-                                ] = self.relative_to_absolute_pressure(
-                                    data[OWM_pressure_key_name], self.elevation
+                                data[OWM_pressure_key_name] = (
+                                    self.relative_to_absolute_pressure(
+                                        data[OWM_pressure_key_name], self.elevation
+                                    )
                                 )
                         parsed_data[MAPPING_WINDSPEED] = data[OWM_wind_speed_key_name]
 
@@ -190,8 +190,8 @@ class OWMClient:  # pylint: disable=invalid-name
                     )
                 return None
             except Exception as ex:
-                _LOGGER.warning(ex)
-                raise ex
+                _LOGGER.error("Error reading from OWM: {0}".format(ex))
+                return None
         else:
             # return cached_data
             _LOGGER.info("Returning cached OWM forecastdata")
@@ -259,10 +259,10 @@ class OWMClient:  # pylint: disable=invalid-name
                             ] * (4.87 / math.log((67.8 * 10) - 5.42))
                         elif k is OWM_pressure_key_name:
                             # OWM provides relative pressure, replace it with estimated absolute pressure returning!
-                            data[
-                                OWM_pressure_key_name
-                            ] = self.relative_to_absolute_pressure(
-                                data[OWM_pressure_key_name], self.elevation
+                            data[OWM_pressure_key_name] = (
+                                self.relative_to_absolute_pressure(
+                                    data[OWM_pressure_key_name], self.elevation
+                                )
                             )
                     parsed_data[MAPPING_WINDSPEED] = data[OWM_wind_speed_key_name]
                     parsed_data[MAPPING_PRESSURE] = data[OWM_pressure_key_name]

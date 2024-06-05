@@ -29,9 +29,7 @@ async def localize(string, language):
         # fallback to english in case string wasn't found
         if language == "en" or not isinstance(translated_string, str):
             async with aiofiles.open(
-                os.path.join(
-                    main_path, LANGUAGE_FILES_DIR + os.sep + language + ".json"
-                )
+                os.path.join(main_path, LANGUAGE_FILES_DIR + os.sep + "en.json")
             ) as f:
                 contents = await f.read()
 

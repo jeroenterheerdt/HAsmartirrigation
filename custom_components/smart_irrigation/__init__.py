@@ -681,7 +681,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         )
                     if sensor_values:
                         # make sure we convert forecast data pressure to absolute!
-                        data = self.calculate_module(
+                        data = await self.calculate_module(
                             zone, weatherdata=sensor_values, forecastdata=forecastdata
                         )
 

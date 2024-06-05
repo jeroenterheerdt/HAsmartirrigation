@@ -149,7 +149,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
   private handleAddZone(): void {
     const newZone: SmartIrrigationZone = {
-      id: this.zones.length, //new zone will have ID that is equal to current zone length.
+      id: this.zones.length + 1, //new zone will have ID that is equal to current zone length + 1
       name: this.nameInput.value,
       size: parseFloat(this.sizeInput.value),
       throughput: parseFloat(this.throughputInput.value),
