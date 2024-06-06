@@ -146,7 +146,10 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     //test if all sensorsources are in hass
     let allsensorsvalid = true;
     for (const m in mapping.mappings) {
-      if (mapping.mappings[m].sensorentity != undefined) {
+      if (
+        mapping.mappings[m].sensorentity != undefined &&
+        mapping.mappings[m].sensorentity != ""
+      ) {
         console.log(mapping.mappings[m].sensorentity);
         if (!(mapping.mappings[m].sensorentity in this.hass.states)) {
           allsensorsvalid = false;

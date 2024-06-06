@@ -252,6 +252,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # WIP v2024.6.X:
         # experiment with subscriptions on sensors
         self._sensor_subscriptions = []
+        self._sensors_to_subscribe_to = []
         super().__init__(hass, _LOGGER, name=const.DOMAIN)
 
     @callback
@@ -275,92 +276,106 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated")
 
     async def set_up_auto_update_time(self, data):  # noqa: D102
-        if data[const.CONF_AUTO_UPDATE_ENABLED]:
-            # WIP v2024.6.X:
-            # experiment to use subscriptions to catch all updates instead of just on a time schedule
-            # also need to remove subscriptions in the else of course.
-            zones = self.store.async_get_zones()
-            mappings = await self._get_unique_mappings_for_automatic_zones(zones)
-            sensors_to_subscribe_to = []
-            # loop over the mappings and store sensor data
-            for mapping_id in mappings:
-                (
-                    owm_in_mapping,
-                    sensor_in_mapping,
-                    static_in_mapping,
-                ) = self.check_mapping_sources(mapping_id=mapping_id)
-                mapping = self.store.async_get_mapping(mapping_id)
-                if sensor_in_mapping:
-                    for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
-                        if not isinstance(the_map, str):
-                            if the_map.get(
-                                const.MAPPING_CONF_SOURCE
-                            ) == const.MAPPING_CONF_SOURCE_SENSOR and the_map.get(
-                                const.MAPPING_CONF_SENSOR
-                            ):
-                                # this mapping maps to a sensor, so retrieve its value from HA
-                                if (
-                                    the_map.get(const.MAPPING_CONF_SENSOR)
-                                    not in sensors_to_subscribe_to
-                                ):
-                                    sensors_to_subscribe_to.append(
-                                        the_map.get(const.MAPPING_CONF_SENSOR)
-                                    )
-            # subscribe to all sensors
-            if sensors_to_subscribe_to is not None:
-                for s in sensors_to_subscribe_to:
-                    self._sensor_subscriptions.append(
-                        async_track_state_change_event(
-                            self.hass,
-                            s,
-                            self.async_sensor_state_changed,
-                        )
-                    )
-            # CONF_AUTO_UPDATE_SCHEDULE: minute, hour, day
-            # CONF_AUTO_UPDATE_INTERVAL: X
-            # CONF_AUTO_UPDATE_TIME: first update time
-            # 2023.9.0-beta14 experiment: ignore auto update time. Instead do a delay?
+        # WIP v2024.6.X:
+        await self.update_subscriptions()
+        # if data[const.CONF_AUTO_UPDATE_ENABLED]:
+        # WIP v2024.6.X:
+        # experiment to use subscriptions to catch all updates instead of just on a time schedule
+        # also need to remove subscriptions in the else of course.
 
-            # if check_time(data[const.CONF_AUTO_UPDATE_TIME]):
-            # first auto update time is valid
-            # update only the actual changed value: auto update time
-            #    timesplit = data[const.CONF_AUTO_UPDATE_TIME].split(":")
-            #    if self._track_auto_update_time_unsub:
-            #        self._track_auto_update_time_unsub()
-            #    self._track_auto_update_time_unsub = async_track_time_change(
-            #        self.hass,
-            #        self._async_track_update_time,
-            #        hour=timesplit[0],
-            #        minute=timesplit[1],
-            #        second=0
-            #    )
-            #    _LOGGER.info("Scheduled auto update first time update for {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
-            # else:
-            #    _LOGGER.warning("Schedule auto update time is not valid: {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
-            #    raise ValueError("Time is not a valid time")
-            # call update track time after waiting [update_delay] seconds
+        # CONF_AUTO_UPDATE_SCHEDULE: minute, hour, day
+        # CONF_AUTO_UPDATE_INTERVAL: X
+        # CONF_AUTO_UPDATE_TIME: first update time
+        # 2023.9.0-beta14 experiment: ignore auto update time. Instead do a delay?
 
-            # WIP v2024.6.X: disabled this because of experiment to move to subscriptions!
-            # delay = 0
-            # if const.CONF_AUTO_UPDATE_DELAY in data:
-            #    if int(data[const.CONF_AUTO_UPDATE_DELAY]) > 0:
-            #        delay = int(data[const.CONF_AUTO_UPDATE_DELAY])
-            # _LOGGER.info(f"Delaying auto update with {delay} seconds")
-            # async_call_later(
-            #    self.hass, timedelta(seconds=delay), self.track_update_time
-            # )
-        else:
-            # WIP v2024.6.X: disabling this
-            # remove all time trackers for auto update
-            # if self._track_auto_update_time_unsub:
-            #    self._track_auto_update_time_unsub()
-            #    self._track_auto_update_time_unsub = None
-            # self.store.async_update_config(data)
+        # if check_time(data[const.CONF_AUTO_UPDATE_TIME]):
+        # first auto update time is valid
+        # update only the actual changed value: auto update time
+        #    timesplit = data[const.CONF_AUTO_UPDATE_TIME].split(":")
+        #    if self._track_auto_update_time_unsub:
+        #        self._track_auto_update_time_unsub()
+        #    self._track_auto_update_time_unsub = async_track_time_change(
+        #        self.hass,
+        #        self._async_track_update_time,
+        #        hour=timesplit[0],
+        #        minute=timesplit[1],
+        #        second=0
+        #    )
+        #    _LOGGER.info("Scheduled auto update first time update for {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
+        # else:
+        #    _LOGGER.warning("Schedule auto update time is not valid: {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
+        #    raise ValueError("Time is not a valid time")
+        # call update track time after waiting [update_delay] seconds
 
-            # WIP v2024.6.X: move to subscriptions
-            # remove all sensor subscriptions
-            for s in self._sensor_subscriptions:
+        # WIP v2024.6.X: disabled this because of experiment to move to subscriptions!
+        # delay = 0
+        # if const.CONF_AUTO_UPDATE_DELAY in data:
+        #    if int(data[const.CONF_AUTO_UPDATE_DELAY]) > 0:
+        #        delay = int(data[const.CONF_AUTO_UPDATE_DELAY])
+        # _LOGGER.info(f"Delaying auto update with {delay} seconds")
+        # async_call_later(
+        #    self.hass, timedelta(seconds=delay), self.track_update_time
+        # )
+        # else:
+        # WIP v2024.6.X: disabling this
+        # remove all time trackers for auto update
+        # if self._track_auto_update_time_unsub:
+        #    self._track_auto_update_time_unsub()
+        #    self._track_auto_update_time_unsub = None
+        # self.store.async_update_config(data)
+
+    async def update_subscriptions(self):
+        # subscribe to all sensors
+        self._sensors_to_subscribe_to = await self.get_sensors_to_subscribe_to()
+
+        # WIP v2024.6.X: move to subscriptions
+        # remove all existing sensor subscriptions
+        for s in self._sensor_subscriptions:
+            try:
                 s()
+            except Exception:
+                pass
+
+        if self._sensors_to_subscribe_to is not None:
+            for s in self._sensors_to_subscribe_to:
+                self._sensor_subscriptions.append(
+                    async_track_state_change_event(
+                        self.hass,
+                        s,
+                        self.async_sensor_state_changed,
+                    )
+                )
+
+    async def get_sensors_to_subscribe_to(self):
+        zones = self.store.async_get_zones()
+        mappings = await self._get_unique_mappings_for_automatic_zones(zones)
+        sensors_to_subscribe_to = []
+        # loop over the mappings and store sensor data
+        for mapping_id in mappings:
+            (
+                owm_in_mapping,
+                sensor_in_mapping,
+                static_in_mapping,
+            ) = self.check_mapping_sources(mapping_id=mapping_id)
+            mapping = self.store.async_get_mapping(mapping_id)
+            if sensor_in_mapping:
+                for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
+                    if not isinstance(the_map, str):
+                        if the_map.get(
+                            const.MAPPING_CONF_SOURCE
+                        ) == const.MAPPING_CONF_SOURCE_SENSOR and the_map.get(
+                            const.MAPPING_CONF_SENSOR
+                        ):
+                            # this mapping maps to a sensor, so retrieve its value from HA
+                            if (
+                                the_map.get(const.MAPPING_CONF_SENSOR)
+                                not in sensors_to_subscribe_to
+                            ):
+                                sensors_to_subscribe_to.append(
+                                    the_map.get(const.MAPPING_CONF_SENSOR)
+                                )
+
+        return sensors_to_subscribe_to
 
     @callback
     def async_sensor_state_changed(
@@ -545,12 +560,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 weatherdata = await self.hass.async_add_executor_job(
                     self._OWMClient.get_data
                 )
+            # WIP v2024.6.X: disabling this
             # experiment: this can be disabled because we switched to subscriptions
-            if sensor_in_mapping:
-                sensor_values = self.build_sensor_values_for_mapping(mapping)
-                weatherdata = await self.merge_weatherdata_and_sensor_values(
-                    weatherdata, sensor_values
-                )
+            # if sensor_in_mapping:
+            #    sensor_values = self.build_sensor_values_for_mapping(mapping)
+            #    weatherdata = await self.merge_weatherdata_and_sensor_values(
+            #        weatherdata, sensor_values
+            #    )
             if static_in_mapping:
                 static_values = self.build_static_values_for_mapping(mapping)
                 weatherdata = await self.merge_weatherdata_and_sensor_values(
@@ -1140,6 +1156,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # create a mapping
             self.store.async_create_mapping(data)
             self.store.async_get_config()
+
+        # update the list of sensors to follow - then unsubscribe / subscribe
+        await self.update_subscriptions()
 
     def check_mapping_sources(self, mapping_id):
         owm_in_mapping = False

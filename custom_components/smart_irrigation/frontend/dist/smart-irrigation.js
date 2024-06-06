@@ -7694,7 +7694,7 @@
     saveToHA(e) {
       if (!this.hass) return;
       let t = !0;
-      for (const a in e.mappings) if (null != e.mappings[a].sensorentity && (console.log(e.mappings[a].sensorentity), !(e.mappings[a].sensorentity in this.hass.states))) {
+      for (const a in e.mappings) if (null != e.mappings[a].sensorentity && "" != e.mappings[a].sensorentity && (console.log(e.mappings[a].sensorentity), !(e.mappings[a].sensorentity in this.hass.states))) {
         t = !1, Vi({
           body: {
             message: Ci("panels.mappings.cards.mapping.errors.source_does_not_exist", this.hass.language)
@@ -8157,7 +8157,7 @@
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${Ci("title", this.hass.language)}</div>
-          <div class="version">${"v2024.6.1"}</div>
+          <div class="version">${"v2024.6.2"}</div>
         </div>
 
         <ha-tabs
