@@ -8,7 +8,13 @@ import statistics
 from homeassistant.components.sensor import DOMAIN as PLATFORM
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE
-from homeassistant.core import HomeAssistant, asyncio, callback
+from homeassistant.core import (
+    Event,
+    EventStateChangedData,
+    HomeAssistant,
+    asyncio,
+    callback,
+)
 from homeassistant.helpers import (
     config_validation as cv,
     device_registry as dr,
@@ -21,6 +27,7 @@ from homeassistant.helpers.dispatcher import (
 )
 from homeassistant.helpers.event import (
     async_call_later,
+    async_track_state_change_event,
     async_track_sunrise,
     async_track_time_change,
     async_track_time_interval,
@@ -242,6 +249,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             hass, self._reset_event_fired_today, 0, 0, 0
         )
 
+        # WIP v2024.6.X:
+        # experiment with subscriptions on sensors
+        self._sensor_subscriptions = []
         super().__init__(hass, _LOGGER, name=const.DOMAIN)
 
     @callback
@@ -266,6 +276,46 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def set_up_auto_update_time(self, data):  # noqa: D102
         if data[const.CONF_AUTO_UPDATE_ENABLED]:
+            # WIP v2024.6.X:
+            # experiment to use subscriptions to catch all updates instead of just on a time schedule
+            # also need to remove subscriptions in the else of course.
+            zones = self.store.async_get_zones()
+            mappings = await self._get_unique_mappings_for_automatic_zones(zones)
+            sensors_to_subscribe_to = []
+            # loop over the mappings and store sensor data
+            for mapping_id in mappings:
+                (
+                    owm_in_mapping,
+                    sensor_in_mapping,
+                    static_in_mapping,
+                ) = self.check_mapping_sources(mapping_id=mapping_id)
+                mapping = self.store.async_get_mapping(mapping_id)
+                if sensor_in_mapping:
+                    for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
+                        if not isinstance(the_map, str):
+                            if the_map.get(
+                                const.MAPPING_CONF_SOURCE
+                            ) == const.MAPPING_CONF_SOURCE_SENSOR and the_map.get(
+                                const.MAPPING_CONF_SENSOR
+                            ):
+                                # this mapping maps to a sensor, so retrieve its value from HA
+                                if (
+                                    the_map.get(const.MAPPING_CONF_SENSOR)
+                                    not in sensors_to_subscribe_to
+                                ):
+                                    sensors_to_subscribe_to.append(
+                                        the_map.get(const.MAPPING_CONF_SENSOR)
+                                    )
+            # subscribe to all sensors
+            if sensors_to_subscribe_to is not None:
+                for s in sensors_to_subscribe_to:
+                    self._sensor_subscriptions.append(
+                        async_track_state_change_event(
+                            self.hass,
+                            s,
+                            self.async_sensor_state_changed,
+                        )
+                    )
             # CONF_AUTO_UPDATE_SCHEDULE: minute, hour, day
             # CONF_AUTO_UPDATE_INTERVAL: X
             # CONF_AUTO_UPDATE_TIME: first update time
@@ -289,20 +339,76 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             #    _LOGGER.warning("Schedule auto update time is not valid: {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
             #    raise ValueError("Time is not a valid time")
             # call update track time after waiting [update_delay] seconds
-            delay = 0
-            if const.CONF_AUTO_UPDATE_DELAY in data:
-                if int(data[const.CONF_AUTO_UPDATE_DELAY]) > 0:
-                    delay = int(data[const.CONF_AUTO_UPDATE_DELAY])
-                    _LOGGER.info(f"Delaying auto update with {delay} seconds")
-            async_call_later(
-                self.hass, timedelta(seconds=delay), self.track_update_time
-            )
+
+            # WIP v2024.6.X: disabled this because of experiment to move to subscriptions!
+            # delay = 0
+            # if const.CONF_AUTO_UPDATE_DELAY in data:
+            #    if int(data[const.CONF_AUTO_UPDATE_DELAY]) > 0:
+            #        delay = int(data[const.CONF_AUTO_UPDATE_DELAY])
+            # _LOGGER.info(f"Delaying auto update with {delay} seconds")
+            # async_call_later(
+            #    self.hass, timedelta(seconds=delay), self.track_update_time
+            # )
         else:
+            # WIP v2024.6.X: disabling this
             # remove all time trackers for auto update
-            if self._track_auto_update_time_unsub:
-                self._track_auto_update_time_unsub()
-                self._track_auto_update_time_unsub = None
-            self.store.async_update_config(data)
+            # if self._track_auto_update_time_unsub:
+            #    self._track_auto_update_time_unsub()
+            #    self._track_auto_update_time_unsub = None
+            # self.store.async_update_config(data)
+
+            # WIP v2024.6.X: move to subscriptions
+            # remove all sensor subscriptions
+            for s in self._sensor_subscriptions:
+                s()
+
+    @callback
+    def async_sensor_state_changed(
+        self, event: Event[EventStateChangedData]
+    ) -> None:  # old signature: entity, old_state, new_state):
+        """Callback fired when a sensor state has changed."""
+
+        old_state_obj = event.data["old_state"]
+        new_state_obj = event.data["new_state"]
+        # handle the sensor update by updating the mapping data
+        entity = event.data["entity_id"]
+        # get the mapping that uses this sensor
+        mappings = self.store.async_get_mappings()
+        for mapping in mappings:
+            if mapping.get(const.MAPPING_MAPPINGS):
+                for key, val in mapping.get(const.MAPPING_MAPPINGS).items():
+                    if val.get(const.MAPPING_CONF_SENSOR) == entity:
+                        # add the mapping data with the new sensor value
+                        if new_state_obj is not None:
+                            if const.MAPPING_DATA in mapping:
+                                mapping_data = mapping.get(const.MAPPING_DATA)
+                            else:
+                                mapping_data = []
+                            # val = convert_mapping_to_metric(
+                            #    val,
+                            #    key,
+                            #    the_map.get(const.MAPPING_CONF_UNIT),
+                            #    self.hass.config.units is METRIC_SYSTEM,
+                            # )
+                            # conversion to metric
+                            mapping_data.append(
+                                {
+                                    key: convert_mapping_to_metric(
+                                        new_state_obj.state,
+                                        key,
+                                        mapping.get(const.MAPPING_CONF_UNIT),
+                                        self.hass.config.units is METRIC_SYSTEM,
+                                    ),
+                                    const.RETRIEVED_AT: datetime.datetime.now(),
+                                }
+                            )
+                            changes = {const.MAPPING_DATA: mapping_data}
+                            self.store.async_update_mapping(
+                                mapping.get(const.MAPPING_ID), changes
+                            )
+                            _LOGGER.debug(
+                                f"async_sensor_state_changed: updated mapping {mapping.get(const.MAPPING_ID)} with new sensor value {new_state_obj.state}"
+                            )
 
     async def set_up_auto_calc_time(self, data):
         # unsubscribe from any existing track_time_changes
@@ -439,6 +545,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 weatherdata = await self.hass.async_add_executor_job(
                     self._OWMClient.get_data
                 )
+            # experiment: this can be disabled because we switched to subscriptions
             if sensor_in_mapping:
                 sensor_values = self.build_sensor_values_for_mapping(mapping)
                 weatherdata = await self.merge_weatherdata_and_sensor_values(
