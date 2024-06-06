@@ -329,7 +329,7 @@ class SmartIrrigationStorage:
         for mod in mods:
             if mods[mod]["class"] in ["PyETO", "Static"]:
                 m = getattr(mods[mod]["module"], mods[mod]["class"])
-                inst = m(self.hass, {})
+                inst = m(self.hass, {}, {})
                 schema_from_code = inst.schema_serialized()
                 if mods[mod]["class"] == "PyETO":
                     module0schema = schema_from_code
