@@ -277,52 +277,45 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def set_up_auto_update_time(self, data):  # noqa: D102
         # WIP v2024.6.X:
-        await self.update_subscriptions()
-        # if data[const.CONF_AUTO_UPDATE_ENABLED]:
-        # WIP v2024.6.X:
         # experiment to use subscriptions to catch all updates instead of just on a time schedule
-        # also need to remove subscriptions in the else of course.
+        await self.update_subscriptions()
+        if data[const.CONF_AUTO_UPDATE_ENABLED]:
+            # CONF_AUTO_UPDATE_SCHEDULE: minute, hour, day
+            # CONF_AUTO_UPDATE_INTERVAL: X
+            # CONF_AUTO_UPDATE_TIME: first update time
+            # 2023.9.0-beta14 experiment: ignore auto update time. Instead do a delay?
 
-        # CONF_AUTO_UPDATE_SCHEDULE: minute, hour, day
-        # CONF_AUTO_UPDATE_INTERVAL: X
-        # CONF_AUTO_UPDATE_TIME: first update time
-        # 2023.9.0-beta14 experiment: ignore auto update time. Instead do a delay?
+            # if check_time(data[const.CONF_AUTO_UPDATE_TIME]):
+            # first auto update time is valid
+            # update only the actual changed value: auto update time
+            #    timesplit = data[const.CONF_AUTO_UPDATE_TIME].split(":")
+            #    if self._track_auto_update_time_unsub:
+            #        self._track_auto_update_time_unsub()
+            #    self._track_auto_update_time_unsub = async_track_time_change(
+            #        self.hass,
+            #        self._async_track_update_time,
+            #        hour=timesplit[0],
+            #        minute=timesplit[1],
+            #        second=0
+            #    )
+            #    _LOGGER.info("Scheduled auto update first time update for {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
+            # else:
+            #    _LOGGER.warning("Schedule auto update time is not valid: {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
+            #    raise ValueError("Time is not a valid time")
+            # call update track time after waiting [update_delay] seconds
 
-        # if check_time(data[const.CONF_AUTO_UPDATE_TIME]):
-        # first auto update time is valid
-        # update only the actual changed value: auto update time
-        #    timesplit = data[const.CONF_AUTO_UPDATE_TIME].split(":")
-        #    if self._track_auto_update_time_unsub:
-        #        self._track_auto_update_time_unsub()
-        #    self._track_auto_update_time_unsub = async_track_time_change(
-        #        self.hass,
-        #        self._async_track_update_time,
-        #        hour=timesplit[0],
-        #        minute=timesplit[1],
-        #        second=0
-        #    )
-        #    _LOGGER.info("Scheduled auto update first time update for {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
-        # else:
-        #    _LOGGER.warning("Schedule auto update time is not valid: {}".format(data[const.CONF_AUTO_UPDATE_TIME]))
-        #    raise ValueError("Time is not a valid time")
-        # call update track time after waiting [update_delay] seconds
-
-        # WIP v2024.6.X: disabled this because of experiment to move to subscriptions!
-        # delay = 0
-        # if const.CONF_AUTO_UPDATE_DELAY in data:
-        #    if int(data[const.CONF_AUTO_UPDATE_DELAY]) > 0:
-        #        delay = int(data[const.CONF_AUTO_UPDATE_DELAY])
-        # _LOGGER.info(f"Delaying auto update with {delay} seconds")
-        # async_call_later(
-        #    self.hass, timedelta(seconds=delay), self.track_update_time
-        # )
-        # else:
-        # WIP v2024.6.X: disabling this
-        # remove all time trackers for auto update
-        # if self._track_auto_update_time_unsub:
-        #    self._track_auto_update_time_unsub()
-        #    self._track_auto_update_time_unsub = None
-        # self.store.async_update_config(data)
+            delay = 0
+            if const.CONF_AUTO_UPDATE_DELAY in data:
+                if int(data[const.CONF_AUTO_UPDATE_DELAY]) > 0:
+                    delay = int(data[const.CONF_AUTO_UPDATE_DELAY])
+                    _LOGGER.info(f"Delaying auto update with {delay} seconds")
+            async_call_later(
+                self.hass, timedelta(seconds=delay), self.track_update_time
+            )
+        elif self._track_auto_update_time_unsub:
+            self._track_auto_update_time_unsub()
+            self._track_auto_update_time_unsub = None
+            self.store.async_update_config(data)
 
     async def update_subscriptions(self):
         # subscribe to all sensors
