@@ -1,4 +1,5 @@
 """Diagnostics support for Smart Irrigation."""
+
 from __future__ import annotations
 import json
 import logging
@@ -19,10 +20,23 @@ async def async_get_config_entry_diagnostics(
     storagedata = ""
     try:
         store = hass.data[const.DOMAIN]["coordinator"].store
-        storagefile = store._store.path
-        with open(storagefile) as f:
-            data = json.load(f)
-        storagedata = data.get("data")
+        if store:
+            if store._store:
+                if store._store.path:
+                    storagefile = store._store.path
+                    with open(storagefile) as f:
+                        data = json.load(f)
+                    storagedata = data.get("data")
+                else:
+                    _LOGGER.error(
+                        "Unable to load storage file to generate diagnostics. Store._store.path is None"
+                    )
+            else:
+                _LOGGER.error(
+                    "Unable to load store to generate diagnostics. Store._store is None"
+                )
+        else:
+            _LOGGER.error("Unable to load store to generate diagnostics. Store is None")
     except:
         _LOGGER.error("Unable to load storage file to generate diagnostics")
     config_entry_info = config_entry.as_dict()

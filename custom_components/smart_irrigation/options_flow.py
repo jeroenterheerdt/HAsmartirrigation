@@ -18,9 +18,24 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
         self.config_entry = config_entry
         self.options = dict(config_entry.options)
         self._errors = {}
-        self._use_owm = self.config_entry.data.get(const.CONF_USE_OWM)
-        self._owm_api_key = self.config_entry.data.get(const.CONF_OWM_API_KEY)
-        self._owm_api_version = self.config_entry.data.get(const.CONF_OWM_API_VERSION)
+        if const.CONF_USE_OWM in self.options and self.options.get(
+            const.CONF_USE_OWM
+        ) != self.config_entry.data.get(const.CONF_USE_OWM):
+            self._use_owm = self.options.get(const.CONF_USE_OWM)
+        else:
+            self._use_owm = self.config_entry.data.get(const.CONF_USE_OWM)
+        if const.CONF_OWM_API_KEY in self.options:
+            self._owm_api_key = self.options.get(const.CONF_OWM_API_KEY)
+        else:
+            self._owm_api_key = self.config_entry.data.get(const.CONF_OWM_API_KEY)
+        if self._owm_api_key is not None:
+            self._owm_api_key = self._owm_api_key.strip()
+        if const.CONF_OWM_API_VERSION in self.options:
+            self._owm_api_version = self.options.get(const.CONF_OWM_API_VERSION)
+        else:
+            self._owm_api_version = self.config_entry.data.get(
+                const.CONF_OWM_API_VERSION
+            )
 
     async def async_step_init(self, user_input=None):  # pylint: disable=unused-argument
         """Manage the options."""
