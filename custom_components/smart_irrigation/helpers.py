@@ -5,7 +5,7 @@ import os
 import sys
 
 from homeassistant import exceptions
-from homeassistant.const import UnitOfTemperature
+from homeassistant.const import UnitOfTemperature, STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 
 from .const import (
@@ -109,6 +109,8 @@ def convert_timestamp(val):
 
 
 def convert_mapping_to_metric(val, mapping, unit, system_is_metric):
+    if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        return None
     if mapping == MAPPING_HUMIDITY:
         # humidity unit is same in metric and imperial: %
         return val
@@ -178,6 +180,8 @@ def convert_mapping_to_metric(val, mapping, unit, system_is_metric):
 
 
 def convert_between(from_unit, to_unit, val):
+    if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        return None
     if from_unit == to_unit or from_unit in [UNIT_PERCENT, UNIT_SECONDS]:
         # no conversion necessary here!
         return val
@@ -214,6 +218,8 @@ def convert_between(from_unit, to_unit, val):
 
 
 def convert_production(from_unit, to_unit, val):
+    if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        return None
     if to_unit == from_unit:
         return val
     if to_unit == UNIT_MJ_DAY_M2:
@@ -249,6 +255,8 @@ def convert_production(from_unit, to_unit, val):
 
 
 def convert_speed(from_unit, to_unit, val):
+    if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        return None
     if to_unit == from_unit:
         return val
     if to_unit == UNIT_KMH:
@@ -271,6 +279,8 @@ def convert_speed(from_unit, to_unit, val):
 
 
 def convert_pressure(from_unit, to_unit, val):
+    if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        return None
     if to_unit == from_unit:
         return val
     if to_unit in [UNIT_MBAR, UNIT_HPA]:
@@ -296,6 +306,8 @@ def convert_pressure(from_unit, to_unit, val):
 
 
 def convert_area(from_unit, to_unit, val):
+    if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        return None
     if to_unit == from_unit:
         return val
     if to_unit == UNIT_M2:
@@ -309,6 +321,8 @@ def convert_area(from_unit, to_unit, val):
 
 
 def convert_volume(from_unit, to_unit, val):
+    if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        return None
     if to_unit == from_unit:
         return val
     if to_unit == UNIT_LPM:
@@ -322,6 +336,8 @@ def convert_volume(from_unit, to_unit, val):
 
 
 def convert_length(from_unit, to_unit, val):
+    if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        return None
     if to_unit == from_unit:
         return val
     if to_unit == UNIT_MM:
@@ -335,6 +351,8 @@ def convert_length(from_unit, to_unit, val):
 
 
 def convert_temperatures(from_unit, to_unit, val):
+    if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        return None
     if to_unit == from_unit:
         return val
     if to_unit == UnitOfTemperature.CELSIUS:

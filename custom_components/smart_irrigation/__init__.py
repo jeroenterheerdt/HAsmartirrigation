@@ -7,7 +7,13 @@ import statistics
 
 from homeassistant.components.sensor import DOMAIN as PLATFORM
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE
+from homeassistant.const import (
+    CONF_ELEVATION,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    STATE_UNKNOWN,
+    STATE_UNAVAILABLE,
+)
 from homeassistant.core import (
     Event,
     EventStateChangedData,
@@ -380,6 +386,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         new_state_obj = event.data["new_state"]
         # handle the sensor update by updating the mapping data
         entity = event.data["entity_id"]
+        if new_state_obj in [None, STATE_UNKNOWN, STATE_UNAVAILABLE]:
+            _LOGGER.debug(
+                f"async_sensor_state_changed: new state for {entity} is {new_state_obj}, ignoring."
+            )
         # get the mapping that uses this sensor
         mappings = self.store.async_get_mappings()
         for mapping in mappings:
@@ -402,7 +412,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             mapping_data.append(
                                 {
                                     key: convert_mapping_to_metric(
-                                        new_state_obj.state,
+                                        float(new_state_obj.state),
                                         key,
                                         mapping.get(const.MAPPING_CONF_UNIT),
                                         self.hass.config.units is METRIC_SYSTEM,
