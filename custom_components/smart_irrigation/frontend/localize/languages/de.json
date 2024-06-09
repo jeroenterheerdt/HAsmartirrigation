@@ -12,7 +12,11 @@
     "attributes": {
       "size": "Größe",
       "throughput": "Durchfluss",
-      "state": "Zustand"
+      "state": "Zustand",
+      "bucket": "bucket",
+      "last_updated": "last updated",
+      "last_calculated": "last calculated",
+      "number_of_data_points": "number of data points"
     }
   },
   "defaults": {
@@ -129,7 +133,9 @@
             "sum": "Summe"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "Diese Sensorgruppe kann nicht entfernt werden, da sie von mindestens einer Zone verwendet wird."
+            "cannot-delete-mapping-because-zones-use-it": "Diese Sensorgruppe kann nicht entfernt werden, da sie von mindestens einer Zone verwendet wird.",
+            "invalid_source": "Invalid source",
+            "source_does_not_exist": "Source does not exist. Please enter a valid source, such as 'sensor.mysensor'."
           },
           "items": {
             "dewpoint": "Taupunkt",

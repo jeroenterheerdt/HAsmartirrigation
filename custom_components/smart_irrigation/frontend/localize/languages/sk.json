@@ -13,7 +13,10 @@
       "size": "size",
       "throughput": "priepustnosť",
       "state": "stav",
-      "bucket": "nádoba"
+      "bucket": "nádoba",
+      "last_updated": "last updated",
+      "last_calculated": "last calculated",
+      "number_of_data_points": "number of data points"
     }
   },
   "defaults": {
@@ -130,7 +133,9 @@
             "sum": "Sum"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "Túto skupinu senzorov nemôžete vymazať, pretože ju používa aspoň jedna zóna."
+            "cannot-delete-mapping-because-zones-use-it": "Túto skupinu senzorov nemôžete vymazať, pretože ju používa aspoň jedna zóna.",
+            "invalid_source": "Invalid source",
+            "source_does_not_exist": "Source does not exist. Please enter a valid source, such as 'sensor.mysensor'."
           },
           "items": {
             "dewpoint": "Rosný bod",
@@ -189,7 +194,8 @@
           "translated-options": {
             "DontEstimate": "Bez odhadu",
             "EstimateFromSunHours": "Odhad zo slnečných hodín",
-            "EstimateFromTemp": "Odhad z teploty"
+            "EstimateFromTemp": "Odhad z teploty",
+            "EstimateFromSunHoursAndTemperature": "Estimate from average of sun hours and temperature"
           }
         }
       },

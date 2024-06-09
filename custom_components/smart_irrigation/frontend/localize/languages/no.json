@@ -12,7 +12,11 @@
     "attributes": {
       "size": "størrelse",
       "throughput": "kapasitet",
-      "state": "status"
+      "state": "status",
+      "bucket": "bucket",
+      "last_updated": "last updated",
+      "last_calculated": "last calculated",
+      "number_of_data_points": "number of data points"
     }
   },
   "defaults": {
@@ -60,6 +64,7 @@
       "cards": {
         "automatic-duration-calculation": {
           "header": "Automatisk varighetsberegning",
+          "description": "Calculation takes collected weatherdata up to that point and updates the bucket for each automatic zone. Then, the duration is adjusted based on the new bucket value and the collected weatherdata is removed.",
           "labels": {
             "auto-calc-enabled": "Beregn sonevarigheter automatisk",
             "auto-calc-time": "Beregn ved"
@@ -70,15 +75,24 @@
             "warning-update-time-on-or-after-calc-time": "Advarsel: Oppdateringstidspunkt for værdata på eller etter beregningstidspunktet"
           },
           "header": "Automatisk oppdatering av værdata",
+          "description": "Collect and store weather data automatically. Weather data is required to calculate zone buckets and durations.",
           "labels": {
             "auto-update-enabled": "Oppdater værdata automatisk",
-            "auto-update-first-update": "(Første) Oppdatering kl",
+            "auto-update-delay": "Update delay",
             "auto-update-interval": "Oppdater sensordata hvert"
           },
           "options": {
             "days": "dager",
             "hours": "timer",
             "minutes": "minutter"
+          }
+        },
+        "automatic-clear": {
+          "header": "Automatic weather data pruning",
+          "description": "Automatically remove collected weatherdata at a configured time. Use this to make sure that there is no left over weatherdata from previous days. Don't remove the weatherdata before you calculate and only use this option if you expect the automatic update to collect weatherdata after you calculated for the day. Ideally, you want to prune as late in the day as possible.",
+          "labels": {
+            "automatic-clear-enabled": "Automatically clear collected weather data",
+            "automatic-clear-time": "Clear weather data at"
           }
         }
       },
@@ -119,7 +133,9 @@
             "sum": "Sum"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "Du kan ikke slette denne sensorguppen fordi minst én sone bruker den."
+            "cannot-delete-mapping-because-zones-use-it": "Du kan ikke slette denne sensorguppen fordi minst én sone bruker den.",
+            "invalid_source": "Invalid source",
+            "source_does_not_exist": "Source does not exist. Please enter a valid source, such as 'sensor.mysensor'."
           },
           "items": {
             "dewpoint": "Duggpunkt",
@@ -133,6 +149,11 @@
             "temperature": "Temperatur",
             "windspeed": "Vindhastighet"
           },
+          "pressure_types": {
+            "absolute": "absolute",
+            "relative": "relative"
+          },
+          "pressure-type": "Pressure is",
           "sensor-aggregate-of-sensor-values-to-calculate": "av sensordata for å beregne varighet",
           "sensor-aggregate-use-the": "Bruk",
           "sensor-entity": "Sensorenhet",
@@ -173,7 +194,8 @@
           "translated-options": {
             "DontEstimate": "Ikke beregn",
             "EstimateFromSunHours": "Beregn fra soltimer",
-            "EstimateFromTemp": "Beregn fra temperatur"
+            "EstimateFromTemp": "Beregn fra temperatur",
+            "EstimateFromSunHoursAndTemperature": "Estimate from average of sun hours and temperature"
           }
         }
       },
@@ -200,7 +222,8 @@
           "actions": {
             "calculate-all": "Beregn alle soner",
             "update-all": "Oppdater alle soner",
-            "reset-all-buckets": "Nullstill alle bøtter"
+            "reset-all-buckets": "Nullstill alle bøtter",
+            "clear-all-weatherdata": "Clear all weatherdata"
           },
           "header": "Handlinger på alle soner"
         }
@@ -222,11 +245,14 @@
           "manual": "Manuell"
         },
         "throughput": "Gjennomstrømning",
-        "maximum-bucket": "Maksimal bøtte"
+        "maximum-bucket": "Maksimal bøtte",
+        "last_calculated": "Last calculated",
+        "data-last-updated": "Data last updated",
+        "data-number-of-data-points": "Number of data points"
       },
       "no_items": "Det er ingen definerte soner ennå.",
       "title": "Soner"
-    },
-    "title": "Smart vanning"
-  }
+    }
+  },
+  "title": "Smart Irrigation"
 }

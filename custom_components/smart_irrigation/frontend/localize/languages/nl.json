@@ -12,7 +12,11 @@
     "attributes": {
       "size": "afmeting",
       "throughput": "doorvoer",
-      "state": "status"
+      "state": "status",
+      "bucket": "Voorraad",
+      "last_updated": "Laatst bijgewerkt op",
+      "last_calculated": "Laatst berekend op",
+      "number_of_data_points": "Aantal datapunten"
     }
   },
   "defaults": {
@@ -103,9 +107,9 @@
           "first-read-the": "Allereerst, lees de",
           "wiki": "Wiki",
           "if-you-still-need-help": "Als je hierna nog steeds hulp nodig hebt, laat een bericht achter op het",
-          "community-forum": "Community forum",
+          "community-forum": "Forum",
           "or-open-a": "of open een",
-          "github-issue": "Github Issue",
+          "github-issue": "GitHub Issue",
           "english-only": "alleen Engels"
         }
       }
@@ -129,7 +133,9 @@
             "sum": "Totaal"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "Deze sensorgroep kan niet worden verwijderd omdat er minimaal een zone gebruik van maakt."
+            "cannot-delete-mapping-because-zones-use-it": "Deze sensorgroep kan niet worden verwijderd omdat er minimaal een zone gebruik van maakt.",
+            "invalid_source": "Ongeldige bron",
+            "source_does_not_exist": "De bron bestaat niet. Vul een geldige bron in, zoals 'sensor.mysensor'."
           },
           "items": {
             "dewpoint": "Dauwpunt",
@@ -151,8 +157,8 @@
           "sensor-aggregate-of-sensor-values-to-calculate": "van de sensor waardes om irrigatietijd te berekenen",
           "sensor-aggregate-use-the": "Gebruik de/het",
           "sensor-entity": "Sensor entiteit",
-          "input-units": "Invoer geeft waardes in",
           "static_value": "Waarde",
+          "input-units": "Invoer geeft waardes in",
           "source": "Bron",
           "sources": {
             "none": "Geen",
@@ -164,7 +170,7 @@
       },
       "description": "Voeg een of meer sensorgroepen toe die weergegevens ophalen van OpenWeatherMap, van sensoren of een combinatie. Elke sensorgroep kan worden gebruikt voor een of meerdere zones",
       "labels": {
-        "mapping-name": "Name"
+        "mapping-name": "Naam"
       },
       "no_items": "Er zijn nog geen sensorgroepen.",
       "title": "Sensorgroepen"
@@ -188,7 +194,8 @@
           "translated-options": {
             "DontEstimate": "Niet berekenen",
             "EstimateFromSunHours": "Gebaseerd op zon uren",
-            "EstimateFromTemp": "Gebaseerd op temperatuur"
+            "EstimateFromTemp": "Gebaseerd op temperatuur",
+            "EstimateFromSunHoursAndTemperature": "Bereken op basis van gemiddelde zonne-uren en temperatuur"
           }
         }
       },

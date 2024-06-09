@@ -78,7 +78,7 @@
           "description": "Raccogli e archivia automaticamente i dati meteorologici. I dati meteorologici sono necessari per calcolare gli intervalli e le durate delle zone.",
           "labels": {
             "auto-update-enabled": "Aggiorna automaticamente i dati meteorologici",
-            "auto-update-first-update": "(Primo) aggiornamento alle",
+            "auto-update-delay": "Update delay",
             "auto-update-interval": "Aggiorna i dati del sensore ogni"
           },
           "options": {
@@ -133,7 +133,9 @@
             "sum": "Somma"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "Non è possibile eliminare questo gruppo di sensori perché almeno una zona lo utilizza."
+            "cannot-delete-mapping-because-zones-use-it": "Non è possibile eliminare questo gruppo di sensori perché almeno una zona lo utilizza.",
+            "invalid_source": "Invalid source",
+            "source_does_not_exist": "Source does not exist. Please enter a valid source, such as 'sensor.mysensor'."
           },
           "items": {
             "dewpoint": "Punto di rugiada",
