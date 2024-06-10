@@ -112,7 +112,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         """Update each zone as Sensor entity."""
         if self._id == id and self.hass and self.hass.data:
             # get the new values from store and update sensor state
-            zone = self.hass.data[const.DOMAIN]["coordinator"].store.async_get_zone(id)
+            zone = self.hass.data[const.DOMAIN]["coordinator"].store.get_zone(id)
             self._name = zone["name"]
             self._size = zone["size"]
             self._throughput = zone["throughput"]

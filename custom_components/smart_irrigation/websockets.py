@@ -211,7 +211,7 @@ def websocket_get_config(hass: HomeAssistant, connection, msg):
 def websocket_get_zones(hass: HomeAssistant, connection, msg):
     """Publish zone data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
-    zones = coordinator.store.async_get_zones()
+    zones = coordinator.store.get_zones()
     connection.send_result(msg["id"], zones)
 
 
@@ -219,7 +219,7 @@ def websocket_get_zones(hass: HomeAssistant, connection, msg):
 def websocket_get_modules(hass: HomeAssistant, connection, msg):
     """Publish module data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
-    modules = coordinator.store.async_get_modules()
+    modules = coordinator.store.get_modules()
     connection.send_result(msg["id"], modules)
 
 
@@ -236,7 +236,7 @@ async def websocket_get_all_modules(hass: HomeAssistant, connection, msg):
 def websocket_get_mappings(hass: HomeAssistant, connection, msg):
     """Publish mapping data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
-    mappings = coordinator.store.async_get_mappings()
+    mappings = coordinator.store.get_mappings()
     connection.send_result(msg["id"], mappings)
 
 

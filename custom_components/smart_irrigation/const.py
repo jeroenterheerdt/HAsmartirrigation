@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2024.6.6"
+VERSION = "v2024.6.7"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -61,6 +61,11 @@ CONF_DEFAULT_MAXIMUM_DURATION = (
     3600  # default maximum duration to one hour == 3600 seconds
 )
 CONF_DEFAULT_MAXIMUM_BUCKET = 50  # default maximum bucket of 50
+
+# PyETO specific config consts
+CONF_PYETO_COASTAL = "coastal"
+CONF_PYETO_SOLRAD_BEHAVIOR = "solrad_behavior"
+CONF_PYETO_FORECAST_DAYS = "forecast_days"
 
 CUSTOM_COMPONENTS = "custom_components"
 INTEGRATION_FOLDER = DOMAIN

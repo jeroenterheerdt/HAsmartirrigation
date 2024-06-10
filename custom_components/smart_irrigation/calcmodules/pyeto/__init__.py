@@ -31,6 +31,11 @@ from homeassistant.const import (
     CONF_ELEVATION,
 )
 from ..localize import localize
+from ...const import (
+    CONF_PYETO_COASTAL,
+    CONF_PYETO_FORECAST_DAYS,
+    CONF_PYETO_SOLRAD_BEHAVIOR,
+)
 
 # v1 only, no longer used in v2
 # from ...const import CONF_MAXIMUM_ET, DEFAULT_MAXIMUM_ET
@@ -43,10 +48,6 @@ class SOLRAD_behavior(Enum):
     DontEstimate = "3"
     EstimateFromSunHoursAndTemperature = "4"
 
-
-CONF_COASTAL = "coastal"
-CONF_SOLRAD_BEHAVIOR = "solrad_behavior"
-CONF_FORECAST_DAYS = "forecast_days"
 
 DEFAULT_COASTAL = False
 DEFAULT_SOLRAD_BEHAVIOR = SOLRAD_behavior.EstimateFromTemp
@@ -65,15 +66,15 @@ MAPPING_WINDSPEED = "Windspeed"
 
 SCHEMA = vol.Schema(
     {
-        vol.Optional(CONF_COASTAL, default=DEFAULT_COASTAL): vol.Coerce(
+        vol.Optional(CONF_PYETO_COASTAL, default=DEFAULT_COASTAL): vol.Coerce(
             bool
         ),  # is really required, but otherwise the UI shows a * near the checkbox
-        vol.Required(CONF_SOLRAD_BEHAVIOR, default=DEFAULT_SOLRAD_BEHAVIOR): vol.Coerce(
-            SOLRAD_behavior
-        ),
-        vol.Required(CONF_FORECAST_DAYS, default=DEFAULT_FORECAST_DAYS): vol.Coerce(
-            int
-        ),
+        vol.Required(
+            CONF_PYETO_SOLRAD_BEHAVIOR, default=DEFAULT_SOLRAD_BEHAVIOR
+        ): vol.Coerce(SOLRAD_behavior),
+        vol.Required(
+            CONF_PYETO_FORECAST_DAYS, default=DEFAULT_FORECAST_DAYS
+        ): vol.Coerce(int),
     }
 )
 
@@ -93,12 +94,12 @@ class PyETO(SmartIrrigationCalculationModule):
         self._forecast_days = DEFAULT_FORECAST_DAYS
         self._solrad_behavior = DEFAULT_SOLRAD_BEHAVIOR
         if config:
-            self._coastal = config.get(CONF_COASTAL, DEFAULT_COASTAL)
+            self._coastal = config.get(CONF_PYETO_COASTAL, DEFAULT_COASTAL)
             self._solrad_behavior = config.get(
-                CONF_SOLRAD_BEHAVIOR, DEFAULT_SOLRAD_BEHAVIOR
+                CONF_PYETO_SOLRAD_BEHAVIOR, DEFAULT_SOLRAD_BEHAVIOR
             )
             self._forecast_days = int(
-                config.get(CONF_FORECAST_DAYS, DEFAULT_FORECAST_DAYS)
+                config.get(CONF_PYETO_FORECAST_DAYS, DEFAULT_FORECAST_DAYS)
             )
 
     def calculate(self, weather_data, forecast_data):

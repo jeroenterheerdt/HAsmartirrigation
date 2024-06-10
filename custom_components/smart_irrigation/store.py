@@ -451,7 +451,7 @@ class SmartIrrigationStorage:
         return attr.asdict(new)
 
     @callback
-    def async_get_zone(self, zone_id: int) -> ZoneEntry:
+    def get_zone(self, zone_id: int) -> ZoneEntry:
         """Get an existing ZoneEntry by id."""
         res = self.zones.get(int(zone_id))
         return attr.asdict(res) if res else None
@@ -463,7 +463,7 @@ class SmartIrrigationStorage:
         # return attr.asdict(res) if res else None
 
     @callback
-    def async_get_zones(self):
+    def get_zones(self):
         """Get all ZoneEntries."""
         # res = {}
         # for key, val in self.zones.items():
@@ -512,6 +512,7 @@ class SmartIrrigationStorage:
             # apply maximum bucket value
             if (
                 ZONE_MAXIMUM_BUCKET in changes
+                and changes[ZONE_MAXIMUM_BUCKET] is not None
                 and changes[ZONE_BUCKET] is not None
                 and changes[ZONE_BUCKET] > changes[ZONE_MAXIMUM_BUCKET]
             ):
@@ -531,7 +532,7 @@ class SmartIrrigationStorage:
         return attr.asdict(new)
 
     @callback
-    def async_get_module(self, module_id: int) -> ModuleEntry:
+    def get_module(self, module_id: int) -> ModuleEntry:
         """Get an existing ModuleEntry by id."""
         if module_id is not None:
             res = self.modules.get(int(module_id))
@@ -539,7 +540,7 @@ class SmartIrrigationStorage:
         return None
 
     @callback
-    def async_get_modules(self):
+    def get_modules(self):
         """Get all ModuleEntries."""
         # res = {}
         # for key, val in self.modules.items():
@@ -581,7 +582,7 @@ class SmartIrrigationStorage:
         return attr.asdict(new)
 
     @callback
-    def async_get_mapping(self, mapping_id: int) -> MappingEntry:
+    def get_mapping(self, mapping_id: int) -> MappingEntry:
         """Get an existing MappingEntry by id."""
         if mapping_id is not None:
             res = self.mappings.get(int(mapping_id))
@@ -589,7 +590,7 @@ class SmartIrrigationStorage:
         return None
 
     @callback
-    def async_get_mappings(self):
+    def get_mappings(self):
         """Get all MappingEntries."""
         # res = {}
         # for key, val in self.modules.items():
