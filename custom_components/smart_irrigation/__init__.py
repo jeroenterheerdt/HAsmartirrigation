@@ -386,10 +386,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         new_state_obj = event.data["new_state"]
         # handle the sensor update by updating the mapping data
         entity = event.data["entity_id"]
-        if new_state_obj in [None, STATE_UNKNOWN, STATE_UNAVAILABLE]:
+        if new_state_obj.state in [None, STATE_UNKNOWN, STATE_UNAVAILABLE]:
             _LOGGER.debug(
-                f"async_sensor_state_changed: new state for {entity} is {new_state_obj}, ignoring."
+                f"async_sensor_state_changed: new state for {entity} is {new_state_obj.state}, ignoring."
             )
+            # return so we are ignoring these values
+            return
         # get the mapping that uses this sensor
         mappings = self.store.async_get_mappings()
         for mapping in mappings:
