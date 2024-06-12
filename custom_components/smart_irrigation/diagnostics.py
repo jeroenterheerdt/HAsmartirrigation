@@ -17,32 +17,22 @@ async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, config_entry: ConfigEntry
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
-    storagedata = ""
-    try:
-        store = hass.data[const.DOMAIN]["coordinator"].store
-        if store:
-            if store._store:
-                if store._store.path:
-                    storagefile = store._store.path
-                    with open(storagefile) as f:
-                        data = json.load(f)
-                    storagedata = data.get("data")
-                else:
-                    _LOGGER.error(
-                        "Unable to load storage file to generate diagnostics. Store._store.path is None"
-                    )
-            else:
-                _LOGGER.error(
-                    "Unable to load store to generate diagnostics. Store._store is None"
-                )
+    data = hass.data[const.DOMAIN]
+    coordinator = data.pop("coordinator", None)
+    data.pop("zones", None)
+    if coordinator is not None:
+        store = coordinator.store
+        if store is not None:
+            data["store"] = {
+                "config": store.async_get_config(),
+                "mappings": store.get_mappings(),
+                "modules": store.get_modules(),
+                "zones": store.get_zones(),
+            }
         else:
-            _LOGGER.error("Unable to load store to generate diagnostics. Store is None")
-    except:
-        _LOGGER.error("Unable to load storage file to generate diagnostics")
-    config_entry_info = config_entry.as_dict()
-    if "data" in config_entry_info and "owm_api_key" in config_entry_info["data"]:
-        config_entry_info["data"]["owm_api_key"] = "XXXXXXXX"
-    if "options" in config_entry_info and "owm_api_key" in config_entry_info["options"]:
-        config_entry_info["options"]["owm_api_key"] = "XXXXXXXXXXX"
-    diag: dict[str, Any] = {"config": config_entry_info, "storage": storagedata}
-    return diag
+            _LOGGER.warning("Store is not available")
+    else:
+        _LOGGER.warning("Coordinator is not available")
+    if const.CONF_OWM_API_KEY in data:
+        data[const.CONF_OWM_API_KEY] = "[redacted]"
+    return data
