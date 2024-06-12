@@ -397,7 +397,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         for mapping in mappings:
             if mapping.get(const.MAPPING_MAPPINGS):
                 for key, val in mapping.get(const.MAPPING_MAPPINGS).items():
-                    if val.get(const.MAPPING_CONF_SENSOR) == entity:
+                    if (
+                        not isinstance(val, str)
+                        and val.get(const.MAPPING_CONF_SENSOR) == entity
+                    ):
                         # add the mapping data with the new sensor value
                         if new_state_obj is not None:
                             if const.MAPPING_DATA in mapping:
@@ -432,6 +435,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             _LOGGER.debug(
                                 f"async_sensor_state_changed: updated mapping {mapping.get(const.MAPPING_ID)} with new sensor value {new_state_obj.state}"
                             )
+                    else:
+                        _LOGGER.debug(
+                            f"async_sensor_state_changed: invalid value received, ignoring {val}"
+                        )
             await self.async_continuous_update_for_mapping(
                 mapping.get(const.MAPPING_ID)
             )
