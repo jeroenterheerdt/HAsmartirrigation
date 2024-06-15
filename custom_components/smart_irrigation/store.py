@@ -339,7 +339,7 @@ class SmartIrrigationStorage:
             **{
                 MODULE_ID: 0,
                 MODULE_NAME: "PyETO",
-                MODULE_DESCRIPTION: localize(
+                MODULE_DESCRIPTION: await localize(
                     "calcmodules.pyeto.description", self.hass.config.language
                 )
                 + ".",
@@ -350,7 +350,7 @@ class SmartIrrigationStorage:
             **{
                 MODULE_ID: 1,
                 MODULE_NAME: "Static",
-                MODULE_DESCRIPTION: localize(
+                MODULE_DESCRIPTION: await localize(
                     "calcmodules.static.description", self.hass.config.language
                 )
                 + ".",
@@ -396,7 +396,7 @@ class SmartIrrigationStorage:
         new_mapping1 = MappingEntry(
             **{
                 MAPPING_ID: 0,
-                MAPPING_NAME: localize(
+                MAPPING_NAME: await localize(
                     "defaults.default-mapping", self.hass.config.language
                 ),
                 MAPPING_MAPPINGS: conf,

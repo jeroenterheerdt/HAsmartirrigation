@@ -238,6 +238,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self._track_midnight_time_unsub = None
         # set up auto calc time and auto update time from data
         the_config = self.store.async_get_config()
+        the_config[const.CONF_USE_OWM] = self.use_OWM
         if the_config[const.CONF_AUTO_UPDATE_ENABLED]:
             hass.loop.create_task(self.set_up_auto_update_time(the_config))
         if the_config[const.CONF_AUTO_CALC_ENABLED]:
