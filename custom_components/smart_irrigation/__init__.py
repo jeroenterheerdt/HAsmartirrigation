@@ -827,7 +827,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # loop over zones and calculate
         for zone in zones:
             if zone.get(const.ZONE_STATE) == const.ZONE_STATE_AUTOMATIC:
-                return await self.async_calculate_zone(zone.get(const.ZONE_ID))
+                await self.async_calculate_zone(zone.get(const.ZONE_ID))
         # remove mapping data from all mappings used
         mappings = await self._get_unique_mappings_for_automatic_zones(zones)
         for mapping_id in mappings:
@@ -1382,7 +1382,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     # remove mapping sensor data
                     changes = {}
                     changes[const.MAPPING_DATA] = []
-                    self.store.async_update_mapping(mapping_id, changes=changes)
+                    # disabled because calculating single zone shouldn't remove weather data
+                    # self.store.async_update_mapping(mapping_id, changes=changes)
                     self.store.async_update_zone(zone_id, data)
                     async_dispatcher_send(
                         self.hass, const.DOMAIN + "_config_updated", zone_id
