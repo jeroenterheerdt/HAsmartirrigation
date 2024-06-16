@@ -51,7 +51,7 @@ from .helpers import (
     relative_to_absolute_pressure,
 )
 from .localize import localize
-from .OWMClient import OWMClient
+from .weathermodules.OWMClient import OWMClient
 from .panel import async_register_panel, async_unregister_panel
 from .store import async_get_registry
 from .websockets import async_register_websockets

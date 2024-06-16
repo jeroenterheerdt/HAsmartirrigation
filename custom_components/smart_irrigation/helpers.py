@@ -63,7 +63,7 @@ from .const import (
     W_SQ_FT_TO_W_M2_FACTOR,
     W_TO_MJ_DAY_FACTOR,
 )
-from .OWMClient import OWMClient
+from .weathermodules.OWMClient import OWMClient
 
 _LOGGER = logging.getLogger(__name__)
 
