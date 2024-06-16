@@ -33,6 +33,6 @@ async def async_get_config_entry_diagnostics(
             _LOGGER.warning("Store is not available")
     else:
         _LOGGER.warning("Coordinator is not available")
-    if const.CONF_OWM_API_KEY in data:
-        data[const.CONF_OWM_API_KEY] = "[redacted]"
+    if const.CONF_WEATHER_SERVICE_API_KEY in data:
+        data[const.CONF_WEATHER_SERVICE_API_KEY] = "[redacted]"
     return data

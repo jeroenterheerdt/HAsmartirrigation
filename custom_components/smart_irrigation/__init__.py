@@ -11,8 +11,8 @@ from homeassistant.const import (
     CONF_ELEVATION,
     CONF_LATITUDE,
     CONF_LONGITUDE,
-    STATE_UNKNOWN,
     STATE_UNAVAILABLE,
+    STATE_UNKNOWN,
 )
 from homeassistant.core import (
     Event,
@@ -51,9 +51,10 @@ from .helpers import (
     relative_to_absolute_pressure,
 )
 from .localize import localize
-from .weathermodules.OWMClient import OWMClient
 from .panel import async_register_panel, async_unregister_panel
 from .store import async_get_registry
+from .weathermodules.OWMClient import OWMClient
+from .weathermodules.PirateWeatherClient import PirateWeatherClient
 from .websockets import async_register_websockets
 
 _LOGGER = logging.getLogger(__name__)
@@ -74,43 +75,70 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     session = async_get_clientsession(hass)
 
     store = await async_get_registry(hass)
-    # store OWM info in hass.data
+    # store Weather Service info in hass.data
     hass.data.setdefault(const.DOMAIN, {})
-    hass.data[const.DOMAIN][const.CONF_USE_OWM] = entry.data.get(const.CONF_USE_OWM)
-    if hass.data[const.DOMAIN][const.CONF_USE_OWM]:
-        if const.CONF_OWM_API_KEY in entry.data:
-            hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = entry.data.get(
-                const.CONF_OWM_API_KEY
-            ).strip()
-        hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = entry.data.get(
-            const.CONF_OWM_API_VERSION
-        )
+    # load store info into hass.data[const.DOMAIN]
+    config = store.async_get_config()
+    hass.data[const.DOMAIN][const.CONF_USE_WEATHER_SERVICE] = config.get(
+        const.CONF_USE_WEATHER_SERVICE, const.CONF_DEFAULT_USE_WEATHER_SERVICE
+    )
+    hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE] = config.get(
+        const.CONF_WEATHER_SERVICE, const.CONF_DEFAULT_WEATHER_SERVICE
+    )
 
+    # check the entry to see if it matches up, if not, set it.
+    if const.CONF_USE_WEATHER_SERVICE in entry.data:
+        hass.data[const.DOMAIN][const.CONF_USE_WEATHER_SERVICE] = entry.data.get(
+            const.CONF_USE_WEATHER_SERVICE
+        )
+        if hass.data[const.DOMAIN][const.CONF_USE_WEATHER_SERVICE]:
+            if const.CONF_WEATHER_SERVICE in entry.data:
+                hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE] = entry.data.get(
+                    const.CONF_WEATHER_SERVICE
+                )
+            if const.CONF_WEATHER_SERVICE_API_KEY in entry.data:
+                hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = (
+                    entry.data.get(const.CONF_WEATHER_SERVICE_API_KEY).strip()
+                )
+            hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_VERSION] = (
+                entry.data.get(const.CONF_WEATHER_SERVICE_API_VERSION)
+            )
+    # check for OWM config and migrate accordingly
+    if entry.data["use_owm"]:
+        if "owm_api_key" in entry.data:
+            hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = entry.data[
+                "owm_api_key"
+            ]
     # logic here is: if options are set that do not agree with the data settings, use the options
     # handle options flow data
-    if const.CONF_USE_OWM in entry.options and entry.options.get(
-        const.CONF_USE_OWM
-    ) != entry.data.get(const.CONF_USE_OWM):
-        hass.data[const.DOMAIN][const.CONF_USE_OWM] = entry.options.get(
-            const.CONF_USE_OWM
+    if const.CONF_USE_WEATHER_SERVICE in entry.options and entry.options.get(
+        const.CONF_USE_WEATHER_SERVICE
+    ) != entry.data.get(const.CONF_USE_WEATHER_SERVICE):
+        hass.data[const.DOMAIN][const.CONF_USE_WEATHER_SERVICE] = entry.options.get(
+            const.CONF_USE_WEATHER_SERVICE
         )
-        if const.CONF_OWM_API_KEY in entry.options:
-            hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = entry.options.get(
-                const.CONF_OWM_API_KEY
+        if const.CONF_WEATHER_SERVICE in entry.options:
+            hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE] = entry.options.get(
+                const.CONF_WEATHER_SERVICE
             )
-            if hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] is not None:
-                hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = hass.data[
+        if const.CONF_WEATHER_SERVICE_API_KEY in entry.options:
+            hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = (
+                entry.options.get(const.CONF_WEATHER_SERVICE_API_KEY)
+            )
+            if hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] is not None:
+                hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = hass.data[
                     const.DOMAIN
-                ][const.CONF_OWM_API_KEY].strip()
-        if const.CONF_OWM_API_VERSION in entry.options:
-            hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = entry.options.get(
-                const.CONF_OWM_API_VERSION
+                ][const.CONF_WEATHER_SERVICE_API_KEY].strip()
+        if const.CONF_WEATHER_SERVICE_API_VERSION in entry.options:
+            hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_VERSION] = (
+                entry.options.get(const.CONF_WEATHER_SERVICE_API_VERSION)
             )
 
+    # Removed because of addition of other weather services than OWM
     # check if API version is 2.5, force it to be 3.0. API keys should still be valid.
-    if const.CONF_OWM_API_VERSION in hass.data[const.DOMAIN]:
-        if hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] == "2.5":
-            hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = "3.0"
+    # if const.CONF_WEATHER_SERVICE_API_VERSION in hass.data[const.DOMAIN]:
+    #    if hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_VERSION] == "2.5":
+    #        hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_VERSION] = "3.0"
     coordinator = SmartIrrigationCoordinator(hass, session, entry, store)
 
     device_registry = dr.async_get(hass)
@@ -127,7 +155,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data[const.DOMAIN]["zones"] = {}
 
     # make sure we capture the use_owm state
-    store.async_update_config({const.CONF_USE_OWM: coordinator.use_OWM})
+    store.async_update_config(
+        {const.CONF_USE_WEATHER_SERVICE: coordinator.use_weather_service}
+    )
 
     if entry.unique_id is None:
         await hass.config_entries.async_update_entry(
@@ -160,20 +190,25 @@ async def options_update_listener(hass: HomeAssistant, config_entry):
     """Handle options update."""
     # copy the api key and version to the hass data
     if const.DOMAIN in hass.data:
-        hass.data[const.DOMAIN][const.CONF_USE_OWM] = config_entry.options.get(
-            const.CONF_USE_OWM
+        hass.data[const.DOMAIN][const.CONF_USE_WEATHER_SERVICE] = (
+            config_entry.options.get(const.CONF_USE_WEATHER_SERVICE)
         )
-        if hass.data[const.DOMAIN][const.CONF_USE_OWM]:
-            if const.CONF_OWM_API_KEY in config_entry.options:
-                hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = (
-                    config_entry.options.get(const.CONF_OWM_API_KEY).strip()
+        if hass.data[const.DOMAIN][const.CONF_USE_WEATHER_SERVICE]:
+            if const.CONF_WEATHER_SERVICE in config_entry.options:
+                hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE] = (
+                    config_entry.options.get(const.CONF_WEATHER_SERVICE)
                 )
-            hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = (
-                config_entry.options.get(const.CONF_OWM_API_VERSION)
+            if const.CONF_WEATHER_SERVICE_API_KEY in config_entry.options:
+                hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = (
+                    config_entry.options.get(const.CONF_WEATHER_SERVICE_API_KEY).strip()
+                )
+            hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_VERSION] = (
+                config_entry.options.get(const.CONF_WEATHER_SERVICE_API_VERSION)
             )
         else:
-            hass.data[const.DOMAIN][const.CONF_OWM_API_KEY] = None
-            hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION] = None
+            hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE] = None
+            hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = None
+            hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_VERSION] = None
         await hass.config_entries.async_reload(config_entry.entry_id)
 
 
@@ -212,16 +247,33 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self.hass = hass
         self.entry = entry
         self.store = store
-        self.use_OWM = hass.data[const.DOMAIN][const.CONF_USE_OWM]
-        self._OWMClient = None
-        if self.use_OWM:
-            self._OWMClient = OWMClient(
-                hass.data[const.DOMAIN][const.CONF_OWM_API_KEY],
-                hass.data[const.DOMAIN][const.CONF_OWM_API_VERSION],
-                self.hass.config.as_dict().get(CONF_LATITUDE),
-                self.hass.config.as_dict().get(CONF_LONGITUDE),
-                self.hass.config.as_dict().get(CONF_ELEVATION),
-            )
+        self.use_weather_service = hass.data[const.DOMAIN][
+            const.CONF_USE_WEATHER_SERVICE
+        ]
+
+        self.weather_service = hass.data[const.DOMAIN].get(
+            const.CONF_WEATHER_SERVICE, None
+        )
+        self._WeatherServiceClient = None
+        if self.use_weather_service:
+            if self.weather_service == const.CONF_WEATHER_SERVICE_OWM:
+                self._WeatherServiceClient = OWMClient(
+                    api_key=hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY],
+                    api_version=hass.data[const.DOMAIN].get(
+                        const.CONF_WEATHER_SERVICE_API_VERSION
+                    ),
+                    latitude=self.hass.config.as_dict().get(CONF_LATITUDE),
+                    longitude=self.hass.config.as_dict().get(CONF_LONGITUDE),
+                    elevation=self.hass.config.as_dict().get(CONF_ELEVATION),
+                )
+            elif self.weather_service == const.CONF_WEATHER_SERVICE_PW:
+                self._WeatherServiceClient = PirateWeatherClient(
+                    api_key=hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY],
+                    api_version="1",
+                    latitude=self.hass.config.as_dict().get(CONF_LATITUDE),
+                    longitude=self.hass.config.as_dict().get(CONF_LONGITUDE),
+                    elevation=self.hass.config.as_dict().get(CONF_ELEVATION),
+                )
         self._subscriptions = []
 
         self._subscriptions.append(
@@ -238,7 +290,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self._track_midnight_time_unsub = None
         # set up auto calc time and auto update time from data
         the_config = self.store.async_get_config()
-        the_config[const.CONF_USE_OWM] = self.use_OWM
+        the_config[const.CONF_USE_WEATHER_SERVICE] = self.use_weather_service
+        the_config[const.CONF_WEATHER_SERVICE] = self.weather_service
         if the_config[const.CONF_AUTO_UPDATE_ENABLED]:
             hass.loop.create_task(self.set_up_auto_update_time(the_config))
         if the_config[const.CONF_AUTO_CALC_ENABLED]:
@@ -509,8 +562,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 raise ValueError("Time is not a valid time")
         else:
             # set OWM client cache to 0
-            if self._OWMClient:
-                self._OWMClient.cache_seconds = 0
+            if self._WeatherServiceClient:
+                self._WeatherServiceClient.cache_seconds = 0
             # remove all time trackers
             if self._track_auto_calc_time_unsub:
                 self._track_auto_calc_time_unsub()
@@ -566,8 +619,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # track time X minutes
             the_time_delta = timedelta(minutes=interval)
         # update cache for OWMClient to time delta in seconds -1
-        if self._OWMClient:
-            self._OWMClient.cache_seconds = the_time_delta.total_seconds() - 1
+        if self._WeatherServiceClient:
+            self._WeatherServiceClient.cache_seconds = (
+                the_time_delta.total_seconds() - 1
+            )
 
         if self._track_auto_update_time_unsub:
             self._track_auto_update_time_unsub()
@@ -610,10 +665,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             ) = self.check_mapping_sources(mapping_id=mapping_id)
             mapping = self.store.get_mapping(mapping_id)
             weatherdata = None
-            if self.use_OWM and owm_in_mapping:
+            if self.use_weather_service and owm_in_mapping:
                 # retrieve data from OWM
                 weatherdata = await self.hass.async_add_executor_job(
-                    self._OWMClient.get_data
+                    self._WeatherServiceClient.get_data
                 )
             # WIP v2024.6.X: disabling this
             # experiment: this can be disabled because we switched to subscriptions
@@ -758,7 +813,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         len(formatted_retrieved_ats) - 1
                     ]
                 # Get interval between two timstamps as timedelta object
-                diff = first_retrieved_at - last_retrieved_at
+                diff = last_retrieved_at - first_retrieved_at
                 # Get interval between two timstamps in hours
                 diff_in_hours = diff.total_seconds() / 3600
                 diff_in_hours = abs(diff_in_hours)
@@ -869,10 +924,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             f"calculate_zone: modinst.name: {modinst.name} and forecast_days: {modinst._forecast_days}"
         )
         if modinst and modinst.name == "PyETO" and modinst._forecast_days > 0:
-            if self.use_OWM:
+            if self.use_weather_service:
                 # get forecast info from OWM
                 forecastdata = await self.hass.async_add_executor_job(
-                    self._OWMClient.get_forecast_data
+                    self._WeatherServiceClient.get_forecast_data
                 )
                 _LOGGER.debug(f"Retrieved forecast data: {forecastdata}")
             else:
@@ -1349,14 +1404,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             forecastdata = None
             if modinst:
                 if modinst.name == "PyETO" and modinst._forecast_days > 0:
-                    if self.use_OWM:
+                    if self.use_weather_service:
                         # set override cache if set
-                        self._OWMClient.override_cache = data.get(
+                        self._WeatherServiceClient.override_cache = data.get(
                             const.ATTR_OVERRIDE_CACHE, False
                         )
                         # get forecast info from OWM
                         forecastdata = await self.hass.async_add_executor_job(
-                            self._OWMClient.get_forecast_data
+                            self._WeatherServiceClient.get_forecast_data
                         )
                     else:
                         _LOGGER.error(
@@ -1442,13 +1497,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
             mapping = self.store.get_mapping(mapping_id)
             weatherdata = None
-            if self.use_OWM and owm_in_mapping:
-                self._OWMClient.override_cache = data.get(
+            if self.use_weather_service and owm_in_mapping:
+                self._WeatherServiceClient.override_cache = data.get(
                     const.ATTR_OVERRIDE_CACHE, False
                 )
                 # retrieve data from OWM
                 weatherdata = await self.hass.async_add_executor_job(
-                    self._OWMClient.get_data
+                    self._WeatherServiceClient.get_data
                 )
             if sensor_in_mapping:
                 sensor_values = self.build_sensor_values_for_mapping(mapping)

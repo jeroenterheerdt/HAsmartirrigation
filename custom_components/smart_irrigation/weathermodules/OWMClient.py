@@ -72,7 +72,8 @@ class OWMClient:  # pylint: disable=invalid-name
         """Init."""
         self.api_key = api_key.strip().replace(" ", "")
         # This should only be 3.0 going forward because of OWM Sunsetting 2.5 API.
-        self.api_version = api_version.strip()
+        api_version = "3.0"
+        self.api_version = api_version
         self.longitude = longitude
         self.latitude = latitude
         self.elevation = elevation

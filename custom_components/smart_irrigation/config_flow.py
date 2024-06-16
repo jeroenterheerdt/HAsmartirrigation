@@ -1,4 +1,5 @@
 """Config flow for the Smart Irrigation integration."""
+
 import voluptuous as vol
 
 from homeassistant import config_entries, exceptions
@@ -18,8 +19,11 @@ class SmartIrrigationConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
     def __init__(self) -> None:
         self._errors = {}
         self._name = ""
-        self._owm_api_key = ""
-        self._owm_api_version = 3.0
+        self._use_weather_service = False
+        self._weather_service_api_key = ""
+        self._weather_service = ""
+        # not needed anymore because versions are hardcoded
+        # self._forecasting_api_version = 3.0
 
     async def async_step_user(self, user_input=None):
         """Handle a flow initialized by the user."""
@@ -33,8 +37,8 @@ class SmartIrrigationConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             try:
                 await self._check_unique(user_input[const.CONF_INSTANCE_NAME])
                 self._name = user_input[const.CONF_INSTANCE_NAME]
-                self._use_owm = user_input[const.CONF_USE_OWM]
-                if not self._use_owm:
+                self._use_weather_service = user_input[const.CONF_USE_WEATHER_SERVICE]
+                if not self._use_weather_service:
                     # else create the entry right away
                     return self.async_create_entry(title=const.NAME, data=user_input)
                 return await self._show_step_1(user_input)
@@ -48,7 +52,7 @@ class SmartIrrigationConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(const.CONF_INSTANCE_NAME, default=const.NAME): str,
-                    vol.Required(const.CONF_USE_OWM, default=True): bool,
+                    vol.Required(const.CONF_USE_WEATHER_SERVICE, default=True): bool,
                 }
             ),
             errors=self._errors,
@@ -61,14 +65,21 @@ class SmartIrrigationConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
         if user_input is not None:
             try:
                 # store values entered
-                self._owm_api_key = user_input[const.CONF_OWM_API_KEY].strip()
+                self._weather_service_api_key = user_input[
+                    const.CONF_WEATHER_SERVICE_API_KEY
+                ].strip()
+                self._weather_service = user_input[const.CONF_WEATHER_SERVICE].strip()
                 # v2024.4.5: removing handling of 2.5 API version of sunsetting by OWM in June 2024.
                 # self._owm_api_version = user_input[const.CONF_OWM_API_VERSION]
-                user_input[const.CONF_OWM_API_VERSION] = "3.0"
-                self._owm_api_version = user_input[const.CONF_OWM_API_VERSION]
-                user_input[const.CONF_USE_OWM] = self._use_owm
+                # user_input[const.CONF_FORECASTING_API_VERSION] = "3.0"
+                # self._forecasting_api_version = user_input[
+                #    const.CONF_FORECASTING_API_VERSION
+                # ]
+                user_input[const.CONF_USE_WEATHER_SERVICE] = self._use_weather_service
                 user_input[const.CONF_INSTANCE_NAME] = self._name
-                await test_api_key(self.hass, self._owm_api_key, self._owm_api_version)
+                await test_api_key(
+                    self.hass, self._weather_service, self._weather_service_api_key
+                )
                 return self.async_create_entry(title=const.NAME, data=user_input)
 
             except InvalidAuth:
@@ -84,7 +95,10 @@ class SmartIrrigationConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
             step_id="step1",
             data_schema=vol.Schema(
                 {
-                    vol.Required(const.CONF_OWM_API_KEY): str,
+                    vol.Required(const.CONF_WEATHER_SERVICE): selector(
+                        {"select": {"options": const.CONF_WEATHER_SERVICES}}
+                    ),
+                    vol.Required(const.CONF_WEATHER_SERVICE_API_KEY): str,
                     # vol.Required(const.CONF_OWM_API_VERSION, default="3.0"): selector(
                     #    {"select": {"options": ["2.5", "3.0"]}}
                     # ),

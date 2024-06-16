@@ -12,8 +12,9 @@ SUPPORTED_LANGUAGES = ["de", "en", "es", "fr", "it", "nl", "no", "sk"]
 
 START_EVENT_FIRED_TODAY = "starteventfiredtoday"
 
-CONF_OWM_API_KEY = "owm_api_key"
-CONF_OWM_API_VERSION = "owm_api_version"
+CONF_WEATHER_SERVICE = "weather_service"
+CONF_WEATHER_SERVICE_API_KEY = "weather_service_api_key"
+CONF_WEATHER_SERVICE_API_VERSION = "weather_service_api_version"
 CONF_INSTANCE_NAME = "name"
 CONF_REFERENCE_ET = "reference_evapotranspiration"
 CONF_REFERENCE_ET_1 = "reference_evapotranspiration_1"
@@ -33,7 +34,14 @@ CONF_DEFAULT_REFERENCE_ET = 0.0
 # CONF_MAXIMUM_ET = "maximum_et"
 # DEFAULT_MAXIMUM_ET = 0
 
-CONF_DEFAULT_USE_OWM = False
+# Weather Services
+
+CONF_WEATHER_SERVICE_OWM = "Open Weather Map"
+CONF_WEATHER_SERVICE_PW = "Pirate Weather"
+CONF_WEATHER_SERVICES = [CONF_WEATHER_SERVICE_OWM, CONF_WEATHER_SERVICE_PW]
+
+CONF_DEFAULT_USE_WEATHER_SERVICE = False
+CONF_DEFAULT_WEATHER_SERVICE = None
 CONF_CALC_TIME = "calctime"
 CONF_DEFAULT_CALC_TIME = "23:00"
 CONF_AUTO_CALC_ENABLED = "autocalcenabled"
@@ -56,7 +64,7 @@ CONF_DEFAULT_AUTO_UPDATE_INTERVAL = "1"
 CONF_UNITS = "units"
 CONF_IMPERIAL = "imperial"
 CONF_METRIC = "metric"
-CONF_USE_OWM = "use_owm"
+CONF_USE_WEATHER_SERVICE = "use_weather_service"
 CONF_DEFAULT_MAXIMUM_DURATION = (
     3600  # default maximum duration to one hour == 3600 seconds
 )

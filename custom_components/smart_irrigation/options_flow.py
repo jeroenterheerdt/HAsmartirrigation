@@ -18,23 +18,45 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
         self.config_entry = config_entry
         self.options = dict(config_entry.options)
         self._errors = {}
-        if const.CONF_USE_OWM in self.options and self.options.get(
-            const.CONF_USE_OWM
-        ) != self.config_entry.data.get(const.CONF_USE_OWM):
-            self._use_owm = self.options.get(const.CONF_USE_OWM)
+        # migrate from use_owm to weather_service
+        if "use_owm" in self.config_entry.data:
+            self._use_weather_service = self.config_entry.data.get("use_owm")
+            self._weather_service = const.CONF_WEATHER_SERVICE_OWM
+            self._weather_service_api_key = self.config_entry.data.get("owm_api_key")
         else:
-            self._use_owm = self.config_entry.data.get(const.CONF_USE_OWM)
-        if const.CONF_OWM_API_KEY in self.options:
-            self._owm_api_key = self.options.get(const.CONF_OWM_API_KEY)
-        else:
-            self._owm_api_key = self.config_entry.data.get(const.CONF_OWM_API_KEY)
-        if self._owm_api_key is not None:
-            self._owm_api_key = self._owm_api_key.strip()
-        if const.CONF_OWM_API_VERSION in self.options:
-            self._owm_api_version = self.options.get(const.CONF_OWM_API_VERSION)
+            if const.CONF_USE_WEATHER_SERVICE in self.options and self.options.get(
+                const.CONF_USE_WEATHER_SERVICE
+            ) != self.config_entry.data.get(const.CONF_USE_WEATHER_SERVICE):
+                self._use_weather_service = self.options.get(
+                    const.CONF_USE_WEATHER_SERVICE
+                )
+            else:
+                self._use_weather_service = self.config_entry.data.get(
+                    const.CONF_USE_WEATHER_SERVICE
+                )
+            if const.CONF_WEATHER_SERVICE in self.options:
+                self._weather_service = self.options.get(const.CONF_WEATHER_SERVICE)
+            else:
+                self._weather_service = self.config_entry.data.get(
+                    const.CONF_WEATHER_SERVICE
+                )
+            if const.CONF_WEATHER_SERVICE_API_KEY in self.options:
+                self._weather_service_api_key = self.options.get(
+                    const.CONF_WEATHER_SERVICE_API_KEY
+                )
+            else:
+                self._weather_service_api_key = self.config_entry.data.get(
+                    const.CONF_WEATHER_SERVICE_API_KEY
+                )
+        if self._weather_service_api_key is not None:
+            self._weather_service_api_key = self._weather_service_api_key.strip()
+        if const.CONF_WEATHER_SERVICE_API_VERSION in self.options:
+            self._owm_api_version = self.options.get(
+                const.CONF_WEATHER_SERVICE_API_VERSION
+            )
         else:
             self._owm_api_version = self.config_entry.data.get(
-                const.CONF_OWM_API_VERSION
+                const.CONF_WEATHER_SERVICE_API_VERSION
             )
 
     async def async_step_init(self, user_input=None):  # pylint: disable=unused-argument
@@ -45,12 +67,12 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             # validation
             try:
                 # store values entered
-                self._use_owm = user_input[const.CONF_USE_OWM]
-                if not self._use_owm:
+                self._use_weather_service = user_input[const.CONF_USE_WEATHER_SERVICE]
+                if not self._use_weather_service:
                     # update the entry right away and remove the API info
-                    user_input[const.CONF_OWM_API_KEY] = None
+                    user_input[const.CONF_WEATHER_SERVICE_API_KEY] = None
                     # forcing it to be 3.0 because of sunsetting of 2.5 API by OWM in June 2024
-                    user_input[const.CONF_OWM_API_VERSION] = "3.0"
+                    # user_input[const.CONF_WEATHER_SERVICE_API_VERSION] = "3.0"
                     return self.async_create_entry(title="", data=user_input)
                 else:
                     # show the next step where you can configure / update API key/version
@@ -65,7 +87,10 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Required(const.CONF_USE_OWM, default=self._use_owm): bool,
+                    vol.Required(
+                        const.CONF_USE_WEATHER_SERVICE,
+                        default=self._use_weather_service,
+                    ): bool,
                 }
             ),
             errors=self._errors,
@@ -76,8 +101,12 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="step1",
             data_schema=vol.Schema(
                 {
+                    vol.Required(const.CONF_WEATHER_SERVICE): selector(
+                        {"select": {"options": const.CONF_WEATHER_SERVICES}}
+                    ),
                     vol.Required(
-                        const.CONF_OWM_API_KEY, default=self._owm_api_key
+                        const.CONF_WEATHER_SERVICE_API_KEY,
+                        default=self._weather_service_api_key,
                     ): str,
                     # vol.Required(const.CONF_OWM_API_VERSION, default=self._owm_api_version): selector(
                     #    {"select": {"options": ["2.5", "3.0"]}}
@@ -94,12 +123,19 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             try:
                 # store values entered
-                self._owm_api_key = user_input[const.CONF_OWM_API_KEY].strip()
+                self._weather_service_api_key = user_input[
+                    const.CONF_WEATHER_SERVICE_API_KEY
+                ].strip()
+                self._weather_service = user_input[const.CONF_WEATHER_SERVICE]
                 # forcing it to be 3.0 because of sunsetting of 2.5 API by OWM in June 2024
-                user_input[const.CONF_OWM_API_VERSION] = "3.0"
-                self._owm_api_version = user_input[const.CONF_OWM_API_VERSION]
-                user_input[const.CONF_USE_OWM] = self._use_owm
-                await test_api_key(self.hass, self._owm_api_key, self._owm_api_version)
+                # user_input[const.CONF_WEATHER_SERVICE_API_VERSION] = "3.0"
+                # self._owm_api_version = user_input[
+                #    const.CONF_WEATHER_SERVICE_API_VERSION
+                # ]
+                user_input[const.CONF_USE_WEATHER_SERVICE] = self._use_weather_service
+                await test_api_key(
+                    self.hass, self._weather_service, self._weather_service_api_key
+                )
                 return self.async_create_entry(title="", data=user_input)
 
             except InvalidAuth:

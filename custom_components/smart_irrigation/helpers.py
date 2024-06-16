@@ -9,6 +9,8 @@ from homeassistant.const import UnitOfTemperature, STATE_UNAVAILABLE, STATE_UNKN
 from homeassistant.core import HomeAssistant
 
 from .const import (
+    CONF_WEATHER_SERVICE_OWM,
+    CONF_WEATHER_SERVICE_PW,
     CUSTOM_COMPONENTS,
     DOMAIN,
     GALLON_TO_LITER_FACTOR,
@@ -64,6 +66,7 @@ from .const import (
     W_TO_MJ_DAY_FACTOR,
 )
 from .weathermodules.OWMClient import OWMClient
+from .weathermodules.PirateWeatherClient import PirateWeatherClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -414,21 +417,35 @@ def altitudeToPressure(alt):
     return 100 * ((44331.514 - alt) / 11880.516) ** (1 / 0.1902632) / 100
 
 
-async def test_api_key(hass: HomeAssistant, api_key, api_version):
-    """Test access to Open Weather Map API here."""
-    client = OWMClient(
-        api_key=api_key.strip(),
-        api_version=api_version.strip(),
-        latitude=52.353218,
-        longitude=5.0027695,
-        elevation=1,
-    )
-    try:
-        await hass.async_add_executor_job(client.get_data)
-    except OSError:
-        raise InvalidAuth
-    except Exception:
-        raise CannotConnect
+async def test_api_key(hass: HomeAssistant, weather_service, api_key):
+    """Test access to Weather Service API here."""
+    client = None
+    test_lat = 52.353218
+    test_lon = 5.0027695
+    test_elev = 1
+    if weather_service == CONF_WEATHER_SERVICE_OWM:
+        client = OWMClient(
+            api_key=api_key.strip(),
+            api_version="3.0",
+            latitude=test_lat,
+            longitude=test_lon,
+            elevation=test_elev,
+        )
+    elif weather_service == CONF_WEATHER_SERVICE_PW:
+        client = PirateWeatherClient(
+            api_key=api_key.strip(),
+            api_version="1",
+            latitude=test_lat,
+            longitude=test_lon,
+            elevation=test_elev,
+        )
+    if client:
+        try:
+            await hass.async_add_executor_job(client.get_data)
+        except OSError:
+            raise InvalidAuth
+        except Exception:
+            raise CannotConnect
 
 
 def loadModules(moduleDir=None):

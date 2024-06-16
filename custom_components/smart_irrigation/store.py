@@ -31,11 +31,14 @@ from .const import (
     CONF_DEFAULT_CLEAR_TIME,
     CONF_DEFAULT_MAXIMUM_BUCKET,
     CONF_DEFAULT_MAXIMUM_DURATION,
-    CONF_DEFAULT_USE_OWM,
+    CONF_DEFAULT_USE_WEATHER_SERVICE,
+    CONF_DEFAULT_WEATHER_SERVICE,
     CONF_IMPERIAL,
     CONF_METRIC,
     CONF_UNITS,
-    CONF_USE_OWM,
+    CONF_WEATHER_SERVICE,
+    CONF_USE_WEATHER_SERVICE,
+    CONF_WEATHER_SERVICE_OWM,
     DOMAIN,
     MAPPING_CONF_SENSOR,
     MAPPING_CONF_SOURCE,
@@ -90,7 +93,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DATA_REGISTRY = f"{DOMAIN}_storage"
 STORAGE_KEY = f"{DOMAIN}.storage"
-STORAGE_VERSION = 3
+STORAGE_VERSION = 4
 SAVE_DELAY = 0
 
 
@@ -147,7 +150,8 @@ class Config:
 
     calctime = attr.ib(type=str, default=CONF_DEFAULT_CALC_TIME)
     units = attr.ib(type=str, default=None)
-    use_owm = attr.ib(type=bool, default=False)
+    use_weather_service = attr.ib(type=bool, default=CONF_DEFAULT_WEATHER_SERVICE)
+    weather_service = attr.ib(type=str, default=None)
     autocalcenabled = attr.ib(type=bool, default=CONF_AUTO_CALC_ENABLED)
     autoupdateenabled = attr.ib(type=bool, default=CONF_AUTO_UPDATE_ENABLED)
     autoupdateschedule = attr.ib(type=str, default=CONF_DEFAULT_AUTO_UPDATE_SCHEDULE)
@@ -160,6 +164,21 @@ class Config:
 
 class MigratableStore(Store):
     async def _async_migrate_func(self, old_version, data: dict):
+        if old_version == 3:
+            if "config" in data:
+                if "use_owm" in data["config"]:
+                    data["config"]["use_weather_service"] = data["config"].pop(
+                        "use_owm"
+                    )
+                if data["config"]["use_weather_service"]:
+                    data["config"]["weather_service"] = CONF_WEATHER_SERVICE_OWM
+                # if "owm_api_version" in data:
+                #    data["forecasting_api_version"] = data.pop("owm_api_version")
+                # v3 to v4
+                # use_owm --> use_forecasting
+                # owm_api_key --> forecasting_api_key
+                # owm_api_version --> forecasting_api_version
+                # new: forecasting_service (OWM or PirateWeather)
         return data
 
 
@@ -183,7 +202,8 @@ class SmartIrrigationStorage:
             units=CONF_METRIC
             if self.hass.config.units is METRIC_SYSTEM
             else CONF_IMPERIAL,
-            use_owm=CONF_DEFAULT_USE_OWM,
+            use_weather_service=CONF_DEFAULT_USE_WEATHER_SERVICE,
+            weather_service=CONF_DEFAULT_WEATHER_SERVICE,
             autocalcenabled=CONF_DEFAULT_AUTO_CALC_ENABLED,
             autoupdateenabled=CONF_DEFAULT_AUTO_UPDATED_ENABLED,
             autoupdateschedule=CONF_DEFAULT_AUTO_UPDATE_SCHEDULE,
@@ -206,7 +226,12 @@ class SmartIrrigationStorage:
                     if self.hass.config.units is METRIC_SYSTEM
                     else CONF_IMPERIAL,
                 ),
-                use_owm=data["config"].get(CONF_USE_OWM, CONF_DEFAULT_USE_OWM),
+                use_weather_service=data["config"].get(
+                    CONF_USE_WEATHER_SERVICE, CONF_DEFAULT_USE_WEATHER_SERVICE
+                ),
+                weather_service=data["config"].get(
+                    CONF_WEATHER_SERVICE, CONF_DEFAULT_WEATHER_SERVICE
+                ),
                 autocalcenabled=data["config"].get(
                     CONF_AUTO_CALC_ENABLED, CONF_DEFAULT_AUTO_CALC_ENABLED
                 ),
@@ -646,4 +671,5 @@ async def async_get_registry(hass: HomeAssistant) -> SmartIrrigationStorage:
 
         task = hass.data[DATA_REGISTRY] = hass.async_create_task(_load_reg())
 
-    return cast(SmartIrrigationStorage, await task)
+    data = await task
+    return cast(SmartIrrigationStorage, data)
