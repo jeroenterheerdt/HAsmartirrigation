@@ -752,6 +752,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 diff_in_hours = abs(diff_in_hours)
                 hour_multiplier = diff_in_hours / 24
                 resultdata[const.MAPPING_DATA_MULTIPLIER] = hour_multiplier
+                _LOGGER.debug(
+                    f"[apply_aggregates_to_mapping_data]: first_retrieved_at: {first_retrieved_at}, last_retrieved_at: {last_retrieved_at}, diff_in_seconds: {diff.total_seconds()}, diff_in_hours: {diff_in_hours}, hour_multiplier: {hour_multiplier}"
+                )
 
             for key, d in data_by_sensor.items():
                 if len(d) > 1:
