@@ -4,7 +4,7 @@
       "single_instance_allowed": "Maar een installatie van Smart Irrigation is toegestaan."
     },
     "error": {
-      "auth": "Open Weather API sleutel of geselecteerde versie onjuist",
+      "auth": "Weerdienst API sleutel of versie is verkeerd",
       "name": "Geef de integratie een unieke naam."
     },
     "step": {
@@ -13,37 +13,39 @@
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Unieke naam",
-          "use_owm": "Gebruik Open Weather Map voor weerinformatie en voorspellingen? Zet dit uit als je alleen een andere bronnen, zoals je eigen weerstation wilt gebruiken. Let op dat je geen voorspellingen kunt gebruiken als je dit uitzet. Laat dit aan als je van plan bent Open Weather Map in ieder geval deels als bron te gebruiken."
+          "use_weather_service": "Gebruik een weersdient (Open Weather Map of Pirate Weather) voor weergegevens en voorspellingen. Zet dit aan als je van plan bent dit te gebruiken voor in ieder geval een deel van de benodigde weersinformatie of voorspellingen. Zet het uit als je een andere weersdienst of een andere bron (zoals een eigen weersstation) wilt gebruiken. In dat geval zijn er geen voorspellingen beschikbaar."
         }
       },
       "step1": {
-        "title": "Open Weather Map API configuratie",
+        "title": "Weerdienst API instellingen",
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "owm_api_key": "API sleutel voor Open Weather Map voor versie 3.0",
-          "owm_api_version": "Open Weather Map API versie (kies 3.0 voor nieuwe installaties)"
+          "weather_service": "Weerdienst",
+          "weather_service_api_key": "API sleutel",
+          "weather_service_api_version": "API versie"
         }
       }
     }
   },
   "options": {
     "error": {
-      "auth": "Open Weather API sleutel of geselecteerde versie onjuist"
+      "auth": "Weerdienst API sleutel of versie is verkeerd"
     },
     "step": {
       "init": {
-        "title": "Open Weather Map API configuratie",
+        "title": "Weerdienst API instellingen",
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "use_owm": "Gebruik Open Weather Map voor weerinformatie en voorspellingen? Zet dit uit als je alleen een andere bronnen, zoals je eigen weerstation wilt gebruiken. Let op dat je geen voorspellingen kunt gebruiken als je dit uitzet. Laat dit aan als je van plan bent Open Weather Map in ieder geval deels als bron te gebruiken."
+          "use_weather_service": "Gebruik een weersdient (Open Weather Map of Pirate Weather) voor weergegevens en voorspellingen. Zet dit aan als je van plan bent dit te gebruiken voor in ieder geval een deel van de benodigde weersinformatie of voorspellingen. Zet het uit als je een andere weersdienst of een andere bron (zoals een eigen weersstation) wilt gebruiken. In dat geval zijn er geen voorspellingen beschikbaar."
         }
       },
       "step1": {
-        "title": "Open Weather Map API configuratie",
+        "title": "Weerdienst API instellingen",
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "owm_api_key": "API sleutel voor Open Weather Map (versie 3.0)",
-          "owm_api_version": "Open Weather Map API versie (kies 3.0 voor nieuwe installaties)"
+          "weather_service": "Weerdienst",
+          "weather_service_api_key": "API sleutel",
+          "weather_service_api_version": "API versie"
         }
       }
     }

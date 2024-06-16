@@ -32,7 +32,7 @@ import {
   MAPPING_CONF_SENSOR,
   MAPPING_CONF_SOURCE,
   MAPPING_CONF_SOURCE_NONE,
-  MAPPING_CONF_SOURCE_OWM,
+  MAPPING_CONF_SOURCE_WEATHER_SERVICE,
   MAPPING_CONF_SOURCE_SENSOR,
   MAPPING_CONF_SOURCE_STATIC_VALUE,
   MAPPING_CONF_STATIC_VALUE,
@@ -248,9 +248,9 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         )}
       </label>
     </div> `;
-    //source radiobutton: (OWM/sensor/static value) or (none/sensor/static value)
+    //source radiobutton: (weather_service/sensor/static value) or (none/sensor/static value)
     //show sensor entity input box only if sensor source is selected
-    //show unit all the time, but set it to the metric value and disable if OWM. Else enable.
+    //show unit all the time, but set it to the metric value and disable if weather_service. Else enable.
     r = html`${r}
       <div class="mappingsettingline">
         <label for="${value + index + MAPPING_CONF_SOURCE}"
@@ -262,7 +262,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       </div>`;
 
     if (value == MAPPING_EVAPOTRANSPIRATION || value == MAPPING_SOLRAD) {
-      //this can not come from OWM!
+      //this can not come from weather_service!
       r = html`${r}
         <input
           type="radio"
@@ -289,19 +289,19 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           )}</label
         > `;
     } else {
-      let owmclass = "";
-      if (!this.config?.use_owm) {
-        owmclass = "strikethrough";
+      let weather_serviceclass = "";
+      if (!this.config?.use_weather_service) {
+        weather_serviceclass = "strikethrough";
       }
       r = html`${r}
         <input
           type="radio"
-          id="${value + index + MAPPING_CONF_SOURCE_OWM}"
-          value="${MAPPING_CONF_SOURCE_OWM}"
+          id="${value + index + MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
+          value="${MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
           name="${value + index + MAPPING_CONF_SOURCE}"
-          ?enabled="${this.config?.use_owm}"
-          ?checked="${this.config?.use_owm &&
-          mappingline[MAPPING_CONF_SOURCE] === MAPPING_CONF_SOURCE_OWM}"
+          ?enabled="${this.config?.use_weather_service}"
+          ?checked="${this.config?.use_weather_service &&
+          mappingline[MAPPING_CONF_SOURCE] === MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
           @change="${(e: Event) =>
             this.handleEditMapping(index, {
               ...mapping,
@@ -314,10 +314,10 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
               },
             })}"
         /><label
-          class="${owmclass}"
-          for="${value + index + MAPPING_CONF_SOURCE_OWM}"
+          class="${weather_serviceclass}"
+          for="${value + index + MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
           >${localize(
-            "panels.mappings.cards.mapping.sources.openweathermap",
+            "panels.mappings.cards.mapping.sources.weather_service",
             this.hass.language
           )}</label
         >`;

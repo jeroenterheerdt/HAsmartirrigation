@@ -152,7 +152,7 @@
           "source": "Source",
           "sources": {
             "none": "Aucun",
-            "openweathermap": "OpenWeatherMap",
+            "weather_service": "Weather service",
             "sensor": "Capteur",
             "static": "Valeur statique"
           },
@@ -164,7 +164,7 @@
           "sensor-units": "Le capteur fournit les valeurs en"
         }
       },
-      "description": "Ajouter un ou plusieurs groupes de capteurs qui récupèrent les données météo de OpenWeatherMap, de capteurs locaux ou d'une combinaison de tous ceux-ci. Vous pouvez associer chaque groupe de capteurs avec une ou plusieurs zones",
+      "description": "Ajouter un ou plusieurs groupes de capteurs qui récupèrent les données météo de Weather service, de capteurs locaux ou d'une combinaison de tous ceux-ci. Vous pouvez associer chaque groupe de capteurs avec une ou plusieurs zones",
       "labels": {
         "mapping-name": "Nom"
       },

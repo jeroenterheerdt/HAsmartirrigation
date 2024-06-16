@@ -23,31 +23,28 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             self._use_weather_service = self.config_entry.data.get("use_owm")
             self._weather_service = const.CONF_WEATHER_SERVICE_OWM
             self._weather_service_api_key = self.config_entry.data.get("owm_api_key")
+        if const.CONF_USE_WEATHER_SERVICE in self.options and self.options.get(
+            const.CONF_USE_WEATHER_SERVICE
+        ) != self.config_entry.data.get(const.CONF_USE_WEATHER_SERVICE):
+            self._use_weather_service = self.options.get(const.CONF_USE_WEATHER_SERVICE)
         else:
-            if const.CONF_USE_WEATHER_SERVICE in self.options and self.options.get(
+            self._use_weather_service = self.config_entry.data.get(
                 const.CONF_USE_WEATHER_SERVICE
-            ) != self.config_entry.data.get(const.CONF_USE_WEATHER_SERVICE):
-                self._use_weather_service = self.options.get(
-                    const.CONF_USE_WEATHER_SERVICE
-                )
-            else:
-                self._use_weather_service = self.config_entry.data.get(
-                    const.CONF_USE_WEATHER_SERVICE
-                )
-            if const.CONF_WEATHER_SERVICE in self.options:
-                self._weather_service = self.options.get(const.CONF_WEATHER_SERVICE)
-            else:
-                self._weather_service = self.config_entry.data.get(
-                    const.CONF_WEATHER_SERVICE
-                )
-            if const.CONF_WEATHER_SERVICE_API_KEY in self.options:
-                self._weather_service_api_key = self.options.get(
-                    const.CONF_WEATHER_SERVICE_API_KEY
-                )
-            else:
-                self._weather_service_api_key = self.config_entry.data.get(
-                    const.CONF_WEATHER_SERVICE_API_KEY
-                )
+            )
+        if const.CONF_WEATHER_SERVICE in self.options:
+            self._weather_service = self.options.get(const.CONF_WEATHER_SERVICE)
+        else:
+            self._weather_service = self.config_entry.data.get(
+                const.CONF_WEATHER_SERVICE
+            )
+        if const.CONF_WEATHER_SERVICE_API_KEY in self.options:
+            self._weather_service_api_key = self.options.get(
+                const.CONF_WEATHER_SERVICE_API_KEY
+            )
+        else:
+            self._weather_service_api_key = self.config_entry.data.get(
+                const.CONF_WEATHER_SERVICE_API_KEY
+            )
         if self._weather_service_api_key is not None:
             self._weather_service_api_key = self._weather_service_api_key.strip()
         if const.CONF_WEATHER_SERVICE_API_VERSION in self.options:
@@ -101,9 +98,9 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="step1",
             data_schema=vol.Schema(
                 {
-                    vol.Required(const.CONF_WEATHER_SERVICE): selector(
-                        {"select": {"options": const.CONF_WEATHER_SERVICES}}
-                    ),
+                    vol.Required(
+                        const.CONF_WEATHER_SERVICE, default=self._weather_service
+                    ): selector({"select": {"options": const.CONF_WEATHER_SERVICES}}),
                     vol.Required(
                         const.CONF_WEATHER_SERVICE_API_KEY,
                         default=self._weather_service_api_key,

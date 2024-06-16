@@ -4,7 +4,7 @@
       "single_instance_allowed": "Sólo se permite una única configuración de Riego Inteligente."
     },
     "error": {
-      "auth": "Clave o versión incorrecta de la API de Open Weather",
+      "auth": "Weather service API key or version incorrect",
       "name": "Especifique un nombre único para la integración."
     },
     "step": {
@@ -13,37 +13,39 @@
         "description": "Si necesita ayuda con la configuración, consulte https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Nombre único de la integración",
-          "use_owm": "¿Desea utilizar Open Weather Map para datos o previsiones meteorológicas? Desactívelo si desea utilizar exclusivamente otra fuente, como su propia estación meteorológica. Si lo desactiva, no podrá utilizar previsiones. Déjela activada si pretende utilizar Open Weather Map para al menos parte de los datos meteorológicos, incluida la previsión."
+          "use_weather_service": "Use a weather service (Open Weather Map or Pirate Weather) for weather data or forecasting. Enable this option if you intent to use one of the supported weather services for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
         }
       },
       "step1": {
-        "title": "Configuración de la API de Open Weather Map",
+        "title": "Weather service API set up",
         "description": "Si necesita ayuda con la configuración, consulte https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "owm_api_key": "Clave API para Open Weather Map (3.0)",
-          "owm_api_version": "Versión de la API Open Weather Map (seleccione 3.0 para nuevas configuraciones)"
+          "weather_service": "Weather service to use",
+          "weather_service_api_key": "API key for weather service",
+          "weather_service_api_version": "Weather service API version"
         }
       }
     }
   },
   "options": {
     "error": {
-      "auth": "Clave o versión incorrecta de la API de Open Weather"
+      "auth": "Weather service API key or version incorrect"
     },
     "step": {
       "init": {
-        "title": "Configuración de la API Open Weather Map",
+        "title": "Weather service API set up",
         "description": "Si necesita ayuda con la configuración, consulte https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "use_owm": "¿Desea utilizar Open Weather Map para datos o previsiones meteorológicas? Desactívelo si desea utilizar exclusivamente otra fuente, como su propia estación meteorológica. Si lo desactiva, no podrá utilizar previsiones. Déjela activada si pretende utilizar Open Weather Map para al menos parte de los datos meteorológicos, incluida la previsión."
+          "use_weather_service": "Use a weather service (Open Weather Map or Pirate Weather) for weather data or forecasting. Enable this option if you intent to use one of the supported weather services for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
         }
       },
       "step1": {
-        "title": "Configuración de la API Open Weather Map",
+        "title": "Weather service API set up",
         "description": "Si necesita ayuda con la configuración, consulte https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "owm_api_key": "Clave API para Open Weather Map (3.0)",
-          "owm_api_version": "Versión de la API Open Weather Map (seleccione 3.0 para nuevas configuraciones)"
+          "weather_service": "Weather service to use",
+          "weather_service_api_key": "API key for weather service",
+          "weather_service_api_version": "Weather service API version"
         }
       }
     }

@@ -156,13 +156,13 @@
           "source": "Bron",
           "sources": {
             "none": "Geen",
-            "openweathermap": "OpenWeatherMap",
+            "weather_service": "Weather service",
             "sensor": "Sensor",
             "static": "Vaste waarde"
           }
         }
       },
-      "description": "Voeg een of meer sensorgroepen toe die weergegevens ophalen van OpenWeatherMap, van sensoren of een combinatie. Elke sensorgroep kan worden gebruikt voor een of meerdere zones",
+      "description": "Voeg een of meer sensorgroepen toe die weergegevens ophalen van Weather service, van sensoren of een combinatie. Elke sensorgroep kan worden gebruikt voor een of meerdere zones",
       "labels": {
         "mapping-name": "Name"
       },

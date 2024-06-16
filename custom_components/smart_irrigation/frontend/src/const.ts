@@ -1,4 +1,4 @@
-export const VERSION = "v2024.6.12";
+export const VERSION = "v2024.6.13";
 export const REPO = "https://github.com/jeroenterheerdt/HASmartIrrigation;";
 export const ISSUES_URL = REPO + "/issues";
 
@@ -33,7 +33,7 @@ export const MAPPING_SOLRAD = "Solar Radiation";
 export const MAPPING_TEMPERATURE = "Temperature";
 export const MAPPING_WINDSPEED = "Windspeed";
 
-export const MAPPING_CONF_SOURCE_OWM = "owm";
+export const MAPPING_CONF_SOURCE_WEATHER_SERVICE = "weather_service";
 export const MAPPING_CONF_SOURCE_SENSOR = "sensor";
 export const MAPPING_CONF_SOURCE_STATIC_VALUE = "static";
 export const MAPPING_CONF_PRESSURE_TYPE = "pressure_type";

@@ -162,13 +162,13 @@
           "source": "Source",
           "sources": {
             "none": "None",
-            "openweathermap": "OpenWeatherMap",
+            "weather_service": "Weather service",
             "sensor": "Sensor",
             "static": "Static value"
           }
         }
       },
-      "description": "Add one or more sensor groups that retrieve weather data from OpenWeatherMap, from sensors or a combination of these. You can map each sensor group to one or more zones",
+      "description": "Add one or more sensor groups that retrieve weather data from Weather service, from sensors or a combination of these. You can map each sensor group to one or more zones",
       "labels": {
         "mapping-name": "Name"
       },

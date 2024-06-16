@@ -104,7 +104,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 entry.data.get(const.CONF_WEATHER_SERVICE_API_VERSION)
             )
     # check for OWM config and migrate accordingly
-    if entry.data["use_owm"]:
+    if "use_owm" in entry.data and entry.data["use_owm"]:
         if "owm_api_key" in entry.data:
             hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = entry.data[
                 "owm_api_key"
@@ -1301,7 +1301,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 if not isinstance(the_map, str):
                     if (
                         the_map.get(const.MAPPING_CONF_SOURCE)
-                        == const.MAPPING_CONF_SOURCE_OWM
+                        == const.MAPPING_CONF_SOURCE_WEATHER_SERVICE
                     ):
                         owm_in_mapping = True
                     if (

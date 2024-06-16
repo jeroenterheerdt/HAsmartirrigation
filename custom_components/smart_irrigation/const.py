@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2024.6.12"
+VERSION = "v2024.6.13"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -149,7 +149,7 @@ MAPPING_SOLRAD = "Solar Radiation"
 MAPPING_TEMPERATURE = "Temperature"
 MAPPING_WINDSPEED = "Windspeed"
 
-MAPPING_CONF_SOURCE_OWM = "owm"
+MAPPING_CONF_SOURCE_WEATHER_SERVICE = "weather_service"
 MAPPING_CONF_SOURCE_SENSOR = "sensor"
 MAPPING_CONF_SOURCE_NONE = "none"
 MAPPING_CONF_SOURCE_STATIC_VALUE = "static"

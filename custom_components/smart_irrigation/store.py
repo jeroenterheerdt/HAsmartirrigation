@@ -43,7 +43,7 @@ from .const import (
     MAPPING_CONF_SENSOR,
     MAPPING_CONF_SOURCE,
     MAPPING_CONF_SOURCE_NONE,
-    MAPPING_CONF_SOURCE_OWM,
+    MAPPING_CONF_SOURCE_WEATHER_SERVICE,
     MAPPING_CONF_SOURCE_SENSOR,
     MAPPING_CONF_UNIT,
     MAPPING_DATA,
@@ -387,11 +387,11 @@ class SmartIrrigationStorage:
         self.async_schedule_save()
 
     async def async_factory_default_mappings(self):
-        # this should be OWM mapping if OWM is defined...?
+        # this should be Weather Service mapping if a weather service is defined
         mapping_source = ""
-        if self.config.use_owm:
-            # we're using owm
-            mapping_source = MAPPING_CONF_SOURCE_OWM
+        if self.config.use_weather_service:
+            # we're using a weather service
+            mapping_source = MAPPING_CONF_SOURCE_WEATHER_SERVICE
         else:
             mapping_source = MAPPING_CONF_SOURCE_SENSOR
         mappings = [
@@ -409,7 +409,7 @@ class SmartIrrigationStorage:
             map_source = mapping_source
             # evapotranspiration and solrad can only come from a sensor or none
             if map in [MAPPING_EVAPOTRANSPIRATION, MAPPING_SOLRAD]:
-                if self.config.use_owm:
+                if self.config.use_weather_service:
                     map_source = MAPPING_CONF_SOURCE_NONE
                 else:
                     map_source = MAPPING_CONF_SOURCE_SENSOR

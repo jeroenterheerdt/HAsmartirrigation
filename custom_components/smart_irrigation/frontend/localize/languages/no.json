@@ -141,13 +141,13 @@
           "source": "Kilde",
           "sources": {
             "none": "Ingen",
-            "openweathermap": "OpenWeatherMap",
+            "weather_service": "Weather service",
             "sensor": "Sensor",
             "static": "Statisk verdi"
           }
         }
       },
-      "description": "Legg til en eller flere sensorgupper som henter værdata fra OpenWeatherMap, fra sensorer eller en kombinasjon av disse. Du kan tilordne hver sensorguppe til en eller flere soner",
+      "description": "Legg til en eller flere sensorgupper som henter værdata fra Weather service, fra sensorer eller en kombinasjon av disse. Du kan tilordne hver sensorguppe til en eller flere soner",
       "labels": {
         "mapping-name": "Navn"
       },

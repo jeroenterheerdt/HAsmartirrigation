@@ -160,13 +160,13 @@
           "source": "Fonte",
           "sources": {
             "none": "Nessuna",
-            "openweathermap": "OpenWeatherMap",
+            "weather_service": "Weather service",
             "sensor": "Sensore",
             "static": "Valore statico"
           }
         }
       },
-      "description": "Aggiungi uno o più gruppi di sensori che recuperano i dati meteorologici da OpenWeatherMap, da sensori o da una combinazione di questi. È possibile mappare ciascun gruppo di sensori su una o più zone",
+      "description": "Aggiungi uno o più gruppi di sensori che recuperano i dati meteorologici da Weather service, da sensori o da una combinazione di questi. È possibile mappare ciascun gruppo di sensori su una o più zone",
       "labels": {
         "mapping-name": "Nome"
       },

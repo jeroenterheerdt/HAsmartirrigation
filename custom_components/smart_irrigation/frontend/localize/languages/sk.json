@@ -157,13 +157,13 @@
           "source": "Zdroj",
           "sources": {
             "none": "Nie je",
-            "openweathermap": "OpenWeatherMap",
+            "weather_service": "Weather service",
             "sensor": "Snímač",
             "static": "Statická hodnota"
           }
         }
       },
-      "description": "Pridajte jednu alebo viac skupín senzorov, ktoré získavajú údaje o počasí z OpenWeatherMap, zo senzorov alebo ich kombinácie. Každú skupinu senzorov môžete namapovať na jednu alebo viac zón",
+      "description": "Pridajte jednu alebo viac skupín senzorov, ktoré získavajú údaje o počasí z Weather service, zo senzorov alebo ich kombinácie. Každú skupinu senzorov môžete namapovať na jednu alebo viac zón",
       "labels": {
         "mapping-name": "Názov"
       },

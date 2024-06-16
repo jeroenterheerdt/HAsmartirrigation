@@ -156,13 +156,13 @@
           "source": "Quelle",
           "sources": {
             "none": "Keine",
-            "openweathermap": "OpenWeatherMap",
+            "weather_service": "Weather service",
             "sensor": "Sensor",
             "static": "Fester Wert"
           }
         }
       },
-      "description": "Füge eine oder mehrere Sensorgruppen hinzu, die Wetterdaten von OpenWeatherMap, Sensoren oder einer Kombination daraus abrufen. Jede Sensorgruppe kann für eine oder mehrere Zonen verwendet werden",
+      "description": "Füge eine oder mehrere Sensorgruppen hinzu, die Wetterdaten von Weather service, Sensoren oder einer Kombination daraus abrufen. Jede Sensorgruppe kann für eine oder mehrere Zonen verwendet werden",
       "labels": {
         "mapping-name": "Name"
       },

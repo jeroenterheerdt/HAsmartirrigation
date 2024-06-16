@@ -199,6 +199,13 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
         ):
             try:
                 req = requests.get(self.url, timeout=60)  # 60 seconds timeout
+                if req.status_code != 200:
+                    _LOGGER.error(
+                        "PirateWeather API returned error status code: {}".format(
+                            req.status_code
+                        )
+                    )
+                    return
                 doc = json.loads(req.text)
                 _LOGGER.debug(
                     "PirateWeatherClient get_data called API {} and received {}".format(
