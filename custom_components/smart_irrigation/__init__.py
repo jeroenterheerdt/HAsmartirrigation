@@ -476,7 +476,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                             f"continous_update_for_mapping: calculating zone {zone.get(const.ZONE_ID)}"
                                         )
                                         await self.async_calculate_zone(
-                                            zone.get(const.ZONE_ID)
+                                            zone.get(const.ZONE_ID),
+                                            continuous_updates=True,
                                         )
 
     async def set_up_auto_calc_time(self, data):
@@ -706,7 +707,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
             return retval
 
-    async def apply_aggregates_to_mapping_data(self, mapping):
+    async def apply_aggregates_to_mapping_data(self, mapping, continuous_updates=False):
         _LOGGER.debug(f"apply_aggregates_to_mapping_data: {mapping}")
         if mapping.get(const.MAPPING_DATA):
             # get the keys for the mapping data entries.
@@ -743,8 +744,19 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         )
                 # first_retrieved_at = datetime.datetime.strptime(weatherdata[0].get(const.RETRIEVED_AT),date_format_string)
                 # last_retrieved_at = datetime.datetime.strptime(weatherdata[len(weatherdata)-1].get(const.RETRIEVED_AT),date_format_string)
-                first_retrieved_at = min(formatted_retrieved_ats)
-                last_retrieved_at = max(formatted_retrieved_ats)
+                if not continuous_updates:
+                    # this is the the behavior for any versions before v2024.6.X and should still be the behavior for any none-pure sensor sensor groups
+                    first_retrieved_at = min(formatted_retrieved_ats)
+                    last_retrieved_at = max(formatted_retrieved_ats)
+                else:
+                    # this is the behavior for v2024.6.X and should be the behavior for any pure sensor sensor groups from that version onwards
+                    # we take the diff between the current and previous retrieved at instead of the first and last
+                    first_retrieved_at = formatted_retrieved_ats[
+                        len(formatted_retrieved_ats) - 2
+                    ]
+                    last_retrieved_at = formatted_retrieved_ats[
+                        len(formatted_retrieved_ats) - 1
+                    ]
                 # Get interval between two timstamps as timedelta object
                 diff = first_retrieved_at - last_retrieved_at
                 # Get interval between two timstamps in hours
@@ -845,7 +857,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("calling register start event from async_calculate_all")
         self.register_start_event()
 
-    async def async_calculate_zone(self, zone_id):
+    async def async_calculate_zone(self, zone_id, continuous_updates=False):
         _LOGGER.debug(f"async_calculate_zone: Calculating zone {zone_id}")
         zone = self.store.get_zone(zone_id)
         mapping_id = zone[const.ZONE_MAPPING]
@@ -875,7 +887,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         sensor_values = None
         if mapping is not None:
             if const.MAPPING_DATA in mapping and mapping.get(const.MAPPING_DATA):
-                sensor_values = await self.apply_aggregates_to_mapping_data(mapping)
+                sensor_values = await self.apply_aggregates_to_mapping_data(
+                    mapping, continuous_updates
+                )
             if sensor_values:
                 # make sure we convert forecast data pressure to absolute!
                 data = await self.calculate_module(
