@@ -702,6 +702,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         weatherdata[const.MAPPING_PRESSURE] = altitudeToPressure(
                             self.hass.config.as_dict().get(CONF_ELEVATION)
                         )
+                # if we have defined any sensors then we don't want to get data from OWM those sensors provides
+                sensor_values = self.build_sensor_values_for_mapping(mapping)
+                for key in sensor_values:
+                    if key in weatherdata:
+                        weatherdata.pop(key)
+                        _LOGGER.debug(
+                            "async_update_all: dropped '{}' because we get this from sensor".format(
+                                key
+                            )
+                        )
 
             # add the weatherdata value to the mappings sensor values
             if mapping is not None and weatherdata is not None:
@@ -822,6 +832,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 _LOGGER.debug(
                     f"[apply_aggregates_to_mapping_data]: first_retrieved_at: {first_retrieved_at}, last_retrieved_at: {last_retrieved_at}, diff_in_seconds: {diff.total_seconds()}, diff_in_hours: {diff_in_hours}, hour_multiplier: {hour_multiplier}"
                 )
+
+            # in case sensor didn't provide data for whole period we set it to 0
+            sensor_values = self.build_sensor_values_for_mapping(mapping)
+            if sensor_values is not None:
+                for s in sensor_values:
+                    if s not in data_by_sensor:
+                        data_by_sensor[s] = [0]
 
             for key, d in data_by_sensor.items():
                 if len(d) > 1:
