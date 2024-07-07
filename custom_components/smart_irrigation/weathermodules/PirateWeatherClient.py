@@ -9,7 +9,7 @@ import sys
 import requests
 
 # DO NOT USE THESE FOR TESTING, INSTEAD DEFINE THE CONSTS IN THIS FILE
-from ..const import (
+"""from ..const import (
     MAPPING_DEWPOINT,
     MAPPING_HUMIDITY,
     MAPPING_MAX_TEMP,
@@ -18,13 +18,30 @@ from ..const import (
     MAPPING_PRESSURE,
     MAPPING_TEMPERATURE,
     MAPPING_WINDSPEED,
-)
+)"""
+MAPPING_ID = "id"
+MAPPING_NAME = "name"
+MAPPING_DATA = "data"
+MAPPING_DATA_LAST_UPDATED = "data_last_updated"
+MAPPING_DATA_MULTIPLIER = "data_multiplier"
+MAPPING_MAPPINGS = "mappings"
+MAPPING_DEWPOINT = "Dewpoint"
+MAPPING_EVAPOTRANSPIRATION = "Evapotranspiration"
+MAPPING_HUMIDITY = "Humidity"
+MAPPING_MAX_TEMP = "Maximum Temperature"
+MAPPING_MIN_TEMP = "Minimum Temperature"
+MAPPING_PRECIPITATION = "Precipitation"
+MAPPING_PRESSURE = "Pressure"
+MAPPING_SOLRAD = "Solar Radiation"
+MAPPING_TEMPERATURE = "Temperature"
+MAPPING_WINDSPEED = "Windspeed"
 
 _LOGGER = logging.getLogger(__name__)
 
 # Open Weather Map URL
 PirateWeather_URL = "https://api.pirateweather.net/forecast/{}/{},{}?units={}&version={}&exclude=minutely,hourly,alerts"
 
+RETRY_TIMES = 3
 # Required PirateWeather keys for validation
 PirateWeather_wind_speed_key_name = "windSpeed"
 PirateWeather_pressure_key_name = "pressure"
@@ -110,7 +127,18 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
             >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds)
         ):
             try:
-                req = requests.get(self.url, timeout=60)  # 60 seconds timeout
+                for i in range(RETRY_TIMES):
+                    req = requests.get(self.url, timeout=60)  # 60 seconds timeout
+                    if req.status_code == 200:
+                        break
+                    i = i + 1
+                if req.status_code != 200:
+                    _LOGGER.error(
+                        "PirateWeather API returned error status code: {}".format(
+                            req.status_code
+                        )
+                    )
+                    return
                 doc = json.loads(req.text)
                 _LOGGER.debug(
                     "PirateWeatherClient get_forecast_data called API {} and received {}".format(
@@ -198,7 +226,11 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
             >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds)
         ):
             try:
-                req = requests.get(self.url, timeout=60)  # 60 seconds timeout
+                for i in range(RETRY_TIMES):
+                    req = requests.get(self.url, timeout=60)  # 60 seconds timeout
+                    if req.status_code == 200:
+                        break
+                    i = i + 1
                 if req.status_code != 200:
                     _LOGGER.error(
                         "PirateWeather API returned error status code: {}".format(

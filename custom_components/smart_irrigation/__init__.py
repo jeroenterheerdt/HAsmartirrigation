@@ -491,19 +491,19 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             )
                     else:
                         _LOGGER.debug(
-                            f"async_sensor_state_changed: invalid value received, ignoring {val}"
+                            f"async_sensor_state_changed: value received for entity {entity} that is not in use for mapping {mapping.get(const.MAPPING_ID)}, ignoring value {val} for key {key}"
                         )
             await self.async_continuous_update_for_mapping(
                 mapping.get(const.MAPPING_ID)
             )
 
     async def async_continuous_update_for_mapping(self, mapping_id):
-        """First, check is mapping doesn't use OWM. Then perform update for all automatic zones that use this mapping, assuming their modules do not use forecasting."""
+        """First, check is mapping doesn't use a Weather Service (to avoid API overload). Then perform update for all automatic zones that use this mapping, assuming their modules do not use forecasting."""
         if mapping_id is not None:
             mapping = self.store.get_mapping(mapping_id)
             if mapping is not None:
                 if not self.check_mapping_sources(mapping_id)[0]:
-                    # mapping does not use OWM
+                    # mapping does not use Weather Service
                     zones = self._get_zones_that_use_this_mapping(mapping_id)
                     for z in zones:
                         zone = self.store.get_zone(z)
@@ -515,23 +515,62 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 # check the module is not pyeto or if it is, that it does not use forecasting
                                 mod = self.store.get_module(zone.get(const.ZONE_MODULE))
                                 if mod is not None:
-                                    if mod.get(const.MODULE_NAME) != "PyETO" or (
-                                        mod.get(const.MODULE_NAME) == "PyETO"
-                                        and int(
-                                            mod.get(const.MODULE_CONFIG).get(
-                                                const.CONF_PYETO_FORECAST_DAYS
-                                            )
+                                    can_calculate = False
+                                    if mod.get(const.MODULE_NAME) != "PyETO":
+                                        can_calculate = True
+                                        _LOGGER.info(
+                                            f"[async_continuous_update_for_mapping]: module is not PyETO, so we can calculate for zone {zone.get(const.ZONE_ID)}."
                                         )
-                                        == 0
-                                    ):
+                                    else:
+                                        # module is PyETO. Check the config for forecast days == 0
+                                        if mod.get(const.MODULE_CONFIG):
+                                            # there is a config on the module, so let's check it
+                                            if (
+                                                mod.get(const.MODULE_CONFIG).get(
+                                                    const.CONF_PYETO_FORECAST_DAYS
+                                                )
+                                                == 0
+                                            ):
+                                                can_calculate = True
+                                                _LOGGER.info(
+                                                    f"checked config for PyETO module on zone {zone.get(const.ZONE_ID)}, forecast_days==0, so we can calculate."
+                                                )
+                                            else:
+                                                _LOGGER.info(
+                                                    f"checked config for PyETO module on zone {zone.get(const.ZONE_ID)}, forecast_days>0, skipping to avoid API calls that can incur costs."
+                                                )
+                                        else:
+                                            # default config for pyeto is forecast = 0, since there is no config we can calculate
+                                            can_calculate = True
+                                            _LOGGER.info(
+                                                f"no config on PyETO module, since default is forecast_days==0, we can calculate for zone {zone.get(const.ZONE_ID)}."
+                                            )
+
+                                    if can_calculate:
                                         # get the zone and calculate
                                         _LOGGER.debug(
-                                            f"continous_update_for_mapping: calculating zone {zone.get(const.ZONE_ID)}"
+                                            f"[async_continuous_update_for_mapping] for mapping {mapping_id}: calculating zone {zone.get(const.ZONE_ID)}"
                                         )
                                         await self.async_calculate_zone(
                                             zone.get(const.ZONE_ID),
                                             continuous_updates=True,
                                         )
+                                    else:
+                                        _LOGGER.info(
+                                            f"[async_continuous_update_for_mapping] for mapping {mapping_id}: zone {z} has module {mod.get(const.MODULE_NAME)} that uses forecasting, skipping to avoid API calls that can incur costs."
+                                        )
+                            else:
+                                _LOGGER.info(
+                                    f"[async_continuous_update_for_mapping] for mapping {mapping_id}: zone {z} has no module, skipping."
+                                )
+                        else:
+                            _LOGGER.info(
+                                f"[async_continuous_update_for_mapping] for mapping {mapping_id}: zone {z} is not automatic, skipping."
+                            )
+                else:
+                    _LOGGER.info(
+                        f"[async_continuous_update_for_mapping] for mapping {mapping_id}: mapping does use weather service, skipping automatic update to avoid API calls that can incur costs."
+                    )
 
     async def set_up_auto_calc_time(self, data):
         # unsubscribe from any existing track_time_changes
@@ -957,6 +996,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     const.DOMAIN + "_config_updated",
                     zone.get(const.ZONE_ID),
                 )
+                async_dispatcher_send(self.hass, const.DOMAIN + "_update_frontend")
             else:
                 # no data to calculate with!
                 _LOGGER.warning(
@@ -1415,7 +1455,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         )
                     else:
                         _LOGGER.error(
-                            "Error calculating zone {}. You have configured forecasting but but there is no OWM API configured. Either configure the OWM API or stop using forcasting on the PyETO module.".format(
+                            "Error calculating zone {}. You have configured forecasting but but there is no Weather API configured. Either configure the OWM API or stop using forcasting on the PyETO module.".format(
                                 res[const.ZONE_NAME]
                             )
                         )
