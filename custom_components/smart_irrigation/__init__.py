@@ -183,6 +183,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Finish up by setting factory defaults if needed for zones, mappings and modules
     await store.set_up_factory_defaults()
 
+    await coordinator.update_subscriptions()
     return True
 
 
@@ -1323,6 +1324,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             async_dispatcher_send(
                 self.hass, const.DOMAIN + "_config_updated", mapping_id
             )
+            self.update_subscriptions()
         else:
             # create a mapping
             self.store.async_create_mapping(data)
@@ -1337,23 +1339,26 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         static_in_mapping = False
         if mapping_id is not None:
             mapping = self.store.get_mapping(mapping_id)
-            for the_map in mapping[const.MAPPING_MAPPINGS].values():
-                if not isinstance(the_map, str):
-                    if (
-                        the_map.get(const.MAPPING_CONF_SOURCE)
-                        == const.MAPPING_CONF_SOURCE_WEATHER_SERVICE
-                    ):
-                        owm_in_mapping = True
-                    if (
-                        the_map.get(const.MAPPING_CONF_SOURCE)
-                        == const.MAPPING_CONF_SOURCE_SENSOR
-                    ):
-                        sensor_in_mapping = True
-                    if (
-                        the_map.get(const.MAPPING_CONF_SOURCE)
-                        == const.MAPPING_CONF_SOURCE_STATIC_VALUE
-                    ):
-                        static_in_mapping = True
+            if mapping is not None:
+                for the_map in mapping[const.MAPPING_MAPPINGS].values():
+                    if not isinstance(the_map, str):
+                        if (
+                            the_map.get(const.MAPPING_CONF_SOURCE)
+                            == const.MAPPING_CONF_SOURCE_WEATHER_SERVICE
+                        ):
+                            owm_in_mapping = True
+                        if (
+                            the_map.get(const.MAPPING_CONF_SOURCE)
+                            == const.MAPPING_CONF_SOURCE_SENSOR
+                        ):
+                            sensor_in_mapping = True
+                        if (
+                            the_map.get(const.MAPPING_CONF_SOURCE)
+                            == const.MAPPING_CONF_SOURCE_STATIC_VALUE
+                        ):
+                            static_in_mapping = True
+            else:
+                _LOGGER.debug(f"[check_mapping_sources] mapping {mapping_id} is None")
         _LOGGER.debug(
             "check_mapping_sources for mapping_id {} returns OWM: {}, sensor: {}, static: {}".format(
                 mapping_id, owm_in_mapping, sensor_in_mapping, static_in_mapping
@@ -1657,9 +1662,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         elif self.store.get_zone(zone_id):
             # modify a zone
             entry = self.store.async_update_zone(zone_id, data)
-            async_dispatcher_send(
-                self.hass, const.DOMAIN + "_config_updated", zone_id
-            )  # make sure to update the HA entity here by listening to this in sensor.py.
+            async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
+            self.update_subscriptions()
+            # make sure to update the HA entity here by listening to this in sensor.py.
             # this should be called by changes from the UI (by user) or by a calculation module (updating a duration), which should be done in python
         else:
             # create a zone
