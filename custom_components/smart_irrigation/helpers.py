@@ -51,6 +51,7 @@ from .const import (
     UNIT_M2,
     UNIT_MBAR,
     UNIT_MH,
+    UNIT_MILLIBAR,
     UNIT_MJ_DAY_M2,
     UNIT_MJ_DAY_SQFT,
     UNIT_MM,
@@ -205,7 +206,7 @@ def convert_between(from_unit, to_unit, val):
     elif from_unit in [UNIT_M2, UNIT_SQ_FT]:
         return convert_area(from_unit, to_unit, val)
     # convert pressures
-    elif from_unit in [UNIT_MBAR, UNIT_HPA, UNIT_PSI, UNIT_INHG]:
+    elif from_unit in [UNIT_MBAR, UNIT_MILLIBAR, UNIT_HPA, UNIT_PSI, UNIT_INHG]:
         return convert_pressure(from_unit, to_unit, val)
     # convert speeds
     elif from_unit in [UNIT_KMH, UNIT_MS, UNIT_MH]:

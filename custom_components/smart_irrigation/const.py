@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2024.6.13"
+VERSION = "v2024.7.2"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -197,6 +197,7 @@ UNIT_MM = "mm"
 UNIT_INCH = "in"
 UNIT_PERCENT = "%"
 UNIT_MBAR = "mbar"
+UNIT_MILLIBAR = "millibar"
 UNIT_HPA = "hPa"
 UNIT_PSI = "psi"
 UNIT_INHG = "inch Hg"
