@@ -1663,7 +1663,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # modify a zone
             entry = self.store.async_update_zone(zone_id, data)
             async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
-            self.update_subscriptions()
+            await self.update_subscriptions()
             # make sure to update the HA entity here by listening to this in sensor.py.
             # this should be called by changes from the UI (by user) or by a calculation module (updating a duration), which should be done in python
         else:
