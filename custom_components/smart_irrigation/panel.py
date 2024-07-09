@@ -32,7 +32,7 @@ async def async_register_panel(hass: HomeAssistant):
     await panel_custom.async_register_panel(
         hass,
         webcomponent_name=PANEL_NAME,
-        frontend_url_path=DOMAIN,
+        frontend_url_path=DOMAIN,swtic
         module_url=PANEL_URL,
         sidebar_title=PANEL_TITLE,
         sidebar_icon=PANEL_ICON,
