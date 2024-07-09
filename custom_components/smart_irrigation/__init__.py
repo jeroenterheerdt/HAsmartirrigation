@@ -303,6 +303,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self._start_event_fired_today = True
         else:
             self._start_event_fired_today = False
+
         # set up sunrise tracking
         _LOGGER.debug("calling register start event from init")
         self.register_start_event()
@@ -436,7 +437,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self, event: Event[EventStateChangedData]
     ) -> None:  # old signature: entity, old_state, new_state):
         """Callback fired when a sensor state has changed."""
-
+        # check if continuous updates are enabled, if not, skip this and log a debug message
+        the_config = self.store.async_get_config()
+        if const.CONF_CONTINUOUS_UPDATES in the_config:
+            if not the_config[const.CONF_CONTINUOUS_UPDATES]:
+                _LOGGER.debug(
+                    "[async_sensor_state_changed]: continuous updates are disabled, skipping."
+                )
+                return
         old_state_obj = event.data["old_state"]
         new_state_obj = event.data["new_state"]
         # handle the sensor update by updating the mapping data
@@ -490,10 +498,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             _LOGGER.debug(
                                 f"async_sensor_state_changed: updated mapping {mapping.get(const.MAPPING_ID)} with new sensor value {new_state_obj.state}"
                             )
-                    else:
-                        _LOGGER.debug(
-                            f"async_sensor_state_changed: value received for entity {entity} that is not in use for mapping {mapping.get(const.MAPPING_ID)}, ignoring value {val} for key {key}"
-                        )
             await self.async_continuous_update_for_mapping(
                 mapping.get(const.MAPPING_ID)
             )
@@ -528,7 +532,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                             # there is a config on the module, so let's check it
                                             if (
                                                 mod.get(const.MODULE_CONFIG).get(
-                                                    const.CONF_PYETO_FORECAST_DAYS
+                                                    const.CONF_PYETO_FORECAST_DAYS, 0
                                                 )
                                                 == 0
                                             ):
@@ -889,7 +893,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         if key in mappings:
                             aggregate = mappings[key].get(
                                 const.MAPPING_CONF_AGGREGATE,
-                                const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT,
+                                aggregate,
                             )
                     if aggregate == const.MAPPING_CONF_AGGREGATE_AVERAGE:
                         resultdata[key] = statistics.mean(d)

@@ -21,6 +21,7 @@ from .const import (
     CONF_AUTO_UPDATE_SCHEDULE,
     CONF_CALC_TIME,
     CONF_CLEAR_TIME,
+    CONF_CONTINUOUS_UPDATES,
     CONF_DEFAULT_AUTO_CALC_ENABLED,
     CONF_DEFAULT_AUTO_CLEAR_ENABLED,
     CONF_DEFAULT_AUTO_UPDATE_DELAY,
@@ -29,6 +30,7 @@ from .const import (
     CONF_DEFAULT_AUTO_UPDATED_ENABLED,
     CONF_DEFAULT_CALC_TIME,
     CONF_DEFAULT_CLEAR_TIME,
+    CONF_DEFAULT_CONTINUOUS_UPDATES,
     CONF_DEFAULT_MAXIMUM_BUCKET,
     CONF_DEFAULT_MAXIMUM_DURATION,
     CONF_DEFAULT_USE_WEATHER_SERVICE,
@@ -160,6 +162,9 @@ class Config:
     autoclearenabled = attr.ib(type=bool, default=CONF_DEFAULT_AUTO_CLEAR_ENABLED)
     cleardatatime = attr.ib(type=str, default=CONF_DEFAULT_CLEAR_TIME)
     starteventfiredtoday = attr.ib(type=bool, default=False)
+    continuousupdates = attr.ib(
+        type=bool, default=CONF_DEFAULT_CONTINUOUS_UPDATES
+    )  # continuous updates are disabled by default for now
 
 
 class MigratableStore(Store):
@@ -212,6 +217,7 @@ class SmartIrrigationStorage:
             autoclearenabled=CONF_DEFAULT_AUTO_CLEAR_ENABLED,
             cleardatatime=CONF_DEFAULT_CLEAR_TIME,
             starteventfiredtoday=False,
+            continuousupdates=CONF_DEFAULT_CONTINUOUS_UPDATES,
         )
         zones: "OrderedDict[str, ZoneEntry]" = OrderedDict()
         modules: "OrderedDict[str, ModuleEntry]" = OrderedDict()
@@ -254,6 +260,9 @@ class SmartIrrigationStorage:
                     CONF_CLEAR_TIME, CONF_DEFAULT_CLEAR_TIME
                 ),
                 starteventfiredtoday=data["config"].get(START_EVENT_FIRED_TODAY, False),
+                continuousupdates=data["config"].get(
+                    CONF_CONTINUOUS_UPDATES, CONF_DEFAULT_CONTINUOUS_UPDATES
+                ),
             )
 
             if "zones" in data:

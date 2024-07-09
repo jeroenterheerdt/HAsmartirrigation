@@ -23,6 +23,7 @@ import {
   CONF_AUTO_UPDATE_TIME,
   CONF_CALC_TIME,
   CONF_CLEAR_TIME,
+  CONF_CONTINUOUS_UPDATES,
   DOMAIN,
 } from "../../const";
 import { mdiInformationOutline } from "@mdi/js";
@@ -60,6 +61,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       CONF_AUTO_UPDATE_INTERVAL,
       CONF_AUTO_CLEAR_ENABLED,
       CONF_CLEAR_TIME,
+      CONF_CONTINUOUS_UPDATES,
     ]);
 
     /*Object.entries(this.data).forEach(([key, value]) => console.log(key, value));*/
@@ -418,13 +420,87 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
         this.hass.language
       )}" >${r3}</div></ha-card>`;
 
+      let r4 = html`<ha-card
+        header="${localize(
+          "panels.general.cards.continuousupdates.header",
+          this.hass.language
+        )}"
+      >
+        <div class="card-content">
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showcontinuousupdatesdescription"
+            @click="${() =>
+              this.toggleInformation("continuousupdatesdescription")}"
+          >
+            >
+            <title>
+              ${localize(
+                "panels.zones.actions.information",
+                this.hass.language
+              )}
+            </title>
+            <path fill="#404040" d="${mdiInformationOutline}" />
+          </svg>
+        </div>
+        <div class="card-content">
+          <label class="hidden" id="continuousupdatesdescription">
+            ${localize(
+              "panels.general.cards.continuousupdates.description",
+              this.hass.language
+            )}
+          </label>
+        </div>
+        <div class="card-content">
+          <label for="continuousupdates"
+            >${localize(
+              "panels.general.cards.continuousupdates.labels.continuousupdates",
+              this.hass.language
+            )}:</label
+          >
+<input
+            type="radio"
+            id="continuousupdateson"
+            name="continuousupdates"
+            value="True"
+            ?checked="${this.config.continuousupdates}"
+            @change="${(e: Event) => {
+              this.saveData({
+                continuousupdates: parseBoolean(
+                  (e.target as HTMLInputElement).value
+                ),
+              });
+            }}"
+          /><label for="continuousupdateson"
+            >${localize("common.labels.yes", this.hass.language)}</label
+          >
+          <input
+            type="radio"
+            id="continuousupdatesoff"
+            name="continuousupdates"
+            value="False"
+            ?checked="${!this.config.continuousupdates}"
+            @change="${(e: Event) => {
+              this.saveData({
+                continuousupdates: parseBoolean(
+                  (e.target as HTMLInputElement).value
+                ),
+              });
+            }}"
+          /><label for="continuousupdatesoff"
+            >${localize("common.labels.no", this.hass.language)}</label
+          >
+
+        </div>
+      </ha-card> `;
       const r = html`<ha-card
           header="${localize("panels.general.title", this.hass.language)}"
         >
           <div class="card-content">
             ${localize("panels.general.description", this.hass.language)}
           </div> </ha-card
-        >${r2}${r1}${r3}`;
+        >${r2}${r1}${r3}${r4}`;
 
       return r;
     }

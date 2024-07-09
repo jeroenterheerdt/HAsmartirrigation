@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2024.7.2"
+VERSION = "v2024.7.3"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -69,6 +69,8 @@ CONF_DEFAULT_MAXIMUM_DURATION = (
     3600  # default maximum duration to one hour == 3600 seconds
 )
 CONF_DEFAULT_MAXIMUM_BUCKET = 50  # default maximum bucket of 50
+CONF_DEFAULT_CONTINUOUS_UPDATES = False  # continuous updates are disabled by default
+CONF_CONTINUOUS_UPDATES = "continuousupdates"
 
 # PyETO specific config consts
 CONF_PYETO_COASTAL = "coastal"

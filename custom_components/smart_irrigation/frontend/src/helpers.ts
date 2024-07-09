@@ -55,7 +55,7 @@ export function computeIcon(entity: HassEntity) {
 }
 export function parseBoolean(value?: string | number | boolean | null) {
   value = value?.toString().toLowerCase();
-  return value === "true" || value === "1";
+  return value === "on" || value === "true" || value === "1";
 }
 export function getPart(value: any, index: number) {
   value = value.toString();
