@@ -98,9 +98,11 @@ class PyETO(SmartIrrigationCalculationModule):
             self._solrad_behavior = config.get(
                 CONF_PYETO_SOLRAD_BEHAVIOR, DEFAULT_SOLRAD_BEHAVIOR
             )
-            self._forecast_days = int(
-                config.get(CONF_PYETO_FORECAST_DAYS, DEFAULT_FORECAST_DAYS)
+            self._forecast_days = config.get(
+                CONF_PYETO_FORECAST_DAYS, DEFAULT_FORECAST_DAYS
             )
+            if not isinstance(self._forecast_days, int):
+                self._forecast_days = 0
 
     def calculate(self, weather_data, forecast_data):
         delta = 0

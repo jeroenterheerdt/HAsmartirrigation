@@ -9,7 +9,7 @@ import sys
 import requests
 
 # DO NOT USE THESE FOR TESTING, INSTEAD DEFINE THE CONSTS IN THIS FILE
-"""from ..const import (
+from ..const import (
     MAPPING_DEWPOINT,
     MAPPING_HUMIDITY,
     MAPPING_MAX_TEMP,
@@ -18,23 +18,7 @@ import requests
     MAPPING_PRESSURE,
     MAPPING_TEMPERATURE,
     MAPPING_WINDSPEED,
-)"""
-MAPPING_ID = "id"
-MAPPING_NAME = "name"
-MAPPING_DATA = "data"
-MAPPING_DATA_LAST_UPDATED = "data_last_updated"
-MAPPING_DATA_MULTIPLIER = "data_multiplier"
-MAPPING_MAPPINGS = "mappings"
-MAPPING_DEWPOINT = "Dewpoint"
-MAPPING_EVAPOTRANSPIRATION = "Evapotranspiration"
-MAPPING_HUMIDITY = "Humidity"
-MAPPING_MAX_TEMP = "Maximum Temperature"
-MAPPING_MIN_TEMP = "Minimum Temperature"
-MAPPING_PRECIPITATION = "Precipitation"
-MAPPING_PRESSURE = "Pressure"
-MAPPING_SOLRAD = "Solar Radiation"
-MAPPING_TEMPERATURE = "Temperature"
-MAPPING_WINDSPEED = "Windspeed"
+)
 
 _LOGGER = logging.getLogger(__name__)
 
