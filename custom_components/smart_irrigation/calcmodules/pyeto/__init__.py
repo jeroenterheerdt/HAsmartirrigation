@@ -72,7 +72,7 @@ SCHEMA = vol.Schema(
         vol.Required(
             CONF_PYETO_SOLRAD_BEHAVIOR, default=DEFAULT_SOLRAD_BEHAVIOR
         ): vol.Coerce(SOLRAD_behavior),
-        vol.Required(
+        vol.Optional(
             CONF_PYETO_FORECAST_DAYS, default=DEFAULT_FORECAST_DAYS
         ): vol.Coerce(int),
     }
@@ -81,6 +81,11 @@ SCHEMA = vol.Schema(
 
 class PyETO(SmartIrrigationCalculationModule):
     def __init__(self, hass, description, config: {}) -> None:
+        if CONF_PYETO_FORECAST_DAYS in config and not isinstance(
+            config[CONF_PYETO_FORECAST_DAYS], int
+        ):
+            config[CONF_PYETO_FORECAST_DAYS] = DEFAULT_FORECAST_DAYS
+
         super().__init__(
             name="PyETO",
             description=description,
@@ -102,7 +107,7 @@ class PyETO(SmartIrrigationCalculationModule):
                 CONF_PYETO_FORECAST_DAYS, DEFAULT_FORECAST_DAYS
             )
             if not isinstance(self._forecast_days, int):
-                self._forecast_days = 0
+                self._forecast_days = DEFAULT_FORECAST_DAYS
 
     def calculate(self, weather_data, forecast_data):
         delta = 0
