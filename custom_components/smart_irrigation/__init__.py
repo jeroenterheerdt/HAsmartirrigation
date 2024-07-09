@@ -776,11 +776,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         z,
                     )
             else:
-                _LOGGER.warning(
-                    "Unable to find mapping with id in update all: {}".format(
-                        mapping_id
+                if mapping is None:
+                    _LOGGER.warning(
+                        f"[async_update_all] Unable to find mapping with id: {mapping_id}"
                     )
-                )
+                if weatherdata is None:
+                    _LOGGER.warning(
+                        f"[async_update_all] No weather data to parse for mapping {mapping_id}"
+                    )
 
     async def merge_weatherdata_and_sensor_values(self, wd, sv):
         if wd is None:
