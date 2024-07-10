@@ -81,10 +81,11 @@ SCHEMA = vol.Schema(
 
 class PyETO(SmartIrrigationCalculationModule):
     def __init__(self, hass, description, config: {}) -> None:
-        if CONF_PYETO_FORECAST_DAYS in config and not isinstance(
-            config[CONF_PYETO_FORECAST_DAYS], int
-        ):
-            config[CONF_PYETO_FORECAST_DAYS] = DEFAULT_FORECAST_DAYS
+        if config:
+            if CONF_PYETO_FORECAST_DAYS in config and not isinstance(
+                config[CONF_PYETO_FORECAST_DAYS], int
+            ):
+                config[CONF_PYETO_FORECAST_DAYS] = DEFAULT_FORECAST_DAYS
 
         super().__init__(
             name="PyETO",
