@@ -601,7 +601,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         data[const.CONF_CALC_TIME]
                     )
                 )
-                raise ValueError("Time is not a valid time")
+                # raise ValueError("Time is not a valid time")
         else:
             # set OWM client cache to 0
             if self._WeatherServiceClient:
@@ -712,13 +712,20 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 weatherdata = await self.hass.async_add_executor_job(
                     self._WeatherServiceClient.get_data
                 )
-            # WIP v2024.6.X: disabling this
-            # experiment: this can be disabled because we switched to subscriptions
-            # if sensor_in_mapping:
-            #    sensor_values = self.build_sensor_values_for_mapping(mapping)
-            #    weatherdata = await self.merge_weatherdata_and_sensor_values(
-            #        weatherdata, sensor_values
-            #    )
+            # WIP v2024.6.X: skip this if continuous updates are enabled
+            the_config = self.store.async_get_config()
+            if the_config.get(const.CONF_CONTINUOUS_UPDATES):
+                # if continuous updates are enabled, we do not need to update the mappings here
+                _LOGGER.debug(
+                    f"Continuous updates are enabled, skipping update for mapping {mapping_id}"
+                )
+                continue
+            else:
+                if sensor_in_mapping:
+                    sensor_values = self.build_sensor_values_for_mapping(mapping)
+                    weatherdata = await self.merge_weatherdata_and_sensor_values(
+                        weatherdata, sensor_values
+                    )
             if static_in_mapping:
                 static_values = self.build_static_values_for_mapping(mapping)
                 weatherdata = await self.merge_weatherdata_and_sensor_values(
@@ -965,9 +972,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # if using pyeto and using a forecast o_i_m needs to be set to true!
         modinst = await self.getModuleInstanceByID(zone.get(const.ZONE_MODULE))
         forecastdata = None
-        _LOGGER.debug(
-            f"calculate_zone: modinst.name: {modinst.name} and forecast_days: {modinst._forecast_days}"
-        )
         if modinst and modinst.name == "PyETO" and modinst._forecast_days > 0:
             if self.use_weather_service:
                 # get forecast info from OWM
