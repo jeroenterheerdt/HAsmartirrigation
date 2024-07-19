@@ -90,6 +90,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     this.config = await fetchConfig(this.hass);
     this.zones = await fetchZones(this.hass);
     this.mappings = await fetchMappings(this.hass);
+
     //this.allmodules = await fetchAllModules(this.hass);
     /*Object.entries(this.mappings).forEach(([key, value]) =>
       console.log(key, value)
@@ -123,11 +124,13 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   }
 
   private handleRemoveMapping(ev: Event, index: number): void {
+    //get the mapping id for the mapping at this index
+    const mappingid = this.mappings[index].id;
     this.mappings = this.mappings.filter((_, i) => i !== index);
     if (!this.hass) {
       return;
     }
-    deleteMapping(this.hass, index.toString());
+    deleteMapping(this.hass, mappingid.toString());
   }
 
   private handleEditMapping(
@@ -219,7 +222,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                 : html` <svg
                     style="width:24px;height:24px"
                     viewBox="0 0 24 24"
-                    id="deleteZone${index}"
+                    id="deleteZone${mapping.id}"
                     @click="${(e: Event) => this.handleRemoveMapping(e, index)}"
                   >
                     <title>

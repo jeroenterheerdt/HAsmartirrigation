@@ -138,10 +138,10 @@ export const saveMapping = (
 
 export const deleteMapping = (
   hass: HomeAssistant,
-  module_id: string
+  mapping_id: string
 ): Promise<boolean> => {
   return hass.callApi("POST", DOMAIN + "/mappings", {
-    id: module_id,
+    id: mapping_id,
     remove: true,
   });
 };

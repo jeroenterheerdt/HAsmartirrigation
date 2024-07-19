@@ -756,7 +756,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if mapping is not None and weatherdata is not None:
                 weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
                 mapping_data = mapping[const.MAPPING_DATA]
-                mapping_data.append(weatherdata)
+                if isinstance(mapping_data, list):
+                    mapping_data.append(weatherdata)
+                elif isinstance(mapping_data, str):
+                    mapping_data = [weatherdata]
+                else:
+                    _LOGGER.error(
+                        f"[async_update_all]: mapping is unexpected type: {mapping_data}"
+                    )
                 _LOGGER.debug(
                     "async_update_all for mapping {} new mapping_data: {}".format(
                         mapping_id, weatherdata
@@ -1507,10 +1514,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         res, weatherdata=sensor_values, forecastdata=forecastdata
                     )
                     # remove mapping sensor data
-                    changes = {}
-                    changes[const.MAPPING_DATA] = []
-                    # disabled because calculating single zone shouldn't remove weather data
-                    # self.store.async_update_mapping(mapping_id, changes=changes)
+
+                    # only remove weather data if there are no other zones dependent on this mapping
+                    dependent_zones = self._get_zones_that_use_this_mapping(mapping_id)
+                    if zone_id in dependent_zones:
+                        dependent_zones.remove(zone_id)
+                    if not dependent_zones:
+                        changes = {}
+                        changes[const.MAPPING_DATA] = []
+                        self.store.async_update_mapping(mapping_id, changes=changes)
                     self.store.async_update_zone(zone_id, data)
                     async_dispatcher_send(
                         self.hass, const.DOMAIN + "_config_updated", zone_id
