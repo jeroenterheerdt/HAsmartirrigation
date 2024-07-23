@@ -516,7 +516,7 @@ class SmartIrrigationStorage:
         # new_zone = ZoneEntry(**data, id=zone_id)
         new_zone = ZoneEntry(**data)
         if not new_zone.id:
-            new_zone = attr.evolve(new_zone, id=len(self.get_zones()))
+            new_zone = attr.evolve(new_zone, id=self.generate_next_id(self.get_zones()))
         self.zones[int(new_zone.id)] = new_zone
         self.async_schedule_save()
         return attr.asdict(new_zone)
@@ -595,7 +595,9 @@ class SmartIrrigationStorage:
         # new_module = moduleEntry(**data, id=module_id)
         new_module = ModuleEntry(**data)
         if not new_module.id:
-            new_module = attr.evolve(new_module, id=len(self.get_modules()))
+            new_module = attr.evolve(
+                new_module, id=self.generate_next_id(self.get_modules())
+            )
         self.modules[int(new_module.id)] = new_module
         self.async_schedule_save()
         return attr.asdict(new_module)
@@ -645,7 +647,9 @@ class SmartIrrigationStorage:
         """Create a new MappingEntry."""
         new_mapping = MappingEntry(**data)
         if not new_mapping.id:
-            new_mapping = attr.evolve(new_mapping, id=len(self.get_mappings()))
+            new_mapping = attr.evolve(
+                new_mapping, id=self.generate_next_id(self.get_mappings())
+            )
         self.mappings[int(new_mapping.id)] = new_mapping
         self.async_schedule_save()
         return attr.asdict(new_mapping)
@@ -670,6 +674,14 @@ class SmartIrrigationStorage:
         new = self.mappings[mapping_id] = attr.evolve(old, **changes)
         self.async_schedule_save()
         return attr.asdict(new)
+
+    def generate_next_id(self, the_list):
+        """Generate a next id for the_list."""
+        ids = []
+        for i in range(0, len(the_list)):
+            ids.append(the_list[i]["id"])
+        x = max(ids) + 1
+        return x
 
 
 @bind_hass

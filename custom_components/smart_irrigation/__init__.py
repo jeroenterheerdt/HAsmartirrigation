@@ -1306,14 +1306,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         return data
 
     async def async_update_module_config(self, module_id: int = None, data: dict = {}):
-        module_id = int(module_id)
+        if module_id is not None:
+            module_id = int(module_id)
         if const.ATTR_REMOVE in data:
             # delete a module
             res = self.store.get_module(module_id)
             if not res:
                 return
             self.store.async_delete_module(module_id)
-        elif self.store.get_module(module_id):
+        elif module_id is not None and self.store.get_module(module_id):
             # modify a module
             self.store.async_update_module(module_id, data)
             async_dispatcher_send(
@@ -1327,7 +1328,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def async_update_mapping_config(
         self, mapping_id: int = None, data: dict = {}
     ):
-        if mapping_id:
+        if mapping_id is not None:
             mapping_id = int(mapping_id)
         if const.ATTR_REMOVE in data:
             # delete a mapping
@@ -1335,13 +1336,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if not res:
                 return
             self.store.async_delete_mapping(mapping_id)
-        elif self.store.get_mapping(mapping_id):
+        elif mapping_id is not None and self.store.get_mapping(mapping_id):
             # modify a mapping
             self.store.async_update_mapping(mapping_id, data)
             async_dispatcher_send(
                 self.hass, const.DOMAIN + "_config_updated", mapping_id
             )
-            self.update_subscriptions()
+            await self.update_subscriptions()
         else:
             # create a mapping
             self.store.async_create_mapping(data)
@@ -1610,32 +1611,37 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         )
 
             # add the weatherdata value to the mappings sensor values
-            mapping_data = mapping[const.MAPPING_DATA]
-            weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
-            mapping_data.append(weatherdata)
-            _LOGGER.debug(
-                "async_update_zone_config for mapping {} new mapping_data: {}".format(
-                    mapping_id, weatherdata
+            if mapping:
+                mapping_data = mapping[const.MAPPING_DATA]
+                weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
+                mapping_data.append(weatherdata)
+                _LOGGER.debug(
+                    "async_update_zone_config for mapping {} new mapping_data: {}".format(
+                        mapping_id, weatherdata
+                    )
                 )
-            )
-            changes = {
-                "data": mapping_data,
-                const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now(),
-            }
-            self.store.async_update_mapping(mapping_id, changes)
+                changes = {
+                    "data": mapping_data,
+                    const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now(),
+                }
+                self.store.async_update_mapping(mapping_id, changes)
 
-            # store last updated and number of data points in the zone here.
-            changes_to_zone = {
-                const.ZONE_LAST_UPDATED: changes[const.MAPPING_DATA_LAST_UPDATED],
-                const.ZONE_NUMBER_OF_DATA_POINTS: len(mapping_data) - 1,
-            }
-            zones_to_loop = self._get_zones_that_use_this_mapping(mapping_id)
-            for z in zones_to_loop:
-                self.store.async_update_zone(z, changes_to_zone)
-                async_dispatcher_send(
-                    self.hass,
-                    const.DOMAIN + "_config_updated",
-                    z,
+                # store last updated and number of data points in the zone here.
+                changes_to_zone = {
+                    const.ZONE_LAST_UPDATED: changes[const.MAPPING_DATA_LAST_UPDATED],
+                    const.ZONE_NUMBER_OF_DATA_POINTS: len(mapping_data) - 1,
+                }
+                zones_to_loop = self._get_zones_that_use_this_mapping(mapping_id)
+                for z in zones_to_loop:
+                    self.store.async_update_zone(z, changes_to_zone)
+                    async_dispatcher_send(
+                        self.hass,
+                        const.DOMAIN + "_config_updated",
+                        z,
+                    )
+            else:
+                _LOGGER.warning(
+                    f"Failed to update zone {zone_id}: no or invalid sensor group selected."
                 )
         elif const.ATTR_UPDATE_ALL in data:
             _LOGGER.info("Updating all zones")
@@ -1681,7 +1687,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             _LOGGER.info("Clearing all weatherdata")
             data.pop(const.ATTR_CLEAR_ALL_WEATHERDATA)
             await self.handle_clear_weatherdata(None)
-        elif self.store.get_zone(zone_id):
+        elif zone_id is not None and self.store.get_zone(zone_id):
             # modify a zone
             entry = self.store.async_update_zone(zone_id, data)
             async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
