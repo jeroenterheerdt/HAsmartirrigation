@@ -1,4 +1,5 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=flat-square)](https://github.com/hacs/integration)
+[![release][release-badge]][release-url]
 
 [![Support the author on Patreon][patreon-shield]][patreon]
 
@@ -9,6 +10,7 @@
 
 [buymeacoffee]: https://www.buymeacoffee.com/dutchdatadude
 [buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png
+[release-url]: https://github.com/jeroenterheerdt/HASmartIrrigation/releases
 
 # Smart Irrigation
 
