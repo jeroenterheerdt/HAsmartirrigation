@@ -11,7 +11,7 @@
 [buymeacoffee]: https://www.buymeacoffee.com/dutchdatadude
 [buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png
 [release-url]: https://github.com/jeroenterheerdt/HASmartIrrigation/releases
-
+[release-badge]: https://img.shields.io/github/v/release/jeroenterheerdt/HASmartIrrigation?style=flat-square
 # Smart Irrigation
 
 ![](logo.png?raw=true)
