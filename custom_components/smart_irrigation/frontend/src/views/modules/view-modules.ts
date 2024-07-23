@@ -74,7 +74,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
       return;
     }
     const newModule: SmartIrrigationModule = {
-      id: this.modules.length + 1,
+      //id: this.modules.length + 1,
       name: this.moduleInput.selectedOptions[0].text,
       description: m.description,
       config: m.config,
@@ -86,11 +86,12 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
   }
 
   private handleRemoveModule(ev: Event, index: number): void {
+    const moduleid = this.modules[index].id;
     this.modules = this.modules.filter((_, i) => i !== index);
-    if (!this.hass) {
+    if (!this.hass || moduleid == undefined) {
       return;
     }
-    deleteModule(this.hass, index.toString());
+    deleteModule(this.hass, moduleid.toString());
   }
 
   private saveToHA(module: SmartIrrigationModule): void {

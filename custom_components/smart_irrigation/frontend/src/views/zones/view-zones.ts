@@ -149,7 +149,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
   private handleAddZone(): void {
     const newZone: SmartIrrigationZone = {
-      id: this.zones.length + 1, //new zone will have ID that is equal to current zone length + 1
+      //id: this.zones.length + 1, //new zone will have ID that is equal to current zone length + 1
       name: this.nameInput.value,
       size: parseFloat(this.sizeInput.value),
       throughput: parseFloat(this.throughputInput.value),
@@ -196,20 +196,21 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     );*/
     //const dialog = new ConfirmationDialog();
     //dialog.showDialog("{'message':'Test!'}");
+    const zoneid = this.zones[index].id;
     const zone = Object.values(this.zones).at(index);
-    if (!zone) {
+    if (!zone || zoneid == undefined) {
       return;
     }
     this.zones = this.zones.filter((_, i) => i !== index);
     if (!this.hass) {
       return;
     }
-    deleteZone(this.hass, zone.id.toString());
+    deleteZone(this.hass, zoneid.toString());
   }
 
   private handleCalculateZone(index: number): void {
     const zone = Object.values(this.zones).at(index);
-    if (!zone) {
+    if (!zone || zone.id == undefined) {
       return;
     }
     if (!this.hass) {
@@ -221,7 +222,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
   private handleUpdateZone(index: number): void {
     const zone = Object.values(this.zones).at(index);
-    if (!zone) {
+    if (!zone || zone.id == undefined) {
       return;
     }
     if (!this.hass) {

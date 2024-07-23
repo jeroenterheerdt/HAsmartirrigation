@@ -1327,7 +1327,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def async_update_mapping_config(
         self, mapping_id: int = None, data: dict = {}
     ):
-        mapping_id = int(mapping_id)
+        if mapping_id:
+            mapping_id = int(mapping_id)
         if const.ATTR_REMOVE in data:
             # delete a mapping
             res = self.store.get_mapping(mapping_id)

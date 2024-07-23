@@ -62,7 +62,7 @@ export enum SmartIrrigationZoneState {
 
 //export type SmartIrrigationZone = {
 export class SmartIrrigationZone {
-  id: number;
+  id?: number;
   name: string;
   size: number;
   throughput: number;
@@ -111,7 +111,7 @@ export class SmartIrrigationZone {
 }
 
 export class SmartIrrigationModule {
-  id: number;
+  id?: number;
   name: string;
   description: string;
   //duration: number;
@@ -129,7 +129,7 @@ export class SmartIrrigationModule {
 }
 
 export class SmartIrrigationMapping {
-  id: number;
+  id?: number;
   name: string;
   mappings: object;
   data_last_updated?: Date;

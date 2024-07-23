@@ -112,7 +112,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       [MAPPING_WINDSPEED]: "",
     };
     const newMapping: SmartIrrigationMapping = {
-      id: this.mappings.length + 1,
+      //id: this.mappings.length + 1,
       name: this.mappingNameInput.value,
       mappings: the_mappings,
     };
@@ -126,6 +126,9 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   private handleRemoveMapping(ev: Event, index: number): void {
     //get the mapping id for the mapping at this index
     const mappingid = this.mappings[index].id;
+    if (mappingid == undefined) {
+      return;
+    }
     this.mappings = this.mappings.filter((_, i) => i !== index);
     if (!this.hass) {
       return;
