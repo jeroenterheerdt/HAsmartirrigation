@@ -243,12 +243,13 @@ class PyETO(SmartIrrigationCalculationModule):
 
                 # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
                 # delta = round(precip-eto,1)
+                _LOGGER.debug(f"[pyETO: calculate_et_for_day] precip: {precip}")
                 if precip is None:
                     precip = 0
                 if eto is None:
                     eto = 0
                 delta = precip - eto
-                _LOGGER.debug(f"[pyETO: calculate_et_for_day] precip: {precip}")
+
                 _LOGGER.debug(f"[pyETO: calculate_et_for_day] delta returned: {delta}")
                 return delta
             else:
