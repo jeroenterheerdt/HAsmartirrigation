@@ -243,9 +243,35 @@ class PyETO(SmartIrrigationCalculationModule):
 
                 # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
                 # delta = round(precip-eto,1)
+                if precip is None:
+                    precip = 0
+                if eto is None:
+                    eto = 0
                 delta = precip - eto
                 _LOGGER.debug(f"[pyETO: calculate_et_for_day] precip: {precip}")
                 _LOGGER.debug(f"[pyETO: calculate_et_for_day] delta returned: {delta}")
                 return delta
+            else:
+                # some data is missing, let's check and log what is missing
+                if tdew is None:
+                    _LOGGER.error(
+                        f"[pyETO: calculate_et_for_day] missing {MAPPING_DEWPOINT}"
+                    )
+                if temp_c_min is None:
+                    _LOGGER.error(
+                        f"[pyETO: calculate_et_for_day] missing {MAPPING_MIN_TEMP}"
+                    )
+                if temp_c_max is None:
+                    _LOGGER.error(
+                        f"[pyETO: calculate_et_for_day] missing {MAPPING_MAX_TEMP}"
+                    )
+                if wind_m_s is None:
+                    _LOGGER.error(
+                        f"[pyETO: calculate_et_for_day] missing {MAPPING_WINDSPEED}"
+                    )
+                if atmos_pres is None:
+                    _LOGGER.error(
+                        f"[pyETO: calculate_et_for_day] missing {MAPPING_PRESSURE}"
+                    )
         _LOGGER.debug(f"[pyETO: calculate_et_for_day] returned: 0!")
         return 0
