@@ -144,9 +144,10 @@ You can change any value mentioned before. Additionally there are some more opti
 - Module: Choose the calculation module (see below) shall be used for that zone to calculate irrigation duration.
 - Sensor group: Which sensor group (see below) shall be used for that zone.
 - Bucket: Either calculated or manually set. Bucket >=0 no irrigation is necesarry, bucket <0 irrigation is necesarry.
+- Maximum bucket: You can manually set a maximum bucket size. The maximum recommended bucket size is based on the type of soil. clay soil: 30 mm (1.18"), sandy soil: 12 mm (0.47"). This recommendation is based on the soil water holding capacity. See [this discussion for more details](https://github.com/jeroenterheerdt/HAsmartirrigation/discussions/448).
 - Lead Time: In seconds. Time needed to warm up your irrigation system, e.g. time to establish a connection or start a pump etc.
 - Maximum duration: The maximum duration of the irrigation, to avoid flooding.
-- Multiplier: Multiplies the duration of the irrigation or divides if you do 0.5 for example.
+- Multiplier: Multiplies the duration of the irrigation or divides if you do 0.5 for example. It is recommended to set the multipler depending on your grass type. Cool-reason grasses (such as fescue, bluegrass) should be set to 0.8, while warm-season grasses (such as bermuda, zoysia) should be set to 0.7. See [this discussion for more details](https://github.com/jeroenterheerdt/HAsmartirrigation/discussions/448).
 - Duration: Either calculated or manually set.
 
 Below each zone there are some buttons to update with weather data, calculate irrigation duration or to delete that zone. Note that if you calculate irrigation duration using the buttons per zone, the weather data for that zone is deleted. After a calculation there is also a button to get some information how duration was calculated.
@@ -236,6 +237,8 @@ The [How this works Wiki page](https://github.com/jeroenterheerdt/HAsmartirrigat
 Since this integration does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom integration with any irrigation system you might have, regardless of how that interfaces with Home Assistant. In order for this to work correctly, you should base your automation on the value of `sensor.smart_irrigation_[zone_name]` as long as you run your automation after it was updated (e.g. 11:00 PM/23:00 hours local time). If that value is above 0 it is time to irrigate. Note that the value is the run time in seconds. Also, after irrigation, you need to call the `smart_irrigation.reset_bucket` service to reset the net irrigation tracking to 0.
 
 > **The last step in any automation is very important, since you will need to let the integration know you have finished irrigating and the evaporation counter can be reset by calling the `smart_irrigation.reset_bucket` service**
+
+Experts say you should water deeply but infrequently to avoid overwatering and encourage deep rooting. It might be a good idea to create an automation that starts early enough to finish before sunrise and only once per week if duration is 0 or if the bucket < -25 mm (~1"). Adjust to your specific needs.
 
 #### Example Automation 1: one valve, potentially daily irrigation
 
