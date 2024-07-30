@@ -11,4 +11,4 @@ If it rains or snows less than the amount of moisture lost, then irrigation is r
 The integration can take into account weather forecasts for the coming days and also keeps track of the total moisture lost or added ('bucket').
 Multiple zones are supported with each zone having it own configuration and set up.
 
-## Sounds good? let's get started with [installation](installation.md)
+**Sounds good? let's get started with [installation](installation.md)**
