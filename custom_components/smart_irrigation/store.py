@@ -677,9 +677,13 @@ class SmartIrrigationStorage:
 
     def generate_next_id(self, the_list):
         """Generate a next id for the_list."""
+        if the_list is None or len(the_list) == 0:
+            return 0
         ids = []
-        for i in range(0, len(the_list)):
+        for i in range(len(the_list)):
             ids.append(the_list[i]["id"])
+        if ids is None:
+            return 0
         x = max(ids) + 1
         return x
 
