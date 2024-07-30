@@ -8,7 +8,7 @@ The below image shows a graphical representation of what this integration does.
 2. Sunshine, temperature, wind speed, place on earth and other factors influence the amount of moisture lost from the ground(`evapotranspiration`).
 3. The difference between `precipitation` and `evapotranspiration` is the `delta` or `netto precipitation`: negative values mean more moisture is lost than gets added by rain/snow, while positive values mean more moisture is added by rain/snow than what evaporates.
 4. At some point in the day (configurable) the `netto precipitation` is added/substracted from the `bucket,` which starts as empty. If the `bucket` is below zero, irrigation is required.
-5. Irrigation should be run for `sensor.smart_irrigation_[zone_name]`, which is 0 if `bucket >=0`. Afterwards, the `bucket` needs to be reset (using `reset_bucket` service). It's up to the user of the integration to build the automation for this final step. See [Example automation](example-automations) for automations that people have built.
+5. Irrigation should be run for `sensor.smart_irrigation_[zone_name]`, which is 0 if `bucket >=0`. Afterwards, the `bucket` needs to be reset (using [`reset_bucket` service](services)). It's up to the user of the integration to build the automation for this final step. See [Example automation](example-automations) for automations that people have built.
 
 ## Weekly behavior example
 To understand how `precipitation`, `netto precipitation`, the `bucket` and irrigation interact, see let's look at an example behavior in a week.
