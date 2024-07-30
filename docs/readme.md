@@ -13,4 +13,4 @@ Multiple zones are supported with each zone having it own configuration and set 
 
 **Sounds good? let's get started with [installation](installation.md)**
 
-Want to learn more? Read [how it works](how-it-works.md) or watch [our official tutorial videos on Youtube (English)](https://youtube.com/playlist?list=PLUHIAUPJHMiakbda92--fgb6A0hFReAo7&si=82Xc6mHoLDwFBfCP) and [community-created tutorial in German](https://youtu.be/1AYLuIs7_Pw).
+Prefer to learn more first? Read [how it works](how-it-works.md) or watch [our official tutorial videos on Youtube (English)](https://youtube.com/playlist?list=PLUHIAUPJHMiakbda92--fgb6A0hFReAo7&si=82Xc6mHoLDwFBfCP) and [community-created tutorial in German](https://youtu.be/1AYLuIs7_Pw).
