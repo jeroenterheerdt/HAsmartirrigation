@@ -13,4 +13,4 @@ Multiple zones are supported with each zone having it own configuration and set 
 
 **Sounds good? let's get started with [installation](installation.md)**
 
-Want to learn more? Read [how this works](how-this-works.md)
+Want to learn more? Read [how it works](how-it-works.md)
