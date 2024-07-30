@@ -4,4 +4,4 @@ plugins:
 
 title: Smart Irrigation
 description: A Home Assistant integration to optimize irrigation
-show_downloads: "true"
+show_downloads: "false"
