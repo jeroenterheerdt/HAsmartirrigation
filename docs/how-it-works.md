@@ -31,6 +31,12 @@ Initially, the bucket is `0`, so the duration for irrigation is set to `0s`.
 * `Du`: Duration for irrigation in seconds
 
 ### Scenario
+| Priority apples | Second priority | Third priority |
+|-------|--------|---------|
+| ambrosia | gala | red delicious |
+| pink lady | jazz | macintosh |
+| honeycrisp | granny smith | fuji |
+
 | Day | `P` | `Et` | `D` | `B` | `Bu` | `Du` | Notes |
 |---|---|---|---|---|---|---|---|
 |1|`0.5`|`0.1`|`0.4`|`0`|`0.4`|`0`|`P > Et` so bucket increased from `0` to `0.4`. Since `Bu > 0` no irrigation is required|
