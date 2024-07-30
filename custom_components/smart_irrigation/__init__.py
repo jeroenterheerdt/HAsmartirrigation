@@ -552,7 +552,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                     if can_calculate:
                                         # get the zone and calculate
                                         _LOGGER.debug(
-                                            f"[async_continuous_update_for_mapping] for mapping {mapping_id}: calculating zone {zone.get(const.ZONE_ID)}"
+                                            f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: calculating zone {zone.get(const.ZONE_ID)}"
                                         )
                                         await self.async_calculate_zone(
                                             zone.get(const.ZONE_ID),
@@ -560,19 +560,19 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                         )
                                     else:
                                         _LOGGER.info(
-                                            f"[async_continuous_update_for_mapping] for mapping {mapping_id}: zone {z} has module {mod.get(const.MODULE_NAME)} that uses forecasting, skipping to avoid API calls that can incur costs."
+                                            f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zone {z} has module {mod.get(const.MODULE_NAME)} that uses forecasting, skipping to avoid API calls that can incur costs."
                                         )
                             else:
                                 _LOGGER.info(
-                                    f"[async_continuous_update_for_mapping] for mapping {mapping_id}: zone {z} has no module, skipping."
+                                    f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zone {z} has no module, skipping."
                                 )
                         else:
                             _LOGGER.info(
-                                f"[async_continuous_update_for_mapping] for mapping {mapping_id}: zone {z} is not automatic, skipping."
+                                f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zone {z} is not automatic, skipping."
                             )
                 else:
                     _LOGGER.info(
-                        f"[async_continuous_update_for_mapping] for mapping {mapping_id}: mapping does use weather service, skipping automatic update to avoid API calls that can incur costs."
+                        f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: sensor group does use weather service, skipping automatic update to avoid API calls that can incur costs."
                     )
 
     async def set_up_auto_calc_time(self, data):
@@ -695,6 +695,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def _async_update_all(self, *args):
         # update the weather data for all mappings for all zones that are automatic here and store it.
         # in _async_calculate_all we need to read that data back and if there is none, we log an error, otherwise apply aggregate and use data
+        # this should skip any pure sensor zones if continuous updates is enabled, otherwise it should include them
         _LOGGER.info("Updating weather data for all automatic zones")
         zones = self.store.get_zones()
         mappings = await self._get_unique_mappings_for_automatic_zones(zones)
@@ -705,6 +706,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 sensor_in_mapping,
                 static_in_mapping,
             ) = self.check_mapping_sources(mapping_id=mapping_id)
+            the_config = self.store.async_get_config()
+            if the_config.get(const.CONF_CONTINUOUS_UPDATES) and not owm_in_mapping:
+                # if continuous updates are enabled, we do not need to update the mappings here for pure sensor mappings
+                _LOGGER.debug(
+                    f"Continuous updates are enabled, skipping update for sensor group {mapping_id} because it is not dependent on weather service and should already be included in the continuous updates."
+                )
+                continue
+            _LOGGER.debug(
+                f"Continuous updates are enabled, but updating sensor group {mapping_id} as part of scheduled updates because it is dependent on weather service and therefore is not included in continuous updates."
+            )
             mapping = self.store.get_mapping(mapping_id)
             weatherdata = None
             if self.use_weather_service and owm_in_mapping:
@@ -712,20 +723,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 weatherdata = await self.hass.async_add_executor_job(
                     self._WeatherServiceClient.get_data
                 )
-            # WIP v2024.6.X: skip this if continuous updates are enabled
-            the_config = self.store.async_get_config()
-            if the_config.get(const.CONF_CONTINUOUS_UPDATES):
-                # if continuous updates are enabled, we do not need to update the mappings here
-                _LOGGER.debug(
-                    f"Continuous updates are enabled, skipping update for mapping {mapping_id}"
+
+            if sensor_in_mapping:
+                sensor_values = self.build_sensor_values_for_mapping(mapping)
+                weatherdata = await self.merge_weatherdata_and_sensor_values(
+                    weatherdata, sensor_values
                 )
-                continue
-            else:
-                if sensor_in_mapping:
-                    sensor_values = self.build_sensor_values_for_mapping(mapping)
-                    weatherdata = await self.merge_weatherdata_and_sensor_values(
-                        weatherdata, sensor_values
-                    )
             if static_in_mapping:
                 static_values = self.build_static_values_for_mapping(mapping)
                 weatherdata = await self.merge_weatherdata_and_sensor_values(
@@ -762,7 +765,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     mapping_data = [weatherdata]
                 else:
                     _LOGGER.error(
-                        f"[async_update_all]: mapping is unexpected type: {mapping_data}"
+                        f"[async_update_all]: sensor group is unexpected type: {mapping_data}"
                     )
                 _LOGGER.debug(
                     "async_update_all for mapping {} new mapping_data: {}".format(
@@ -790,11 +793,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             else:
                 if mapping is None:
                     _LOGGER.warning(
-                        f"[async_update_all] Unable to find mapping with id: {mapping_id}"
+                        f"[async_update_all] Unable to find sensor group with id: {mapping_id}"
                     )
                 if weatherdata is None:
                     _LOGGER.warning(
-                        f"[async_update_all] No weather data to parse for mapping {mapping_id}"
+                        f"[async_update_all] No weather data to parse for sensor group {mapping_id}"
                     )
 
     async def merge_weatherdata_and_sensor_values(self, wd, sv):
@@ -943,7 +946,34 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         _LOGGER.info("Calculating all automatic zones")
         # get all zones that are in automatic and for all of those, loop over the unique list of mappings
         # are any modules using OWM / sensors?
-        zones = self.store.get_zones()
+
+        unfiltered_zones = self.store.get_zones()
+
+        # skip over zones that use pure sensors (not weather service) if continuous updates are enabled
+        the_config = self.store.async_get_config()
+        zones = []
+        if the_config.get(const.CONF_CONTINUOUS_UPDATES):
+            _LOGGER.debug(
+                "Continuous updates are enabled, filtering out pure sensor zones."
+            )
+            # filter zones and only add zone if it uses a weather service
+            for z in unfiltered_zones:
+                mapping_id = z.get(const.ZONE_MAPPING)
+                weather_service_in_mapping, sensor_in_mapping, static_in_mapping = (
+                    self.check_mapping_sources(mapping_id=mapping_id)
+                )
+                if weather_service_in_mapping:
+                    _LOGGER.debug(
+                        f"[async_calculate_all]: zone {z.get(const.ZONE_ID)} uses a weather service so should be included in the calculation even though continuous updates are on."
+                    )
+                    zones.append(z)
+                else:
+                    _LOGGER.debug(
+                        f"[async_calculate_all]: Skipping zone {z.get(const.ZONE_ID)} from calculation because it uses a pure sensor mapping and continuous updates are enabled."
+                    )
+        else:
+            # no need to filter, continue with unfiltered zones
+            zones = unfiltered_zones
 
         # for mapping_id in mappings:
         #    o, s, sv = self.check_mapping_sources(mapping_id = mapping_id)
@@ -1023,7 +1053,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
         else:
             _LOGGER.warning(
-                "Calculate for zone {} failed: invalid mapping specified".format(
+                "Calculate for zone {} failed: invalid sensor group specified".format(
                     zone.get(const.ZONE_NAME)
                 )
             )
@@ -1376,12 +1406,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         ):
                             static_in_mapping = True
             else:
-                _LOGGER.debug(f"[check_mapping_sources] mapping {mapping_id} is None")
-        _LOGGER.debug(
-            "check_mapping_sources for mapping_id {} returns OWM: {}, sensor: {}, static: {}".format(
-                mapping_id, owm_in_mapping, sensor_in_mapping, static_in_mapping
+                _LOGGER.debug(
+                    f"[check_mapping_sources] sensor group {mapping_id} is None"
+                )
+            _LOGGER.debug(
+                "check_mapping_sources for mapping_id {} returns OWM: {}, sensor: {}, static: {}".format(
+                    mapping_id, owm_in_mapping, sensor_in_mapping, static_in_mapping
+                )
             )
-        )
         return owm_in_mapping, sensor_in_mapping, static_in_mapping
 
     def build_sensor_values_for_mapping(self, mapping):
