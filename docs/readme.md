@@ -1,3 +1,8 @@
+---
+layout: default
+title: Introduction
+navigation_weight: 2
+---
 # Smart Irrigation
 
 Ever wondered if you're watering your lawn/garden/greenhouse/plants/crops too much or too little?
