@@ -12,3 +12,5 @@ The integration can take into account weather forecasts for the coming days and 
 Multiple zones are supported with each zone having it own configuration and set up.
 
 **Sounds good? let's get started with [installation](installation.md)**
+
+Want to learn more? Read [how this works](how-this-works.md)
