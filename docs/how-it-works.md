@@ -31,18 +31,8 @@ Initially, the bucket is `0`, so the duration for irrigation is set to `0s`.
 * `Du`: Duration for irrigation in seconds
 
 ### Scenario
-| Header1 | Header2 | Header3 |
-|:--------|:-------:|--------:|
-| cell1   | cell2   | cell3   |
-| cell4   | cell5   | cell6   |
-|----
-| cell1   | cell2   | cell3   |
-| cell4   | cell5   | cell6   |
-|=====
-| Foot1   | Foot2   | Foot3
-
 | Day | `P` | `Et` | `D` | `B` | `Bu` | `Du` | Notes |
-|:---|:---|:---|:---|:---|:---|:---|:---|
+|---|---|---|---|---|---|---|---|
 |1|`0.5`|`0.1`|`0.4`|`0`|`0.4`|`0`|`P > Et` so bucket increased from `0` to `0.4`. Since `Bu > 0` no irrigation is required|
 |2|`0`|`0.6`|`-0.6`|`0.40`|`-0.2`|`180`|`P < Et`, so bucket decreased from `0.4` to `-0.2`. Since Bu < 0` irrigation is required and bucket is reset afterwards|
 |3|`1`|`0.2`|`0.8`|`0` (reset)|`0.8`|`0`|No irrigation required|
