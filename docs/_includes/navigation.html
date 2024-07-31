@@ -6,9 +6,6 @@
       {{ item.name }}
     </a>
     <br/>
-    linkfortest: {{ link_for_test }}.<br/>
-    itemlink: {{ item.link }}.<br/>
-    page.url: {{ page.url }}.<br/>
     test: {% if link_for_test == page.url %}class="active"{% endif %}.<br/> |
   {% endfor %}
 </nav>
