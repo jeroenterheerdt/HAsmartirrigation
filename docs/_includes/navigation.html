@@ -39,7 +39,7 @@
     {% for item in site.data.navigation %}
     {% assign link_for_test='/' | append: item.link %}
       {% if item.subcategories != null %}
-          <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="active"{% endif %}>{{ item.name }}</a><br/>
+          <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="active"{% endif %}>{{ item.name }}</a>
           <ul class="menu">
           {% for subcategory in item.subcategories %}
           {% assign subcategory_for_test='/' | append: subcategory.link %}
@@ -47,7 +47,7 @@
           {% endfor %}
           </ul>
       {% else %} 
-           <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="active"{% endif %}>{{ item.name }}</a><br/>
-      {% endif %}
+           <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="active"{% endif %}>{{ item.name }}</a>
+      {% endif %}|
     {% endfor %}
 </nav>
