@@ -1,7 +1,6 @@
 ---
 layout: default
 title: Introduction
-navigation_weight: 2
 ---
 # Smart Irrigation
 
