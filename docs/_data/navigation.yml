@@ -1,11 +1,11 @@
-- link: /index.html
+- link: /HAsmartirrigation/index.html
   name: Home
-- link: /installation.html
+- link: /HAsmartirrigation/installation.html
   name: Installation
-- link: /how-it-works.html
+- link: /HAsmartirrigation/how-it-works.html
   name: How it works
-- link: /services.html
+- link: /HAsmartirrigation/services.html
   name: Services
-- link: /example-automations.html
+- link: /HAsmartirrigation/example-automations.html
   name: Automations
 
