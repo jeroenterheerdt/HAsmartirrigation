@@ -16,17 +16,12 @@
   <ul>
     {% for item in site.data.navigation %}
     {% assign link_for_test='/' | append: item.link %}
-    
-    link_for_test: {{link_for_test.url }}.<br/>
-    
-    page.url: {{ page.url }}.<br/>
       {% if item.subcategories != null %}
         <li>
-          <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="active"{% endif %}>{{ item.name }} ▼</a>
+          <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="active"{% endif %}>{{ item.name }}</a>
           <ul>
           {% for subcategory in item.subcategories %}
           {% assign subcategory_for_test='/' | append: subcategory.link %}
-          subcat_for_test = {{subcategory_for_test}}.<br/>
             <li><a href="/HAsmartirrigation/{{ subcategory.link }}" {% if subcategory_for_test == page.url %}class="active"{% endif %}>{{ subcategory.name }}</a></li>
           {% endfor %}
           </ul>
