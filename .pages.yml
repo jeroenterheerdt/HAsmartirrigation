@@ -1,9 +1,0 @@
-content:
-  - name: installation
-    label: Installation
-    path: installation.md
-    type: file
-  - name: services
-    label: Services
-    path: services.md
-    type: file
