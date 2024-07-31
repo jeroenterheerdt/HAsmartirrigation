@@ -1,9 +1,11 @@
 <nav>
   | {% for item in site.data.navigation %}
+    {% assign link-for-test='/' | append: item.link %}
     <a href="/HAsmartirrigation/{{ item.link }}" {% if "/" | append: item.link == page.url %}class="active"{% endif %}>
       {{ item.name }}
     </a>
     <br/>
+    link-for-test: {{ link-for-test }}.<br/>
     itemlink: {{ item.link }}.<br/>
     page.url: {{ page.url }} |
   {% endfor %}
