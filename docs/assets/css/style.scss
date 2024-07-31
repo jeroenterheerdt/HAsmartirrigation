@@ -15,6 +15,9 @@ div#navigation_wrap {
   top: 200px;*/
 }
 
-ul.menu {
-  margin-bottom: 0px;
+div.menu {
+  display: none;
+}
+a.activewithsubcat:hover + div {
+  display: block;
 }
