@@ -6,3 +6,4 @@ content:
   - name: services
     label: Services
     path: services.md
+    type: file
