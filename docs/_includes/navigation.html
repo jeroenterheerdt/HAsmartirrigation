@@ -9,6 +9,7 @@
 <nav>
   <ul>
     {% for nav in site.data.navigation %}
+    {% assign link_for_test='/' | append: nav.link %}
       {% if nav.subcategories != null %}
         <li>
           <a href="/HAsmartirrigation/{{ nav.link }}">{{ nav.name }} ▼</a>
@@ -18,7 +19,7 @@
           {% endfor %}
           </ul>
         </li>
-      {% elsif nav.name == page.name %}
+      {% elsif link_for_test == page.name %}
          <li class="active">
            <a href="/HAsmartirrigation/{{ nav.link }}">{{ nav.name }}</a>
          </li>
