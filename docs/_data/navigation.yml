@@ -1,11 +1,11 @@
-- link: /index.html
+- link: index.html
   name: Home
-- link: /installation.html
+- link: installation.html
   name: Installation
-- link: /how-it-works.html
+- link: how-it-works.html
   name: How it works
-- link: /services.html
+- link: services.html
   name: Services
-- link: /example-automations.html
+- link: example-automations.html
   name: Automations
 
