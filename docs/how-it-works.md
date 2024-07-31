@@ -2,7 +2,7 @@
 
 The below image shows a graphical representation of what this integration does.
 
-![](../images/smart_irrigation_diagram.png?raw=true)
+![](assets/images/smart_irrigation_diagram.png?raw=true)
 
 1. Snow and rain fall on the ground add moisture. Together, this makes up the `precipitation`.
 2. Sunshine, temperature, wind speed, place on earth and other factors influence the amount of moisture lost from the ground(`evapotranspiration`).
