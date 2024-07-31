@@ -16,7 +16,9 @@
   <ul>
     {% for item in site.data.navigation %}
     {% assign link_for_test='/' | append: item.link %}
-    {% assign subcategory_for_test='/'| append: subcategory.link %}
+    {% assign subcategory_for_test='/' | append: subcategory.link %}
+    link_for_test: {{link_for_test.url }}.<br/>
+    subcat_for_test = {{subcategory_for_test}}.<br/>
     page.url: {{ page.url }}.<br/>
       {% if item.subcategories != null %}
         <li>
