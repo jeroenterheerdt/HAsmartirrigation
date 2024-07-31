@@ -18,7 +18,7 @@
     {% assign link_for_test='/' | append: item.link %}
     link_for_test: {{ link_for_test }}<br/>
       {% if item.subcategories != null %}
-        <li {% if link_for_test == page.url %}class="active"{% endif %}>
+        <li>
           <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="active"{% endif %}>{{ item.name }} ▼</a>
           <ul>
           {% for subcategory in item.subcategories %}
