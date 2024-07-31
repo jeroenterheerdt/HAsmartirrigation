@@ -6,13 +6,13 @@
   name: Configuration
   subcategories:
     - name: General
-      link: configuration/general.html
+      link: configuration-general.html
     - name: Zones
-      link: configuration/zones.html
+      link: configuration-zones.html
     - name: Sensor Groups
-      link: configuration/sensor-groups.html
+      link: configuration-sensor-groups.html
     - name: Modules
-      link: configuration/modules.html
+      link: configuration-modules.html
 - link: how-it-works.html
   name: How it works
 - link: services.html
