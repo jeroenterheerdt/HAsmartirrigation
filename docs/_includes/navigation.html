@@ -18,22 +18,18 @@
     {% assign link_for_test='/' | append: item.link %}
     link_for_test: {{ link_for_test }}<br/>
       {% if item.subcategories != null %}
-        <li>
-          <a href="/HAsmartirrigation/{{ item.link }}">{{ item.name }} ▼</a>
+        <li {% if link_for_test == page.url %}class="activate"{% endif %}>
+          <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="activate"{% endif %}>{{ item.name }} ▼</a>
           <ul>
           {% for subcategory in item.subcategories %}
-            <li><a href="/HAsmartirrigation/{{ subcategory.link }}">{{ subcategory.name }}</a></li>
+            <li><a href="/HAsmartirrigation/{{ subcategory.link }}" {% if link_for_test == page.url %}class="activate"{% endif %}>{{ subcategory.name }}</a></li>
           {% endfor %}
           </ul>
         </li>
-      {% elsif link_for_test == page.url %}
-         <li class="active">
-           <a href="/HAsmartirrigation/{{ item.link }}" class="active">{{ item.name }}</a>
-         </li>
       {% else %} 
-        <li>
-          <a href="/HAsmartirrigation/{{ item.link }}">{{ item.name }}</a>
-        </li>
+         <li class="active">
+           <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="activate"{% endif %}>{{ item.name }}</a>
+         </li>
       {% endif %}
     {% endfor %}
   </ul>
