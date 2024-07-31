@@ -1,0 +1,4 @@
+content:
+  - name: installation
+    label: Installation
+    path: installation.md
