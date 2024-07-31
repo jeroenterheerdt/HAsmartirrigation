@@ -4,9 +4,7 @@
     {{'/' | append: item.link}}
     <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="active"{% endif %}>
       {{ item.name }}
-    </a>
-    <br/>
-    test: {% if link_for_test == page.url %}class="active"{% endif %}.<br/> |
+    </a> |
   {% endfor %}
 </nav>
 
