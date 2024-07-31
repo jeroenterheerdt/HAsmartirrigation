@@ -11,20 +11,20 @@
     {% for nav in site.data.navigation %}
       {% if nav.subcategories != null %}
         <li>
-          <a href="{{ site.url }}{{ nav.link }}">{{ nav.name }} ▼</a>
+          <a href="/HAsmartirrigation/{{ nav.link }}">{{ nav.name }} ▼</a>
           <ul>
           {% for subcategory in nav.subcategories %}
-            <li><a href="{{ site.url }}{{ subcategory.link }}">{{ subcategory.name }}</a></li>
+            <li><a href="/HAsmartirrigation/{{ subcategory.link }}">{{ subcategory.name }}</a></li>
           {% endfor %}
           </ul>
         </li>
       {% elsif nav.name == page.name %}
          <li class="active">
-           <a href="{{ nav.link }}">{{ nav.name }}</a>
+           <a href="/HAsmartirrigation/{{ nav.link }}">{{ nav.name }}</a>
          </li>
       {% else %} 
         <li>
-          <a href="{{ site.url }}{{ nav.link }}">{{ nav.name }}</a>
+          <a href="/HAsmartirrigation/{{ nav.link }}">{{ nav.name }}</a>
         </li>
       {% endif %}
     {% endfor %}
