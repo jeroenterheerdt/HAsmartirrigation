@@ -12,7 +12,7 @@
     </a><br/>
   {% endfor %}
 </nav>-->
-<nav>
+<!--<nav>
   <ul class="menu">
     {% for item in site.data.navigation %}
     {% assign link_for_test='/' | append: item.link %}
@@ -33,5 +33,21 @@
       {% endif %}
     {% endfor %}
   </ul>
-</nav> 
-
+</nav>-->
+<nav>
+  |
+    {% for item in site.data.navigation %}
+    {% assign link_for_test='/' | append: item.link %}
+      {% if item.subcategories != null %}
+          <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="active"{% endif %}>{{ item.name }}</a><br/>
+          <ul class="menu">
+          {% for subcategory in item.subcategories %}
+          {% assign subcategory_for_test='/' | append: subcategory.link %}
+            <li><a href="/HAsmartirrigation/{{ subcategory.link }}" {% if subcategory_for_test == page.url %}class="active"{% endif %}>{{ subcategory.name }}</a></li>
+          {% endfor %}
+          </ul>
+      {% else %} 
+           <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page.url %}class="active"{% endif %}>{{ item.name }}</a><br/>
+      {% endif %}
+    {% endfor %}
+</nav>
