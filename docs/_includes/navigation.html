@@ -14,24 +14,25 @@
 </nav>
 <nav>
   <ul>
-    {% for nav in site.data.navigation %}
-    {% assign link_for_test='/' | append: nav.link %}
-      {% if nav.subcategories != null %}
+    {% for item in site.data.navigation %}
+    {% assign link_for_test='/' | append: item.link %}
+    link_for_test: {{ link_for_test }}<br/>
+      {% if item.subcategories != null %}
         <li>
-          <a href="/HAsmartirrigation/{{ nav.link }}">{{ nav.name }} ▼</a>
+          <a href="/HAsmartirrigation/{{ item.link }}">{{ item.name }} ▼</a>
           <ul>
-          {% for subcategory in nav.subcategories %}
+          {% for subcategory in item.subcategories %}
             <li><a href="/HAsmartirrigation/{{ subcategory.link }}">{{ subcategory.name }}</a></li>
           {% endfor %}
           </ul>
         </li>
       {% elsif link_for_test == page.name %}
          <li class="active">
-           <a href="/HAsmartirrigation/{{ nav.link }}" class="active">{{ nav.name }}</a>
+           <a href="/HAsmartirrigation/{{ item.link }}" class="active">{{ item.name }}</a>
          </li>
       {% else %} 
         <li>
-          <a href="/HAsmartirrigation/{{ nav.link }}">{{ nav.name }}</a>
+          <a href="/HAsmartirrigation/{{ item.link }}">{{ item.name }}</a>
         </li>
       {% endif %}
     {% endfor %}
