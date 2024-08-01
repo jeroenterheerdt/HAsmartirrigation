@@ -5,7 +5,7 @@ title: Configuration: General
 # General configuration
 
 > Main page: [Configuration](configuration.md)<br/>
-> Next: [Zone configuration](configurations-zones.md)
+> Next: [Zone configuration](configuration-zones.md)
 
 This page provides the following global settings:
 
@@ -32,4 +32,4 @@ Please note that this is experimental right now and will have bugs.
 
 
 > Main page: [Configuration](configuration.md)<br/>
-> Next: [Zone configuration](configurations-zones.md)
+> Next: [Zone configuration](configuration-zones.md)
