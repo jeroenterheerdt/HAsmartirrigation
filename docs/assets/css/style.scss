@@ -10,14 +10,4 @@ a.active {
 
 div#navigation_wrap {
   text-align: center;
-  /*position: absolute;
-  left: 10px;
-  top: 200px;*/
-}
-
-div.submenu {
-  display: none;
-}
-a.activewithsubcat:hover + div {
-  display: block;
 }
