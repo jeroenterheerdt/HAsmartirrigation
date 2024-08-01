@@ -6,7 +6,7 @@ title: Configuration
 
 You use the Smart Irrigation panel to configure the integration. Make sure you [install](installation.md) it first.
 
-INSERT SCREENSHOT HERE + highlight pages
+INSERT SCREENSHOT HERE + highlight pages + panel entry
 
 
 The panel consists of multiple pages:
