@@ -19,18 +19,20 @@ It's recommended to use actual sensor sources as much as you can and only rely o
 
 The following data can be provided:
 
-| Data | Required | Available sources | Available units | Excepted aggregation | Notes |
-|---|---|---|---|--|--|
-|**Dewpoint**|Yes|Weather Service<br/>Sensor<br/>Static value|°C<br/>°F|Average||
-|**Evapotranspiration**|No|None (module will calculate it)<br/>Sensor<br/>Static value|in<br/>mm|Average||
-|**Humidity**|Yes|eather Service<br/>Sensor<br/>Static value|%|Average||
-|**Total precipitation**|Yes|Weather Service<br/>Sensor<br/>Static value|%|Maximum or Last||
-|**Pressure**|Yes|Weather Service<br/>Sensor<br/>Static value|hPa<br/>inch Hg<br/>millibar<br/>psi|Average|Can either be absolute or relative pressure: _absolute barometric pressure_ is the actual pressure measured at your location, while _relative barometric pressure_ is the pressure calculated at sea level. Check the source of your data to find out whether it provides absolute or relative pressure.|
-|**Solar Radiation**|No|None (requires module to estimate it)<br/>Sensor<br/>Static value|MJ/day/m2<br/>MJ/day/sq ft<br/>W/m2<br/>W/sq ft|Average||
-|**Temperature**|Yes|Weather Service<br/>Sensor<br/>Static value|°C<br/>°F|Average||
-|**Wind speed**|Yes||Weather Service<br/>Sensor<br/>Static value|meter/s<br/>mile/h<br/>km/h|Average||
+| Data | Required | Available sources | Available units | Excepted aggregation |
+|---|---|---|---|--|
+|**Dewpoint**|Yes|Weather Service<br/>Sensor<br/>Static value|°C<br/>°F|Average|
+|**Evapotranspiration**|No|None (module will calculate it)<br/>Sensor<br/>Static value|in<br/>mm|Average|
+|**Humidity**|Yes|eather Service<br/>Sensor<br/>Static value|%|Average|
+|**Total precipitation**|Yes|Weather Service<br/>Sensor<br/>Static value|%|Maximum or Last|
+|**Pressure** (*see notes below the table)|Yes|Weather Service<br/>Sensor<br/>Static value|hPa<br/>inch Hg<br/>millibar<br/>psi|Average|
+|**Solar Radiation**|No|None (requires module to estimate it)<br/>Sensor<br/>Static value|MJ/day/m2<br/>MJ/day/sq ft<br/>W/m2<br/>W/sq ft|Average|
+|**Temperature**|Yes|Weather Service<br/>Sensor<br/>Static value|°C<br/>°F|Average|
+|**Wind speed**|Yes||Weather Service<br/>Sensor<br/>Static value|meter/s<br/>mile/h<br/>km/h|Average|
 
-If you use a [weather service](installation-weatherservice.md), make sure your home zone coordinates are set correctly so the data is correct. This is especially true if you set the coordinates manually in the configuration.yaml.
+Please note:
+- If you use a [weather service](installation-weatherservice.md), make sure your home zone coordinates are set correctly so the data is correct. This is especially true if you set the coordinates manually in the configuration.yaml.
+- Pressure can either be absolute or relative pressure: _absolute barometric pressure_ is the actual pressure measured at your location, while _relative barometric pressure_ is the pressure calculated at sea level. Check the source of your data to find out whether it provides absolute or relative pressure.
 
 ## Deleting a sensor group
 TODO: insert image

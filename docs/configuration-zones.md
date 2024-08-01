@@ -6,7 +6,7 @@ title: Configuration: Zones
 
 > Main page: [Configuration](configuration.md)<br/>
 > Previous: [General configuration](configuration-general.md)<br/>
-> Next: [Module configuration](configurations-modules.md)
+> Next: [Module configuration](configuration-modules.md)
 
 Specify one or more irrigation zones here. The integration calculates irrigation duration per zone, depending on size, throughput, state, [module](configuration-modules.md) and [sensor group](configuration-sensor-groups.md). A zone can be:
 * **disabled**: The zone is then not calculated and duration will be set to 0.
@@ -76,4 +76,4 @@ Below each zone there are some buttons, to perform the following tasks:
 
 > Main page: [Configuration](configuration.md)<br/>
 > Previous: [General configuration](configuration-general.md)<br/>
-> Next: [Module configuration](configurations-modules.md)
+> Next: [Module configuration](configuration-modules.md)
