@@ -10,5 +10,7 @@
   name: Services
 - link: automations.html
   name: Automations
+- link: help.html
+  name: Help
   
 
