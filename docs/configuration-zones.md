@@ -26,7 +26,7 @@ You need to specify the following to add a zone:
 - **Throughput**: The flow of this zone (liter/minute or gallon/minute)
 
 After entering the information, click `Add zone` to add the zone.
-
+Each zone is shown as an entity in Home Assistant.
 After adding a zone, make sure to further configure your new zone.
 
 ## Actions on all automatic Zones

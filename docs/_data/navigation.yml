@@ -6,11 +6,7 @@
   name: Configuration
 - link: how-it-works.html
   name: How it works
-- link: services.html
-  name: Services
-- link: automations.html
-  name: Automations
+- link: usage.html
+  name: Usage
 - link: help.html
   name: Help
-  
-
