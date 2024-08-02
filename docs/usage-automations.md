@@ -15,6 +15,8 @@ Experts say you should water deeply but infrequently to avoid overwatering and e
 
 The examples on this page don't use a timer - see [this discussion](https://github.com/jeroenterheerdt/HAsmartirrigation/discussions/361) for an example of using a timer for extra safety.
 
+Also, check out the [blueprints we provide](https://github.com/jeroenterheerdt/HAsmartirrigation/tree/master/blueprints).
+
 ### Example 1: one valve, once per week irrigation if duration < 0 or if the bucket < - 25 mm:
 
 This example automation runs daily and checks `sensor.smart_irrigation_[zone_name]`. It checks if the `buckets` is `< -25mm (~1")` or if's a monday and duration is above `0`. This follows the expert recommendation mentioned above.
