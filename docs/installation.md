@@ -12,7 +12,7 @@ Installing the Smart Irrigation integration consists of a few steps:
 Also in this section:
 
 3. [Changing your settings for weather service](installation-options.md)
-4. [Updating to a latest version](installation-updating.md).
+4. [Updating to the latest or specific version](installation-updating.md).
 5. [Uninstalling the integration](installation-uninstalling.md).
 
 ![](assets/images/installation-1.png)
