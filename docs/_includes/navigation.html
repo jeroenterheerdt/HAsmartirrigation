@@ -7,7 +7,7 @@
     LT: {{ link_for_test }}
     PUFT: {{ page_url_for_test }}
     PAGEURL: {{ page.url }}
-        <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page_url_for_test or link_for_test == page.url or link_for_test2 == page.url %}class="active"{% endif %}>{{ item.name }}</a>
+        <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page_url_for_test or link_for_test == page.url or link_for_test2 == page_url_for_test %}class="active"{% endif %}>{{ item.name }}</a>
         |
       {% endfor %}
 </nav>
