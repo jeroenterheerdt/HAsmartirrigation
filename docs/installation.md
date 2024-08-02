@@ -6,8 +6,8 @@ title: Installation
 
 Installing the Smart Irrigation integration consists of a few steps:
 
-1. Downloading the integration.
-2. Configuring whether you want to to use weather service.
+1. [Downloading the integration](installation-download.md).
+2. [Configuring whether you want to to use weather service](installation-weatherservice.md).
 
 ![](assets/images/installation-1.png)
 
