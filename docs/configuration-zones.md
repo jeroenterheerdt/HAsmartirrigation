@@ -69,7 +69,7 @@ TODO: add image
 
 Below each zone there are some buttons, to perform the following tasks:
 
-* update with weather data. This collects weather data from the sensor group for the zone.
+* update weather data. This collects weather data from the sensor group for the zone.
 * calculate irrigation duration. Note that if you calculate irrigation duration using the buttons per zone, the weather data for the sensor group for that zone is deleted. 
 * delete the zone. 
 * after a calculation there is also a button to get some information how duration was calculated, which gives insight into how the bucket was updated, and how the lead time and multiplier influenced the calculated duration.
