@@ -4,13 +4,15 @@
 @import "jekyll-theme-slate";
 
 a.active {
-  color: white;
   font-weight: bold;
 }
 
+div#navigation_wrap a{
+  color: white;
+}
 div#navigation_wrap {
   text-align: center;
-  background: #757575;
+  background: #03a9f4;
 }
 
 /* Anchor links
