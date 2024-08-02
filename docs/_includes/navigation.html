@@ -4,9 +4,6 @@
     {% assign link_for_test='/' | append: item.link | split:'-' | first %}
     {% assign page_url_for_test = page.url | split:'-'| first | split: '.html' | first | append: '.html' %}
     {% assign link_for_test2 = link_for_test | append: '.html' %}
-    LT: {{ link_for_test }}
-    PUFT: {{ page_url_for_test }}
-    PAGEURL: {{ page.url }}
         <a href="/HAsmartirrigation/{{ item.link }}" {% if link_for_test == page_url_for_test or link_for_test == page.url or link_for_test2 == page_url_for_test %}class="active"{% endif %}>{{ item.name }}</a>
         |
       {% endfor %}
