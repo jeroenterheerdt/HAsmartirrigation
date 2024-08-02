@@ -17,7 +17,7 @@ Let's walk through the wizard:
 
 5. On this page, select the [weather service you want to use (Open Weather Map or Pirate Weather)](installation-weatherservice.md) and enter the API key for the weather service (see below on how to get an API key).
 ![](assets/images/installation-weatherservice-2.png)
-6. If the API key is correct you will see a success message. If you get an error you need to double check you have the right API key. Especially for Open Weahter Map it can take a long time for an API key to become active.
+6. If the API key is correct you will see a success message. If you get an error you need to double check you have the right API key. Especially for Open Weather Map it can take a long time for an API key to become active.
 
 ![](assets/images/installation-1.png)
 
