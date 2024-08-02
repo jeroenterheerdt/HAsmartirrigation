@@ -22,7 +22,7 @@
 
 | :warning: WARNING Are you upgrading from v0.0.X (aka V1) to V2023.X.X (aka V2)? |
 |:---------------------------|
-| Stop what you're doing and [capture your V1 configuration](https://jeroenterheerdt.github.io/HAsmartirrigation/installation-migration.html) _before_ installing V2. V2 is a complete overhaul of this integration and there is no upgrade path. This means that effectively you will have to start over. See the [Docs](https://jeroenterheerdt.github.io/HAsmartirrigation/installation-migration.html) for instructions. We will not be able to recover your V1 configuration if you don't capture it before installing V2. |
+| Stop what you're doing and [capture your V1 configuration](https://jeroenterheerdt.github.io/HAsmartirrigation/installation-migration.html) _before_ installing V2. V2 is a complete overhaul of this integration and there is no upgrade path. This means that effectively you will have to start over. See the [docs](https://jeroenterheerdt.github.io/HAsmartirrigation/installation-migration.html) for instructions. We will not be able to recover your V1 configuration if you don't capture it before installing V2. |
 
 This integration calculates the time to run your irrigation system to compensate for moisture loss by [evapotranspiration](https://en.wikipedia.org/wiki/Evapotranspiration). Using this integration you water your garden, lawn or crops precisely enough to compensate what has evaporated. It takes into account precipitation (rain, snow) and moisture loss caused by evapotranspiration and adjusts accordingly.
 If it rains or snows less than the amount of moisture lost, then irrigation is required. Otherwise, no irrigation is required.
