@@ -30,7 +30,7 @@ Each zone is shown as an entity in Home Assistant.
 After adding a zone, make sure to further configure your new zone.
 
 ## Actions on all automatic Zones
-TODO: insert screenshot
+![](assets/images/configuration-zones-1.png)
 
 You can perform the following actions on all automatic zones: 
 - **Update all zones**: Retrieve the weather data for all [sensor groups](configuration-sensor-groups.md) for all automatic zones.
@@ -65,9 +65,9 @@ This recommendation is based on the soil water holding capacity. See [this discu
 
 ### Available actions per zone
 
-TODO: add image
+![](assets/images/configuration-zones-2.png)
 
-Below each zone there are some buttons, to perform the following tasks:
+Below each zone there are some buttons, to perform the following tasks (from left to right):
 
 * update weather data. This collects weather data from the sensor group for the zone.
 * calculate irrigation duration. Note that if you calculate irrigation duration using the buttons per zone, the weather data for the sensor group for that zone is deleted. 

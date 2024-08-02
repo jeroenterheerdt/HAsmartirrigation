@@ -35,7 +35,7 @@ Please note:
 - Pressure can either be absolute or relative pressure: _absolute barometric pressure_ is the actual pressure measured at your location, while _relative barometric pressure_ is the pressure calculated at sea level. Check the source of your data to find out whether it provides absolute or relative pressure.
 
 ## Deleting a sensor group
-TODO: insert image
+![](assets/images/configuration-sensor-groups-1.png)
 
 Use the button at the bottom to delete a sensor group. Note you can only delete sensor groups that are not used by any [zones](configuration-zones.md).
 

@@ -27,7 +27,7 @@ The following modules are available:
 - **Passthrough**: Return the value of an evapotranspiration sensor as delta. Passthrough takes your evapotranspiration sensor and returns its value. It bypasses all calculations, except aggregates. This requires a solar radiation source to be configured in your [sensor groups](configuration-sensor-groups.md).
 
 ## Deleting a module
-TODO: insert image
+![](assets/images/configuration-modules-1.png)
 Use the button at the bottom to delete a module. Note you can only delete modules that are not used by any [zones](configuration-zones.md).
 
 > Main page: [Configuration](configuration.md)<br/>
