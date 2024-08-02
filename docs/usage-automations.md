@@ -6,6 +6,7 @@ title: Usage: Entities
 
 > Main page: [Usage](usage.md)<br/>
 > Previous: [Events](usage-events.md)<br/>
+> Next: [Troubleshooting](usage-troubleshooting.md)
 
 Since this integration does not interface with your irrigation system directly, you will need to use the data it outputs to create an automation that will start and stop your irrigation system for you. This way you can use this custom integration with any irrigation system you might have, regardless of how that interfaces with Home Assistant. In order for this to work correctly, you should base your automation on the value of `sensor.smart_irrigation_[zone_name]` as long as you run your automation after it was updated (e.g. 11:00 PM/23:00 hours local time). If that value is above `0` it is time to irrigate. Note that the value is the run time in seconds. Also, after irrigation, you need to call the `smart_irrigation.reset_bucket` service to reset the net irrigation tracking (`bucket`) to 0.
 
@@ -362,3 +363,4 @@ mode: single
 ```
 > Main page: [Usage](usage.md)<br/>
 > Previous: [Events](usage-events.md)<br/>
+> Next: [Troubleshooting](usage-troubleshooting.md)

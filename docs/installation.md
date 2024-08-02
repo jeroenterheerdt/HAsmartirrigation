@@ -17,6 +17,7 @@ Also in this section:
 
 3. [Changing your settings for weather service](installation-options.md)
 4. [Updating to the latest or specific version](installation-updating.md)
-5. [Uninstalling the integration](installation-uninstalling.md)
+5. [Migration from V1 (v0.0.X) to V2 (202X.X.X)](installation-migration.md)
+6. [Uninstalling the integration](installation-uninstalling.md)
 
 

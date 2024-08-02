@@ -5,7 +5,7 @@ title: Installation: Updating
 # Updating
 
 > Main page: [Installation](installation.md)<br/>
-> Next: [Uninstalling the integration](installation-uninstalling.md)<br/>
+> Next: [Migrating from V1 to V2](installation-migration.md)
 
 1. To install the latest version, follow these instructions:
     * **If installed using HACS**: In the HACS panel or in the Home Assistant updates there should be a notification when a new version is available. Follow the instructions within HACS to update the installation files. You can also force checking for an update by updating information for the repository in the HACS.
@@ -28,4 +28,4 @@ In the Smart Irrigation configuration panel, the version number is displayed in 
 To clear the cache, you should do a [force refresh of your browser](https://refreshyourcache.com/en/cache/).
 
 > Main page: [Installation](installation.md)<br/>
-> Next: [Uninstalling the integration](installation-uninstalling.md)<br/>
+> Next: [Migrating from V1 to V2](installation-migration.md)

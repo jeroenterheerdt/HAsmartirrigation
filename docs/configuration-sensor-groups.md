@@ -6,6 +6,7 @@ title: Configuration: Sensor groups
 
 > Main page: [Configuration](configuration.md)<br/>
 > Previous: [Module configuration](configuration-modules.md)<br/>
+> Next: [Usage](usage.md)
 
 Sensor groups define what sources provide the weather data to be collected and calculated on to determine irrigation duration. You can use any numeric Home Assistant sensor, regardless of its source. Additionally, if you [configured a weather service](installation-weatherservice.md) in this integration, you can retrieve the data from that as well.
 
@@ -33,12 +34,24 @@ The following data can be provided:
 Please note:
 - If you use a [weather service](installation-weatherservice.md), make sure your home zone coordinates are set correctly so the data is correct. This is especially true if you set the coordinates manually in the configuration.yaml.
 - Pressure can either be absolute or relative pressure: _absolute barometric pressure_ is the actual pressure measured at your location, while _relative barometric pressure_ is the pressure calculated at sea level. Check the source of your data to find out whether it provides absolute or relative pressure.
-
+- Humidity for your sensor group is the air humidity / atmospheric humidity, _not_ soil humidity. Soil Humidity sensors do not provide useful information for this integration and cannot be used.
+- Wind speed needs to be measured at 2 meters height. If you are using Open Weather Map this is automatically done for you, but if you do not, you need to make sure the input sensor returns the wind speed at the correct height. You can use a template sensor like the following for this:
+   ```yaml
+   sensor:
+     - platform: template
+       sensors:
+         wind_at_2m:
+           friendly_name: Wind Speed at 2m
+           value_template: "{{states('[name of your wind speed sensor (WSmeasured)]')|float()*(4.87/log((67.8*[height the wind speed was measured on in meters (H)])-5.42))}}"
+   ```
 ## Deleting a sensor group
 ![](assets/images/configuration-sensor-groups-1.png)
 
 Use the button at the bottom to delete a sensor group. Note you can only delete sensor groups that are not used by any [zones](configuration-zones.md).
 
-Note that the humidity sensor mentioned is the air humidity / atmospheric humidity, _not_ soil humidity.
+
+
+Now you are ready to [use the integration](usage.md)!
 > Main page: [Configuration](configuration.md)<br/>
 > Previous: [Module configuration](configuration-modules.md)<br>
+> Next: [Usage](usage.md)
