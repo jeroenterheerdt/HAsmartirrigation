@@ -21,9 +21,10 @@ If enabled, set the time of calculation (HH:MM). Calculation uses weatherdata th
 If enabled configure time of pruning weather data. Use this to make sure that there is no left over weatherdata from previous days. Don't remove the weatherdata before you calculate and only use this option if you expect the automatic update to collect weatherdata after you calculated for the day. Ideally, you want to prune as late in the day as possible.
 
 ### Continuous updates (experimental)
-Continuous updates is an experimental feature that tries to capture more granular weather data to avoid missing chunks of weather patterns. For a zone to be continuous updated, it needs to be set to:
-* automatic
+Continuous updates is an experimental feature that tries to capture more granular weather data to avoid missing chunks of weather patterns. For a zone to be continuous updated, it needs to:
+* be set to `automatic`
 * use a sensor group that does not rely on a weather service
+* not use forecasting, as it relies on weather services. Set `forecast days` for PyETO to `0`.
 
 Any zone that does not meet the above requirements is not included in the continuous updates and instead will be included in the automatic update and calculation at the time configured. 
 Any zone that does meet this requirement will not be included in the automatic update and calculation.
