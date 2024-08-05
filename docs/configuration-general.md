@@ -23,7 +23,7 @@ If enabled configure time of pruning weather data. Use this to make sure that th
 ### Continuous updates (experimental)
 Continuous updates is an experimental feature that tries to capture more granular weather data to avoid missing chunks of weather patterns. For a zone to be continuous updated, it needs to:
 * be set to `automatic`
-* use a sensor group that does not rely on a weather service
+* use a [sensor group](configuration-sensor-groups.md) that does not rely on a weather service (none of the data has its source set to `weather service`). 
 * not use forecasting, as it relies on weather services. Set `forecast days` for PyETO to `0`.
 
 Any zone that does not meet the above requirements is not included in the continuous updates and instead will be included in the automatic update and calculation at the time configured. 
