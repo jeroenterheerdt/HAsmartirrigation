@@ -255,24 +255,24 @@ class PyETO(SmartIrrigationCalculationModule):
             else:
                 # some data is missing, let's check and log what is missing
                 if tdew is None:
-                    _LOGGER.error(
-                        f"[pyETO: calculate_et_for_day] missing {MAPPING_DEWPOINT}"
+                    _LOGGER.warning(
+                        f"[pyETO: calculate_et_for_day] missing {MAPPING_DEWPOINT}. If you have continuous updates on this is expected as dewpoint is not always available."
                     )
                 if temp_c_min is None:
-                    _LOGGER.error(
-                        f"[pyETO: calculate_et_for_day] missing {MAPPING_MIN_TEMP}"
+                    _LOGGER.warning(
+                        f"[pyETO: calculate_et_for_day] missing {MAPPING_MIN_TEMP}. If you have continuous updates on this is expected as min temp is not always available."
                     )
                 if temp_c_max is None:
-                    _LOGGER.error(
-                        f"[pyETO: calculate_et_for_day] missing {MAPPING_MAX_TEMP}"
+                    _LOGGER.warning(
+                        f"[pyETO: calculate_et_for_day] missing {MAPPING_MAX_TEMP}. If you have continuous updates on this is expected as max temp is not always available."
                     )
                 if wind_m_s is None:
-                    _LOGGER.error(
-                        f"[pyETO: calculate_et_for_day] missing {MAPPING_WINDSPEED}"
+                    _LOGGER.warning(
+                        f"[pyETO: calculate_et_for_day] missing {MAPPING_WINDSPEED}. If you have continuous updates on this is expected as windspeed is not always available."
                     )
                 if atmos_pres is None:
-                    _LOGGER.error(
-                        f"[pyETO: calculate_et_for_day] missing {MAPPING_PRESSURE}"
+                    _LOGGER.warning(
+                        f"[pyETO: calculate_et_for_day] missing {MAPPING_PRESSURE}. If you have continuous updates on this is expected as pressure is not always available."
                     )
         _LOGGER.debug(f"[pyETO: calculate_et_for_day] returned: 0!")
         return 0

@@ -161,12 +161,21 @@ def convert_mapping_to_metric(val, mapping, unit, system_is_metric):
     elif mapping == MAPPING_SOLRAD:
         # either: assume w/m2 for metric, w/sqft for imperial
         if unit:
+            _LOGGER.debug(
+                f"[convert_mapping_to_metric]: unit set, converting {val} from {unit} to {UNIT_MJ_DAY_M2}"
+            )
             return convert_between(from_unit=unit, to_unit=UNIT_MJ_DAY_M2, val=val)
         elif system_is_metric:
             # assume it's w/m2
+            _LOGGER.debug(
+                f"[convert_mapping_to_metric]: since system is metric and unit was not set, converting {val} from W/m2 to MJ/day/m2"
+            )
             return convert_between(from_unit=UNIT_W_M2, to_unit=UNIT_MJ_DAY_M2, val=val)
         else:
             # assume it's w/sqft
+            _LOGGER.debug(
+                f"[convert_mapping_to_metric]: since system is imperial and unit was not set, converting {val} from W/sq ft to MJ/day/m2"
+            )
             return convert_between(
                 from_unit=UNIT_W_SQFT, to_unit=UNIT_MJ_DAY_M2, val=val
             )
@@ -184,10 +193,19 @@ def convert_mapping_to_metric(val, mapping, unit, system_is_metric):
 
 
 def convert_between(from_unit, to_unit, val):
+    _LOGGER.debug(
+        "[convert_between]: Converting {} from {} to {}".format(val, from_unit, to_unit)
+    )
     if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        _LOGGER.debug(
+            ["[convert_between]: Value is None, Unknown or Unavailable, returning None"]
+        )
         return None
     if from_unit == to_unit or from_unit in [UNIT_PERCENT, UNIT_SECONDS]:
         # no conversion necessary here!
+        _LOGGER.debug(
+            "[convert_between]: No conversion necessary, returning value {}".format(val)
+        )
         return val
     # convert temperatures
     elif from_unit in [
@@ -195,24 +213,31 @@ def convert_between(from_unit, to_unit, val):
         UnitOfTemperature.FAHRENHEIT,
         UnitOfTemperature.KELVIN,
     ]:
+        _LOGGER.debug("[convert_between]: Converting temperatures")
         return convert_temperatures(from_unit, to_unit, val)
     # convert lengths
     elif from_unit in [UNIT_MM, UNIT_INCH]:
+        _LOGGER.debug("[convert_between]: Converting lengths")
         return convert_length(from_unit, to_unit, val)
     # convert volumes
     elif from_unit in [UNIT_LPM, UNIT_GPM]:
+        _LOGGER.debug("[convert_between]: Converting volumes")
         return convert_volume(from_unit, to_unit, val)
     # convert areas
     elif from_unit in [UNIT_M2, UNIT_SQ_FT]:
+        _LOGGER.debug("[convert_between]: Converting areas")
         return convert_area(from_unit, to_unit, val)
     # convert pressures
     elif from_unit in [UNIT_MBAR, UNIT_MILLIBAR, UNIT_HPA, UNIT_PSI, UNIT_INHG]:
+        _LOGGER.debug("[convert_between]: Converting pressures")
         return convert_pressure(from_unit, to_unit, val)
     # convert speeds
     elif from_unit in [UNIT_KMH, UNIT_MS, UNIT_MH]:
+        _LOGGER.debug("[convert_between]: Converting speeds")
         return convert_speed(from_unit, to_unit, val)
     # convert production/area
     elif from_unit in [UNIT_W_M2, UNIT_MJ_DAY_M2, UNIT_W_SQFT, UNIT_MJ_DAY_SQFT]:
+        _LOGGER.debug("[convert_between]: Converting production/area")
         return convert_production(from_unit, to_unit, val)
     # unexpected from_unit
     _LOGGER.warning(
@@ -222,38 +247,95 @@ def convert_between(from_unit, to_unit, val):
 
 
 def convert_production(from_unit, to_unit, val):
+    _LOGGER.debug(
+        f"[convert production]: converting {val} from {from_unit} to {to_unit}"
+    )
     if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        _LOGGER.debug("[convert production]: Value is None, Unknown or Unavailable")
         return None
     if to_unit == from_unit:
+        _LOGGER.debug("[convert production]: No conversion necessary")
         return val
     if to_unit == UNIT_MJ_DAY_M2:
+        _LOGGER.debug("[convert production]: Converting to MJ/day/m2")
         if from_unit == UNIT_W_M2:
-            return float(float(val) * W_TO_MJ_DAY_FACTOR)
-        elif from_unit == UNIT_W_SQFT:
-            return float((float(val) * W_SQ_FT_TO_W_M2_FACTOR) * W_TO_MJ_DAY_FACTOR)
-        elif from_unit == UNIT_MJ_DAY_SQFT:
-            return float(float(val) * SQ_FT_TO_M2_FACTOR)
-    elif to_unit == UNIT_MJ_DAY_SQFT:
-        if from_unit == UNIT_W_M2:
-            return float((float(val) * W_M2_TO_W_SQ_FT_FACTOR) * W_TO_MJ_DAY_FACTOR)
-        elif from_unit == UNIT_W_SQFT:
-            return float(float(val) * W_TO_MJ_DAY_FACTOR)
-        elif from_unit == UNIT_MJ_DAY_M2:
-            return float(float(val) * M2_TO_SQ_FT_FACTOR)
-    elif to_unit == UNIT_W_M2:
+            outval = float(float(val) * W_TO_MJ_DAY_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from W/m2 to MJ/day/m2. Result: {outval}"
+            )
+            return outval
         if from_unit == UNIT_W_SQFT:
-            return float(float(val) * W_SQ_FT_TO_W_M2_FACTOR)
-        elif from_unit == UNIT_MJ_DAY_SQFT:
-            return float((float(val) / W_TO_MJ_DAY_FACTOR) * W_SQ_FT_TO_W_M2_FACTOR)
-        elif from_unit == UNIT_MJ_DAY_M2:
-            return float(float(val) / W_TO_MJ_DAY_FACTOR)
-    elif to_unit == UNIT_W_SQFT:
+            outval = float((float(val) * W_SQ_FT_TO_W_M2_FACTOR) * W_TO_MJ_DAY_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from W/sq ft to MJ/day/m2. Result: {outval}"
+            )
+            return outval
+        if from_unit == UNIT_MJ_DAY_SQFT:
+            outval = float(float(val) * SQ_FT_TO_M2_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from MJ/day/sq ft to MJ/day/m2. Result: {outval}"
+            )
+            return outval
+    elif to_unit == UNIT_MJ_DAY_SQFT:
+        _LOGGER.debug("[convert production]: Converting to MJ/day/sq ft")
         if from_unit == UNIT_W_M2:
-            return float(float(val) * W_M2_TO_W_SQ_FT_FACTOR)
-        elif from_unit == UNIT_MJ_DAY_M2:
-            return float((float(val) / W_TO_MJ_DAY_FACTOR) * W_M2_TO_W_SQ_FT_FACTOR)
-        elif from_unit == UNIT_MJ_DAY_SQFT:
-            return float(float(val) / W_TO_MJ_DAY_FACTOR)
+            outval = float((float(val) * W_M2_TO_W_SQ_FT_FACTOR) * W_TO_MJ_DAY_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from W/m2 to MJ/day/sq ft. Result: {outval}"
+            )
+            return outval
+        if from_unit == UNIT_W_SQFT:
+            outval = float(float(val) * W_TO_MJ_DAY_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from W/sq ft to MJ/day/sq ft. Result: {outval}"
+            )
+            return outval
+        if from_unit == UNIT_MJ_DAY_M2:
+            outval = float(float(val) * M2_TO_SQ_FT_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from MJ/day/m2 to MJ/day/sq ft. Result: {outval}"
+            )
+            return outval
+    elif to_unit == UNIT_W_M2:
+        _LOGGER.debug("[convert production]: Converting to W/m2")
+        if from_unit == UNIT_W_SQFT:
+            outval = float(float(val) * W_SQ_FT_TO_W_M2_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from W/sq ft to W/m2. Result: {outval}"
+            )
+            return outval
+        if from_unit == UNIT_MJ_DAY_SQFT:
+            outval = float((float(val) / W_TO_MJ_DAY_FACTOR) * W_SQ_FT_TO_W_M2_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from MJ/day/sq ft to W/m2. Result: {outval}"
+            )
+            return outval
+        if from_unit == UNIT_MJ_DAY_M2:
+            outval = float(float(val) / W_TO_MJ_DAY_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from MJ/day/m2 to W/m2. Result: {outval}"
+            )
+            return outval
+    elif to_unit == UNIT_W_SQFT:
+        _LOGGER.debug("[convert production]: Converting to W/sq ft")
+        if from_unit == UNIT_W_M2:
+            outval = float(float(val) * W_M2_TO_W_SQ_FT_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from W/m2 to W/sq ft. Result: {outval}"
+            )
+            return outval
+        if from_unit == UNIT_MJ_DAY_M2:
+            outval = float((float(val) / W_TO_MJ_DAY_FACTOR) * W_M2_TO_W_SQ_FT_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from MJ/day/m2 to W/sq ft. Result: {outval}"
+            )
+            return outval
+        if from_unit == UNIT_MJ_DAY_SQFT:
+            outval = float(float(val) / W_TO_MJ_DAY_FACTOR)
+            _LOGGER.debug(
+                f"[convert production]: Converting {val} from MJ/day/sq ft to W/sq ft. Result: {outval}"
+            )
+            return outval
     # unknown conversion
     return None
 

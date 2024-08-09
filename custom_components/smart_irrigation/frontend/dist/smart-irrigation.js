@@ -11386,7 +11386,7 @@
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${Ci("title", this.hass.language)}</div>
-          <div class="version">${"v2024.7.10"}</div>
+          <div class="version">${"v2024.8.0"}</div>
         </div>
 
         <ha-tabs

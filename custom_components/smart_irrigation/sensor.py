@@ -59,6 +59,7 @@ async def async_setup_entry(
             last_updated=config["last_updated"],
             last_calculated=config["last_calculated"],
             number_of_data_points=config["number_of_data_points"],
+            delta=config["delta"],
         )
         if const.DOMAIN in hass.data:
             hass.data[const.DOMAIN]["zones"][config["id"]] = sensor_entity
@@ -87,6 +88,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         last_updated: str,
         last_calculated: str,
         number_of_data_points: int,
+        delta: float,
     ) -> None:
         """Initialize the sensor entity."""
         self._hass = hass
@@ -103,6 +105,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         self._last_updated = last_updated
         self._last_calculated = last_calculated
         self._number_of_data_points = number_of_data_points
+        self._delta = delta
         async_dispatcher_connect(
             hass, const.DOMAIN + "_config_updated", self.async_update_sensor_entity
         )
@@ -122,6 +125,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             self._last_updated = zone["last_updated"]
             self._last_calculated = zone["last_calculated"]
             self._number_of_data_points = zone["number_of_data_points"]
+            self._delta = zone["delta"]
             self.async_schedule_update_ha_state()
 
     @property
@@ -196,6 +200,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             "last_updated": convert_timestamp(self._last_updated),
             "last_calculated": convert_timestamp(self._last_calculated),
             "number_of_data_points": self._number_of_data_points,
+            "et_value": self._delta,
             # asyncio.run_coroutine_threadsafe(
             #    localize("common.attributes.size", "en"), self._hass.loop
             # ).result(): self._size,
