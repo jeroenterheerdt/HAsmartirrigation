@@ -1015,7 +1015,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 forecastdata = await self.hass.async_add_executor_job(
                     self._WeatherServiceClient.get_forecast_data
                 )
-                _LOGGER.debug(f"Retrieved forecast data: {forecastdata}")
+                # _LOGGER.debug(f"Retrieved forecast data: {forecastdata}")
             else:
                 _LOGGER.error(
                     "Error calculating zone {}. You have configured forecasting but but there is no OWM API configured. Either configure the OWM API or stop using forcasting on the PyETO module.".format(
@@ -1075,9 +1075,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         return modinst
 
     async def calculate_module(self, zone, weatherdata, forecastdata):
-        _LOGGER.debug(
-            f"calculate_module for zone: {zone}, weatherdata: {weatherdata}, forecastdata: {forecastdata}"
-        )
+        _LOGGER.debug(f"calculate_module for zone: {zone}")
+        # _LOGGER.debug(f"[calculate_module] for zone: {zone}, weatherdata: {weatherdata}, forecastdata: {forecastdata}")
         mod_id = zone.get(const.ZONE_MODULE)
         m = self.store.get_module(mod_id)
         if m is None:
@@ -1316,7 +1315,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     self.hass.config.language,
                 ) + " {}</li></ol>".format(duration)
 
-                _LOGGER.debug(f"[calculate-module]: explanation: {explanation}")
+                # _LOGGER.debug(f"[calculate-module]: explanation: {explanation}")
         else:
             # no need to irrigate, set duration to 0
             duration = 0
@@ -1647,11 +1646,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 mapping_data = mapping[const.MAPPING_DATA]
                 weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
                 mapping_data.append(weatherdata)
-                _LOGGER.debug(
-                    "async_update_zone_config for mapping {} new mapping_data: {}".format(
-                        mapping_id, weatherdata
-                    )
-                )
+                # _LOGGER.debug(
+                #    "async_update_zone_config for mapping {} new mapping_data: {}".format(
+                #        mapping_id, weatherdata
+                #    )
+                # )
                 changes = {
                     "data": mapping_data,
                     const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now(),
