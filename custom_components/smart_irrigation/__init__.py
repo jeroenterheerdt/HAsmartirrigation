@@ -841,11 +841,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             return retval
 
     async def apply_aggregates_to_mapping_data(self, mapping, continuous_updates=False):
-        _LOGGER.debug(f"apply_aggregates_to_mapping_data: {mapping}")
+        _LOGGER.debug(f"[apply_aggregates_to_mapping_data]: mapping: {mapping}")
         if mapping.get(const.MAPPING_DATA):
             # get the keys for the mapping data entries.
             # if there are more than one values for a given key, apply configured aggregate
             data = mapping.get(const.MAPPING_DATA)
+            _LOGGER.debug(
+                f"[apply_aggregates_to_mapping_data]: there is mapping data: {data}"
+            )
             data_by_sensor = {}
             resultdata = {}
             for d in data:
@@ -857,6 +860,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 data_by_sensor[key] = [val]
                             else:
                                 data_by_sensor[key].append(val)
+            _LOGGER.debug(
+                f"[apply_aggregates_to_mapping_data]: data_by_sensor before dropping max min temp and retrieved at handling: {data_by_sensor}"
+            )
             # Drop MAX and MIN temp mapping because we calculate it from temp starting with beta 12
             if const.MAPPING_MAX_TEMP in data_by_sensor:
                 data_by_sensor.pop(const.MAPPING_MAX_TEMP)
@@ -900,11 +906,19 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 _LOGGER.debug(
                     f"[apply_aggregates_to_mapping_data]: first_retrieved_at: {first_retrieved_at}, last_retrieved_at: {last_retrieved_at}, diff_in_seconds: {diff.total_seconds()}, diff_in_hours: {diff_in_hours}, hour_multiplier: {hour_multiplier}"
                 )
-
+            _LOGGER.debug(
+                f"[apply_aggregates_to_mapping_data]: data_by_sensor before aggregation loop: {data_by_sensor}"
+            )
             for key, d in data_by_sensor.items():
+                _LOGGER.debug(
+                    f"[apply_aggregates_to_mapping_data]: aggregation loop: key: {key}, d: {d}, len(d): {len(d)}"
+                )
                 if len(d) > 1:
                     # convert all values to float
                     d = [float(i) for i in d]
+                    _LOGGER.debug(
+                        f"[apply_aggregates_to_mapping_data]: after conversion to float: applying aggregate to {key} with values {d}"
+                    )
                     # apply aggregate
                     # set up default aggregates in case not specified (left default by user or using OWM)
                     aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT
@@ -929,6 +943,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 const.MAPPING_CONF_AGGREGATE,
                                 aggregate,
                             )
+                    _LOGGER.debug(
+                        f"[async_aggregate_to_mapping_data]: key: {key}, aggregate: {aggregate}, data: {d}."
+                    )
                     if aggregate == const.MAPPING_CONF_AGGREGATE_AVERAGE:
                         resultdata[key] = statistics.mean(d)
                     elif aggregate == const.MAPPING_CONF_AGGREGATE_FIRST:
