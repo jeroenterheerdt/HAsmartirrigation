@@ -542,10 +542,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                                     const.CONF_PYETO_FORECAST_DAYS, 0
                                                 )
                                                 == 0
+                                                or mod.get(const.MODULE_CONFIG).get(
+                                                    const.CONF_PYETO_FORECAST_DAYS
+                                                )
+                                                is None
                                             ):
                                                 can_calculate = True
                                                 _LOGGER.info(
-                                                    f"checked config for PyETO module on zone {zone.get(const.ZONE_ID)}, forecast_days==0, so we can calculate."
+                                                    f"checked config for PyETO module on zone {zone.get(const.ZONE_ID)}, forecast_days==0 or None, so we can calculate."
                                                 )
                                             else:
                                                 _LOGGER.info(
