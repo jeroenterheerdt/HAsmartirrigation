@@ -526,7 +526,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                         )
                                     else:
                                         # module is PyETO. Check the config for forecast days == 0
+                                        _LOGGER.debug(
+                                            f"[async_continuous_update_for_mapping]: module is PyETO, checking config."
+                                        )
                                         if mod.get(const.MODULE_CONFIG):
+                                            _LOGGER.debug(
+                                                f"[async_continuous_update_for_mapping]: module has config: {mod.get(const.MODULE_CONFIG)}"
+                                            )
+                                            _LOGGER.debug(
+                                                f"[async_continuous_update_for_mapping]: mod.get(forecast_days,0) returns forecast_days: {mod.get(const.MODULE_CONFIG).get(const.CONF_PYETO_FORECAST_DAYS, 0)}"
+                                            )
                                             # there is a config on the module, so let's check it
                                             if (
                                                 mod.get(const.MODULE_CONFIG).get(
@@ -549,6 +558,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                                 f"no config on PyETO module, since default is forecast_days==0, we can calculate for zone {zone.get(const.ZONE_ID)}."
                                             )
 
+                                    _LOGGER.debug(
+                                        f"[async_continuous_update_for_mapping]: can_calculate: {can_calculate}"
+                                    )
                                     if can_calculate:
                                         # get the zone and calculate
                                         _LOGGER.debug(
