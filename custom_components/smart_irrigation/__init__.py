@@ -620,12 +620,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         _LOGGER.debug(
             f"[clear_weatherdata_for_mapping] finding last entry for each key in the sensor group."
         )
+        _LOGGER.debug(
+            f"[clear_weatherdata_for_mapping] keys in sensor group {mapping}: {mapping.get(const.MAPPING_MAPPINGS)}"
+        )
         if mapping.get(const.MAPPING_DATA):
             for key in mapping.get(const.MAPPING_MAPPINGS):
                 for e in reversed(mapping.get(const.MAPPING_DATA)):
                     if key in e:
                         data_last_entry[key] = e[key]
-                        break
+                        continue  # continue instead of break to continue to the next key
         _LOGGER.debug(
             f"[clear_weatherdata_for_mapping] last entry for each key in the sensor group: {data_last_entry}"
         )
