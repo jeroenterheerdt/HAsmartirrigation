@@ -190,17 +190,19 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
     @property
     def extra_state_attributes(self):
         """Return the data of the entity."""
-
+        _LOGGER.debug(
+            f"[extra_state_attributes] bucket: {self._bucket}, et_value: {self._delta}"
+        )
         return {
             "id": self._id,
             "size": self._size,
             "throughput": self._throughput,
             "state": self._state,
-            "bucket": self._bucket,
+            "bucket": float(self._bucket),
             "last_updated": convert_timestamp(self._last_updated),
             "last_calculated": convert_timestamp(self._last_calculated),
             "number_of_data_points": self._number_of_data_points,
-            "et_value": self._delta,
+            "et_value": float(self._delta),
             # asyncio.run_coroutine_threadsafe(
             #    localize("common.attributes.size", "en"), self._hass.loop
             # ).result(): self._size,

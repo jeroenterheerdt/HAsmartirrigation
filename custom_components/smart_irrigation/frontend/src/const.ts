@@ -1,4 +1,4 @@
-export const VERSION = "v2024.8.1-beta-4";
+export const VERSION = "v2024.8.1-beta-5";
 export const REPO = "https://github.com/jeroenterheerdt/HASmartIrrigation;";
 export const ISSUES_URL = REPO + "/issues";
 
@@ -29,6 +29,7 @@ export const MAPPING_HUMIDITY = "Humidity";
 //export const MAPPING_MAX_TEMP = "Maximum Temperature";
 //export const MAPPING_MIN_TEMP = "Minimum Temperature";
 export const MAPPING_PRECIPITATION = "Precipitation";
+export const MAPPING_CURRENT_PRECIPITATION = "Current Precipitation";
 export const MAPPING_PRESSURE = "Pressure";
 export const MAPPING_SOLRAD = "Solar Radiation";
 export const MAPPING_TEMPERATURE = "Temperature";

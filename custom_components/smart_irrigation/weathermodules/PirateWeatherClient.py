@@ -18,6 +18,7 @@ from ..const import (
     MAPPING_PRESSURE,
     MAPPING_TEMPERATURE,
     MAPPING_WINDSPEED,
+    MAPPING_CURRENT_PRECIPITATION,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ PirateWeather_daily_weather_key_name = "daily"
 PirateWeather_max_temp_key_name = "temperatureMax"
 PirateWeather_min_temp_key_name = "temperatureMin"
 PirateWeather_precip_key_name = "precipAccumulation"
+PirateWeather_current_precip_key_name = "precipIntensity"
 
 PirateWeather_required_keys = {
     PirateWeather_wind_speed_key_name,
@@ -53,6 +55,7 @@ PirateWeather_required_keys_daily = {
     PirateWeather_max_temp_key_name,
     PirateWeather_min_temp_key_name,
     PirateWeather_precip_key_name,
+    PirateWeather_current_precip_key_name,
 }
 
 PirateWeather_required_key_temp = {
@@ -278,6 +281,10 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
                     parsed_data[MAPPING_TEMPERATURE] = data[PirateWeather_temp_key_name]
                     parsed_data[MAPPING_DEWPOINT] = data[
                         PirateWeather_dew_point_key_name
+                    ]
+                    # should this only be added if the precipProbability is above a certain threshold?
+                    parsed_data[MAPPING_CURRENT_PRECIPITATION] = data[
+                        PirateWeather_current_precip_key_name
                     ]
 
                     # add precip from daily

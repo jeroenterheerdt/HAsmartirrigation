@@ -501,15 +501,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             )
 
     async def async_continuous_update_for_mapping(self, mapping_id):
-        """First, check is mapping doesn't use a Weather Service (to avoid API overload). Then perform update for all automatic zones that use this mapping, assuming their modules do not use forecasting."""
+        """First, check is mapping doesn't use a Weather Service (to avoid API overload). Then perform update and calculate for all automatic zones that use this mapping, assuming their modules do not use forecasting."""
         if mapping_id is not None:
             mapping = self.store.get_mapping(mapping_id)
             if mapping is not None:
                 if not self.check_mapping_sources(mapping_id)[0]:
                     # mapping does not use Weather Service
                     zones = self._get_zones_that_use_this_mapping(mapping_id)
-                    zones_to_calculate = zones
+                    zones_to_calculate = []
                     for z in zones:
+                        zones_to_calculate.append(z)
                         zone = self.store.get_zone(z)
                         if (
                             zone is not None
@@ -546,6 +547,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                                 or mod.get(const.MODULE_CONFIG).get(
                                                     const.CONF_PYETO_FORECAST_DAYS
                                                 )
+                                                == "0"
+                                                or mod.get(const.MODULE_CONFIG).get(
+                                                    const.CONF_PYETO_FORECAST_DAYS
+                                                )
                                                 is None
                                             ):
                                                 can_calculate = True
@@ -572,11 +577,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                             f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: calculating zone {zone.get(const.ZONE_ID)}"
                                         )
                                         await self.async_calculate_zone(
-                                            zone.get(const.ZONE_ID),
+                                            z,
                                             continuous_updates=True,
                                         )
                                         zones_to_calculate.remove(z)
-
                                     else:
                                         _LOGGER.info(
                                             f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zone {z} has module {mod.get(const.MODULE_NAME)} that uses forecasting, skipping to avoid API calls that can incur costs."
@@ -590,7 +594,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zone {z} is not automatic, skipping."
                             )
                     # remove weather data from this mapping unless there are zones we did not calculate!
-                    if zones_to_calculate:
+                    _LOGGER.debug(
+                        f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zones_to_calculate: {zones_to_calculate}. if this is empty this means that all zones for this sensor group have been calculated and therefore we can remove the weather data"
+                    )
+                    if zones_to_calculate and len(zones_to_calculate) > 0:
                         _LOGGER.debug(
                             f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: did not calculate all zones, keeping weather data for the sensor group."
                         )
@@ -601,21 +608,41 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         changes = {}
                         changes = self.clear_weatherdata_for_mapping(mapping)
                         self.store.async_update_mapping(mapping_id, changes=changes)
+
                 else:
                     _LOGGER.info(
                         f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: sensor group does use weather service, skipping automatic update to avoid API calls that can incur costs."
                     )
 
     def clear_weatherdata_for_mapping(self, mapping):
-        data_last_entry = mapping.get(const.MAPPING_DATA)
-        if data_last_entry:
-            data_last_entry = data_last_entry[-1]
+        data_last_entry = {}
+        # find the last entry for each key in the mapping
+        if mapping.get(const.MAPPING_DATA):
+            for key in mapping.get(const.MAPPING_MAPPINGS):
+                for e in reversed(mapping.get(const.MAPPING_DATA)):
+                    if key in e:
+                        data_last_entry[key] = e[key]
+                        break
+
+        # update the number of data points on zones that use this mapping
+        zones = self._get_zones_that_use_this_mapping(mapping.get(const.MAPPING_ID))
+        changes2 = {
+            const.ZONE_NUMBER_OF_DATA_POINTS: 0,
+        }
+        for z in zones:
+            self.store.async_update_zone(z, changes2)
+            async_dispatcher_send(
+                self.hass,
+                const.DOMAIN + "_config_updated",
+                z,
+            )
+        async_dispatcher_send(self.hass, const.DOMAIN + "_update_frontend")
+
         changes = {
             const.MAPPING_DATA: [],
             const.MAPPING_DATA_LAST_UPDATED: None,
             const.MAPPING_DATA_LAST_ENTRY: data_last_entry,
         }
-
         return changes
 
     async def set_up_auto_calc_time(self, data):
@@ -988,13 +1015,23 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     elif aggregate == const.MAPPING_CONF_AGGREGATE_SUM:
                         resultdata[key] = sum(d)
                 else:
+                    # make sure to add max and min temp in even if there is only one value. it was already added above in case there are multiple values
+                    if key == const.MAPPING_TEMPERATURE:
+                        resultdata[const.MAPPING_MAX_TEMP] = d[0]
+                        resultdata[const.MAPPING_MIN_TEMP] = d[0]
                     resultdata[key] = float(d[0])
             # check if resultdata contains all the keys, else, check if data_last_entry is there and use that to add anything that's missing
             # this is to cover for a situation where a new value is never provided until it changes
             # but we still want to have the last value available to calculate with (mostly for continuous updates)
+            _LOGGER.debug(
+                f"[async_aggregate_to_mapping_data]: last entry data for sensor group: {mapping.get(const.MAPPING_ID)}: {mapping.get(const.MAPPING_DATA_LAST_ENTRY)}"
+            )
             if mapping.get(const.MAPPING_DATA_LAST_ENTRY):
                 for key, val in mapping.get(const.MAPPING_DATA_LAST_ENTRY).items():
                     if key not in resultdata:
+                        _LOGGER.debug(
+                            f"[async_aggregate_to_mapping_data]: {key} is missing from resultdata, adding {val} from last entry."
+                        )
                         resultdata[key] = val
             _LOGGER.debug(
                 "apply_aggregates_to_mapping_data returns {}".format(resultdata)
@@ -1104,6 +1141,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 data = await self.calculate_module(
                     zone, weatherdata=sensor_values, forecastdata=forecastdata
                 )
+                # if continuous updates are on, add the current date time to set the last updated time
+                if continuous_updates:
+                    data[const.ZONE_LAST_UPDATED] = datetime.datetime.now()
 
                 self.store.async_update_zone(zone.get(const.ZONE_ID), data)
                 async_dispatcher_send(

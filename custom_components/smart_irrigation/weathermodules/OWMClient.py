@@ -16,6 +16,7 @@ from ..const import (
     MAPPING_PRESSURE,
     MAPPING_TEMPERATURE,
     MAPPING_WINDSPEED,
+    MAPPING_CURRENT_PRECIPITATION,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,6 +32,8 @@ OWM_pressure_key_name = "pressure"
 OWM_humidity_key_name = "humidity"
 OWM_temp_key_name = "temp"
 OWM_dew_point_key_name = "dew_point"
+OWM_current_rain_key_name = "rain.1h"
+OWM_current_snow_key_name = "snow.1h"
 
 OWM_required_keys = {
     OWM_wind_speed_key_name,
@@ -270,6 +273,17 @@ class OWMClient:  # pylint: disable=invalid-name
                     parsed_data[MAPPING_HUMIDITY] = data[OWM_humidity_key_name]
                     parsed_data[MAPPING_TEMPERATURE] = data[OWM_temp_key_name]
                     parsed_data[MAPPING_DEWPOINT] = data[OWM_dew_point_key_name]
+                    parsed_data[MAPPING_CURRENT_PRECIPITATION] = 0.0
+                    # is it currently raining or snowing?
+                    # should this only be added if the precipProbability is above a certain threshold?
+                    if OWM_current_rain_key_name in data:
+                        parsed_data[MAPPING_CURRENT_PRECIPITATION] += data[
+                            OWM_current_rain_key_name
+                        ]
+                    if OWM_current_snow_key_name in data:
+                        parsed_data[MAPPING_CURRENT_PRECIPITATION] += data[
+                            OWM_current_snow_key_name
+                        ]
 
                     # NOT used: also put in min/max here as just the current temp
                     # removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.

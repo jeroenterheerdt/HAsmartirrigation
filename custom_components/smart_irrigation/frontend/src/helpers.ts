@@ -4,6 +4,7 @@ import { HassEntity } from "home-assistant-js-websocket";
 import {
   CONF_IMPERIAL,
   CONF_METRIC,
+  MAPPING_CURRENT_PRECIPITATION,
   MAPPING_DEWPOINT,
   MAPPING_EVAPOTRANSPIRATION,
   MAPPING_HUMIDITY,
@@ -96,6 +97,7 @@ export function getOptionsForMappingType(mapping: string) {
       ];
     case MAPPING_PRECIPITATION:
     case MAPPING_EVAPOTRANSPIRATION:
+    case MAPPING_CURRENT_PRECIPITATION:
       //this should be mm or inch
       return [
         { unit: UNIT_MM, system: CONF_METRIC },

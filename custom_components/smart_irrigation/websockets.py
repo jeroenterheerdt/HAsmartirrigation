@@ -128,6 +128,9 @@ class SmartIrrigationMappingView(HomeAssistantView):
                 vol.Optional(const.MAPPING_DATA_LAST_UPDATED): vol.Or(
                     None, str, datetime.datetime
                 ),
+                vol.Optional(const.MAPPING_DATA_LAST_ENTRY): vol.Or(
+                    None, vol.Coerce(list)
+                ),
             }
         )
     )

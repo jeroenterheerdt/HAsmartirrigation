@@ -48,6 +48,7 @@ from .const import (
     MAPPING_CONF_SOURCE_WEATHER_SERVICE,
     MAPPING_CONF_SOURCE_SENSOR,
     MAPPING_CONF_UNIT,
+    MAPPING_CURRENT_PRECIPITATION,
     MAPPING_DATA,
     MAPPING_DATA_LAST_ENTRY,
     MAPPING_DATA_LAST_UPDATED,
@@ -326,6 +327,8 @@ class SmartIrrigationStorage:
                         the_map.pop(MAPPING_MAX_TEMP)
                     if MAPPING_MIN_TEMP in the_map:
                         the_map.pop(MAPPING_MIN_TEMP)
+                    if MAPPING_CURRENT_PRECIPITATION not in the_map:
+                        the_map[MAPPING_CURRENT_PRECIPITATION] = {}
                     mappings[mapping[MAPPING_ID]] = MappingEntry(
                         id=mapping[MAPPING_ID],
                         name=mapping[MAPPING_NAME],
@@ -413,6 +416,7 @@ class SmartIrrigationStorage:
             MAPPING_EVAPOTRANSPIRATION,
             MAPPING_HUMIDITY,
             MAPPING_PRECIPITATION,
+            MAPPING_CURRENT_PRECIPITATION,
             MAPPING_PRESSURE,
             MAPPING_SOLRAD,
             MAPPING_TEMPERATURE,

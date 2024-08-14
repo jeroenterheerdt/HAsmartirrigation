@@ -51,6 +51,7 @@ import {
   MAPPING_CONF_PRESSURE_TYPE,
   MAPPING_CONF_PRESSURE_ABSOLUTE,
   MAPPING_CONF_PRESSURE_RELATIVE,
+  MAPPING_CURRENT_PRECIPITATION,
 } from "../../const";
 import { getOptionsForMappingType, handleError } from "../../helpers";
 import { mdiDelete } from "@mdi/js";
@@ -106,6 +107,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       //[MAPPING_MAX_TEMP]: "",
       //[MAPPING_MIN_TEMP]: "",
       [MAPPING_PRECIPITATION]: "",
+      [MAPPING_CURRENT_PRECIPITATION]: "",
       [MAPPING_PRESSURE]: "",
       [MAPPING_SOLRAD]: "",
       [MAPPING_TEMPERATURE]: "",
@@ -156,7 +158,6 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         mapping.mappings[m].sensorentity != undefined &&
         mapping.mappings[m].sensorentity != ""
       ) {
-        console.log(mapping.mappings[m].sensorentity);
         if (!(mapping.mappings[m].sensorentity in this.hass.states)) {
           allsensorsvalid = false;
           handleError(

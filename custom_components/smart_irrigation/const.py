@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2024.8.1-beta-4"
+VERSION = "v2024.8.1-beta-5"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -147,6 +147,7 @@ MAPPING_HUMIDITY = "Humidity"
 MAPPING_MAX_TEMP = "Maximum Temperature"
 MAPPING_MIN_TEMP = "Minimum Temperature"
 MAPPING_PRECIPITATION = "Precipitation"
+MAPPING_CURRENT_PRECIPITATION = "Current Precipitation"
 MAPPING_PRESSURE = "Pressure"
 MAPPING_SOLRAD = "Solar Radiation"
 MAPPING_TEMPERATURE = "Temperature"

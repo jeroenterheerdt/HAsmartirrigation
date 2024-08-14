@@ -151,6 +151,7 @@
             "maximum temperature": "Maximum temperature",
             "minimum temperature": "Minimum temperature",
             "precipitation": "Total precipitation",
+            "current precipitation": "Current precipitation",
             "pressure": "Pressure",
             "solar radiation": "Solar radiation",
             "temperature": "Temperature",
