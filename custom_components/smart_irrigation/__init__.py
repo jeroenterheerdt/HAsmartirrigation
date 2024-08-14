@@ -1033,6 +1033,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             f"[async_aggregate_to_mapping_data]: {key} is missing from resultdata, adding {val} from last entry."
                         )
                         resultdata[key] = val
+                        # make sure max and min temp are also there when added from last entry data
+                        if key == const.MAPPING_TEMPERATURE:
+                            resultdata[const.MAPPING_MAX_TEMP] = val
+                            resultdata[const.MAPPING_MIN_TEMP] = val
             _LOGGER.debug(
                 "apply_aggregates_to_mapping_data returns {}".format(resultdata)
             )
