@@ -31,7 +31,7 @@ Any zone that does meet this requirement will not be included in the automatic u
 
 Please note that this is experimental right now and will have bugs.
 
-For continous updates, it will likely use specific set of aggregates (last + average of riemann integral for solar radiation) and also requires current precipitation to be mapped in the sensor group.
+For continous updates, in the future, it will likely use specific set of aggregates (last for all data points except for solar radiation which will use average of riemann integral) and also requires current precipitation to be mapped in the sensor group.
 
 
 > Main page: [Configuration](configuration.md)<br/>
