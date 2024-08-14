@@ -24,12 +24,13 @@ The following data can be provided:
 |---|---|---|---|--|
 |**Dewpoint**|Yes|Weather Service<br/>Sensor<br/>Static value|°C<br/>°F|Average|
 |**Evapotranspiration**|No|None (module will calculate it)<br/>Sensor<br/>Static value|in<br/>mm|Average|
-|**Humidity**|Yes|eather Service<br/>Sensor<br/>Static value|%|Average|
+|**Humidity**|Yes|Weather Service<br/>Sensor<br/>Static value|%|Average|
 |**Total precipitation**|Yes|Weather Service<br/>Sensor<br/>Static value|in<br/>mm|Maximum or Last|
 |**Pressure** (*see notes below the table)|Yes|Weather Service<br/>Sensor<br/>Static value|hPa<br/>inch Hg<br/>millibar<br/>psi|Average|
 |**Solar Radiation**|No|None (requires module to estimate it)<br/>Sensor<br/>Static value|MJ/day/m2<br/>MJ/day/sq ft<br/>W/m2<br/>W/sq ft|Average|
 |**Temperature**|Yes|Weather Service<br/>Sensor<br/>Static value|°C<br/>°F|Average|
 |**Wind speed**|Yes|Weather Service<br/>Sensor<br/>Static value|meter/s<br/>mile/h<br/>km/h|Average|
+|**Current precipitation**|No|Weather Service<br/>Sensor<br/>Static value|in<br/>mm|Average|
 
 Please note:
 - If you use a [weather service](installation-weatherservice.md), make sure your home zone coordinates are set correctly so the data is correct. This is especially true if you set the coordinates manually in the configuration.yaml.
@@ -44,6 +45,8 @@ Please note:
            friendly_name: Wind Speed at 2m
            value_template: "{{states('[name of your wind speed sensor (WSmeasured)]')|float()*(4.87/log((67.8*[height the wind speed was measured on in meters (H)])-5.42))}}"
    ```
+- Current preciptation is currently not in use, but is likely going to be used for continuous updates in the future.
+
 ## Deleting a sensor group
 ![](assets/images/configuration-sensor-groups-1.png)
 
