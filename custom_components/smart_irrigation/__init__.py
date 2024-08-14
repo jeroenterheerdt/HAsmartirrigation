@@ -508,6 +508,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 if not self.check_mapping_sources(mapping_id)[0]:
                     # mapping does not use Weather Service
                     zones = self._get_zones_that_use_this_mapping(mapping_id)
+                    zones_to_calculate = zones
                     for z in zones:
                         zone = self.store.get_zone(z)
                         if (
@@ -574,6 +575,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                             zone.get(const.ZONE_ID),
                                             continuous_updates=True,
                                         )
+                                        zones_to_calculate.remove(z)
+
                                     else:
                                         _LOGGER.info(
                                             f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zone {z} has module {mod.get(const.MODULE_NAME)} that uses forecasting, skipping to avoid API calls that can incur costs."
@@ -586,10 +589,34 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             _LOGGER.info(
                                 f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zone {z} is not automatic, skipping."
                             )
+                    # remove weather data from this mapping unless there are zones we did not calculate!
+                    if zones_to_calculate:
+                        _LOGGER.debug(
+                            f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: did not calculate all zones, keeping weather data for the sensor group."
+                        )
+                    else:
+                        _LOGGER.debug(
+                            f"clearing weather data for sensor group {mapping_id} since we calculated all dependent zones."
+                        )
+                        changes = {}
+                        changes = self.clear_weatherdata_for_mapping(mapping)
+                        self.store.async_update_mapping(mapping_id, changes=changes)
                 else:
                     _LOGGER.info(
                         f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: sensor group does use weather service, skipping automatic update to avoid API calls that can incur costs."
                     )
+
+    def clear_weatherdata_for_mapping(self, mapping):
+        data_last_entry = mapping.get(const.MAPPING_DATA)
+        if data_last_entry:
+            data_last_entry = data_last_entry[-1]
+        changes = {
+            const.MAPPING_DATA: [],
+            const.MAPPING_DATA_LAST_UPDATED: None,
+            const.MAPPING_DATA_LAST_ENTRY: data_last_entry,
+        }
+
+        return changes
 
     async def set_up_auto_calc_time(self, data):
         # unsubscribe from any existing track_time_changes
@@ -962,6 +989,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         resultdata[key] = sum(d)
                 else:
                     resultdata[key] = float(d[0])
+            # check if resultdata contains all the keys, else, check if data_last_entry is there and use that to add anything that's missing
+            # this is to cover for a situation where a new value is never provided until it changes
+            # but we still want to have the last value available to calculate with (mostly for continuous updates)
+            if mapping.get(const.MAPPING_DATA_LAST_ENTRY):
+                for key, val in mapping.get(const.MAPPING_DATA_LAST_ENTRY).items():
+                    if key not in resultdata:
+                        resultdata[key] = val
             _LOGGER.debug(
                 "apply_aggregates_to_mapping_data returns {}".format(resultdata)
             )
@@ -972,7 +1006,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         _LOGGER.info("Clearing all weatherdata")
         mappings = self.store.get_mappings()
         for mapping in mappings:
-            changes = {const.MAPPING_DATA: [], const.MAPPING_DATA_LAST_UPDATED: None}
+            changes = {}
+            changes = self.clear_weatherdata_for_mapping(mapping)
             self.store.async_update_mapping(mapping.get(const.MAPPING_ID), changes)
 
     async def _async_calculate_all(self, *args):

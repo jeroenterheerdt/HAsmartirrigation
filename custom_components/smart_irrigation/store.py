@@ -49,6 +49,7 @@ from .const import (
     MAPPING_CONF_SOURCE_SENSOR,
     MAPPING_CONF_UNIT,
     MAPPING_DATA,
+    MAPPING_DATA_LAST_ENTRY,
     MAPPING_DATA_LAST_UPDATED,
     MAPPING_DEWPOINT,
     MAPPING_EVAPOTRANSPIRATION,
@@ -145,6 +146,7 @@ class MappingEntry:
     mappings = attr.ib(type=str, default=None)
     data = attr.ib(type=str, default="[]")
     data_last_updated = attr.ib(type=datetime, default=None)
+    data_last_entry = attr.ib(type=str, default="[]")
 
 
 @attr.s(slots=True, frozen=True)
@@ -330,6 +332,7 @@ class SmartIrrigationStorage:
                         mappings=the_map,
                         data=mapping.get(MAPPING_DATA),
                         data_last_updated=mapping.get(MAPPING_DATA_LAST_UPDATED, None),
+                        data_last_entry=mapping.get(MAPPING_DATA_LAST_ENTRY),
                     )
 
         self.config = config
