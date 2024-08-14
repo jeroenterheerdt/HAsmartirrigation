@@ -617,13 +617,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     def clear_weatherdata_for_mapping(self, mapping):
         data_last_entry = {}
         # find the last entry for each key in the mapping
+        _LOGGER.debug(
+            f"[clear_weatherdata_for_mapping] finding last entry for each key in the sensor group."
+        )
         if mapping.get(const.MAPPING_DATA):
             for key in mapping.get(const.MAPPING_MAPPINGS):
                 for e in reversed(mapping.get(const.MAPPING_DATA)):
                     if key in e:
                         data_last_entry[key] = e[key]
                         break
-
+        _LOGGER.debug(
+            f"[clear_weatherdata_for_mapping] last entry for each key in the sensor group: {data_last_entry}"
+        )
         # update the number of data points on zones that use this mapping
         zones = self._get_zones_that_use_this_mapping(mapping.get(const.MAPPING_ID))
         changes2 = {
