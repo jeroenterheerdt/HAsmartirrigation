@@ -43,7 +43,7 @@ Please note:
        sensors:
          wind_at_2m:
            friendly_name: Wind Speed at 2m
-           value_template: {{states('[name of your wind speed sensor (WSmeasured)]')|float()*(4.87/log((67.8*[height the wind speed was measured on in meters (H)])-5.42))}}
+           value_template: {% raw %}"{{states('[name of your wind speed sensor (WSmeasured)]')|float()*(4.87/log((67.8*[height the wind speed was measured on in meters (H)])-5.42))}}"{% raw %}
    ```
 - Current preciptation is currently not in use, but is likely going to be used for continuous updates in the future.
 
