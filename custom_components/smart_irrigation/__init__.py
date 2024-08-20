@@ -486,9 +486,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                     const.RETRIEVED_AT: datetime.datetime.now(),
                                 }
                             )
+                            # store the value in the last entry
+                            data_last_entry = mapping.get(const.MAPPING_DATA_LAST_ENTRY)
+                            if data_last_entry is None or len(data_last_entry) == 0:
+                                data_last_entry = {}
+                            data_last_entry[key] = mapping_data[-1][key]
                             changes = {
                                 const.MAPPING_DATA: mapping_data,
                                 const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now(),
+                                const.MAPPING_DATA_LAST_ENTRY: data_last_entry,
                             }
                             self.store.async_update_mapping(
                                 mapping.get(const.MAPPING_ID), changes
@@ -593,22 +599,21 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             _LOGGER.info(
                                 f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zone {z} is not automatic, skipping."
                             )
-                    # disabling this for now
                     # remove weather data from this mapping unless there are zones we did not calculate!
-                    # _LOGGER.debug(
-                    #    f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zones_to_calculate: {zones_to_calculate}. if this is empty this means that all zones for this sensor group have been calculated and therefore we can remove the weather data"
-                    # )
-                    # if zones_to_calculate and len(zones_to_calculate) > 0:
-                    #    _LOGGER.debug(
-                    #        f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: did not calculate all zones, keeping weather data for the sensor group."
-                    #    )
-                    # else:
-                    #    _LOGGER.debug(
-                    #        f"clearing weather data for sensor group {mapping_id} since we calculated all dependent zones."
-                    #    )
-                    #    changes = {}
-                    #    changes = self.clear_weatherdata_for_mapping(mapping)
-                    #    self.store.async_update_mapping(mapping_id, changes=changes)
+                    _LOGGER.debug(
+                        f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zones_to_calculate: {zones_to_calculate}. if this is empty this means that all zones for this sensor group have been calculated and therefore we can remove the weather data"
+                    )
+                    if zones_to_calculate and len(zones_to_calculate) > 0:
+                        _LOGGER.debug(
+                            f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: did not calculate all zones, keeping weather data for the sensor group."
+                        )
+                    else:
+                        _LOGGER.debug(
+                            f"clearing weather data for sensor group {mapping_id} since we calculated all dependent zones."
+                        )
+                        changes = {}
+                        changes = self.clear_weatherdata_for_mapping(mapping)
+                        self.store.async_update_mapping(mapping_id, changes=changes)
 
                 else:
                     _LOGGER.info(
@@ -616,43 +621,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     )
 
     def clear_weatherdata_for_mapping(self, mapping):
-        # Turning off the last entry retrieval for now
-        #
-        # data_last_entry = {}
-        # find the last entry for each key in the mapping
-        # _LOGGER.debug(
-        #    f"[clear_weatherdata_for_mapping] finding last entry for each key in the sensor group."
-        # )
-        # _LOGGER.debug(
-        #    f"[clear_weatherdata_for_mapping] keys in sensor group {mapping}: {mapping.get(const.MAPPING_MAPPINGS)}"
-        # )
-        # if mapping.get(const.MAPPING_DATA):
-        #    for key in mapping.get(const.MAPPING_MAPPINGS):
-        #        for e in reversed(mapping.get(const.MAPPING_DATA)):
-        #            if key in e:
-        #                data_last_entry[key] = e[key]
-        #                continue  # continue instead of break to continue to the next key
-        # _LOGGER.debug(
-        #    f"[clear_weatherdata_for_mapping] last entry for each key in the sensor group: {data_last_entry}"
-        # )
-        # update the number of data points on zones that use this mapping
-        # zones = self._get_zones_that_use_this_mapping(mapping.get(const.MAPPING_ID))
-        # changes2 = {
-        #    const.ZONE_NUMBER_OF_DATA_POINTS: 0,
-        # }
-        # for z in zones:
-        #    self.store.async_update_zone(z, changes2)
-        #    async_dispatcher_send(
-        #        self.hass,
-        #        const.DOMAIN + "_config_updated",
-        #        z,
-        #    )
-        # async_dispatcher_send(self.hass, const.DOMAIN + "_update_frontend")
-
         changes = {
             const.MAPPING_DATA: [],
             const.MAPPING_DATA_LAST_UPDATED: None,
-            # const.MAPPING_DATA_LAST_ENTRY: data_last_entry,
         }
         return changes
 

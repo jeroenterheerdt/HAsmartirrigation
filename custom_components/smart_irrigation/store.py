@@ -147,7 +147,7 @@ class MappingEntry:
     mappings = attr.ib(type=str, default=None)
     data = attr.ib(type=str, default="[]")
     data_last_updated = attr.ib(type=datetime, default=None)
-    data_last_entry = attr.ib(type=str, default="[]")
+    data_last_entry = attr.ib(type=str, default={})
 
 
 @attr.s(slots=True, frozen=True)
@@ -680,6 +680,13 @@ class SmartIrrigationStorage:
         old = self.mappings[mapping_id]
         # make sure we don't override the ID
         changes.pop("id", None)
+        if old is not None:
+            if old.data_last_entry is not None and len(old.data_last_entry) > 0:
+                if MAPPING_DATA_LAST_ENTRY not in changes:
+                    changes[MAPPING_DATA_LAST_ENTRY] = {}
+                for key in old.data_last_entry.keys():
+                    if key not in changes[MAPPING_DATA_LAST_ENTRY]:
+                        changes[MAPPING_DATA_LAST_ENTRY][key] = old.data_last_entry[key]
         new = self.mappings[mapping_id] = attr.evolve(old, **changes)
         self.async_schedule_save()
         return attr.asdict(new)
