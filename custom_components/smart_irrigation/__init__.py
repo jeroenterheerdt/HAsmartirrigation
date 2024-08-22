@@ -461,9 +461,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     if (
                         not isinstance(val, str)
                         and val.get(const.MAPPING_CONF_SENSOR) == entity
+                        or val.get(const.MAPPING_CONF_SOURCE)
+                        == const.MAPPING_CONF_SOURCE_STATIC_VALUE
                     ):
+                        the_new_state = new_state_obj.state
+                        if (
+                            val.get(const.MAPPING_CONF_SOURCE)
+                            == const.MAPPING_CONF_SOURCE_STATIC_VALUE
+                        ):
+                            the_new_state = val.get(const.MAPPING_CONF_STATIC_VALUE)
                         # add the mapping data with the new sensor value
-                        if new_state_obj is not None:
+                        if the_new_state is not None:
                             if const.MAPPING_DATA in mapping:
                                 mapping_data = mapping.get(const.MAPPING_DATA)
                             else:
@@ -478,7 +486,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             mapping_data.append(
                                 {
                                     key: convert_mapping_to_metric(
-                                        float(new_state_obj.state),
+                                        float(the_new_state),
                                         key,
                                         mapping.get(const.MAPPING_CONF_UNIT),
                                         self.hass.config.units is METRIC_SYSTEM,
@@ -490,6 +498,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             data_last_entry = mapping.get(const.MAPPING_DATA_LAST_ENTRY)
                             if data_last_entry is None or len(data_last_entry) == 0:
                                 data_last_entry = {}
+                            if isinstance(data_last_entry, list):
+                                data_last_entry = dict(data_last_entry)
                             data_last_entry[key] = mapping_data[-1][key]
                             changes = {
                                 const.MAPPING_DATA: mapping_data,
@@ -500,7 +510,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 mapping.get(const.MAPPING_ID), changes
                             )
                             _LOGGER.debug(
-                                f"async_sensor_state_changed: updated mapping {mapping.get(const.MAPPING_ID)} with new sensor value {new_state_obj.state}"
+                                f"async_sensor_state_changed: updated sensor group {mapping.get(const.MAPPING_ID)} {key}. New value: {new_state_obj.state}"
                             )
             await self.async_continuous_update_for_mapping(
                 mapping.get(const.MAPPING_ID)

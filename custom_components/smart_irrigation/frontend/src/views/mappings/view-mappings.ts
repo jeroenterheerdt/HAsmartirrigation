@@ -54,7 +54,7 @@ import {
   MAPPING_CURRENT_PRECIPITATION,
 } from "../../const";
 import { getOptionsForMappingType, handleError } from "../../helpers";
-import { mdiDelete } from "@mdi/js";
+import { mdiConsoleNetworkOutline, mdiDelete } from "@mdi/js";
 
 @customElement("smart-irrigation-view-mappings")
 class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
@@ -145,6 +145,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     this.mappings = Object.values(this.mappings).map((mapping, i) =>
       i === index ? updatedMapping : mapping
     );
+    console.log(updatedMapping);
     this.saveToHA(updatedMapping);
   }
   private saveToHA(mapping: SmartIrrigationMapping): void {
@@ -156,24 +157,29 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     for (const m in mapping.mappings) {
       if (
         mapping.mappings[m].sensorentity != undefined &&
-        mapping.mappings[m].sensorentity != ""
+        mapping.mappings[m].sensorentity.trim() != ""
       ) {
+        mapping.mappings[m].sensorentity =
+          mapping.mappings[m].sensorentity.trim();
         if (!(mapping.mappings[m].sensorentity in this.hass.states)) {
           allsensorsvalid = false;
           handleError(
             {
               body: {
-                message: localize(
-                  "panels.mappings.cards.mapping.errors.source_does_not_exist",
-                  this.hass.language,
-                ),
+                message:
+                  localize(
+                    "panels.mappings.cards.mapping.errors.source_does_not_exist",
+                    this.hass.language
+                  ) +
+                  ": " +
+                  mapping.mappings[m].sensorentity,
               },
               error: localize(
                 "panels.mappings.cards.mapping.errors.invalid_source",
-                this.hass.language,
+                this.hass.language
               ),
             },
-            this.shadowRoot!.querySelector("ha-card") as HTMLElement,
+            this.shadowRoot!.querySelector("ha-card") as HTMLElement
           );
           break;
         }
@@ -285,7 +291,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                 ...mapping.mappings,
                 [value]: {
                   ...mapping.mappings[value],
-                  source: (e.target as HTMLInputElement).value,
+                  [MAPPING_CONF_SOURCE]: (e.target as HTMLInputElement).value,
+                  [MAPPING_CONF_SENSOR]: "",
                 },
               },
             })}"
@@ -308,7 +315,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           name="${value + index + MAPPING_CONF_SOURCE}"
           ?enabled="${this.config?.use_weather_service}"
           ?checked="${this.config?.use_weather_service &&
-          mappingline[MAPPING_CONF_SOURCE] === MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
+          mappingline[MAPPING_CONF_SOURCE] ===
+            MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
           @change="${(e: Event) =>
             this.handleEditMapping(index, {
               ...mapping,
@@ -316,7 +324,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                 ...mapping.mappings,
                 [value]: {
                   ...mapping.mappings[value],
-                  source: (e.target as HTMLInputElement).value,
+                  [MAPPING_CONF_SOURCE]: (e.target as HTMLInputElement).value,
+                  [MAPPING_CONF_SENSOR]: "",
                 },
               },
             })}"
@@ -373,6 +382,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
               [value]: {
                 ...mapping.mappings[value],
                 [MAPPING_CONF_SOURCE]: (e.target as HTMLInputElement).value,
+                [MAPPING_CONF_SENSOR]: "",
               },
             },
           })}"

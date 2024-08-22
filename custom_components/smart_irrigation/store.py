@@ -335,7 +335,7 @@ class SmartIrrigationStorage:
                         mappings=the_map,
                         data=mapping.get(MAPPING_DATA),
                         data_last_updated=mapping.get(MAPPING_DATA_LAST_UPDATED, None),
-                        data_last_entry=mapping.get(MAPPING_DATA_LAST_ENTRY),
+                        data_last_entry=mapping.get(MAPPING_DATA_LAST_ENTRY, {}),
                     )
 
         self.config = config
@@ -682,9 +682,11 @@ class SmartIrrigationStorage:
         changes.pop("id", None)
         if old is not None:
             if old.data_last_entry is not None and len(old.data_last_entry) > 0:
+                if isinstance(old.data_last_entry, list):
+                    old.data_last_entry = dict(old.data_last_entry)
                 if MAPPING_DATA_LAST_ENTRY not in changes:
                     changes[MAPPING_DATA_LAST_ENTRY] = {}
-                for key in old.data_last_entry.keys():
+                for key in old.data_last_entry:
                     if key not in changes[MAPPING_DATA_LAST_ENTRY]:
                         changes[MAPPING_DATA_LAST_ENTRY][key] = old.data_last_entry[key]
         new = self.mappings[mapping_id] = attr.evolve(old, **changes)
