@@ -15,7 +15,7 @@ CONF_DELTA = "delta"
 DEFAULT_DELTA = 0.0
 SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_DELTA, default=DEFAULT_DELTA): vol.Coerce(float),
+        vol.Required(CONF_DELTA, default=DEFAULT_DELTA): vol.Coerce(str, float),
     }
 )
 
@@ -27,7 +27,10 @@ class Static(SmartIrrigationCalculationModule):
         )
         self._delta = DEFAULT_DELTA
         if config:
-            self._delta = float(config.get(CONF_DELTA, DEFAULT_DELTA))
+            if config.get(CONF_DELTA) == "":
+                self._delta = DEFAULT_DELTA
+            else:
+                self._delta = float(config.get(CONF_DELTA, DEFAULT_DELTA))
 
     def calculate(self):
         return self._delta
