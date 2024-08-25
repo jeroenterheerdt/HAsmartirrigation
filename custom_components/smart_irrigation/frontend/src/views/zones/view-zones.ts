@@ -43,6 +43,7 @@ import {
   MAPPING_DATA,
   UNIT_SECONDS,
   ZONE_BUCKET,
+  ZONE_DRAINAGE_RATE,
   ZONE_DURATION,
   ZONE_LEAD_TIME,
   ZONE_MAPPING,
@@ -165,6 +166,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       lead_time: 0,
       maximum_duration: undefined,
       maximum_bucket: undefined,
+      drainage_rate: undefined,
     };
 
     this.zones = [...this.zones, newZone];
@@ -422,6 +424,28 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                   this.handleEditZone(index, {
                     ...zone,
                     [ZONE_THROUGHPUT]: parseFloat(
+                      (e.target as HTMLInputElement).value
+                    ),
+                  })}"
+              />
+            </div>
+            <div class="zoneline">
+              <label for="drainage_rate${index}"
+                >${localize(
+                  "panels.zones.labels.drainage_rate",
+                  this.hass.language
+                )}
+                (${output_unit(this.config, ZONE_DRAINAGE_RATE)}):</label
+              >
+              <input
+                class="shortinput"
+                id="drainage_rate${index}"
+                type="number"
+                .value="${zone.drainage_rate}"
+                @input="${(e: Event) =>
+                  this.handleEditZone(index, {
+                    ...zone,
+                    [ZONE_DRAINAGE_RATE]: parseFloat(
                       (e.target as HTMLInputElement).value
                     ),
                   })}"

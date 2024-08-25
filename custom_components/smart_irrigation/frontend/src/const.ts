@@ -1,4 +1,4 @@
-export const VERSION = "v2024.8.1-beta-11";
+export const VERSION = "v2024.8.1-beta-12";
 export const REPO = "https://github.com/jeroenterheerdt/HASmartIrrigation;";
 export const ISSUES_URL = REPO + "/issues";
 
@@ -84,6 +84,8 @@ export const UNIT_W_M2 = "W/m2";
 export const UNIT_W_SQFT = "W/sq ft";
 export const UNIT_MJ_DAY_M2 = "MJ/day/m2";
 export const UNIT_MJ_DAY_SQFT = "MJ/day/sq ft";
+export const UNIT_MMH = "mm/h";
+export const UNIT_INCHH = "in/h";
 
 export const ZONE_ID = "id";
 export const ZONE_NAME = "name";
@@ -104,3 +106,4 @@ export const ZONE_MAPPING = "mapping";
 export const ZONE_LEAD_TIME = "lead_time";
 export const ZONE_MAXIMUM_DURATION = "maximum_duration";
 export const ZONE_MAXIMUM_BUCKET = "maximum_bucket";
+export const ZONE_DRAINAGE_RATE = "drainage_rate";

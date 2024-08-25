@@ -60,6 +60,7 @@ async def async_setup_entry(
             last_calculated=config["last_calculated"],
             number_of_data_points=config["number_of_data_points"],
             delta=config["delta"],
+            drainage_rate=config["drainage_rate"],
         )
         if const.DOMAIN in hass.data:
             hass.data[const.DOMAIN]["zones"][config["id"]] = sensor_entity
@@ -89,6 +90,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         last_calculated: str,
         number_of_data_points: int,
         delta: float,
+        drainage_rate: float,
     ) -> None:
         """Initialize the sensor entity."""
         self._hass = hass
@@ -106,6 +108,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         self._last_calculated = last_calculated
         self._number_of_data_points = number_of_data_points
         self._delta = delta
+        self._drainage_rate = drainage_rate
         async_dispatcher_connect(
             hass, const.DOMAIN + "_config_updated", self.async_update_sensor_entity
         )
@@ -126,6 +129,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             self._last_calculated = zone["last_calculated"]
             self._number_of_data_points = zone["number_of_data_points"]
             self._delta = zone["delta"]
+            self._drainage_rate = zone["drainage_rate"]
             self.async_schedule_update_ha_state()
 
     @property
@@ -197,6 +201,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             "id": self._id,
             "size": self._size,
             "throughput": self._throughput,
+            "drainage_rate": float(self._drainage_rate),
             "state": self._state,
             "bucket": float(self._bucket),
             "last_updated": convert_timestamp(self._last_updated),

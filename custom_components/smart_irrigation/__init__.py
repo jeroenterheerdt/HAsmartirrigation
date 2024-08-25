@@ -1236,7 +1236,20 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             _LOGGER.debug(f"[calculate-module]: hour_multiplier: {hour_multiplier}")
             data[const.ZONE_DELTA] = delta * hour_multiplier
             _LOGGER.debug(f"[calculate-module]: new delta: {delta * hour_multiplier}")
-            newbucket = bucket + (delta * hour_multiplier)
+            # take drainage rate into account
+            drainage_rate = zone.get(const.ZONE_DRAINAGE_RATE, 0.0)
+            if drainage_rate is None:
+                drainage_rate = 0.0
+            if not ha_config_is_metric:
+                # drainage_rate is in inch/h since HA is not in metric, so we need to adjust those first!
+                # using inch and mm here since both are per hour
+                drainage_rate = convert_between(
+                    const.UNIT_INCH, const.UNIT_MM, drainage_rate
+                )
+            _LOGGER.debug(f"[calculate-module]: drainage_rate: {drainage_rate}")
+            newbucket = (
+                bucket + (delta * hour_multiplier) - (drainage_rate * hour_multiplier)
+            )
             _LOGGER.debug(f"[calculate-module]: newbucket: {newbucket}")
             # if maximum bucket configured, limit bucket with that.
             if (
@@ -1269,6 +1282,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             + " {}".format(round(float(maximum_bucket), 1))
         )
         explanation += (
+            ".<br/>"
+            + await localize(
+                "module.calculation.explanation.drainage-rate-is",
+                self.hass.config.language,
+            )
+            + " {}".format(round(float(drainage_rate), 1))
+        )
+        explanation += (
             "."
             + await localize(
                 "module.calculation.explanation.new-bucket-values-is",
@@ -1285,9 +1306,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         )
         explanation += await localize(
             "module.calculation.explanation.delta", self.hass.config.language
-        ) + "]={}+{}={}.<br/>".format(
+        ) + "]={}+{}-{}={}.<br/>".format(
             round(data[const.ZONE_OLD_BUCKET], 1),
             round(data[const.ZONE_DELTA], 1),
+            round(drainage_rate, 1),
             round(newbucket, 1),
         )
 

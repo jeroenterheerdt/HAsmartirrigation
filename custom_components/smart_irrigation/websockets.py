@@ -186,6 +186,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
                 ),
                 vol.Optional(const.ZONE_NUMBER_OF_DATA_POINTS): vol.Or(int, None),
                 vol.Optional(const.ATTR_CLEAR_ALL_WEATHERDATA): cv.boolean,
+                vol.Optional(const.ZONE_DRAINAGE_RATE): vol.Or(float, int, None),
             }
         )
     )

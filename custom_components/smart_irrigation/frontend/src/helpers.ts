@@ -22,6 +22,7 @@ import {
   UNIT_GPM,
   UNIT_HPA,
   UNIT_INCH,
+  UNIT_INCHH,
   UNIT_INHG,
   UNIT_KMH,
   UNIT_LPM,
@@ -31,6 +32,7 @@ import {
   UNIT_MJ_DAY_M2,
   UNIT_MJ_DAY_SQFT,
   UNIT_MM,
+  UNIT_MMH,
   UNIT_MS,
   UNIT_PERCENT,
   UNIT_PSI,
@@ -38,6 +40,7 @@ import {
   UNIT_W_M2,
   UNIT_W_SQFT,
   ZONE_BUCKET,
+  ZONE_DRAINAGE_RATE,
   ZONE_SIZE,
   ZONE_THROUGHPUT,
 } from "./const";
@@ -64,6 +67,12 @@ export function getPart(value: any, index: number) {
 }
 export function output_unit(config, arg0: string): TemplateResult {
   switch (arg0) {
+    case ZONE_DRAINAGE_RATE:
+      if (config.units == CONF_METRIC) {
+        return html`${unsafeHTML(UNIT_MMH)}`;
+      }
+      else return html`${unsafeHTML(UNIT_INCHH)}`;
+      break;
     case ZONE_BUCKET:
       if (config.units == CONF_METRIC) {
         return html`${unsafeHTML(UNIT_MM)}`;

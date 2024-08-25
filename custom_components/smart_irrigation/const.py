@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2024.8.1-beta-11"
+VERSION = "v2024.8.1-beta-12"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -69,6 +69,7 @@ CONF_DEFAULT_MAXIMUM_DURATION = (
     3600  # default maximum duration to one hour == 3600 seconds
 )
 CONF_DEFAULT_MAXIMUM_BUCKET = 50  # default maximum bucket of 50
+CONF_DEFAULT_DRAINAGE_RATE = 50.8  # mm / hour (=2 inch per hour)
 CONF_DEFAULT_CONTINUOUS_UPDATES = False  # continuous updates are disabled by default
 CONF_CONTINUOUS_UPDATES = "continuousupdates"
 
@@ -123,6 +124,7 @@ ZONE_MAXIMUM_BUCKET = "maximum_bucket"
 ZONE_LAST_CALCULATED = "last_calculated"
 ZONE_LAST_UPDATED = "last_updated"
 ZONE_NUMBER_OF_DATA_POINTS = "number_of_data_points"
+ZONE_DRAINAGE_RATE = "drainage_rate"
 
 MODULE_DIR = "calcmodules"
 MODULE_ID = "id"
@@ -212,6 +214,8 @@ UNIT_W_M2 = "W/m2"
 UNIT_W_SQFT = "W/sq ft"
 UNIT_MJ_DAY_M2 = "MJ/day/m2"
 UNIT_MJ_DAY_SQFT = "MJ/day/sq ft"
+UNIT_MMH = "mm/h"
+UNIT_INCHH = "inch/h"
 
 # METRIC TO IMPERIAL (US) FACTORS
 MM_TO_INCH_FACTOR = 0.03937008  # mm * factor = inch

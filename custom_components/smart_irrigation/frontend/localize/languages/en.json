@@ -44,7 +44,8 @@
         "lead-time-is-applied": "Finally, the lead time is applied. The lead time is",
         "duration-after-lead-time-is": "hence the final duration is",
         "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Since bucket >= 0, no irrigation is necessary and duration is set to",
-        "maximum-bucket-is": "maximum bucket size is"
+        "maximum-bucket-is": "maximum bucket size is",
+        "drainage-rate-is": "drainage rate is"
       }
     }
   },
@@ -256,7 +257,8 @@
         "maximum-bucket": "Maximum bucket",
         "last_calculated": "Last calculated",
         "data-last-updated": "Data last updated",
-        "data-number-of-data-points": "Number of data points"
+        "data-number-of-data-points": "Number of data points",
+        "drainage_rate": "Drainage rate"
       },
       "no_items": "There are no zones defined yet.",
       "title": "Zones"
