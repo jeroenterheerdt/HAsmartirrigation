@@ -201,13 +201,13 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             "id": self._id,
             "size": self._size,
             "throughput": self._throughput,
-            "drainage_rate": float(self._drainage_rate),
+            "drainage_rate": self._drainage_rate,
             "state": self._state,
-            "bucket": float(self._bucket),
+            "bucket": self._bucket,
             "last_updated": convert_timestamp(self._last_updated),
             "last_calculated": convert_timestamp(self._last_calculated),
             "number_of_data_points": self._number_of_data_points,
-            "et_value": float(self._delta),
+            "et_value": self._delta,
             # asyncio.run_coroutine_threadsafe(
             #    localize("common.attributes.size", "en"), self._hass.loop
             # ).result(): self._size,
