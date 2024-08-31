@@ -44,7 +44,7 @@ You can change the following settings on a zone:
 - **Name**: change the name of a zone
 - **Size**: change the size of a zone
 - **Throughput**: change the throughput of a zone
-- **Drainage rate**: set the drainage rate of a zone. Depends on your soil type but 50.8 mm or 2 inch per hour is considered normal.
+- **Drainage rate**: set the drainage rate of a zone. Use this only if you have drainage problems. You will need to do some experimentation to see what value works for you. Too low of a value are your drainage problem is not solved, too high of a value and the effects of the evapotranspiration calculation has little to no impact. Keep in mind that the values quoted on the internet (around 50.8 mm or 2 inch per hour) for drainage rates are dependent on your soil type and are for fully saturated soil only.
 - **State**:
   - _Automatic_: Automatic updating and calculation of that zone. [module](configuration-modules.md) and [sensor group](configuration-sensor-groups.md) is mandatory.
   - _Manual_: Only manual updating and calculation of that zone. No [module](configuration-modules.md) and [sensor group](configuration-sensor-groups.md) is required.
