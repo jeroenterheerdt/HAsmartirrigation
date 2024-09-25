@@ -40,7 +40,7 @@
     "lit": "^2.7.6",
     "moment": "^2.29.4",
     "prettier": "*",
-    "rollup": "^2.79.1",
+    "rollup": "^3.29.5",
     "rollup-plugin-terser": "*",
     "rollup-plugin-typescript2": "*",
     "typescript": "*"
