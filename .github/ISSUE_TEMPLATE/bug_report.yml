@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!s
+        Thanks for taking the time to fill out this bug reports. Before you create this new issue, [read the docs](https://jeroenterheerdt.github.io/HAsmartirrigation/).
   - type: textarea
     validations:
       required: true
