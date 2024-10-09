@@ -11,7 +11,7 @@ body:
     id: docsread
     attributes:
       label: Did you read the docs?
-      description: The [docs are here](https://jeroenterheerdt.github.io/HAsmartirrigation/).
+      description: You are required to read [the docs](https://jeroenterheerdt.github.io/HAsmartirrigation/) and confirm your question wasn't anwered there.
       options:
         - label: I did read the docs and my question it not mentioned there.
           required: true
