@@ -7,14 +7,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report. Before you create this new issue, [read the docs](https://jeroenterheerdt.github.io/HAsmartirrigation/).
-  - type: checkboxes
-    id: docsread
-    attributes:
-      label: Did you read the docs?
-      description: [The docs](https://jeroenterheerdt.github.io/HAsmartirrigation/)
-      options:
-        - label: I did read the docs and my question it not mentioned there.
-          required: true
+ 
   - type: textarea
     validations:
       required: true
