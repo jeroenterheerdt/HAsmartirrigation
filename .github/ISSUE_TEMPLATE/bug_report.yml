@@ -7,7 +7,6 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report. Before you create this new issue, [read the docs](https://jeroenterheerdt.github.io/HAsmartirrigation/).
- 
   - type: textarea
     validations:
       required: true
