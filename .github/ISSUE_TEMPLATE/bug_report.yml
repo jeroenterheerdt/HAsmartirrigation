@@ -13,7 +13,7 @@ body:
       label: Did you read the docs?
       description: You are required to read [the docs](https://jeroenterheerdt.github.io/HAsmartirrigation/) and confirm your question wasn't anwered there.
       options:
-        - label: I did read the docs and my question it not mentioned there.
+        - label: I did read the docs and my question is not answered there.
           required: true
   - type: textarea
     validations:
