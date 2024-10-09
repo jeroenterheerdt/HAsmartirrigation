@@ -24,7 +24,7 @@ body:
         Please give a clear and concise description of the issue you are experiencing here,
         to communicate to the maintainers. Tell us what you were trying to do, what happened and what you expected.
   - type: textarea
-    alidations:
+    validations:
       required: true
     attributes:
       label: How to reproduce
