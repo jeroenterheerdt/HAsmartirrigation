@@ -239,7 +239,7 @@ INHG_TO_HPA_FACTOR = 33.8639  # inhg * factor = hpa = mbar
 W_SQ_FT_TO_W_M2_FACTOR = 10.76391042  # w/sqft * factor = w/m2
 
 # OTHER FACTORS
-KMH_TO_MS_FACTOR = 0.0277777777777778  # kmh * factor = ms
+KMH_TO_MS_FACTOR = 0.277777777777778  # kmh * factor = ms
 MS_TO_KMH_FACTOR = 3.6  # m/s * factor = kmh
 W_TO_MJ_DAY_FACTOR = 0.0864  # w * factor = mj/day, same for w/m2 to mj/day/m2
 K_TO_C_FACTOR = 273.15  # K-factor = C, C+factor=K
