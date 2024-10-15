@@ -30,7 +30,7 @@ The following data can be provided:
 |**Solar Radiation**|No|None (requires module to estimate it)<br/>Sensor<br/>Static value|MJ/day/m2<br/>MJ/day/sq ft<br/>W/m2<br/>W/sq ft|Average|
 |**Temperature**|Yes|Weather Service<br/>Sensor<br/>Static value|°C<br/>°F|Average|
 |**Wind speed**|Yes|Weather Service<br/>Sensor<br/>Static value|meter/s<br/>mile/h<br/>km/h|Average|
-|**Current precipitation**|No|Weather Service<br/>Sensor<br/>Static value|in<br/>mm|Average|
+|**Current precipitation**|No|Weather Service<br/>Sensor<br/>Static value|in/h<br/>mm/h|Last|
 
 Please note:
 - If you use a [weather service](installation-weatherservice.md), make sure your home zone coordinates are set correctly so the data is correct. This is especially true if you set the coordinates manually in the configuration.yaml.
@@ -45,7 +45,8 @@ Please note:
            friendly_name: Wind Speed at 2m
            value_template: {% raw %}"{{states('[name of your wind speed sensor (WSmeasured)]')|float()*(4.87/log((67.8*[height the wind speed was measured on in meters (H)])-5.42))}}"{% endraw %}
    ```
-- Current preciptation is currently not in use, but is likely going to be used for continuous updates in the future.
+- Total precipitation is the total amount of precipitation you want to take into account for the calculations. If you calculate once per day, close to midnight use a source that provides the total precipitation for the day. Often this is called 'daily precipitation'. If you calculate less or more often adjust accordingly. Keep in mind that the total precipitation is expected to be a total over the time period, not the current precipitation.
+- Current preciptation is currently not in use, but is likely going to be used for continuous updates in the future. Note that is expected to be in in/h or mm/h, so you might need to do some basic math if you have in/m or mm/m.
 
 ## Deleting a sensor group
 ![](assets/images/configuration-sensor-groups-1.png)
