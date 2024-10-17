@@ -93,7 +93,7 @@ from .const import (
     ZONE_STATE_AUTOMATIC,
     ZONE_THROUGHPUT,
 )
-from .helpers import loadModules
+from .helpers import loadModules, convert_list_to_dict
 from .localize import localize
 
 _LOGGER = logging.getLogger(__name__)
@@ -687,7 +687,7 @@ class SmartIrrigationStorage:
         if old is not None:
             if old.data_last_entry is not None and len(old.data_last_entry) > 0:
                 if isinstance(old.data_last_entry, list):
-                    old.data_last_entry = dict(old.data_last_entry)
+                    old.data_last_entry = convert_list_to_dict(old.data_last_entry)
                 if MAPPING_DATA_LAST_ENTRY not in changes:
                     changes[MAPPING_DATA_LAST_ENTRY] = {}
                 for key in old.data_last_entry:

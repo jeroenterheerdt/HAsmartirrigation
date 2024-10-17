@@ -70,8 +70,7 @@ export function output_unit(config, arg0: string): TemplateResult {
     case ZONE_DRAINAGE_RATE:
       if (config.units == CONF_METRIC) {
         return html`${unsafeHTML(UNIT_MMH)}`;
-      }
-      else return html`${unsafeHTML(UNIT_INCHH)}`;
+      } else return html`${unsafeHTML(UNIT_INCHH)}`;
       break;
     case ZONE_BUCKET:
       if (config.units == CONF_METRIC) {
@@ -107,10 +106,10 @@ export function getOptionsForMappingType(mapping: string) {
     case MAPPING_PRECIPITATION:
     case MAPPING_EVAPOTRANSPIRATION:
     case MAPPING_CURRENT_PRECIPITATION:
-      //this should be mm or inch
+      //this should be mm/h or inch/h
       return [
-        { unit: UNIT_MM, system: CONF_METRIC },
-        { unit: UNIT_INCH, system: CONF_IMPERIAL },
+        { unit: UNIT_MMH, system: CONF_METRIC },
+        { unit: UNIT_INCHH, system: CONF_IMPERIAL },
       ];
     case MAPPING_HUMIDITY:
       //return %

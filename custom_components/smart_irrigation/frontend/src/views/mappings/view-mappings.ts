@@ -29,6 +29,7 @@ import {
   //MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP,
   //MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP,
   MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION,
+  MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_CURRENT_PRECIPITATION,
   MAPPING_CONF_SENSOR,
   MAPPING_CONF_SOURCE,
   MAPPING_CONF_SOURCE_NONE,
@@ -562,6 +563,9 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       let selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT;
       if (value === MAPPING_PRECIPITATION) {
         selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION;
+      }
+      if (value === MAPPING_CURRENT_PRECIPITATION) {
+        selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_CURRENT_PRECIPITATION;
       }
       //removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
       //else if (value === MAPPING_MAX_TEMP) {

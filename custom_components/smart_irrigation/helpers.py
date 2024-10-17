@@ -577,6 +577,20 @@ def loadModules(moduleDir=None):
     return None
 
 
+def convert_list_to_dict(lst):
+    """Convert list to dict."""
+    res_dict = {}
+    for i in range(0, len(lst), 1):
+        # print(i)
+        # print(lst[i])
+        if isinstance(lst[i], str):
+            if i + 1 >= len(lst) or isinstance(lst[i + 1], str):
+                res_dict[lst[i]] = None
+            else:
+                res_dict[lst[i]] = lst[i + 1]
+    return res_dict
+
+
 class CannotConnect(exceptions.HomeAssistantError):
     """Error to indicate we cannot connect."""
 

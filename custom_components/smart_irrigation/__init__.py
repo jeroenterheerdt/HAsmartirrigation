@@ -46,6 +46,7 @@ from .helpers import (
     altitudeToPressure,
     check_time,
     convert_between,
+    convert_list_to_dict,
     convert_mapping_to_metric,
     loadModules,
     relative_to_absolute_pressure,
@@ -499,7 +500,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             if data_last_entry is None or len(data_last_entry) == 0:
                                 data_last_entry = {}
                             if isinstance(data_last_entry, list):
-                                data_last_entry = dict(data_last_entry)
+                                data_last_entry = convert_list_to_dict(data_last_entry)
                             data_last_entry[key] = mapping_data[-1][key]
                             changes = {
                                 const.MAPPING_DATA: mapping_data,
