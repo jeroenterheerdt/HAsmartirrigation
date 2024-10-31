@@ -1,6 +1,6 @@
 {
   "name": "smartirrigation",
-  "version": "2023.8.0-beta3",
+  "version": "2024.10.3",
   "description": "Smart Irrigation frontend",
   "main": "dist/smart-irrigation.js",
   "scripts": {
@@ -22,7 +22,7 @@
   "homepage": "https://github.com/jeroenterheerdt/HASmartIrrigation#readme",
   "dependencies": {
     "@babel/core": "*",
-    "@babel/plugin-proposal-class-properties": "*",
+    "@babel/plugin-transform-class-properties": "*",
     "@babel/plugin-proposal-decorators": "*",
     "@mdi/js": "*",
     "@rollup/plugin-babel": "*",
@@ -40,8 +40,8 @@
     "lit": "^2.7.6",
     "moment": "^2.29.4",
     "prettier": "*",
-    "rollup": "^3.29.5",
-    "rollup-plugin-terser": "*",
+    "rollup": "*",
+    "@rollup/plugin-terser": "*",
     "rollup-plugin-typescript2": "*",
     "typescript": "*"
   },

@@ -105,6 +105,11 @@ export function getOptionsForMappingType(mapping: string) {
       ];
     case MAPPING_PRECIPITATION:
     case MAPPING_EVAPOTRANSPIRATION:
+      //this should be mm or inch
+      return [
+        { unit: UNIT_MM, system: CONF_METRIC },
+        { unit: UNIT_INCH, system: CONF_IMPERIAL },
+      ];
     case MAPPING_CURRENT_PRECIPITATION:
       //this should be mm/h or inch/h
       return [
