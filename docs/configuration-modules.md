@@ -23,7 +23,7 @@ The following modules are available:
         - `Do not estimate`: This requires a solar radiation sensor in the [sensor group](configuration-sensor-groups.md) to be configured. Since many weather stations and weather services don't provide this information, it's likely you'll want to instead use one of the 'estimate' options.
         - `Estimate from average of sun hours and temperature`: estimate the solar radiation from both the sun hours and temperature. Any solar radiation value provided by your [sensor group](configuration-sensor-groups.md) is ignored.
   - _Forecast days_: How many forecast days taken into account. This is useful to avoid irrigating if the forecast suggests it will rain.
-- **Static**: static configurable netto precipitation. Enter the netto precipitation in the `Delta` box.
+- **Static**: static configurable nett precipitation. Enter the nett precipitation in the `Delta` box.
 - **Passthrough**: Return the value of an evapotranspiration sensor as delta. Passthrough takes your evapotranspiration sensor and returns its value. It bypasses all calculations, except aggregates. This requires a solar radiation source to be configured in your [sensor groups](configuration-sensor-groups.md).
 
 ## Deleting a module
