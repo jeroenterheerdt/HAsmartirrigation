@@ -11,6 +11,7 @@ blueprint:
           filter:
             - domain: switch
             - domain: input_boolean
+            - domain: valve
 
     irrigation_zone:
       name: Irrigation Zone
@@ -26,30 +27,30 @@ variables:
 alias: Standard Irrigation
 description: "Standard irrigation for a Zone"
 
-trigger:
-  platform: event
+triggers:
+  trigger: event
   event_type: smart_irrigation_start_irrigation_all_zones
 
-condition:
+conditions:
   - condition: numeric_state
     entity_id: !input irrigation_zone
     above: 0
 
-action:
-  - service: switch.turn_on
+actions:
+  - action: homeassistant.turn_on
     data: {}
     target:
       entity_id: !input irrigation_switch
 
   - delay: "{{ states(duration) }}"
 
-  - service: switch.turn_off
+  - action: homeassistant.turn_off
     data: {}
     target:
       entity_id:
         - !input irrigation_switch
 
-  - service: smart_irrigation.reset_bucket
+  - action: smart_irrigation.reset_bucket
     data: {}
     target:
       entity_id: !input irrigation_zone
