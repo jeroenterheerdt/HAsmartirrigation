@@ -13,6 +13,14 @@ blueprint:
             - domain: input_boolean
             - domain: valve
 
+    pause_switch:
+      name: Pause Switch
+      description: Switch, if off don't run automation
+      selector:
+        entity:
+          filter:
+            - domain: input_boolean            
+
     irrigation_zone:
       name: Irrigation Zone
       description: Zone to irrigate
@@ -35,6 +43,9 @@ conditions:
   - condition: numeric_state
     entity_id: !input irrigation_zone
     above: 0
+  - condition: state
+    entity_id: !input pause_switch
+    state: "on"    
 
 actions:
   - action: homeassistant.turn_on
