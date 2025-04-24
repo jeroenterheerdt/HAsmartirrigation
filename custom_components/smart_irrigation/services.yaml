@@ -44,3 +44,12 @@ set_multiplier:
       required: true
       example: 1.0
       default: 1.0
+set_state:
+  target:
+    entity:
+      domain: sensor
+  fields:
+    new_state_value:
+      required: true
+      example: "automatic"
+      default: "automatic"
