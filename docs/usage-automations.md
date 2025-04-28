@@ -21,7 +21,7 @@ Also, check out the [blueprints we provide](https://github.com/jeroenterheerdt/H
 ### Example 1: one valve, once per week irrigation if duration < 0 or if the bucket < - 25 mm:
 
 This example automation runs daily and checks `sensor.smart_irrigation_[zone_name]`. It checks if the `buckets` is `< -25mm (~1")` or if's a monday and duration is above `0`. This follows the expert recommendation mentioned above.
-
+<!-- raw -->
 ```yaml
 description: ""
 mode: single
@@ -60,7 +60,7 @@ action:
     data: {}
     entity_id: sensor.smart_irrigation_[zone_name]
 ```
-
+<!-- endraw -->
 ### Example 2: one valve, potentially daily irrigation
 
 Here is an example automation that runs when the `smart_irrigation_start_irrigation_all_zones` event is fired. It checks if `sensor.smart_irrigation_[zone_name]` is above 0 and if it is it turns on `switch.irrigation_tap1`, waits the number of seconds as indicated by `sensor.smart_irrigation_[zone_name]` and then turns off `switch.irrigation_tap1`. Finally, it resets the bucket by calling the `smart_irrigation.reset_bucket` service. If you have multiple instances you will need to adjust the event, entities and service names accordingly.
