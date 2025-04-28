@@ -1,0 +1,27 @@
+- alias: Smart Irrigation
+  description: 'Start Smart Irrigation at 05:00 when the workday sensor is on and run it only if the adjusted_run_time is >0 and run it for precisely that many seconds'
+  trigger:
+  - at: 05:00
+    platform: time
+  condition:
+    condition: and
+    conditions:
+    - condition: state
+      entity_id: 'binary_sensor.workday_sensor'
+      state: 'on'
+    - above: '0'
+      condition: numeric_state
+      entity_id: sensor.smart_irrigation_[zone_name]
+  action:
+  - data: {}
+    entity_id: switch.irrigation_tap1
+    service: switch.turn_on
+  - delay:
+      seconds: '{{states("sensor.smart_irrigation_[zone_name]")}}'
+  - data: {}
+    entity_id: switch.irrigation_tap1
+    service: switch.turn_off
+  - data: {}
+    service: smart_irrigation.reset_bucket
+    target:
+      entity_id: sensor.smart_irrigation_[zone_name]
