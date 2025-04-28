@@ -6,12 +6,12 @@ The below image shows a graphical representation of what this integration does.
 
 1. Snow and rain fall on the ground add moisture. Together, this makes up the `precipitation`.
 2. Sunshine, temperature, wind speed, place on earth and other factors influence the amount of moisture lost from the ground(`evapotranspiration`).
-3. The difference between `precipitation` and `evapotranspiration` is the `delta` or `netto precipitation`: negative values mean more moisture is lost than gets added by rain/snow, while positive values mean more moisture is added by rain/snow than what evaporates.
-4. At some point in the day (configurable) the `netto precipitation` is added/substracted from the `bucket,` which starts as empty. Also, the `drainage rate` is taken into the account (if set). The bucket is calculated using this formula: `old_bucket + netto precipitation - drainage rate`. If the `bucket` is below zero, irrigation is required.
+3. The difference between `precipitation` and `evapotranspiration` is the `delta` or `nett precipitation`: negative values mean more moisture is lost than gets added by rain/snow, while positive values mean more moisture is added by rain/snow than what evaporates.
+4. At some point in the day (configurable) the `nett precipitation` is added/substracted from the `bucket,` which starts as empty. Also, the `drainage rate` is taken into the account (if set). The bucket is calculated using this formula: `old_bucket + nett precipitation - drainage rate`. If the `bucket` is below zero, irrigation is required.
 5. Irrigation should be run for `sensor.smart_irrigation_[zone_name]`, which is 0 if `bucket >=0`. Afterwards, the `bucket` needs to be reset (using [`reset_bucket` service](services)). It's up to the user of the integration to build the automation for this final step. See [Example automation](example-automations) for automations that people have built.
 
 ## Weekly behavior example
-To understand how `precipitation`, `netto precipitation`, the `bucket` and irrigation interact, see let's look at an example behavior in a week.
+To understand how `precipitation`, `nett precipitation`, the `bucket` and irrigation interact, see let's look at an example behavior in a week.
 With this you should be able to do a sanity check against your confiruation and make sure everything is working together.
 The scenario is as follows: we will look at several days, including the precipitation and evapotranspiration for those days and the effects on the bucket and whether ot not irrigation should be triggered. Note that the values here are not representative of any real-life situation and the example below only uses one zone to keep things simple.
 
@@ -21,7 +21,7 @@ Initially, the bucket is `0`, so the duration for irrigation is set to `0s`.
 ### Variables used
 * `P`: Precipitation
 * `Et`: Evapotranspiation
-* `D`: Netto Precipitation or Delta (`=P-Et`)
+* `D`: nett Precipitation or Delta (`=P-Et`)
 * `B`: Bucket
 * `Bu`: Bucket after calculation has happened (=`B+D`)
 * `Du`: Duration for irrigation in seconds

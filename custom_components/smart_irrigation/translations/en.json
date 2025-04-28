@@ -144,6 +144,20 @@
           "description": "new value of the multiplier"
         }
       }
+    },
+    "set_state": {
+      "name": "Set the state of a zone",
+      "description": "Set the state of a zone to a specific value",
+      "fields": {
+        "entity": {
+          "name": "Entity",
+          "description": "Zone to set state for"
+        },
+        "new_state_value": {
+          "name": "New state value",
+          "description": "New value of the state"
+        }
+      }
     }
   }
 }

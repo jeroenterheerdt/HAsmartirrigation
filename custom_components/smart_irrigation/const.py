@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2024.10.3"
+VERSION = "v2025.4.0"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -100,6 +100,8 @@ ATTR_UPDATE_ALL = "update_all"
 ATTR_OVERRIDE_CACHE = "override_cache"
 ATTR_RESET_ALL_BUCKETS = "reset_all_buckets"
 ATTR_CLEAR_ALL_WEATHERDATA = "clear_all_weatherdata"
+ATTR_SET_STATE = "set_state"
+ATTR_NEW_STATE_VALUE = "new_state_value"
 
 ZONE_ID = "id"
 ZONE_NAME = "name"
@@ -259,5 +261,6 @@ SERVICE_SET_BUCKET = "set_bucket"
 SERVICE_SET_ALL_BUCKETS = "set_all_buckets"
 SERVICE_SET_MULTIPLIER = "set_multiplier"
 SERVICE_SET_ALL_MULTIPLIERS = "set_all_multipliers"
+SERVICE_SET_STATE = "set_state"
 SERVICE_ENTITY_ID = "entity_id"
 SERVICE_CLEAR_WEATHERDATA = "clear_all_weather_data"

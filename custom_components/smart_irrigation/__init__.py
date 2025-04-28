@@ -1816,6 +1816,20 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             data.pop(const.ATTR_SET_MULTIPLIER)
             self.store.async_update_zone(zone_id, data)
             async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
+        elif const.ATTR_SET_STATE in data:
+            new_state_value = "disabled"
+            if const.ATTR_NEW_STATE_VALUE in data:
+                new_state_value = data[const.ATTR_NEW_STATE_VALUE]
+            res = self.store.get_zone(zone_id)
+            if not res:
+                return
+            if not new_state_value in const.ZONE_STATES:
+                return
+            data[const.ZONE_STATE] = new_state_value
+            data.pop(const.ATTR_SET_STATE)
+            data.pop(const.ATTR_NEW_STATE_VALUE)
+            self.store.async_update_zone(zone_id, data)
+            async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
         elif const.ATTR_SET_BUCKET in data:
             # set a bucket to a new value
             new_bucket_value = 0
@@ -2130,6 +2144,33 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         data[const.ATTR_NEW_MULTIPLIER_VALUE] = new_value
                         await self.async_update_zone_config(zone_id=zone_id, data=data)
 
+    async def handle_set_state(self, call):
+        """Reset a specific zone state to new value."""
+        if (
+            const.SERVICE_ENTITY_ID in call.data
+            and const.ATTR_NEW_STATE_VALUE in call.data
+        ):
+            new_value = call.data[const.ATTR_NEW_STATE_VALUE]
+            eid = call.data[const.SERVICE_ENTITY_ID]
+            if not isinstance(eid, list):
+                eid = [call.data[const.SERVICE_ENTITY_ID]]
+            for entity in eid:
+                _LOGGER.info(
+                    "Set state service called for zone {}, new value: {}.".format(
+                        entity, new_value
+                    )
+                )
+                # find entity zone id and call calculate on the zone
+                state = self.hass.states.get(entity)
+                if state:
+                    # find zone_id for zone with name
+                    zone_id = state.attributes.get(const.ZONE_ID)
+                    if zone_id is not None:
+                        data = {}
+                        data[const.ATTR_SET_STATE] = {}
+                        data[const.ATTR_NEW_STATE_VALUE] = new_value
+                        await self.async_update_zone_config(zone_id=zone_id, data=data)
+
     async def handle_set_all_multipliers(self, call):
         """Reset all multipliers to new value."""
         if const.ATTR_NEW_MULTIPLIER_VALUE in call.data:
@@ -2199,4 +2240,8 @@ def register_services(hass: HomeAssistant):
 
     hass.services.async_register(
         const.DOMAIN, const.SERVICE_SET_MULTIPLIER, coordinator.handle_set_multiplier
+    )
+
+    hass.services.async_register(
+        const.DOMAIN, const.SERVICE_SET_STATE, coordinator.handle_set_state
     )

@@ -108,7 +108,9 @@ class OWMClient:  # pylint: disable=invalid-name
                 )
                 if doc and "cod" in doc:
                     if doc["cod"] != 200:
-                        raise IOError("Cannot talk to OWM API, check API key.")
+                        raise IOError(
+                            "Cannot interact with OWM API, check API key is valid and has not maxed out the allowed requests. If it is a new key, wait at least a day before reporting an issue."
+                        )
                 # parse out values from daily
                 if "daily" in doc:
                     parsed_data_total = []
@@ -233,7 +235,9 @@ class OWMClient:  # pylint: disable=invalid-name
                 )
                 if "cod" in doc:
                     if doc["cod"] != 200:
-                        raise IOError("Cannot talk to OWM API, check API key.")
+                        raise IOError(
+                            "Cannot interact with OWM API, check API key is valid and has not maxed out the allowed requests. If it is a new key, wait at least a day before reporting an issue."
+                        )
                 # parse out values for current and rain/snow from daily[0].
                 if "current" in doc and "daily" in doc:
                     parsed_data = {}
