@@ -21,6 +21,7 @@ Also, check out the [blueprints we provide](https://github.com/jeroenterheerdt/H
 ### Example 1: one valve, once per week irrigation if duration < 0 or if the bucket < - 25 mm:
 
 This example automation runs daily and checks `sensor.smart_irrigation_[zone_name]`. It checks if the `buckets` is `< -25mm (~1")` or if's a monday and duration is above `0`. This follows the expert recommendation mentioned above.
+
 [yaml](https://github.com/jeroenterheerdt/HAsmartirrigation/blob/master/automations/1_one_valve_once_per_week.yaml)
 
 ### Example 2: one valve, potentially daily irrigation
@@ -58,6 +59,8 @@ condition:
 This example handles multiple taps for a six-zone system controlled by [ESPHome](https://esphome.io/components/sprinkler.html). This is the automation the creator of this integration uses themselves (ignoring the expert advice above...).
 
 [yaml](https://github.com/jeroenterheerdt/HAsmartirrigation/blob/master/automations/5_multi_tap.yaml)
+
+
 > Main page: [Usage](usage.md)<br/>
 > Previous: [Events](usage-events.md)<br/>
 > Next: [Troubleshooting](usage-troubleshooting.md)
