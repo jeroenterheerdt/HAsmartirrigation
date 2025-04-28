@@ -1,0 +1,174 @@
+alias: Smart Irrigation
+trigger:
+  - platform: event
+    event_type: smart_irrigation_start_irrigation_all_zones
+  - platform: sun
+    event: sunrise
+    offset: "01:00:00"
+    enabled: true
+  - platform: time
+    at: "00:00:00"
+    id: midnight
+    enabled: true
+  - platform: time
+    at: "18:00:00"
+    enabled: false
+condition:
+  - condition: state
+    entity_id: input_boolean.irrigation_enabled
+    state: "on"
+action:
+  - if:
+      - condition: trigger
+        id:
+          - midnight
+    then:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.irrigation_automation_ran_today
+    else:
+      - if:
+          - condition: state
+            entity_id: input_boolean.irrigation_automation_ran_today
+            state: "off"
+        then:
+          - if:
+              - condition: template
+                value_template: >-
+                  {{states('input_number.number_of_days_since_last_irrigation')<states('input_number.irrigate_every')}}
+            then:
+              - service: input_number.increment
+                data: {}
+                target:
+                  entity_id: input_number.number_of_days_since_last_irrigation
+            else:
+              - service: input_number.set_value
+                target:
+                  entity_id: input_number.smart_irrigation_number_of_zones_enabled
+                data:
+                  value: 0
+              - repeat:
+                  for_each:
+                    - sensor: sensor.smart_irrigation_lawn_main_deck
+                      vid: 0
+                      zid: 1
+                    - sensor: sensor.smart_irrigation_lawn_tree
+                      vid: 1
+                      zid: 2
+                    - sensor: sensor.smart_irrigation_lawn_office
+                      vid: 2
+                      zid: 3
+                    - sensor: sensor.smart_irrigation_herbs
+                      vid: 3
+                      zid: 4
+                    - sensor: sensor.smart_irrigation_greenhouse
+                      vid: 4
+                      zid: 5
+                    - sensor: sensor.smart_irrigation_side_house
+                      vid: 5
+                      zid: 6
+                  sequence:
+                    - if:
+                        - condition: template
+                          value_template: >-
+                            {{state_attr(repeat.item.sensor,'State')=='disabled'
+                            or states(repeat.item.sensor)|int(default=0)==0}}
+                      then:
+                        - service: switch.turn_off
+                          target:
+                            entity_id: >-
+                              {{'switch.sprinklercontroller_enable_zone_'+repeat.item.zid|string()}}
+                          data: {}
+                      else:
+                        - service: switch.turn_on
+                          target:
+                            entity_id: >-
+                              {{'switch.sprinklercontroller_enable_zone_'+repeat.item.zid|string()}}
+                          data: {}
+                        - service: input_number.increment
+                          target:
+                            entity_id: >-
+                              input_number.smart_irrigation_number_of_zones_enabled
+                          data: {}
+                        - service: esphome.sprinklercontroller_set_valve_run_duration
+                          data:
+                            duration: "{{states(repeat.item.sensor)|int(default=0)}}"
+                            valve: "{{repeat.item.vid}}"
+              - if:
+                  - condition: template
+                    value_template: >-
+                      {{states('input_number.smart_irrigation_number_of_zones_enabled')|int(default=0)>0}}
+                then:
+                  - alias: >-
+                      Run zone 0 for a couple seconds to build up pressure
+                      before starting full cycle
+                    service: esphome.sprinklercontroller_start_single_valve
+                    metadata: {}
+                    data:
+                      valve: 0
+                      duration: 30
+                    enabled: true
+                  - delay:
+                      hours: 0
+                      minutes: 1
+                      seconds: 0
+                      milliseconds: 0
+                    enabled: true
+                  - service: switch.turn_on
+                    metadata: {}
+                    data: {}
+                    target:
+                      entity_id: switch.sprinklercontroller_sprinklers_auto_advance
+                    enabled: true
+                  - service: esphome.sprinklercontroller_start_full_cycle
+                    data: {}
+                    enabled: true
+                  - service: notify.mobile_app_xyz
+                    data:
+                      message: Irrigation started!
+                      title: Smart Irrigation
+                  - repeat:
+                      for_each:
+                        - sensor: sensor.smart_irrigation_lawn_main_deck
+                          vid: 0
+                          zid: 1
+                        - sensor: sensor.smart_irrigation_lawn_tree
+                          vid: 1
+                          zid: 2
+                        - sensor: sensor.smart_irrigation_lawn_office
+                          vid: 2
+                          zid: 3
+                        - sensor: sensor.smart_irrigation_herbs
+                          vid: 3
+                          zid: 4
+                        - sensor: sensor.smart_irrigation_greenhouse
+                          vid: 4
+                          zid: 5
+                        - sensor: sensor.smart_irrigation_side_house
+                          vid: 5
+                          zid: 6
+                      sequence:
+                        - if:
+                            - condition: template
+                              value_template: >-
+                                {{states('switch.sprinklercontroller_enable_zone_'+repeat.item.zid|string()
+                                == 'on')}}
+                          then:
+                            - service: smart_irrigation.reset_bucket
+                              target:
+                                entity_id: "{{repeat.item.sensor}}"
+                              data: {}
+                  - service: smart_irrigation.reset_all_buckets
+                    data: {}
+                    enabled: false
+                  - service: input_number.set_value
+                    data:
+                      value: 0
+                    target:
+                      entity_id: input_number.number_of_days_since_last_irrigation
+          - service: input_boolean.turn_on
+            data: {}
+            target:
+              entity_id: input_boolean.irrigation_automation_ran_today
+mode: single
