@@ -4,6 +4,7 @@ import datetime
 from datetime import timedelta
 import logging
 import statistics
+import re
 
 from homeassistant.components.sensor import DOMAIN as PLATFORM
 from homeassistant.config_entries import ConfigEntry
@@ -1804,51 +1805,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         elif const.ATTR_UPDATE_ALL in data:
             _LOGGER.info("Updating all zones")
             await self._async_update_all()
-        elif const.ATTR_SET_MULTIPLIER in data:
-            # set a multiplier to a new vlue
-            new_multiplier_value = 0
-            if const.ATTR_NEW_MULTIPLIER_VALUE in data:
-                new_multiplier_value = data[const.ATTR_NEW_MULTIPLIER_VALUE]
-            res = self.store.get_zone(zone_id)
-            if not res:
-                return
-            data[const.ZONE_MULTIPLIER] = new_multiplier_value
-            data.pop(const.ATTR_SET_MULTIPLIER)
-            self.store.async_update_zone(zone_id, data)
-            async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
-        elif const.ATTR_SET_STATE in data:
-            new_state_value = "disabled"
-            if const.ATTR_NEW_STATE_VALUE in data:
-                new_state_value = data[const.ATTR_NEW_STATE_VALUE]
-            res = self.store.get_zone(zone_id)
-            if not res:
-                return
-            if not new_state_value in const.ZONE_STATES:
-                return
-            data[const.ZONE_STATE] = new_state_value
-            data.pop(const.ATTR_SET_STATE)
-            data.pop(const.ATTR_NEW_STATE_VALUE)
-            self.store.async_update_zone(zone_id, data)
-            async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
-        elif const.ATTR_SET_BUCKET in data:
-            # set a bucket to a new value
-            new_bucket_value = 0
-            if const.ATTR_NEW_BUCKET_VALUE in data:
-                new_bucket_value = data[const.ATTR_NEW_BUCKET_VALUE]
-            res = self.store.get_zone(zone_id)
-            if not res:
-                return
-            # apply max bucket setting
-            if (
-                const.ZONE_MAXIMUM_BUCKET in res
-                and new_bucket_value > res[const.ZONE_MAXIMUM_BUCKET]
-            ):
-                new_bucket_value = res[const.ZONE_MAXIMUM_BUCKET]
-            data[const.ZONE_BUCKET] = new_bucket_value
-            data.pop(const.ATTR_SET_BUCKET)
-
-            self.store.async_update_zone(zone_id, data)
-            async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
         elif const.ATTR_RESET_ALL_BUCKETS in data:
             # reset all buckets
             _LOGGER.info("Resetting all buckets")
@@ -2081,33 +2037,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         _LOGGER.info("Reset all buckets service called")
         await self._async_set_all_buckets(0)
 
-    async def handle_set_bucket(self, call):
-        """Reset a specific zone bucket to new value."""
-        if (
-            const.SERVICE_ENTITY_ID in call.data
-            and const.ATTR_NEW_BUCKET_VALUE in call.data
-        ):
-            new_value = call.data[const.ATTR_NEW_BUCKET_VALUE]
-            eid = call.data[const.SERVICE_ENTITY_ID]
-            if not isinstance(eid, list):
-                eid = [call.data[const.SERVICE_ENTITY_ID]]
-            for entity in eid:
-                _LOGGER.info(
-                    "Set bucket service called for zone {}, new value: {}.".format(
-                        entity, new_value
-                    )
-                )
-                # find entity zone id and call calculate on the zone
-                state = self.hass.states.get(entity)
-                if state:
-                    # find zone_id for zone with name
-                    zone_id = state.attributes.get(const.ZONE_ID)
-                    if zone_id is not None:
-                        data = {}
-                        data[const.ATTR_SET_BUCKET] = {}
-                        data[const.ATTR_NEW_BUCKET_VALUE] = new_value
-                        await self.async_update_zone_config(zone_id=zone_id, data=data)
-
     async def handle_set_all_buckets(self, call):
         """Reset all buckets to new value."""
         if const.ATTR_NEW_BUCKET_VALUE in call.data:
@@ -2117,59 +2046,70 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             )
             await self._async_set_all_buckets(new_value)
 
-    async def handle_set_multiplier(self, call):
-        """Reset a specific zone multiplier to new value."""
-        if (
-            const.SERVICE_ENTITY_ID in call.data
-            and const.ATTR_NEW_MULTIPLIER_VALUE in call.data
-        ):
-            new_value = call.data[const.ATTR_NEW_MULTIPLIER_VALUE]
-            eid = call.data[const.SERVICE_ENTITY_ID]
-            if not isinstance(eid, list):
-                eid = [call.data[const.SERVICE_ENTITY_ID]]
-            for entity in eid:
-                _LOGGER.info(
-                    "Set multiplier service called for zone {}, new value: {}.".format(
-                        entity, new_value
-                    )
-                )
-                # find entity zone id and call calculate on the zone
-                state = self.hass.states.get(entity)
-                if state:
-                    # find zone_id for zone with name
-                    zone_id = state.attributes.get(const.ZONE_ID)
-                    if zone_id is not None:
-                        data = {}
-                        data[const.ATTR_SET_MULTIPLIER] = {}
-                        data[const.ATTR_NEW_MULTIPLIER_VALUE] = new_value
-                        await self.async_update_zone_config(zone_id=zone_id, data=data)
-
-    async def handle_set_state(self, call):
+    async def handle_set_zone(self, call):
         """Reset a specific zone state to new value."""
-        if (
-            const.SERVICE_ENTITY_ID in call.data
-            and const.ATTR_NEW_STATE_VALUE in call.data
-        ):
-            new_value = call.data[const.ATTR_NEW_STATE_VALUE]
-            eid = call.data[const.SERVICE_ENTITY_ID]
-            if not isinstance(eid, list):
-                eid = [call.data[const.SERVICE_ENTITY_ID]]
-            for entity in eid:
-                _LOGGER.info(
-                    "Set state service called for zone {}, new value: {}.".format(
-                        entity, new_value
-                    )
+        if not const.SERVICE_ENTITY_ID in call.data:
+            return
+
+        eid = call.data[const.SERVICE_ENTITY_ID]
+        if not isinstance(eid, list):
+            eid = [call.data[const.SERVICE_ENTITY_ID]]
+
+        data = call.data.copy()
+        data.pop(const.SERVICE_ENTITY_ID)
+
+        for entity in eid:
+            _LOGGER.info(
+                "Set zone data service called with zone {}.".format(
+                    entity
                 )
-                # find entity zone id and call calculate on the zone
-                state = self.hass.states.get(entity)
-                if state:
-                    # find zone_id for zone with name
-                    zone_id = state.attributes.get(const.ZONE_ID)
-                    if zone_id is not None:
-                        data = {}
-                        data[const.ATTR_SET_STATE] = {}
-                        data[const.ATTR_NEW_STATE_VALUE] = new_value
-                        await self.async_update_zone_config(zone_id=zone_id, data=data)
+            )
+
+            # find entity zone id and call calculate on the zone
+            state = self.hass.states.get(entity)
+            if not state:
+                raise Exception("No state found for entity {}.".format(entity))
+
+            # find zone_id for zone with name
+            zone_id = state.attributes.get(const.ZONE_ID)
+            if zone_id is None:
+                raise Exception("No zone_id found in state attributes.")
+
+            zone = self.store.get_zone(zone_id)
+            zone_data = {}
+            count = 0
+            for v in data:
+                if (not v in const.LIST_SET_ZONE_ALLOWED_ARGS
+                   and v != const.SERVICE_ENTITY_ID):
+                    raise Exception("Argument ({}) is not allowed".format(v))
+
+                if (v == const.ATTR_NEW_DURATION_VALUE
+                    and zone.get(const.ZONE_STATE) != const.ZONE_STATE_MANUAL):
+                    raise Exception("Can only set duration if zone state is set to manual.")
+                if (v == const.ATTR_NEW_BUCKET_VALUE
+                    and data[v] > zone.get(const.ZONE_MAXIMUM_BUCKET)):
+                    raise Exception("Bucket size is above maximmum bucket allowed value.")
+                if (v == const.ATTR_NEW_STATE_VALUE
+                    and data[v] in const.ZONE_STATE):
+                    raise Exception("Invalid value ({}) for zone state.".format(data[v]))
+
+                m = re.match("^new_(.+)_value$", v)
+                if m:
+                    zone_data[m.group(1)] = data[v]
+                    _LOGGER.info("Setting value for {}.".format(m.group(1)))
+                    count += 1
+
+            if count == 0:
+                raise Exception("No valid parameter provided")
+
+            if count > 0:
+                self.store.async_update_zone(zone_id, zone_data)
+                async_dispatcher_send(
+                    self.hass,
+                    const.DOMAIN + "_config_updated",
+                    zone_id,
+                )
+
 
     async def handle_set_all_multipliers(self, call):
         """Reset all multipliers to new value."""
@@ -2219,7 +2159,7 @@ def register_services(hass: HomeAssistant):
     )
 
     hass.services.async_register(
-        const.DOMAIN, const.SERVICE_SET_BUCKET, coordinator.handle_set_bucket
+        const.DOMAIN, const.SERVICE_SET_BUCKET, coordinator.handle_set_zone
     )
 
     hass.services.async_register(
@@ -2239,9 +2179,9 @@ def register_services(hass: HomeAssistant):
     )
 
     hass.services.async_register(
-        const.DOMAIN, const.SERVICE_SET_MULTIPLIER, coordinator.handle_set_multiplier
+        const.DOMAIN, const.SERVICE_SET_MULTIPLIER, coordinator.handle_set_zone
     )
 
     hass.services.async_register(
-        const.DOMAIN, const.SERVICE_SET_STATE, coordinator.handle_set_state
+        const.DOMAIN, const.SERVICE_SET_ZONE, coordinator.handle_set_zone
     )

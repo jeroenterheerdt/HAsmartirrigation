@@ -44,12 +44,28 @@ set_multiplier:
       required: true
       example: 1.0
       default: 1.0
-set_state:
+set_zone:
   target:
     entity:
       domain: sensor
   fields:
+    new_bucket_value:
+      required: false
+      example: -10
+      default: 0
+    new_multiplier_value:
+      required: false
+      example: 1.0
+      default: 1.0
+    new_duration_value:
+      required: false
+      example: 10
+      default: 0
     new_state_value:
-      required: true
+      required: false
       example: "automatic"
       default: "automatic"
+    new_throughput_value:
+      required: false
+      example: 50
+      default: 50

@@ -95,13 +95,22 @@ ATTR_SET_BUCKET = "set_bucket"
 ATTR_NEW_BUCKET_VALUE = "new_bucket_value"
 ATTR_SET_MULTIPLIER = "set_multiplier"
 ATTR_NEW_MULTIPLIER_VALUE = "new_multiplier_value"
+ATTR_NEW_THROUGHPUT_VALUE = "new_throughput_value"
 ATTR_UPDATE = "update"
 ATTR_UPDATE_ALL = "update_all"
 ATTR_OVERRIDE_CACHE = "override_cache"
 ATTR_RESET_ALL_BUCKETS = "reset_all_buckets"
 ATTR_CLEAR_ALL_WEATHERDATA = "clear_all_weatherdata"
-ATTR_SET_STATE = "set_state"
 ATTR_NEW_STATE_VALUE = "new_state_value"
+ATTR_NEW_DURATION_VALUE = "new_duration_value"
+
+LIST_SET_ZONE_ALLOWED_ARGS = [
+    ATTR_NEW_BUCKET_VALUE,
+    ATTR_NEW_MULTIPLIER_VALUE,
+    ATTR_NEW_DURATION_VALUE,
+    ATTR_NEW_STATE_VALUE,
+    ATTR_NEW_THROUGHPUT_VALUE
+]
 
 ZONE_ID = "id"
 ZONE_NAME = "name"
@@ -119,6 +128,7 @@ ZONE_OLD_BUCKET = "old_bucket"
 ZONE_DELTA = "delta"
 ZONE_EXPLANATION = "explanation"
 ZONE_MULTIPLIER = "multiplier"
+ZONE_THROUGHPUT = "throughput"
 ZONE_MAPPING = "mapping"
 ZONE_LEAD_TIME = "lead_time"
 ZONE_MAXIMUM_DURATION = "maximum_duration"
@@ -261,6 +271,7 @@ SERVICE_SET_BUCKET = "set_bucket"
 SERVICE_SET_ALL_BUCKETS = "set_all_buckets"
 SERVICE_SET_MULTIPLIER = "set_multiplier"
 SERVICE_SET_ALL_MULTIPLIERS = "set_all_multipliers"
-SERVICE_SET_STATE = "set_state"
+SERVICE_SET_ZONE = "set_zone"
 SERVICE_ENTITY_ID = "entity_id"
 SERVICE_CLEAR_WEATHERDATA = "clear_all_weather_data"
+
