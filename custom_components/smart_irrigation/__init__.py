@@ -1267,14 +1267,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 # occurs at saturation (maximum_bucket), but is reduced below that point.
                 # if maximum_bucket is not set, ignore this relationship and just
                 # drain at a constant rate.
-                if maximum_bucket is None:
-                    drainage = drainage_rate * hour_multiplier
-                else:
-                    # gamma is set by uniformity of soil particle size, but 2 is a reasonable approximation.
+                drainage = drainage_rate * hour_multiplier
+                if maximum_bucket is not None:
+                    # gamma is set by uniformity of soil particle size,
+                    # but 2 is a reasonable approximation.
                     gamma = 2
                     rel_surplus = max(0, newbucket) / maximum_bucket
-                    drainage = drainage_rate * hour_multiplier * \
-                        (rel_surplus ** ((2 + 3 * gamma) / gamma))
+                    drainage *= rel_surplus ** ((2 + 3 * gamma) / gamma)
                 _LOGGER.debug(f"[calculate-module]: drainage: {drainage}")
                 newbucket = max(0, newbucket - drainage)
             _LOGGER.debug(f"[calculate-module]: newbucket: {newbucket}")
