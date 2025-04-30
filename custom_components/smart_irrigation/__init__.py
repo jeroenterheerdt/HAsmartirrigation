@@ -1248,9 +1248,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     const.UNIT_INCH, const.UNIT_MM, drainage_rate
                 )
             _LOGGER.debug(f"[calculate-module]: drainage_rate: {drainage_rate}")
-            newbucket = (
-                bucket + (delta * hour_multiplier) - (drainage_rate * hour_multiplier)
-            )
+            newbucket = bucket + (delta * hour_multiplier)
+            # drainage only applies above field capacity (bucket > 0)
+            if newbucket > 0:
+                newbucket = max(0, newbucket - (drainage_rate * hour_multiplier))
             _LOGGER.debug(f"[calculate-module]: newbucket: {newbucket}")
             # if maximum bucket configured, limit bucket with that.
             if (
