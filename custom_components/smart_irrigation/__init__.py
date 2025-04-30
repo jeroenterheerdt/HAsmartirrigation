@@ -1259,8 +1259,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 drainage_rate = convert_between(
                     const.UNIT_INCH, const.UNIT_MM, drainage_rate
                 )
-            _LOGGER.debug(f"[calculate-module]: drainage_rate: {drainage_rate}")
-            newbucket = bucket + (delta * hour_multiplier)
+            _LOGGER.debug(
+                f"[calculate-module]: drainage_rate: {drainage_rate}")
             # drainage only applies above field capacity (bucket > 0)
             if newbucket > 0:
                 # drainage rate is related to water level, such that full drainage_rate
