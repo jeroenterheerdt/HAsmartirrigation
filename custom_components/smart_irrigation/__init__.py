@@ -1272,8 +1272,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     # gamma is set by uniformity of soil particle size,
                     # but 2 is a reasonable approximation.
                     gamma = 2
-                    rel_surplus = max(0, newbucket) / maximum_bucket
-                    drainage *= rel_surplus ** ((2 + 3 * gamma) / gamma)
+                    drainage *= (newbucket / maximum_bucket) ** ((2 + 3 * gamma) / gamma)
                 _LOGGER.debug(f"[calculate-module]: drainage: {drainage}")
                 newbucket = max(0, newbucket - drainage)
             _LOGGER.debug(f"[calculate-module]: newbucket: {newbucket}")
