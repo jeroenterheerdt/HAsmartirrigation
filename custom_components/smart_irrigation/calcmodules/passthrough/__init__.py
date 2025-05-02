@@ -20,8 +20,15 @@ class Passthrough(SmartIrrigationCalculationModule):
         self._hass = hass
 
     def calculate(self, et_data=None):
-        if et_data:
-            return et_data
+        # Fix: Check specifically for None, as 0.0 is valid data but evaluates to False
+        if et_data is not None:
+            # Ensure the value is a float before returning
+            try:
+                return float(et_data)
+            except (ValueError, TypeError):
+                 _LOGGER.error(f"Invalid non-numeric Evapotranspiration data received by Passthrough module: {et_data}")
+                 # Return 0 if conversion fails, consistent with the original else block's return
+                 return 0
         else:
-            _LOGGER.error("No Evapotranspiration data specified for Passthrough module")
+            _LOGGER.error("No Evapotranspiration data specified (et_data is None) for Passthrough module")
             return 0
