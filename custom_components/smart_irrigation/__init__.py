@@ -329,6 +329,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             async_dispatcher_send(self.hass, const.DOMAIN + "_register_entity", zone)
 
     async def async_update_config(self, data):  # noqa: D102
+        _LOGGER.debug(f"[async_update_config]: config changed: {data}")
         # handle auto calc changes
         await self.set_up_auto_calc_time(data)
         # handle auto update changes, includings updating OWMClient cache settings
@@ -386,6 +387,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         # WIP v2024.6.X: move to subscriptions
         # remove all existing sensor subscriptions
+        _LOGGER.debug("[update_subscriptions]: removing all sensor subscriptions")
         for s in self._sensor_subscriptions:
             try:
                 s()
@@ -394,6 +396,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         if self._sensors_to_subscribe_to is not None:
             for s in self._sensors_to_subscribe_to:
+                _LOGGER.debug(f"[update_subscriptions]: subscribing to {s}")
                 self._sensor_subscriptions.append(
                     async_track_state_change_event(
                         self.hass,
@@ -416,6 +419,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             mapping = self.store.get_mapping(mapping_id)
             if sensor_in_mapping:
                 for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
+                    _LOGGER.debug(
+                        f"[get_sensors_to_subscribe_to]: {key} {the_map}"
+                    )
                     if not isinstance(the_map, str):
                         if the_map.get(
                             const.MAPPING_CONF_SOURCE
@@ -430,6 +436,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 sensors_to_subscribe_to.append(
                                     the_map.get(const.MAPPING_CONF_SENSOR)
                                 )
+                            else:
+                                _LOGGER.debug(
+                                    "[get_sensors_to_subscribe_to]: already added"
+                                )
+                        else:
+                            _LOGGER.debug(
+                                "[get_sensors_to_subscribe_to]: not mapped to a sensor"
+                            )
+                    else:
+                        _LOGGER.debug("[get_sensors_to_subscribe_to]: the_map is a str, skipping")
+            else:
+                _LOGGER.debug("[get_sensors_to_subscribe_to]: sensor not in mapping")
 
         return sensors_to_subscribe_to
 
@@ -438,6 +456,21 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self, event: Event[EventStateChangedData]
     ) -> None:  # old signature: entity, old_state, new_state):
         """Callback fired when a sensor state has changed."""
+        # old_state_obj = event.data["old_state"]
+        new_state_obj = event.data["new_state"]
+        entity = event.data["entity_id"]
+
+        # ignore states that don't have an actual value
+        if new_state_obj.state in [None, STATE_UNKNOWN, STATE_UNAVAILABLE]:
+            _LOGGER.debug(
+                f"[async_sensor_state_changed]: new state for {entity} is {new_state_obj.state}, ignoring."
+            )
+            return
+        else:
+            _LOGGER.debug(
+                f"[async_sensor_state_changed]: new state for {entity} is {new_state_obj.state}"
+            )
+
         # check if continuous updates are enabled, if not, skip this and log a debug message
         the_config = self.store.async_get_config()
         if const.CONF_CONTINUOUS_UPDATES in the_config:
@@ -446,16 +479,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "[async_sensor_state_changed]: continuous updates are disabled, skipping."
                 )
                 return
-        old_state_obj = event.data["old_state"]
-        new_state_obj = event.data["new_state"]
-        # handle the sensor update by updating the mapping data
-        entity = event.data["entity_id"]
-        if new_state_obj.state in [None, STATE_UNKNOWN, STATE_UNAVAILABLE]:
-            _LOGGER.debug(
-                f"async_sensor_state_changed: new state for {entity} is {new_state_obj.state}, ignoring."
-            )
-            # return so we are ignoring these values
-            return
+
         # get the mapping that uses this sensor
         mappings = self.store.get_mappings()
         for mapping in mappings:
@@ -513,7 +537,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 mapping.get(const.MAPPING_ID), changes
                             )
                             _LOGGER.debug(
-                                f"async_sensor_state_changed: updated sensor group {mapping.get(const.MAPPING_ID)} {key}. New value: {new_state_obj.state}"
+                                f"[async_sensor_state_changed]: updated sensor group {mapping.get(const.MAPPING_ID)} {key}."
                             )
             await self.async_continuous_update_for_mapping(
                 mapping.get(const.MAPPING_ID)
@@ -548,7 +572,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                     else:
                                         # module is PyETO. Check the config for forecast days == 0
                                         _LOGGER.debug(
-                                            f"[async_continuous_update_for_mapping]: module is PyETO, checking config."
+                                            "[async_continuous_update_for_mapping]: module is PyETO, checking config."
                                         )
                                         if mod.get(const.MODULE_CONFIG):
                                             _LOGGER.debug(
@@ -772,15 +796,20 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 static_in_mapping,
             ) = self.check_mapping_sources(mapping_id=mapping_id)
             the_config = self.store.async_get_config()
-            if the_config.get(const.CONF_CONTINUOUS_UPDATES) and not owm_in_mapping:
-                # if continuous updates are enabled, we do not need to update the mappings here for pure sensor mappings
-                _LOGGER.debug(
-                    f"Continuous updates are enabled, skipping update for sensor group {mapping_id} because it is not dependent on weather service and should already be included in the continuous updates."
-                )
-                continue
-            _LOGGER.debug(
-                f"Continuous updates are enabled, but updating sensor group {mapping_id} as part of scheduled updates because it is dependent on weather service and therefore is not included in continuous updates."
-            )
+            if the_config.get(const.CONF_CONTINUOUS_UPDATES):
+                if not owm_in_mapping:
+                    # if continuous updates are enabled, we do not need to update the mappings here for pure sensor mappings
+                    _LOGGER.debug(
+                        f"Continuous updates are enabled, skipping update for sensor group {mapping_id} because it is not dependent on weather service and should already be included in the continuous updates."
+                    )
+                    continue
+                else:
+                    _LOGGER.debug(
+                        f"Continuous updates are enabled, but updating sensor group {mapping_id} as part of scheduled updates because it is dependent on weather service and therefore is not included in continuous updates."
+                    )
+            else:
+                _LOGGER.debug(f"Updating sensor group {mapping_id}")
+
             mapping = self.store.get_mapping(mapping_id)
             weatherdata = None
             if self.use_weather_service and owm_in_mapping:
@@ -833,7 +862,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         f"[async_update_all]: sensor group is unexpected type: {mapping_data}"
                     )
                 _LOGGER.debug(
-                    "async_update_all for mapping {} new mapping_data: {}".format(
+                    "[async_update_all]: mapping {} new weatherdata: {}".format(
                         mapping_id, weatherdata
                     )
                 )
@@ -1585,6 +1614,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def async_update_mapping_config(
         self, mapping_id: int = None, data: dict = {}
     ):
+        _LOGGER.debug(f"[async_update_mapping_config]: update for mapping {mapping_id}, data: {data}")
         if mapping_id is not None:
             mapping_id = int(mapping_id)
         if const.ATTR_REMOVE in data:
@@ -1699,6 +1729,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         return static_values
 
     async def async_update_zone_config(self, zone_id: int = None, data: dict = {}):
+        _LOGGER.debug(f"[async_update_zone_config]: updating zone {zone_id}")
         if zone_id is not None:
             zone_id = int(zone_id)
         if const.ATTR_REMOVE in data:
