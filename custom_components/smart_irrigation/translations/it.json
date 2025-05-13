@@ -142,6 +142,20 @@
         "new_multiplier_value": {
           "name": "Nuovo valore di moltiplicazione",
           "description": "nuovo valore di moltiplicazione"
+          }
+      }
+    },
+    "set_state": {
+      "name": "Impostare lo stato di una zona",
+      "description": "Impostare lo stato di una zona su un valore specifico",
+      "fields": {
+        "entity": {
+          "name": "Entità",
+          "description": "Zona per impostare lo stato per"
+        },
+        "new_state_value": {
+          "name": "Valore del nuovo stato",
+          "description": "Nuovo valore dello stato"
         }
       }
     }
