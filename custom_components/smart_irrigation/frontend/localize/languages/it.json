@@ -93,6 +93,13 @@
           "labels": {
             "automatic-clear-enabled": "Cancella automaticamente i dati meteorologici raccolti",
             "automatic-clear-time": "Cancella dati meteo a"
+            }
+        },
+        "continuousupdates": {
+          "header": "Aggiornamenti continui per i sensori (sperimentale)”,
+          "description": "Questa funzione sperimentale aggiorna continuamente i dati dei sensori. È utile per i gruppi di sensori che utilizzano fonti che forniscono dati continui, come le stazioni meteorologiche. Questa funzione non può essere utilizzata per i gruppi di sensori che si affidano almeno in parte ai servizi meteo, poiché il polling continuo delle API comporta dei costi. Tenere presente che si tratta di una funzione sperimentale e che potrebbe non funzionare come previsto. Utilizzatela a vostro rischio e pericolo”,
+          "etichette": {
+            "continuousupdates": "Abilita gli aggiornamenti continui”.
           }
         }
       },
@@ -133,7 +140,9 @@
             "sum": "Somma"
           },
           "errors": {
-            "cannot-delete-mapping-because-zones-use-it": "Non è possibile eliminare questo gruppo di sensori perché almeno una zona lo utilizza."
+            "cannot-delete-mapping-because-zones-use-it": "Non è possibile eliminare questo gruppo di sensori perché almeno una zona lo utilizza.",
+            "invalid_source": "Fonte non valida”,
+            "fonte_non_esiste": "La fonte non esiste. Inserire una fonte valida, ad esempio 'sensor.mysensor'”.
           },
           "items": {
             "dewpoint": "Punto di rugiada",
@@ -142,6 +151,7 @@
             "maximum temperature": "Temperatura massima",
             "minimum temperature": "Temperatura minima",
             "precipitation": "Precipitazione",
+            "precipitazioni attuali": "Precipitazioni attuali",
             "pressure": "Pressione",
             "solar radiation": "Irradiamento solare",
             "temperature": "Temperatura",
@@ -246,7 +256,8 @@
         "maximum-bucket": "Secchio massimo",
         "last_calculated": "Ultimo calcolo",
         "data-last-updated": "Ultimo aggiornamento dei dati",
-        "data-number-of-data-points": "Numero di dati"
+        "data-number-of-data-points": "Numero di dati",
+        "tasso_di_drenaggio": "tasso di drenaggio”
       },
       "no_items": "Non ci sono ancora zone definite.",
       "title": "Zone"
