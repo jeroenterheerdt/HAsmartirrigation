@@ -1237,18 +1237,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             _LOGGER.debug(f"[calculate-module]: hour_multiplier: {hour_multiplier}")
             data[const.ZONE_DELTA] = delta * hour_multiplier
             _LOGGER.debug(f"[calculate-module]: new delta: {delta * hour_multiplier}")
-            newbucket = bucket + (delta * hour_multiplier)
-
-            # if maximum bucket configured, limit bucket with that.
-            # any water above maximum is removed with runoff / bypass flow.
-            if (
-                zone.get(const.ZONE_MAXIMUM_BUCKET) is not None
-                and newbucket > maximum_bucket
-            ):
-                newbucket = float(maximum_bucket)
-                _LOGGER.debug(
-                    f"[calculate-module]: capped new bucket because of maximum bucket: {newbucket}"
-                )
             # take drainage rate into account
             drainage_rate = zone.get(const.ZONE_DRAINAGE_RATE, 0.0)
             if drainage_rate is None:
@@ -1259,23 +1247,21 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 drainage_rate = convert_between(
                     const.UNIT_INCH, const.UNIT_MM, drainage_rate
                 )
-            _LOGGER.debug(
-                f"[calculate-module]: drainage_rate: {drainage_rate}")
-            # drainage only applies above field capacity (bucket > 0)
-            if newbucket > 0:
-                # drainage rate is related to water level, such that full drainage_rate
-                # occurs at saturation (maximum_bucket), but is reduced below that point.
-                # if maximum_bucket is not set, ignore this relationship and just
-                # drain at a constant rate.
-                drainage = drainage_rate * hour_multiplier
-                if maximum_bucket is not None:
-                    # gamma is set by uniformity of soil particle size,
-                    # but 2 is a reasonable approximation.
-                    gamma = 2
-                    drainage *= (newbucket / maximum_bucket) ** ((2 + 3 * gamma) / gamma)
-                _LOGGER.debug(f"[calculate-module]: drainage: {drainage}")
-                newbucket = max(0, newbucket - drainage)
+            _LOGGER.debug(f"[calculate-module]: drainage_rate: {drainage_rate}")
+            newbucket = (
+                bucket + (delta * hour_multiplier) - (drainage_rate * hour_multiplier)
+            )
             _LOGGER.debug(f"[calculate-module]: newbucket: {newbucket}")
+            # if maximum bucket configured, limit bucket with that.
+            if (
+                zone.get(const.ZONE_MAXIMUM_BUCKET) is not None
+                and newbucket > maximum_bucket
+            ):
+                newbucket = float(maximum_bucket)
+                _LOGGER.debug(
+                    f"[calculate-module]: capped new bucket because of maximum bucket: {newbucket}"
+                )
+
         else:
             _LOGGER.error(
                 "Unknown module for zone {}".format(zone.get(const.ZONE_NAME))
