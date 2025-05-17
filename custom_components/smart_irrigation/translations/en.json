@@ -158,6 +158,50 @@
           "description": "New value of the state"
         }
       }
+    },
+    "set_duration": {
+      "name": "Set the duration of a zone",
+      "description": "Set the duration of a zone to a specific value, when zone is in manual mode.",
+      "fields": {
+        "entity": {
+          "name": "Entity",
+          "description": "Zone to set state for"
+        },
+        "new_duration_value": {
+          "name": "New duration value",
+          "description": "New value of the duration"
+        }
+      }
+    },
+    "set_zone": {
+      "name": "Set the values of a zone",
+      "description": "Set all configurable values of a zone",
+      "fields": {
+        "entity": {
+          "name": "Entity",
+          "description": "Zone to set configuration values"
+        },
+        "new_bucket_value": {
+          "name": "New bucket value",
+          "description": "New value for the bucket"
+        },
+        "new_multiplier_value": {
+          "name": "New multiplier value",
+          "description": "New value for the multiplier"
+        },
+        "new_duration_value": {
+          "name": "New duration value",
+          "description": "New value for the duration"
+        },
+        "new_state_value": {
+          "name": "New state value",
+          "description": "New value of the state"
+        },
+        "new_throughput_value": {
+          "name": "New throughput value",
+          "description": "New value for the throughput"
+        }
+      }
     }
   }
 }
