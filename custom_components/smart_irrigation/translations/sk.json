@@ -144,6 +144,20 @@
           "description": "novú hodnotu multiplikátora"
         }
       }
+    },
+    "set_state": {
+      "name": "Nastavenie stavu zóny",
+      "description": "Nastavenie stavu zóny na konkrétnu hodnotu",
+      "fields": {
+        "entity": {
+          "name": "Entita",
+          "description": "Zóna, pre ktorú sa má nastaviť stav"
+        },
+        "new_state_value": {
+          "name": "Nová hodnota stavu",
+          "description": "Nová hodnota stavu"
+        }
+      }
     }
   }
 }
