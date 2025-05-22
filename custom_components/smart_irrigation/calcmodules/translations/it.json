@@ -1,0 +1,13 @@
+{
+  "calcmodules": {
+    "pyeto": {
+      "description": "Calcola la durata in base al calcolo FAO56 dalla libreria PyETO"
+    },
+    "static": {
+      "description": "'Modulo fittizio' con una durata statica configurabile"
+    },
+    "passthrough": {
+      "description": "Modulo passthrough che restituisce il valore di un sensore di evapotraspirazione come delta"
+    }
+  }
+}
