@@ -96,10 +96,10 @@
             }
         },
         "continuousupdates": {
-          "header": "Aggiornamenti continui per i sensori (sperimentale)”,
-          "description": "Questa funzione sperimentale aggiorna continuamente i dati dei sensori. È utile per i gruppi di sensori che utilizzano fonti che forniscono dati continui, come le stazioni meteorologiche. Questa funzione non può essere utilizzata per i gruppi di sensori che si affidano almeno in parte ai servizi meteo, poiché il polling continuo delle API comporta dei costi. Tenere presente che si tratta di una funzione sperimentale e che potrebbe non funzionare come previsto. Utilizzatela a vostro rischio e pericolo”,
+          "header": "Aggiornamenti continui per i sensori (sperimentale)",
+          "description": "Questa funzione sperimentale aggiorna continuamente i dati dei sensori. È utile per i gruppi di sensori che utilizzano fonti che forniscono dati continui, come le stazioni meteorologiche. Questa funzione non può essere utilizzata per i gruppi di sensori che si affidano almeno in parte ai servizi meteo, poiché il polling continuo delle API comporta dei costi. Tenere presente che si tratta di una funzione sperimentale e che potrebbe non funzionare come previsto. Utilizzatela a vostro rischio e pericolo.",
           "etichette": {
-            "continuousupdates": "Abilita gli aggiornamenti continui”.
+            "continuousupdates": "Abilita gli aggiornamenti continui"
           }
         }
       },
@@ -141,8 +141,8 @@
           },
           "errors": {
             "cannot-delete-mapping-because-zones-use-it": "Non è possibile eliminare questo gruppo di sensori perché almeno una zona lo utilizza.",
-            "invalid_source": "Fonte non valida”,
-            "fonte_non_esiste": "La fonte non esiste. Inserire una fonte valida, ad esempio 'sensor.mysensor'”.
+            "invalid_source": "Fonte non valida",
+            "fonte_non_esiste": "La fonte non esiste. Inserire una fonte valida, ad esempio 'sensor.mysensor'."
           },
           "items": {
             "dewpoint": "Punto di rugiada",
@@ -257,7 +257,7 @@
         "last_calculated": "Ultimo calcolo",
         "data-last-updated": "Ultimo aggiornamento dei dati",
         "data-number-of-data-points": "Numero di dati",
-        "tasso_di_drenaggio": "tasso di drenaggio”
+        "tasso_di_drenaggio": "tasso di drenaggio"
       },
       "no_items": "Non ci sono ancora zone definite.",
       "title": "Zone"
