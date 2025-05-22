@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2025.5.0beta0"
+VERSION = "v2025.5.1"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -109,7 +109,7 @@ LIST_SET_ZONE_ALLOWED_ARGS = [
     ATTR_NEW_MULTIPLIER_VALUE,
     ATTR_NEW_DURATION_VALUE,
     ATTR_NEW_STATE_VALUE,
-    ATTR_NEW_THROUGHPUT_VALUE
+    ATTR_NEW_THROUGHPUT_VALUE,
 ]
 
 ZONE_ID = "id"
@@ -274,4 +274,3 @@ SERVICE_SET_ALL_MULTIPLIERS = "set_all_multipliers"
 SERVICE_SET_ZONE = "set_zone"
 SERVICE_ENTITY_ID = "entity_id"
 SERVICE_CLEAR_WEATHERDATA = "clear_all_weather_data"
-
