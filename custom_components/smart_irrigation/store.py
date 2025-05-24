@@ -574,7 +574,10 @@ class SmartIrrigationStorage:
             ):
                 changes[ZONE_DURATION] = 0
             changes.pop("id", None)
-            new = self.zones[zone_id] = attr.evolve(old, **changes)
+            # Only keep changes that are valid attributes of the ZoneEntry
+            valid_fields = set(attr.fields_dict(type(old)).keys())
+            filtered_changes = {k: v for k, v in changes.items() if k in valid_fields}
+            new = self.zones[zone_id] = attr.evolve(old, **filtered_changes)
         else:
             new = old
         self.async_schedule_save()

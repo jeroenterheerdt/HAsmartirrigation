@@ -53,7 +53,13 @@
   "services": {
     "calculate_all_zones": {
       "name": "Calculate all zones",
-      "description": "Calculate all zones in automatic mode"
+      "description": "Calculate all zones in automatic mode",
+      "fields":{
+        "delete_weather_data": {
+          "name": "Delete weather data",
+          "description": "Delete weather data after calculation"
+        }
+      }
     },
     "calculate_zone": {
       "name": "Calculate zone",
@@ -62,6 +68,10 @@
         "entity": {
           "name": "Entity",
           "description": "Zone to calculate"
+        },
+        "delete_weather_data": {
+          "name": "Delete weather data",
+          "description": "Delete weather data for the zone after calculation"
         }
       }
     },
@@ -156,20 +166,6 @@
         "new_state_value": {
           "name": "New state value",
           "description": "New value of the state"
-        }
-      }
-    },
-    "set_duration": {
-      "name": "Set the duration of a zone",
-      "description": "Set the duration of a zone to a specific value, when zone is in manual mode.",
-      "fields": {
-        "entity": {
-          "name": "Entity",
-          "description": "Zone to set state for"
-        },
-        "new_duration_value": {
-          "name": "New duration value",
-          "description": "New value of the duration"
         }
       }
     },

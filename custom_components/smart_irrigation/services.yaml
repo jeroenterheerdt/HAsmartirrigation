@@ -1,8 +1,22 @@
 calculate_all_zones:
+  fields:
+    delete_weather_data:
+        required: false
+        example: false
+        default: true
+        selector:
+          boolean
 calculate_zone:
   target:
     entity:
       domain: sensor
+  fields:
+    delete_weather_data:
+        required: false
+        example: false
+        default: true
+        selector:
+          boolean
 update_all_zones:
 update_zone:
   target:

@@ -1,4 +1,4 @@
-export const VERSION = "v2025.5.1";
+export const VERSION = "v2025.5.2";
 export const REPO = "https://github.com/jeroenterheerdt/HASmartIrrigation;";
 export const ISSUES_URL = REPO + "/issues";
 
@@ -50,7 +50,8 @@ export const MAPPING_DATA = "data";
 export const MAPPING_CONF_AGGREGATE = "aggregate";
 export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT = "average";
 export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION = "maximum";
-export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_CURRENT_PRECIPITATION = "last";
+export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_CURRENT_PRECIPITATION =
+  "last";
 //removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
 //export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP = "maximum";
 //export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP = "minimum";

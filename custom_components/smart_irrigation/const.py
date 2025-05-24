@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2025.5.1"
+VERSION = "v2025.5.2"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -103,6 +103,7 @@ ATTR_RESET_ALL_BUCKETS = "reset_all_buckets"
 ATTR_CLEAR_ALL_WEATHERDATA = "clear_all_weatherdata"
 ATTR_NEW_STATE_VALUE = "new_state_value"
 ATTR_NEW_DURATION_VALUE = "new_duration_value"
+ATTR_DELETE_WEATHER_DATA = "delete_weather_data"
 
 LIST_SET_ZONE_ALLOWED_ARGS = [
     ATTR_NEW_BUCKET_VALUE,
