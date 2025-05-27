@@ -8,7 +8,7 @@ The below image shows a graphical representation of what this integration does.
 2. Sunshine, temperature, wind speed, place on earth and other factors influence the amount of moisture lost from the ground(`evapotranspiration`).
 3. The difference between `precipitation` and `evapotranspiration` is the `delta` or `nett precipitation`: negative values mean more moisture is lost than gets added by rain/snow, while positive values mean more moisture is added by rain/snow than what evaporates.
 4. At some point in the day (configurable) the `nett precipitation` is added/substracted from the `bucket,` which starts as empty. The bucket is calculated using this formula: `old_bucket + nett precipitation.
-5. If the bucket > 0, the `drainage rate` is taken into the account (if set) and subtracted from the bucket value
+5. If the bucket > 0, the `drainage rate` is taken into the account (if set) and subtracted from the bucket value. The actual drainage rate is determined dynamically by the fraction the bucket is of the maximum bucket value, following hydraulic conductivity method of [Brooks and Corey, Eq. 4-6](https://open.library.okstate.edu/rainorshine/chapter/1-8-models-for-soil-hydraulic-conductivity/)
 6. If the `bucket` is below zero, irrigation is required.
 7. Irrigation should be run for `sensor.smart_irrigation_[zone_name]`, which is 0 if `bucket >=0`. Afterwards, the `bucket` needs to be reset (using [`reset_bucket` service](services)). It's up to the user of the integration to build the automation for this final step. See [Example automation](example-automations) for automations that people have built.
 
