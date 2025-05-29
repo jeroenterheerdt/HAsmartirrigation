@@ -4,8 +4,7 @@ calculate_all_zones:
         required: false
         example: false
         default: true
-        selector:
-          boolean
+        selector: boolean
 calculate_zone:
   target:
     entity:
@@ -15,8 +14,7 @@ calculate_zone:
         required: false
         example: false
         default: true
-        selector:
-          boolean
+        selector: boolean
 update_all_zones:
 update_zone:
   target:
