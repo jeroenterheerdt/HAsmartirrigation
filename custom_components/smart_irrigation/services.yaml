@@ -5,7 +5,7 @@ calculate_all_zones:
         example: false
         default: true
         selector:
-          boolean: true
+          boolean: {}
 calculate_zone:
   target:
     entity:
@@ -16,7 +16,7 @@ calculate_zone:
         example: false
         default: true
         selector:
-          boolean: true
+          boolean: {}
 update_all_zones:
 update_zone:
   target:
