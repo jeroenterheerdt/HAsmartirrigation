@@ -63,8 +63,9 @@ async def async_setup_entry(
             drainage_rate=config["drainage_rate"],
         )
         if const.DOMAIN in hass.data:
-            hass.data[const.DOMAIN]["zones"][config["id"]] = sensor_entity
-            async_add_devices([sensor_entity])
+            if not check_zone_entity_in_hass_data(hass, entity_id):
+                hass.data[const.DOMAIN]["zones"][config["id"]] = sensor_entity
+                async_add_devices([sensor_entity])
 
     async_dispatcher_connect(
         hass, const.DOMAIN + "_register_entity", async_add_sensor_entity
@@ -72,6 +73,21 @@ async def async_setup_entry(
     async_dispatcher_send(hass, const.DOMAIN + "_platform_loaded")
 
     # register services if any here
+
+
+def check_zone_entity_in_hass_data(hass, entity_id: str) -> bool:
+    """Check if the entity_id is already in hass data."""
+    if (
+        hass
+        and const.DOMAIN in hass.data
+        and "zones" in hass.data[const.DOMAIN]
+        and entity_id
+        in [z.entity_id for z in hass.data[const.DOMAIN]["zones"].values()]
+    ):
+        # for z in self._hass.data[const.DOMAIN]["zones"].values():
+        #    if z.entity_id == entity_id:
+        return True
+    return False
 
 
 class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
@@ -94,9 +110,22 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
     ) -> None:
         """Initialize the sensor entity."""
         self._hass = hass
-        self.entity_id = generate_entity_id(
-            entity_id_format="sensor.{}", name=entity_id.split(".")[1], hass=hass
-        )
+        # check if entity_id is already in self._hass
+        # if (
+        #    hass
+        #    and const.DOMAIN in hass.data
+        #    and self.check_zone_entity_in_hass_data(entity_id)
+        # ):
+        #    _LOGGER.warning(
+        #        f"Entity {entity_id} already exists in hass data, skipping config."
+        #    )
+        # entity_id = generate_entity_id(
+        #    entity_id_format="sensor.{}", name=entity_id.split(".")[1], hass=hass
+        # )
+        #    self._name = name
+        #    return
+        # else:
+        self.entity_id = entity_id
         self._id = id
         self._name = name
         self._size = size
