@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2025.5.3"
+VERSION = "v2025.5.4"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -68,7 +68,7 @@ CONF_USE_WEATHER_SERVICE = "use_weather_service"
 CONF_DEFAULT_MAXIMUM_DURATION = (
     3600  # default maximum duration to one hour == 3600 seconds
 )
-CONF_DEFAULT_MAXIMUM_BUCKET = 50  # default maximum bucket of 50
+CONF_DEFAULT_MAXIMUM_BUCKET = 24  # mm default maximum bucket of 24mm
 CONF_DEFAULT_DRAINAGE_RATE = 50.8  # mm / hour (=2 inch per hour)
 CONF_DEFAULT_CONTINUOUS_UPDATES = False  # continuous updates are disabled by default
 CONF_CONTINUOUS_UPDATES = "continuousupdates"
