@@ -1252,6 +1252,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 _LOGGER.debug(
                     f"[calculate-module]: capped new bucket because of maximum bucket: {newbucket}"
                 )
+            bucket_plus_delta_capped = newbucket
+
             # take drainage rate into account
             drainage_rate = zone.get(const.ZONE_DRAINAGE_RATE, 0.0)
             if drainage_rate is None:
@@ -1263,7 +1265,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     const.UNIT_INCH, const.UNIT_MM, drainage_rate
                 )
             _LOGGER.debug(f"[calculate-module]: drainage_rate: {drainage_rate}")
+
             # drainage only applies above field capacity (bucket > 0)
+            drainage = 0
             if newbucket > 0:
                 # drainage rate is related to water level, such that full drainage_rate
                 # occurs at saturation (maximum_bucket), but is reduced below that point.
@@ -1277,8 +1281,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     drainage *= (newbucket / maximum_bucket) ** (
                         (2 + 3 * gamma) / gamma
                     )
-                _LOGGER.debug(f"[calculate-module]: drainage: {drainage}")
+                _LOGGER.debug(f"[calculate-module]: current_drainage: {drainage}")
                 newbucket = max(0, newbucket - drainage)
+
+            data[const.ZONE_CURRENT_DRAINAGE] = drainage
             _LOGGER.debug(f"[calculate-module]: newbucket: {newbucket}")
         else:
             _LOGGER.error(
@@ -1288,17 +1294,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         explanation = await localize(
             "module.calculation.explanation.module-returned-evapotranspiration-deficiency",
             self.hass.config.language,
-        ) + " {}. ".format(round(data[const.ZONE_DELTA], 1))
+        ) + " {:.2f}. ".format(data[const.ZONE_DELTA])
         explanation += await localize(
             "module.calculation.explanation.bucket-was", self.hass.config.language
-        ) + " {}".format(round(data[const.ZONE_OLD_BUCKET], 1))
+        ) + " {:.2f}".format(data[const.ZONE_OLD_BUCKET])
         explanation += (
             ".<br/>"
             + await localize(
                 "module.calculation.explanation.maximum-bucket-is",
                 self.hass.config.language,
             )
-            + " {}".format(round(float(maximum_bucket), 1))
+            + " {:.1f}".format(float(maximum_bucket))
         )
         explanation += (
             ".<br/>"
@@ -1306,31 +1312,104 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 "module.calculation.explanation.drainage-rate-is",
                 self.hass.config.language,
             )
-            + " {}".format(round(float(drainage_rate), 1))
+            + " {:.1f}.<br/>".format(float(drainage_rate))
         )
+
+        # Define some localized strings here for cleaner code below
+        hours_loc = await localize(
+            "module.calculation.explanation.hours",
+            self.hass.config.language)
+        drainage_loc = await localize(
+            "module.calculation.explanation.drainage",
+            self.hass.config.language)
+        drainage_rate_loc = await localize(
+            "module.calculation.explanation.drainage-rate",
+            self.hass.config.language)
+        delta_loc = await localize(
+            "module.calculation.explanation.delta",
+            self.hass.config.language)
+        old_bucket_loc = await localize(
+            "module.calculation.explanation.old-bucket-variable",
+            self.hass.config.language)
+        max_bucket_loc = await localize(
+            "module.calculation.explanation.max-bucket-variable",
+            self.hass.config.language)
+        
+        if bucket_plus_delta_capped <= 0:
+            explanation += (await localize(
+                "module.calculation.explanation.no-drainage",
+                self.hass.config.language)
+                + " [{}] + [{}] <= 0 ({:.2f}{:+.2f} = {:.2f})".format(
+                    old_bucket_loc,
+                    delta_loc,
+                    data[const.ZONE_OLD_BUCKET],
+                    data[const.ZONE_DELTA],
+                    bucket_plus_delta_capped
+                )
+            )
+        else:
+            explanation += (
+                await localize(
+                    "module.calculation.explanation.current-drainage-is",
+                    self.hass.config.language,
+                )
+            )
+            if maximum_bucket is None:
+                explanation += (
+                    " [{}] * {} = {:.1f} * {:.2f} = {:.2f}".format(
+                        drainage_rate_loc,
+                        hours_loc,
+                        drainage_rate,
+                        24 * hour_multiplier,
+                        drainage)
+                )
+            else:
+                explanation += (
+                    " [{}] * [{}] * (min([{}] + [{}], [{}]) / [{}])^4 = {:.1f} * {:.2f} * ({:.2f} / {:.1f})^4 = {:.2f}".format(
+                    drainage_rate_loc,
+                    hours_loc,
+                    old_bucket_loc,
+                    delta_loc,
+                    max_bucket_loc,
+                    max_bucket_loc,
+                    drainage_rate,
+                    24 * hour_multiplier,
+                    bucket_plus_delta_capped,
+                    maximum_bucket,
+                    drainage)
+                )
         explanation += (
-            "."
+            ".<br/>"
             + await localize(
                 "module.calculation.explanation.new-bucket-values-is",
                 self.hass.config.language,
             )
-            + " ["
         )
-        explanation += (
-            await localize(
-                "module.calculation.explanation.old-bucket-variable",
-                self.hass.config.language,
+
+        if maximum_bucket is not None:
+            explanation += (
+                " min([{}] + [{}], {}) - [{}] = min({:.2f}{:+.2f}, {:.1f}) - {:.2f} = {:.2f}.<br/>".format(
+                    old_bucket_loc,
+                    delta_loc,
+                    max_bucket_loc,
+                    drainage_loc,
+                    data[const.ZONE_OLD_BUCKET],
+                    data[const.ZONE_DELTA],
+                    maximum_bucket,
+                    drainage,
+                    newbucket)
             )
-            + "]+["
-        )
-        explanation += await localize(
-            "module.calculation.explanation.delta", self.hass.config.language
-        ) + "]={}+{}-{}={}.<br/>".format(
-            round(data[const.ZONE_OLD_BUCKET], 1),
-            round(data[const.ZONE_DELTA], 1),
-            round(drainage_rate, 1),
-            round(newbucket, 1),
-        )
+        else:
+            explanation += (
+                " [{}] + [{}] - [{}] = {:.2f} + {:.2f} - {:.2f} = {:.2f}.<br/>".format(
+                    old_bucket_loc,
+                    delta_loc,
+                    drainage_loc,
+                    data[const.ZONE_OLD_BUCKET],
+                    data[const.ZONE_DELTA],
+                    drainage,
+                    newbucket)
+            )
 
         if newbucket < 0:
             # calculate duration
@@ -1369,7 +1448,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # explanation += "<ol><li>Water budget is defined as abs([bucket])/max(ET)={}</li>".format(water_budget)
             # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
             explanation += (
-                "<li>"
+                "<ol><li>"
                 + await localize(
                     "module.calculation.explanation.precipitation-rate-defined-as",
                     self.hass.config.language,
@@ -1378,10 +1457,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 + await localize(
                     "common.attributes.throughput", self.hass.config.language
                 )
-                + "]*60/["
+                + "] * 60 / ["
                 + await localize("common.attributes.size", self.hass.config.language)
-                + "]={}*60/{}={}</li>".format(
-                    round(tput, 1), round(sz, 1), round(precipitation_rate, 1)
+                + "] = {:.1f} * 60 / {:.1f} = {:.1f}.</li>".format(
+                    tput, sz, precipitation_rate
                 )
             )
             # v1 only
@@ -1398,15 +1477,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 + await localize(
                     "module.calculation.explanation.bucket", self.hass.config.language
                 )
-                + "])/["
+                + "]) / ["
                 + await localize(
                     "module.calculation.explanation.precipitation-rate-variable",
                     self.hass.config.language,
                 )
-                + "]*3600={}/{}*3600={}</li>".format(
-                    abs(round(newbucket, 1)),
-                    round(precipitation_rate, 1),
-                    round(duration),
+                + "] * 3600 = {:.2f} / {:.1f} * 3600 = {:.0f}.</li>".format(
+                    abs(newbucket),
+                    precipitation_rate,
+                    duration,
                 )
             )
             duration = zone.get(const.ZONE_MULTIPLIER) * duration
@@ -1418,12 +1497,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
                 + " {}, ".format(zone.get(const.ZONE_MULTIPLIER))
             )
-            # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
             explanation += await localize(
                 "module.calculation.explanation.duration-after-multiplier-is",
                 self.hass.config.language,
-            ) + " {}</li>".format(round(duration))
-            # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
+            ) + " {}.</li>".format(round(duration))
 
             # get maximum duration if set and >=0 and override duration if it's higher than maximum duration
             explanation += (
@@ -1432,7 +1509,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "module.calculation.explanation.maximum-duration-is-applied",
                     self.hass.config.language,
                 )
-                + " {}, ".format(zone.get(const.ZONE_MAXIMUM_DURATION))
+                + " {:.0f}".format(zone.get(const.ZONE_MAXIMUM_DURATION))
             )
             if (
                 zone.get(const.ZONE_MAXIMUM_DURATION) is not None
@@ -1440,10 +1517,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 and duration > zone.get(const.ZONE_MAXIMUM_DURATION)
             ):
                 duration = zone.get(const.ZONE_MAXIMUM_DURATION)
-                explanation += await localize(
-                    "module.calculation.explanation.duration-after-maximum-duration-is",
-                    self.hass.config.language,
-                ) + " {}</li>".format(round(duration))
+                explanation += (
+                    ", "
+                    + await localize(
+                        "module.calculation.explanation.duration-after-maximum-duration-is",
+                        self.hass.config.language
+                    )
+                    + " {:.0f}".format(duration)
+                )
+            explanation += ".</li>"
+            
             # add the lead time but only if duration is > 0 at this point
             if duration > 0.0:
                 duration = round(zone.get(const.ZONE_LEAD_TIME) + duration)
@@ -1458,7 +1541,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 explanation += await localize(
                     "module.calculation.explanation.duration-after-lead-time-is",
                     self.hass.config.language,
-                ) + " {}</li></ol>".format(duration)
+                ) + " {}.</li></ol>".format(duration)
 
                 # _LOGGER.debug(f"[calculate-module]: explanation: {explanation}")
         else:
