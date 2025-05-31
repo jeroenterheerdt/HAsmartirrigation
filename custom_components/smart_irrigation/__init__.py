@@ -530,19 +530,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         mapping_data = mapping.get(const.MAPPING_DATA)
                     else:
                         mapping_data = []
-                    # val = convert_mapping_to_metric(
-                    #    val,
-                    #    key,
-                    #    the_map.get(const.MAPPING_CONF_UNIT),
-                    #    self.hass.config.units is METRIC_SYSTEM,
-                    # )
                     # conversion to metric
                     mapping_data.append(
                         {
                             key: convert_mapping_to_metric(
                                 float(the_new_state),
                                 key,
-                                mapping.get(const.MAPPING_CONF_UNIT),
+                                val.get(const.MAPPING_CONF_UNIT),
                                 self.hass.config.units is METRIC_SYSTEM,
                             ),
                             const.RETRIEVED_AT: timestamp,
