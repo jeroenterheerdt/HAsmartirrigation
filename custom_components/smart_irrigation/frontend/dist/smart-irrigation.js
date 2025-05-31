@@ -5892,7 +5892,6 @@
     min-width: 220px;
   }
 
-
   a,
   a:visited {
     color: var(--primary-color);
@@ -5941,9 +5940,7 @@
   ha-card > ha-card {
     margin: 10px;
   }
-
-`;
-  c`
+`;c`
   /* mwc-dialog (ha-dialog) styles */
   ha-dialog {
     --mdc-dialog-min-width: 400px;
@@ -5955,8 +5952,12 @@
   /* make dialog fullscreen on small screens */
   @media all and (max-width: 450px), all and (max-height: 500px) {
     ha-dialog {
-      --mdc-dialog-min-width: calc(100vw - env(safe-area-inset-right) - env(safe-area-inset-left));
-      --mdc-dialog-max-width: calc(100vw - env(safe-area-inset-right) - env(safe-area-inset-left));
+      --mdc-dialog-min-width: calc(
+        100vw - env(safe-area-inset-right) - env(safe-area-inset-left)
+      );
+      --mdc-dialog-max-width: calc(
+        100vw - env(safe-area-inset-right) - env(safe-area-inset-left)
+      );
       --mdc-dialog-min-height: 100%;
       --mdc-dialog-max-height: 100%;
       --vertial-align-dialog: flex-end;
@@ -6252,10 +6253,8 @@
                 this.saveData({ cleardatatime: e.target.value });
               }}
             />
-          </div>`),
-          (a = Y`<ha-card header="${Zi("panels.general.cards.automatic-clear.header", this.hass.language)}" >${a}</div></ha-card>`);
-        let i = Y`<ha-card
-        header="${Zi("panels.general.cards.continuousupdates.header", this.hass.language)}"
+          </div>`),a=Y`<ha-card header="${Zi("panels.general.cards.automatic-clear.header",this.hass.language)}" >${a}</div></ha-card>`;const i=Y`<ha-card
+        header="${Zi("panels.general.cards.continuousupdates.header",this.hass.language)}"
       >
         <div class="card-content">
           <svg
@@ -6280,7 +6279,7 @@
           <label for="continuousupdates"
             >${Zi("panels.general.cards.continuousupdates.labels.continuousupdates", this.hass.language)}:</label
           >
-<input
+          <input
             type="radio"
             id="continuousupdateson"
             name="continuousupdates"
@@ -6304,7 +6303,6 @@
           /><label for="continuousupdatesoff"
             >${Zi("common.labels.no", this.hass.language)}</label
           >
-
         </div>
       </ha-card> `;
         return Y`<ha-card
@@ -11394,9 +11392,11 @@
           header="${Zi("panels.help.cards.how-to-get-help.title", this.hass.language)}"
         >
           <div class="card-content">
-          ${Zi("panels.help.cards.how-to-get-help.first-read-the", this.hass.language)} <a href="https://github.com/jeroenterheerdt/HAsmartirrigation/wiki"
-              >${Zi("panels.help.cards.how-to-get-help.wiki", this.hass.language)}</a
-            >. ${Zi("panels.help.cards.how-to-get-help.if-you-still-need-help", this.hass.language)}
+            ${Zi("panels.help.cards.how-to-get-help.first-read-the",this.hass.language)}
+            <a href="https://github.com/jeroenterheerdt/HAsmartirrigation/wiki"
+              >${Zi("panels.help.cards.how-to-get-help.wiki",this.hass.language)}</a
+            >.
+            ${Zi("panels.help.cards.how-to-get-help.if-you-still-need-help",this.hass.language)}
             <a
               href="https://community.home-assistant.io/t/smart-irrigation-save-water-by-precisely-watering-your-lawn-garden"
               >${Zi("panels.help.cards.how-to-get-help.community-forum", this.hass.language)}</a
