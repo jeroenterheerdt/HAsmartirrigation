@@ -82,6 +82,7 @@ export class SmartIrrigationZone {
   last_updated?: Date;
   number_of_data_points?: number;
   drainage_rate?: number;
+  current_drainage?: number;
 
   constructor(
     i: number,
@@ -109,6 +110,7 @@ export class SmartIrrigationZone {
     this.maximum_bucket = 50; //default maximum bucket size to 50 mm
     this.last_calculated = undefined;
     this.drainage_rate = 50.8; //default mm / hour (=2 inch per hour)
+    this.current_drainage = 0;
   }
 }
 

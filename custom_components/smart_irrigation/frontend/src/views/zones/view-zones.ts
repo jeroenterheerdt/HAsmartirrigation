@@ -40,7 +40,6 @@ import { commonStyle } from "../../styles";
 import { localize } from "../../../localize/localize";
 import {
   DOMAIN,
-  MAPPING_DATA,
   UNIT_SECONDS,
   ZONE_BUCKET,
   ZONE_DRAINAGE_RATE,
@@ -167,6 +166,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       maximum_duration: undefined,
       maximum_bucket: undefined,
       drainage_rate: undefined,
+      current_drainage: 0,
     };
 
     this.zones = [...this.zones, newZone];

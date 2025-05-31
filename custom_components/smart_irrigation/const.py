@@ -138,6 +138,7 @@ ZONE_LAST_CALCULATED = "last_calculated"
 ZONE_LAST_UPDATED = "last_updated"
 ZONE_NUMBER_OF_DATA_POINTS = "number_of_data_points"
 ZONE_DRAINAGE_RATE = "drainage_rate"
+ZONE_CURRENT_DRAINAGE = "current_drainage"
 
 MODULE_DIR = "calcmodules"
 MODULE_ID = "id"
