@@ -106,7 +106,8 @@
           "header": "Continuous updates for sensors (experimental)",
           "description": "This experimental feature will continuously update the sensor data. This is useful for sensor groups that use sources that provide continuous data, such as weather stations. This feature cannot be used for sensor groups that at least partly rely on weather services as continous polling of APIs will incur costs. Keep in mind that this is experimental and may not work as expected. Use at your own risk.",
           "labels": {
-            "continuousupdates": "Enable continuous updates"
+            "continuousupdates": "Enable continuous updates",
+            "sensor_debounce": "Sensor debounce"
           }
         }
       },

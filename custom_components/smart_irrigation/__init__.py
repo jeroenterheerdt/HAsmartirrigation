@@ -498,7 +498,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         debounce = 0
         the_config = await self.store.async_get_config()
         if the_config[const.CONF_SENSOR_DEBOUNCE]:
-            debounce = the_config[const.CONF_SENSOR_DEBOUNCE]
+            debounce = int(the_config[const.CONF_SENSOR_DEBOUNCE])
             _LOGGER.debug(
                 "[async_sensor_state_changed]: sensor debounce is %s ms", debounce
             )
