@@ -3,9 +3,6 @@
 import pytest
 
 from custom_components.smart_irrigation.const import (
-    CONF_PYETO_COASTAL,
-    CONF_PYETO_SOLRAD_BEHAVIOR,
-    CONF_PYETO_FORECAST_DAYS,
     MAPPING_TEMPERATURE,
     MAPPING_HUMIDITY,
     MAPPING_PRESSURE,
