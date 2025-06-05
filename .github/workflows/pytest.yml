@@ -19,3 +19,5 @@ jobs:
           emoji: true
           verbose: true
           job-summary: true
+          custom-arguments: config/custom_components/smart_irrigation_tests
+          custom-pytest: PYTHONPATH=config pytest
