@@ -204,31 +204,30 @@ class SmartIrrigationZoneView(HomeAssistantView):
         return self.json({"success": True})
 
 
-@callback
-def websocket_get_config(hass: HomeAssistant, connection, msg):
+@async_response
+async def websocket_get_config(hass: HomeAssistant, connection, msg):
     """Publish config data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
-    config = coordinator.store.async_get_config()
+    config = await coordinator.store.async_get_config()
     connection.send_result(msg["id"], config)
 
 
-@callback
-def websocket_get_zones(hass: HomeAssistant, connection, msg):
+@async_response
+async def websocket_get_zones(hass: HomeAssistant, connection, msg):
     """Publish zone data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
-    zones = coordinator.store.get_zones()
+    zones = await coordinator.store.async_get_zones()
     connection.send_result(msg["id"], zones)
 
 
-@callback
-def websocket_get_modules(hass: HomeAssistant, connection, msg):
+@async_response
+async def websocket_get_modules(hass: HomeAssistant, connection, msg):
     """Publish module data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
-    modules = coordinator.store.get_modules()
+    modules = await coordinator.store.async_get_modules()
     connection.send_result(msg["id"], modules)
 
 
-@callback
 @async_response
 async def websocket_get_all_modules(hass: HomeAssistant, connection, msg):
     """Publish all module data. This is not retrieved from the store."""
@@ -237,11 +236,12 @@ async def websocket_get_all_modules(hass: HomeAssistant, connection, msg):
     connection.send_result(msg["id"], modules)
 
 
-@callback
-def websocket_get_mappings(hass: HomeAssistant, connection, msg):
+@async_response
+async def websocket_get_mappings(hass: HomeAssistant, connection, msg):
     """Publish mapping data."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
-    mappings = coordinator.store.get_mappings()
+    _LOGGER.debug("websocket_get_mappings called")
+    mappings = await coordinator.store.async_get_mappings()
     connection.send_result(msg["id"], mappings)
 
 

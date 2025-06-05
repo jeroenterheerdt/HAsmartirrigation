@@ -1,10 +1,11 @@
 """The Smart Irrigation Integration."""
 
+import contextlib
 import datetime
 from datetime import timedelta
 import logging
-import statistics
 import re
+import statistics
 
 from homeassistant.components.sensor import DOMAIN as PLATFORM
 from homeassistant.config_entries import ConfigEntry
@@ -80,7 +81,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # store Weather Service info in hass.data
     hass.data.setdefault(const.DOMAIN, {})
     # load store info into hass.data[const.DOMAIN]
-    config = store.async_get_config()
+    config = await store.async_get_config()
     hass.data[const.DOMAIN][const.CONF_USE_WEATHER_SERVICE] = config.get(
         const.CONF_USE_WEATHER_SERVICE, const.CONF_DEFAULT_USE_WEATHER_SERVICE
     )
@@ -106,7 +107,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 entry.data.get(const.CONF_WEATHER_SERVICE_API_VERSION)
             )
     # check for OWM config and migrate accordingly
-    if "use_owm" in entry.data and entry.data["use_owm"]:
+    if entry.data.get("use_owm"):
         if "owm_api_key" in entry.data:
             hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = entry.data[
                 "owm_api_key"
@@ -166,9 +167,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             entry, unique_id=coordinator.id, data={}
         )
 
-    _LOGGER.info("calling async_forward_entry_setups")
+    _LOGGER.info("Calling async_forward_entry_setups")
     await hass.config_entries.async_forward_entry_setups(entry, [PLATFORM])
-    _LOGGER.info("finished calling async_forward_entry_setups")
+    _LOGGER.info("Finished calling async_forward_entry_setups")
     # update listener for options flow
     entry.async_on_unload(entry.add_update_listener(options_update_listener))
 
@@ -291,7 +292,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self._track_sunrise_event_unsub = None
         self._track_midnight_time_unsub = None
         # set up auto calc time and auto update time from data
-        the_config = self.store.async_get_config()
+        the_config = self.store.get_config()
         the_config[const.CONF_USE_WEATHER_SERVICE] = self.use_weather_service
         the_config[const.CONF_WEATHER_SERVICE] = self.weather_service
         if the_config[const.CONF_AUTO_UPDATE_ENABLED]:
@@ -305,6 +306,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         else:
             self._start_event_fired_today = False
 
+        # WIP v2024.6.X:
+        # experiment with subscriptions on sensors
+        self._sensor_subscriptions = []
+        self._sensors_to_subscribe_to = []
+
         # set up sunrise tracking
         _LOGGER.debug("calling register start event from init")
         self.register_start_event()
@@ -314,15 +320,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             hass, self._reset_event_fired_today, 0, 0, 0
         )
 
-        # WIP v2024.6.X:
-        # experiment with subscriptions on sensors
-        self._sensor_subscriptions = []
-        self._sensors_to_subscribe_to = []
         super().__init__(hass, _LOGGER, name=const.DOMAIN)
 
-    @callback
-    def setup_SmartIrrigation_entities(self):  # noqa: D102
-        zones = self.store.get_zones()
+    async def setup_SmartIrrigation_entities(self):  # noqa: D102
+        zones = await self.store.async_get_zones()
 
         for zone in zones:
             # self.async_create_zone(zone)
@@ -371,7 +372,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if const.CONF_AUTO_UPDATE_DELAY in data:
                 if int(data[const.CONF_AUTO_UPDATE_DELAY]) > 0:
                     delay = int(data[const.CONF_AUTO_UPDATE_DELAY])
-                    _LOGGER.info(f"Delaying auto update with {delay} seconds")
+                    _LOGGER.info("Delaying auto update with %s seconds", delay)
             async_call_later(
                 self.hass, timedelta(seconds=delay), self.track_update_time
             )
@@ -381,16 +382,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self.store.async_update_config(data)
 
     async def update_subscriptions(self):
+        """Update sensor subscriptions for Smart Irrigation coordinator."""
         # subscribe to all sensors
         self._sensors_to_subscribe_to = await self.get_sensors_to_subscribe_to()
 
         # WIP v2024.6.X: move to subscriptions
         # remove all existing sensor subscriptions
         for s in self._sensor_subscriptions:
-            try:
+            with contextlib.suppress(Exception):
                 s()
-            except Exception:
-                pass
 
         if self._sensors_to_subscribe_to is not None:
             for s in self._sensors_to_subscribe_to:
@@ -403,7 +403,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
 
     async def get_sensors_to_subscribe_to(self):
-        zones = self.store.get_zones()
+        """Return a list of sensor entity IDs to subscribe to for state changes."""
+        zones = await self.store.async_get_zones()
         mappings = await self._get_unique_mappings_for_automatic_zones(zones)
         sensors_to_subscribe_to = []
         # loop over the mappings and store sensor data
@@ -415,7 +416,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             ) = self.check_mapping_sources(mapping_id=mapping_id)
             mapping = self.store.get_mapping(mapping_id)
             if sensor_in_mapping:
-                for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
+                for the_map in mapping[const.MAPPING_MAPPINGS].values():
                     if not isinstance(the_map, str):
                         if the_map.get(
                             const.MAPPING_CONF_SOURCE
@@ -433,26 +434,27 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         return sensors_to_subscribe_to
 
-    @callback
     async def async_sensor_state_changed(
         self, event: Event[EventStateChangedData]
     ) -> None:  # old signature: entity, old_state, new_state):
-        """Callback fired when a sensor state has changed."""
+        """Handle a sensor state change event."""
         # check if continuous updates are enabled, if not, skip this and log a debug message
         the_config = self.store.async_get_config()
         if const.CONF_CONTINUOUS_UPDATES in the_config:
             if not the_config[const.CONF_CONTINUOUS_UPDATES]:
                 _LOGGER.debug(
-                    "[async_sensor_state_changed]: continuous updates are disabled, skipping."
+                    "[async_sensor_state_changed]: continuous updates are disabled, skipping"
                 )
                 return
-        old_state_obj = event.data["old_state"]
+        # old_state_obj = event.data["old_state"]
         new_state_obj = event.data["new_state"]
         # handle the sensor update by updating the mapping data
         entity = event.data["entity_id"]
         if new_state_obj.state in [None, STATE_UNKNOWN, STATE_UNAVAILABLE]:
             _LOGGER.debug(
-                f"async_sensor_state_changed: new state for {entity} is {new_state_obj.state}, ignoring."
+                "async_sensor_state_changed: new state for %s is %s, ignoring",
+                entity,
+                new_state_obj.state,
             )
             # return so we are ignoring these values
             return
@@ -464,9 +466,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     if (
                         not isinstance(val, str)
                         and val.get(const.MAPPING_CONF_SENSOR) == entity
-                        or val.get(const.MAPPING_CONF_SOURCE)
-                        == const.MAPPING_CONF_SOURCE_STATIC_VALUE
-                    ):
+                    ) or val.get(
+                        const.MAPPING_CONF_SOURCE
+                    ) == const.MAPPING_CONF_SOURCE_STATIC_VALUE:
                         the_new_state = new_state_obj.state
                         if (
                             val.get(const.MAPPING_CONF_SOURCE)
@@ -513,7 +515,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 mapping.get(const.MAPPING_ID), changes
                             )
                             _LOGGER.debug(
-                                f"async_sensor_state_changed: updated sensor group {mapping.get(const.MAPPING_ID)} {key}. New value: {new_state_obj.state}"
+                                "async_sensor_state_changed: updated sensor group %s %s. New value: %s",
+                                mapping.get(const.MAPPING_ID),
+                                key,
+                                new_state_obj.state,
                             )
             await self.async_continuous_update_for_mapping(
                 mapping.get(const.MAPPING_ID)
@@ -543,19 +548,24 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                     if mod.get(const.MODULE_NAME) != "PyETO":
                                         can_calculate = True
                                         _LOGGER.info(
-                                            f"[async_continuous_update_for_mapping]: module is not PyETO, so we can calculate for zone {zone.get(const.ZONE_ID)}."
+                                            "[async_continuous_update_for_mapping]: module is not PyETO, so we can calculate for zone %s",
+                                            zone.get(const.ZONE_ID),
                                         )
                                     else:
                                         # module is PyETO. Check the config for forecast days == 0
                                         _LOGGER.debug(
-                                            f"[async_continuous_update_for_mapping]: module is PyETO, checking config."
+                                            "[async_continuous_update_for_mapping]: module is PyETO, checking config"
                                         )
                                         if mod.get(const.MODULE_CONFIG):
                                             _LOGGER.debug(
-                                                f"[async_continuous_update_for_mapping]: module has config: {mod.get(const.MODULE_CONFIG)}"
+                                                "[async_continuous_update_for_mapping]: module has config: %s",
+                                                mod.get(const.MODULE_CONFIG),
                                             )
                                             _LOGGER.debug(
-                                                f"[async_continuous_update_for_mapping]: mod.get(forecast_days,0) returns forecast_days: {mod.get(const.MODULE_CONFIG).get(const.CONF_PYETO_FORECAST_DAYS, 0)}"
+                                                "[async_continuous_update_for_mapping]: mod.get(forecast_days,0) returns forecast_days: %s",
+                                                mod.get(const.MODULE_CONFIG).get(
+                                                    const.CONF_PYETO_FORECAST_DAYS, 0
+                                                ),
                                             )
                                             # there is a config on the module, so let's check it
                                             if (
@@ -574,26 +584,32 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                             ):
                                                 can_calculate = True
                                                 _LOGGER.info(
-                                                    f"checked config for PyETO module on zone {zone.get(const.ZONE_ID)}, forecast_days==0 or None, so we can calculate."
+                                                    "Checked config for PyETO module on zone %s, forecast_days==0 or None, so we can calculate",
+                                                    zone.get(const.ZONE_ID),
                                                 )
                                             else:
                                                 _LOGGER.info(
-                                                    f"checked config for PyETO module on zone {zone.get(const.ZONE_ID)}, forecast_days>0, skipping to avoid API calls that can incur costs."
+                                                    "Checked config for PyETO module on zone %s, forecast_days>0, skipping to avoid API calls that can incur costs",
+                                                    zone.get(const.ZONE_ID),
                                                 )
                                         else:
                                             # default config for pyeto is forecast = 0, since there is no config we can calculate
                                             can_calculate = True
                                             _LOGGER.info(
-                                                f"no config on PyETO module, since default is forecast_days==0, we can calculate for zone {zone.get(const.ZONE_ID)}."
+                                                "No config on PyETO module, since default is forecast_days==0, we can calculate for zone %s",
+                                                zone.get(const.ZONE_ID),
                                             )
 
                                     _LOGGER.debug(
-                                        f"[async_continuous_update_for_mapping]: can_calculate: {can_calculate}"
+                                        "[async_continuous_update_for_mapping]: can_calculate: %s",
+                                        can_calculate,
                                     )
                                     if can_calculate:
                                         # get the zone and calculate
                                         _LOGGER.debug(
-                                            f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: calculating zone {zone.get(const.ZONE_ID)}"
+                                            "[async_continuous_update_for_mapping] for sensor group %s: calculating zone %s",
+                                            mapping_id,
+                                            zone.get(const.ZONE_ID),
                                         )
                                         await self.async_calculate_zone(
                                             z,
@@ -602,27 +618,38 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                         zones_to_calculate.remove(z)
                                     else:
                                         _LOGGER.info(
-                                            f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zone {z} has module {mod.get(const.MODULE_NAME)} that uses forecasting, skipping to avoid API calls that can incur costs."
+                                            "[async_continuous_update_for_mapping] for sensor group %s: zone %s has module %s that uses forecasting, skipping to avoid API calls that can incur costs",
+                                            mapping_id,
+                                            z,
+                                            mod.get(const.MODULE_NAME),
                                         )
                             else:
                                 _LOGGER.info(
-                                    f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zone {z} has no module, skipping."
+                                    "[async_continuous_update_for_mapping] for sensor group %s: zone %s has no module, skipping",
+                                    mapping_id,
+                                    z,
                                 )
                         else:
                             _LOGGER.info(
-                                f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zone {z} is not automatic, skipping."
+                                "[async_continuous_update_for_mapping] for sensor group %s: zone %s is not automatic, skipping",
+                                mapping_id,
+                                z,
                             )
                     # remove weather data from this mapping unless there are zones we did not calculate!
                     _LOGGER.debug(
-                        f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: zones_to_calculate: {zones_to_calculate}. if this is empty this means that all zones for this sensor group have been calculated and therefore we can remove the weather data"
+                        "[async_continuous_update_for_mapping] for sensor group %s: zones_to_calculate: %s. if this is empty this means that all zones for this sensor group have been calculated and therefore we can remove the weather data",
+                        mapping_id,
+                        zones_to_calculate,
                     )
                     if zones_to_calculate and len(zones_to_calculate) > 0:
                         _LOGGER.debug(
-                            f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: did not calculate all zones, keeping weather data for the sensor group."
+                            "[async_continuous_update_for_mapping] for sensor group %s: did not calculate all zones, keeping weather data for the sensor group",
+                            mapping_id,
                         )
                     else:
                         _LOGGER.debug(
-                            f"clearing weather data for sensor group {mapping_id} since we calculated all dependent zones."
+                            "clearing weather data for sensor group %s since we calculated all dependent zones",
+                            mapping_id,
                         )
                         changes = {}
                         changes = self.clear_weatherdata_for_mapping(mapping)
@@ -630,17 +657,27 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
                 else:
                     _LOGGER.info(
-                        f"[async_continuous_update_for_mapping] for sensor group {mapping_id}: sensor group does use weather service, skipping automatic update to avoid API calls that can incur costs."
+                        "[async_continuous_update_for_mapping] for sensor group %s: sensor group does use weather service, skipping automatic update to avoid API calls that can incur costs",
+                        mapping_id,
                     )
 
     def clear_weatherdata_for_mapping(self, mapping):
-        changes = {
+        """Clear weather data for a given mapping and reset last updated timestamp.
+
+        Args:
+            mapping: The mapping dictionary to clear weather data for.
+
+        Returns:
+            dict: A dictionary with cleared weather data and reset last updated timestamp.
+
+        """
+        return {
             const.MAPPING_DATA: [],
             const.MAPPING_DATA_LAST_UPDATED: None,
         }
-        return changes
 
     async def set_up_auto_calc_time(self, data):
+        """Set up the automatic calculation time for Smart Irrigation based on configuration data."""
         # unsubscribe from any existing track_time_changes
         if self._track_auto_calc_time_unsub:
             self._track_auto_calc_time_unsub()
@@ -658,13 +695,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     second=0,
                 )
                 _LOGGER.info(
-                    "Scheduled auto calculate for {}".format(data[const.CONF_CALC_TIME])
+                    "Scheduled auto calculate for %s", data[const.CONF_CALC_TIME]
                 )
             else:
                 _LOGGER.warning(
-                    "Scheduled auto calculate time is not valid: {}".format(
-                        data[const.CONF_CALC_TIME]
-                    )
+                    "Scheduled auto calculate time is not valid: %s",
+                    data[const.CONF_CALC_TIME],
                 )
                 # raise ValueError("Time is not a valid time")
         else:
@@ -678,6 +714,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self.store.async_update_config(data)
 
     async def set_up_auto_clear_time(self, data):
+        """Set up the automatic clear time for Smart Irrigation based on configuration data."""
         # unsubscribe from any existing track_time_changes
         if self._track_auto_clear_time_unsub:
             self._track_auto_clear_time_unsub()
@@ -695,25 +732,23 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     second=0,
                 )
                 _LOGGER.info(
-                    "Scheduled auto clear of weatherdata for {}".format(
-                        data[const.CONF_CLEAR_TIME]
-                    )
+                    "Scheduled auto clear of weatherdata for %s",
+                    data[const.CONF_CLEAR_TIME],
                 )
             else:
                 _LOGGER.warning(
-                    "Scheduled auto clear time is not valid: {}".format(
-                        data[const.CONF_CLEAR_TIME]
-                    )
+                    "Scheduled auto clear time is not valid: %s",
+                    data[const.CONF_CLEAR_TIME],
                 )
                 raise ValueError("Time is not a valid time")
         self.store.async_update_config(data)
 
-    @callback
     async def track_update_time(self, *args):
+        """Track and schedule periodic updates for Smart Irrigation based on configuration."""
         # perform update once
         self.hass.async_create_task(self._async_update_all())
         # use async_track_time_interval
-        data = self.store.async_get_config()
+        data = await self.store.async_get_config()
         the_time_delta = None
         interval = int(data[const.CONF_AUTO_UPDATE_INTERVAL])
         if data[const.CONF_AUTO_UPDATE_SCHEDULE] == const.CONF_AUTO_UPDATE_DAILY:
@@ -737,32 +772,31 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self._track_auto_update_time_unsub = async_track_time_interval(
             self.hass, self._async_update_all, the_time_delta
         )
-        _LOGGER.info(
-            "Scheduled auto update time interval for each {}".format(the_time_delta)
-        )
+        _LOGGER.info("Scheduled auto update time interval for each %s", the_time_delta)
 
     async def _get_unique_mappings_for_automatic_zones(self, zones):
-        mappings = []
-        for zone in zones:
-            if zone.get(const.ZONE_STATE) == const.ZONE_STATE_AUTOMATIC:
-                mappings.append(zone.get(const.ZONE_MAPPING))
+        mappings = [
+            zone.get(const.ZONE_MAPPING)
+            for zone in zones
+            if zone.get(const.ZONE_STATE) == const.ZONE_STATE_AUTOMATIC
+        ]
         # remove duplicates
-        mappings = list(set(mappings))
-        return mappings
+        return list(set(mappings))
 
     def _get_zones_that_use_this_mapping(self, mapping):
-        the_zones = []
-        for z in self.store.get_zones():
-            if z.get(const.ZONE_MAPPING) == mapping:
-                the_zones.append(z.get(const.ZONE_ID))
-        return the_zones
+        """Return a list of zone IDs that use the specified mapping."""
+        return [
+            z.get(const.ZONE_ID)
+            for z in self.store.get_zones()
+            if z.get(const.ZONE_MAPPING) == mapping
+        ]
 
     async def _async_update_all(self, *args):
         # update the weather data for all mappings for all zones that are automatic here and store it.
         # in _async_calculate_all we need to read that data back and if there is none, we log an error, otherwise apply aggregate and use data
         # this should skip any pure sensor zones if continuous updates is enabled, otherwise it should include them
         _LOGGER.info("Updating weather data for all automatic zones")
-        zones = self.store.get_zones()
+        zones = await self.store.async_get_zones()
         mappings = await self._get_unique_mappings_for_automatic_zones(zones)
         # loop over the mappings and store sensor data
         for mapping_id in mappings:
@@ -775,11 +809,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if the_config.get(const.CONF_CONTINUOUS_UPDATES) and not owm_in_mapping:
                 # if continuous updates are enabled, we do not need to update the mappings here for pure sensor mappings
                 _LOGGER.debug(
-                    f"Continuous updates are enabled, skipping update for sensor group {mapping_id} because it is not dependent on weather service and should already be included in the continuous updates."
+                    "Continuous updates are enabled, skipping update for sensor group %s because it is not dependent on weather service and should already be included in the continuous updates",
+                    mapping_id,
                 )
                 continue
             _LOGGER.debug(
-                f"Continuous updates are enabled, but updating sensor group {mapping_id} as part of scheduled updates because it is dependent on weather service and therefore is not included in continuous updates."
+                "Continuous updates are enabled, but updating sensor group %s as part of scheduled updates because it is dependent on weather service and therefore is not included in continuous updates",
+                mapping_id,
             )
             mapping = self.store.get_mapping(mapping_id)
             weatherdata = None
@@ -830,12 +866,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     mapping_data = [weatherdata]
                 else:
                     _LOGGER.error(
-                        f"[async_update_all]: sensor group is unexpected type: {mapping_data}"
+                        "[async_update_all]: sensor group is unexpected type: %s",
+                        mapping_data,
                     )
                 _LOGGER.debug(
-                    "async_update_all for mapping {} new mapping_data: {}".format(
-                        mapping_id, weatherdata
-                    )
+                    "async_update_all for mapping %s new mapping_data: %s",
+                    mapping_id,
+                    weatherdata,
                 )
                 changes = {
                     "data": mapping_data,
@@ -858,185 +895,206 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             else:
                 if mapping is None:
                     _LOGGER.warning(
-                        f"[async_update_all] Unable to find sensor group with id: {mapping_id}"
+                        "[async_update_all] Unable to find sensor group with id: %s",
+                        mapping_id,
                     )
                 if weatherdata is None:
                     _LOGGER.warning(
-                        f"[async_update_all] No weather data to parse for sensor group {mapping_id}"
+                        "[async_update_all] No weather data to parse for sensor group %s",
+                        mapping_id,
                     )
 
     async def merge_weatherdata_and_sensor_values(self, wd, sv):
+        """Merge weather data and sensor values dictionaries, giving precedence to sensor values.
+
+        Args:
+            wd: The weather data dictionary or None.
+            sv: The sensor values dictionary or None.
+
+        Returns:
+            dict: A merged dictionary with sensor values overriding weather data where keys overlap.
+
+        """
         if wd is None:
             return sv
-        elif sv is None:
+        if sv is None:
             return wd
-        else:
-            retval = wd
-            for key, val in sv.items():
-                if key in retval:
-                    _LOGGER.debug(
-                        "merge_weatherdata_and_sensor_values, overriding {} value {} from OWM with {} from sensors".format(
-                            key, retval[key], val
-                        )
-                    )
-                else:
-                    _LOGGER.debug(
-                        "merge_weatherdata_and_sensor_values, adding {} value {} from sensors".format(
-                            key, val
-                        )
-                    )
-                retval[key] = val
+        retval = wd
+        for key, val in sv.items():
+            if key in retval:
+                _LOGGER.debug(
+                    "merge_weatherdata_and_sensor_values, overriding %s value %s from OWM with %s from sensors",
+                    key,
+                    retval[key],
+                    val,
+                )
+            else:
+                _LOGGER.debug(
+                    "merge_weatherdata_and_sensor_values, adding %s value %s from sensors",
+                    key,
+                    val,
+                )
+            retval[key] = val
 
-            return retval
+        return retval
 
     async def apply_aggregates_to_mapping_data(self, mapping, continuous_updates=False):
-        _LOGGER.debug(f"[apply_aggregates_to_mapping_data]: mapping: {mapping}")
-        if mapping.get(const.MAPPING_DATA):
-            # get the keys for the mapping data entries.
-            # if there are more than one values for a given key, apply configured aggregate
-            data = mapping.get(const.MAPPING_DATA)
-            _LOGGER.debug(
-                f"[apply_aggregates_to_mapping_data]: there is mapping data: {data}"
-            )
-            data_by_sensor = {}
-            resultdata = {}
-            for d in data:
-                if isinstance(d, dict):
-                    for key, val in d.items():
-                        # filter out Null/None values
-                        if val is not None:
-                            if key not in data_by_sensor:
-                                data_by_sensor[key] = [val]
-                            else:
-                                data_by_sensor[key].append(val)
-            _LOGGER.debug(
-                f"[apply_aggregates_to_mapping_data]: data_by_sensor before dropping max min temp and retrieved at handling: {data_by_sensor}"
-            )
-            # Drop MAX and MIN temp mapping because we calculate it from temp starting with beta 12
-            if const.MAPPING_MAX_TEMP in data_by_sensor:
-                data_by_sensor.pop(const.MAPPING_MAX_TEMP)
-            if const.MAPPING_MIN_TEMP in data_by_sensor:
-                data_by_sensor.pop(const.MAPPING_MIN_TEMP)
-            if const.RETRIEVED_AT in data_by_sensor:
-                retrieved_ats = data_by_sensor.pop(const.RETRIEVED_AT)
-                # multiply the delta by the number of hours (24=1) between the first and last weatherdata in scope
-                hour_multiplier = 1.0
-                date_format_string = "%Y-%m-%dT%H:%M:%S.%f"
-                formatted_retrieved_ats = []
-                for item in retrieved_ats:
-                    if isinstance(item, datetime.datetime):
-                        formatted_retrieved_ats.append(item)
-                    elif isinstance(item, str):
-                        formatted_retrieved_ats.append(
-                            datetime.datetime.strptime(item, date_format_string)
-                        )
-                # first_retrieved_at = datetime.datetime.strptime(weatherdata[0].get(const.RETRIEVED_AT),date_format_string)
-                # last_retrieved_at = datetime.datetime.strptime(weatherdata[len(weatherdata)-1].get(const.RETRIEVED_AT),date_format_string)
-                if not continuous_updates:
-                    # this is the the behavior for any versions before v2024.6.X and should still be the behavior for any none-pure sensor sensor groups
-                    first_retrieved_at = min(formatted_retrieved_ats)
-                    last_retrieved_at = max(formatted_retrieved_ats)
-                else:
-                    # this is the behavior for v2024.6.X and should be the behavior for any pure sensor sensor groups from that version onwards
-                    # we take the diff between the current and previous retrieved at instead of the first and last
-                    first_retrieved_at = formatted_retrieved_ats[
-                        len(formatted_retrieved_ats) - 2
-                    ]
-                    last_retrieved_at = formatted_retrieved_ats[
-                        len(formatted_retrieved_ats) - 1
-                    ]
-                # Get interval between two timstamps as timedelta object
-                diff = last_retrieved_at - first_retrieved_at
-                # Get interval between two timstamps in hours
-                diff_in_hours = diff.total_seconds() / 3600
-                diff_in_hours = abs(diff_in_hours)
-                hour_multiplier = diff_in_hours / 24
-                resultdata[const.MAPPING_DATA_MULTIPLIER] = hour_multiplier
-                _LOGGER.debug(
-                    f"[apply_aggregates_to_mapping_data]: first_retrieved_at: {first_retrieved_at}, last_retrieved_at: {last_retrieved_at}, diff_in_seconds: {diff.total_seconds()}, diff_in_hours: {diff_in_hours}, hour_multiplier: {hour_multiplier}"
+        """Apply aggregation functions to mapping data and return the aggregated result.
+
+        Args:
+            mapping: The mapping dictionary containing sensor data.
+            continuous_updates: Whether continuous updates are enabled.
+
+        Returns:
+            dict or None: Aggregated mapping data or None if no data is available.
+
+        """
+        _LOGGER.debug("[apply_aggregates_to_mapping_data]: mapping: %s", mapping)
+        if not mapping.get(const.MAPPING_DATA):
+            return None
+
+        data = mapping.get(const.MAPPING_DATA)
+        _LOGGER.debug(
+            "[apply_aggregates_to_mapping_data]: there is mapping data: %s", data
+        )
+        data_by_sensor = self._group_data_by_sensor(data)
+        resultdata = {}
+
+        self._handle_retrieved_at(data_by_sensor, resultdata, continuous_updates)
+        self._aggregate_sensor_data(data_by_sensor, mapping, resultdata)
+        self._fill_missing_from_last_entry(mapping, resultdata)
+
+        _LOGGER.debug("apply_aggregates_to_mapping_data returns %s", resultdata)
+        return resultdata
+
+    def _group_data_by_sensor(self, data):
+        """Group mapping data by sensor key."""
+        data_by_sensor = {}
+        for d in data:
+            if isinstance(d, dict):
+                for key, val in d.items():
+                    if val is not None:
+                        data_by_sensor.setdefault(key, []).append(val)
+        # Drop MAX and MIN temp mapping because we calculate it from temp
+        data_by_sensor.pop(const.MAPPING_MAX_TEMP, None)
+        data_by_sensor.pop(const.MAPPING_MIN_TEMP, None)
+        return data_by_sensor
+
+    def _handle_retrieved_at(self, data_by_sensor, resultdata, continuous_updates):
+        """Process retrieved_at timestamps and update resultdata with multiplier."""
+        if const.RETRIEVED_AT not in data_by_sensor:
+            return
+        retrieved_ats = data_by_sensor.pop(const.RETRIEVED_AT)
+        hour_multiplier = 1.0
+        date_format_string = "%Y-%m-%dT%H:%M:%S.%f"
+        formatted_retrieved_ats = []
+        for item in retrieved_ats:
+            if isinstance(item, datetime.datetime):
+                formatted_retrieved_ats.append(item)
+            elif isinstance(item, str):
+                formatted_retrieved_ats.append(
+                    datetime.datetime.strptime(item, date_format_string)
                 )
+        if not formatted_retrieved_ats:
+            return
+        if not continuous_updates:
+            first_retrieved_at = min(formatted_retrieved_ats)
+            last_retrieved_at = max(formatted_retrieved_ats)
+        else:
+            if len(formatted_retrieved_ats) < 2:
+                return
+            first_retrieved_at = formatted_retrieved_ats[-2]
+            last_retrieved_at = formatted_retrieved_ats[-1]
+        diff = last_retrieved_at - first_retrieved_at
+        diff_in_hours = abs(diff.total_seconds() / 3600)
+        hour_multiplier = diff_in_hours / 24
+        resultdata[const.MAPPING_DATA_MULTIPLIER] = hour_multiplier
+        _LOGGER.debug(
+            "[apply_aggregates_to_mapping_data]: first_retrieved_at: %s, last_retrieved_at: %s, diff_in_seconds: %s, diff_in_hours: %s, hour_multiplier: %s",
+            first_retrieved_at,
+            last_retrieved_at,
+            diff.total_seconds(),
+            diff_in_hours,
+            hour_multiplier,
+        )
+
+    def _aggregate_sensor_data(self, data_by_sensor, mapping, resultdata):
+        """Aggregate sensor data by configured or default aggregate."""
+        for key, d in data_by_sensor.items():
             _LOGGER.debug(
-                f"[apply_aggregates_to_mapping_data]: data_by_sensor before aggregation loop: {data_by_sensor}"
+                "[apply_aggregates_to_mapping_data]: aggregation loop: key: %s, d: %s, len(d): %s",
+                key,
+                d,
+                len(d),
             )
-            for key, d in data_by_sensor.items():
+            if len(d) > 1:
+                d = [float(i) for i in d]
                 _LOGGER.debug(
-                    f"[apply_aggregates_to_mapping_data]: aggregation loop: key: {key}, d: {d}, len(d): {len(d)}"
+                    "[apply_aggregates_to_mapping_data]: after conversion to float: applying aggregate to %s with values %s",
+                    key,
+                    d,
                 )
-                if len(d) > 1:
-                    # convert all values to float
-                    d = [float(i) for i in d]
-                    _LOGGER.debug(
-                        f"[apply_aggregates_to_mapping_data]: after conversion to float: applying aggregate to {key} with values {d}"
+                aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT
+                if key == const.MAPPING_PRECIPITATION:
+                    aggregate = (
+                        const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION
                     )
-                    # apply aggregate
-                    # set up default aggregates in case not specified (left default by user or using OWM)
-                    aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT
-                    if key == const.MAPPING_PRECIPITATION:
-                        aggregate = (
-                            const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION
-                        )
-                    # removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
-                    # elif key == const.MAPPING_MAX_TEMP:
-                    #    aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP
-                    # elif key == const.MAPPING_MIN_TEMP:
-                    #    aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP
-                    # apply max and min aggregate to temp and add it in
-                    elif key == const.MAPPING_TEMPERATURE:
-                        # we need both max and min aggrgate and add those to the data
-                        resultdata[const.MAPPING_MAX_TEMP] = max(d)
-                        resultdata[const.MAPPING_MIN_TEMP] = min(d)
-                    if mapping.get(const.MAPPING_MAPPINGS):
-                        mappings = mapping.get(const.MAPPING_MAPPINGS)
-                        if key in mappings:
-                            aggregate = mappings[key].get(
-                                const.MAPPING_CONF_AGGREGATE,
-                                aggregate,
-                            )
-                    _LOGGER.debug(
-                        f"[async_aggregate_to_mapping_data]: key: {key}, aggregate: {aggregate}, data: {d}."
+                elif key == const.MAPPING_TEMPERATURE:
+                    resultdata[const.MAPPING_MAX_TEMP] = max(d)
+                    resultdata[const.MAPPING_MIN_TEMP] = min(d)
+                mappings = mapping.get(const.MAPPING_MAPPINGS, {})
+                if key in mappings:
+                    aggregate = mappings[key].get(
+                        const.MAPPING_CONF_AGGREGATE,
+                        aggregate,
                     )
-                    if aggregate == const.MAPPING_CONF_AGGREGATE_AVERAGE:
-                        resultdata[key] = statistics.mean(d)
-                    elif aggregate == const.MAPPING_CONF_AGGREGATE_FIRST:
-                        resultdata[key] = d[0]
-                    elif aggregate == const.MAPPING_CONF_AGGREGATE_LAST:
-                        resultdata[key] = d[len(d) - 1]
-                    elif aggregate == const.MAPPING_CONF_AGGREGATE_MAXIMUM:
-                        resultdata[key] = max(d)
-                    elif aggregate == const.MAPPING_CONF_AGGREGATE_MINIMUM:
-                        resultdata[key] = min(d)
-                    elif aggregate == const.MAPPING_CONF_AGGREGATE_MEDIAN:
-                        resultdata[key] = statistics.median(d)
-                    elif aggregate == const.MAPPING_CONF_AGGREGATE_SUM:
-                        resultdata[key] = sum(d)
-                else:
-                    # make sure to add max and min temp in even if there is only one value. it was already added above in case there are multiple values
-                    if key == const.MAPPING_TEMPERATURE:
-                        resultdata[const.MAPPING_MAX_TEMP] = d[0]
-                        resultdata[const.MAPPING_MIN_TEMP] = d[0]
-                    resultdata[key] = float(d[0])
-            # check if resultdata contains all the keys, else, check if data_last_entry is there and use that to add anything that's missing
-            # this is to cover for a situation where a new value is never provided until it changes
-            # but we still want to have the last value available to calculate with (mostly for continuous updates)
-            _LOGGER.debug(
-                f"[async_aggregate_to_mapping_data]: last entry data for sensor group: {mapping.get(const.MAPPING_ID)}: {mapping.get(const.MAPPING_DATA_LAST_ENTRY)}"
-            )
-            if mapping.get(const.MAPPING_DATA_LAST_ENTRY):
-                for key, val in mapping.get(const.MAPPING_DATA_LAST_ENTRY).items():
-                    if key not in resultdata:
-                        _LOGGER.debug(
-                            f"[async_aggregate_to_mapping_data]: {key} is missing from resultdata, adding {val} from last entry."
-                        )
-                        resultdata[key] = val
-                        # make sure max and min temp are also there when added from last entry data
-                        if key == const.MAPPING_TEMPERATURE:
-                            resultdata[const.MAPPING_MAX_TEMP] = val
-                            resultdata[const.MAPPING_MIN_TEMP] = val
-            _LOGGER.debug(
-                "apply_aggregates_to_mapping_data returns {}".format(resultdata)
-            )
-            return resultdata
-        return None
+                _LOGGER.debug(
+                    "[async_aggregate_to_mapping_data]: key: %s, aggregate: %s, data: %s.",
+                    key,
+                    aggregate,
+                    d,
+                )
+                if aggregate == const.MAPPING_CONF_AGGREGATE_AVERAGE:
+                    resultdata[key] = statistics.mean(d)
+                elif aggregate == const.MAPPING_CONF_AGGREGATE_FIRST:
+                    resultdata[key] = d[0]
+                elif aggregate == const.MAPPING_CONF_AGGREGATE_LAST:
+                    resultdata[key] = d[-1]
+                elif aggregate == const.MAPPING_CONF_AGGREGATE_MAXIMUM:
+                    resultdata[key] = max(d)
+                elif aggregate == const.MAPPING_CONF_AGGREGATE_MINIMUM:
+                    resultdata[key] = min(d)
+                elif aggregate == const.MAPPING_CONF_AGGREGATE_MEDIAN:
+                    resultdata[key] = statistics.median(d)
+                elif aggregate == const.MAPPING_CONF_AGGREGATE_SUM:
+                    resultdata[key] = sum(d)
+            else:
+                if key == const.MAPPING_TEMPERATURE:
+                    resultdata[const.MAPPING_MAX_TEMP] = d[0]
+                    resultdata[const.MAPPING_MIN_TEMP] = d[0]
+                resultdata[key] = float(d[0])
+
+    def _fill_missing_from_last_entry(self, mapping, resultdata):
+        """Fill missing keys in resultdata from last entry data."""
+        last_entry = mapping.get(const.MAPPING_DATA_LAST_ENTRY)
+        _LOGGER.debug(
+            "[async_aggregate_to_mapping_data]: last entry data for sensor group: %s: %s",
+            mapping.get(const.MAPPING_ID),
+            last_entry,
+        )
+        if not last_entry:
+            return
+        for key, val in last_entry.items():
+            if key not in resultdata:
+                _LOGGER.debug(
+                    "[async_aggregate_to_mapping_data]: %s is missing from resultdata, adding %s from last entry",
+                    key,
+                    val,
+                )
+                resultdata[key] = val
+                if key == const.MAPPING_TEMPERATURE:
+                    resultdata[const.MAPPING_MAX_TEMP] = val
+                    resultdata[const.MAPPING_MIN_TEMP] = val
 
     async def _async_clear_all_weatherdata(self, *args):
         _LOGGER.info("Clearing all weatherdata")
@@ -1058,7 +1116,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         zones = []
         if the_config.get(const.CONF_CONTINUOUS_UPDATES):
             _LOGGER.debug(
-                "Continuous updates are enabled, filtering out pure sensor zones."
+                "Continuous updates are enabled, filtering out pure sensor zones"
             )
             # filter zones and only add zone if it uses a weather service
             for z in unfiltered_zones:
@@ -1068,12 +1126,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
                 if weather_service_in_mapping:
                     _LOGGER.debug(
-                        f"[async_calculate_all]: zone {z.get(const.ZONE_ID)} uses a weather service so should be included in the calculation even though continuous updates are on."
+                        "[async_calculate_all]: zone %s uses a weather service so should be included in the calculation even though continuous updates are on.",
+                        z.get(const.ZONE_ID),
                     )
                     zones.append(z)
                 else:
                     _LOGGER.debug(
-                        f"[async_calculate_all]: Skipping zone {z.get(const.ZONE_ID)} from calculation because it uses a pure sensor mapping and continuous updates are enabled."
+                        "[async_calculate_all]: Skipping zone %s from calculation because it uses a pure sensor mapping and continuous updates are enabled.",
+                        z.get(const.ZONE_ID),
                     )
         else:
             # no need to filter, continue with unfiltered zones
@@ -1107,6 +1167,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self.register_start_event()
 
     async def async_calculate_zone(self, zone_id, continuous_updates=False):
+        """Calculate irrigation values for a specific zone.
+
+        Args:
+            zone_id: The ID of the zone to calculate.
+            continuous_updates: Whether to use continuous updates for calculation.
+        """
         _LOGGER.debug(f"async_calculate_zone: Calculating zone {zone_id}")
         zone = self.store.get_zone(zone_id)
         mapping_id = zone[const.ZONE_MAPPING]
@@ -1169,7 +1235,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def getModuleInstanceByID(self, module_id):
         m = self.store.get_module(module_id)
         if m is None:
-            return
+            return None
         # load the module dynamically
         mods = await self.hass.async_add_executor_job(loadModules, const.MODULE_DIR)
         modinst = None
@@ -1188,7 +1254,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         mod_id = zone.get(const.ZONE_MODULE)
         m = self.store.get_module(mod_id)
         if m is None:
-            return
+            return None
         modinst = await self.getModuleInstanceByID(mod_id)
         # precip = 0
         ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
@@ -1231,7 +1297,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             zone.get(const.ZONE_NAME)
                         )
                     )
-                    return
+                    return None
             # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
             # data[const.ZONE_BUCKET] = round(bucket+delta,1)
             # data[const.ZONE_DELTA] = round(delta,1)
@@ -1284,7 +1350,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             _LOGGER.error(
                 "Unknown module for zone {}".format(zone.get(const.ZONE_NAME))
             )
-            return
+            return None
         explanation = await localize(
             "module.calculation.explanation.module-returned-evapotranspiration-deficiency",
             self.hass.config.language,
@@ -1479,7 +1545,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         data[const.ZONE_LAST_CALCULATED] = datetime.datetime.now()
         return data
 
-    async def async_update_module_config(self, module_id: int = None, data: dict = {}):
+    async def async_update_module_config(
+        self, module_id: int = None, data: dict = None
+    ):
+        """Update, create, or delete a module configuration.
+
+        Args:
+            module_id: The ID of the module to update or delete.
+            data: The configuration data for the module.
+
+        """
+        if data is None:
+            data = {}
         if module_id is not None:
             module_id = int(module_id)
         if const.ATTR_REMOVE in data:
@@ -1851,9 +1928,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         # update the start event
         _LOGGER.debug("calling register start event from async_update_zone_config")
-        self.register_start_event()
+        await self.register_start_event()
 
-    def register_start_event(self):
+    async def register_start_event(self):
         # sun_state = self.hass.states.get("sun.sun")
         # if sun_state is not None:
         #    sun_rise = sun_state.attributes.get("next_rising")
@@ -1862,7 +1939,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         #            sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S.%f%z")
         #        except(ValueError):
         #            sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S%z")
-        total_duration = self.get_total_duration_all_enabled_zones()
+        total_duration = await self.get_total_duration_all_enabled_zones()
         if self._track_sunrise_event_unsub:
             self._track_sunrise_event_unsub()
             self._track_sunrise_event_unsub = None
@@ -1890,9 +1967,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
             )
 
-    def get_total_duration_all_enabled_zones(self):
+    async def get_total_duration_all_enabled_zones(self):
         total_duration = 0
-        zones = self.store.get_zones()
+        zones = await self.store.async_get_zones()
         for zone in zones:
             if (
                 zone.get(const.ZONE_STATE) == const.ZONE_STATE_AUTOMATIC
@@ -1925,7 +2002,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
             )
 
-    @callback
     async def async_get_all_modules(self):
         """Get all ModuleEntries."""
         res = []

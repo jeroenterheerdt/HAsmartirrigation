@@ -484,7 +484,10 @@ class SmartIrrigationStorage:
         # await self.async_factory_default_modules()
 
     @callback
-    def async_get_config(self):
+    def get_config(self):
+        return attr.asdict(self.config)
+
+    async def async_get_config(self):
         return attr.asdict(self.config)
 
     @callback
@@ -509,8 +512,7 @@ class SmartIrrigationStorage:
         #        break
         # return attr.asdict(res) if res else None
 
-    @callback
-    def get_zones(self):
+    async def async_get_zones(self):
         """Get all ZoneEntries."""
         # res = {}
         # for key, val in self.zones.items():
@@ -591,8 +593,7 @@ class SmartIrrigationStorage:
             return attr.asdict(res) if res else None
         return None
 
-    @callback
-    def get_modules(self):
+    async def async_get_modules(self):
         """Get all ModuleEntries."""
         # res = {}
         # for key, val in self.modules.items():
@@ -645,8 +646,7 @@ class SmartIrrigationStorage:
             return attr.asdict(res) if res else None
         return None
 
-    @callback
-    def get_mappings(self):
+    async def async_get_mappings(self):
         """Get all MappingEntries."""
         # res = {}
         # for key, val in self.modules.items():
