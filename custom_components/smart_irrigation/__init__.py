@@ -334,7 +334,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             async_dispatcher_send(self.hass, const.DOMAIN + "_register_entity", zone)
 
     async def async_update_config(self, data):  # noqa: D102
-        _LOGGER.debug(f"[async_update_config]: config changed: {data}")
+        _LOGGER.debug("[async_update_config]: config changed: %s", data)
         # handle auto calc changes
         await self.set_up_auto_calc_time(data)
         # handle auto update changes, includings updating OWMClient cache settings
@@ -400,7 +400,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         if self._sensors_to_subscribe_to is not None:
             for s in self._sensors_to_subscribe_to:
-                _LOGGER.debug(f"[update_subscriptions]: subscribing to {s}")
+                _LOGGER.debug("[update_subscriptions]: subscribing to %s", s)
                 self._sensor_subscriptions.append(
                     async_track_state_change_event(
                         self.hass,
@@ -422,7 +422,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 static_in_mapping,
             ) = self.check_mapping_sources(mapping_id=mapping_id)
             mapping = self.store.get_mapping(mapping_id)
-            _LOGGER.debug(f"[get_sensors_to_subscribe_to]: mapping {mapping_id}: {mapping[const.MAPPING_MAPPINGS]}")
+            _LOGGER.debug("[get_sensors_to_subscribe_to]: mapping %s: %s", mapping_id, mapping[const.MAPPING_MAPPINGS])
             if sensor_in_mapping:
                 for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
                     _LOGGER.debug(
@@ -1216,7 +1216,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 forecastdata = await self.hass.async_add_executor_job(
                     self._WeatherServiceClient.get_forecast_data
                 )
-                # _LOGGER.debug(f"Retrieved forecast data: {forecastdata}")
+                # _LOGGER.debug("Retrieved forecast data: %s", forecastdata)
             else:
                 _LOGGER.error(
                     "Error calculating zone %s. You have configured forecasting but there is no OWM API configured. Either configure the OWM API or stop using forecasting on the PyETO module",
@@ -1297,7 +1297,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         """
         _LOGGER.debug("calculate_module for zone: %s", zone)
-        # _LOGGER.debug(f"[calculate_module] for zone: {zone}, weatherdata: {weatherdata}, forecastdata: {forecastdata}")
+        # _LOGGER.debug("[calculate_module] for zone: %s, weatherdata: %s, forecastdata: %s", zone, weatherdata, forecastdata)
         mod_id = zone.get(const.ZONE_MODULE)
         m = self.store.get_module(mod_id)
         if m is None:
@@ -1660,7 +1660,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     self.hass.config.language,
                 ) + " {}.</li></ol>".format(duration)
 
-                # _LOGGER.debug(f"[calculate-module]: explanation: {explanation}")
+                # _LOGGER.debug("[calculate-module]: explanation: %s", explanation)
         else:
             # no need to irrigate, set duration to 0
             duration = 0

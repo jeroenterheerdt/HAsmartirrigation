@@ -74,7 +74,7 @@ class SmartIrrigationConfigView(HomeAssistantView):
     )
     async def post(self, request, data):
         """Handle config update request."""
-        _LOGGER.debug(f"[websocket]: request: {request} {data}")
+        _LOGGER.debug("[websocket]: request: %s %s", request, data)
         hass = request.app["hass"]
         coordinator = hass.data[const.DOMAIN]["coordinator"]
         await coordinator.async_update_config(data)
@@ -102,7 +102,7 @@ class SmartIrrigationModuleView(HomeAssistantView):
     )
     async def post(self, request, data):
         """Handle config update request."""
-        _LOGGER.debug(f"[websocket]: request: {request} {data}")
+        _LOGGER.debug("[websocket]: request: %s %s", request, data)
         hass = request.app["hass"]
         coordinator = hass.data[const.DOMAIN]["coordinator"]
         if const.MODULE_ID in data:
@@ -147,7 +147,7 @@ class SmartIrrigationMappingView(HomeAssistantView):
     )
     async def post(self, request, data):
         """Handle config update request."""
-        _LOGGER.debug(f"[websocket]: request: {request} {data}")
+        _LOGGER.debug("[websocket]: request: %s %s", request, data)
         hass = request.app["hass"]
         coordinator = hass.data[const.DOMAIN]["coordinator"]
         if const.MAPPING_ID in data:
@@ -207,7 +207,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
     )
     async def post(self, request, data):
         """Handle config update request."""
-        _LOGGER.debug(f"[websocket]: request: {request} {data}")
+        _LOGGER.debug("[websocket]: request: %s %s", request, data)
         hass = request.app["hass"]
         coordinator = hass.data[const.DOMAIN]["coordinator"]
         if const.ZONE_ID in data:
