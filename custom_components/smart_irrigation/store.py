@@ -532,14 +532,14 @@ class SmartIrrigationStorage:
 
         return [attr.asdict(val) for val in self.zones.values()]
 
-    @callback
-    def async_create_zone(self, data: dict) -> ZoneEntry:
+    async def async_create_zone(self, data: dict) -> ZoneEntry:
         """Create a new ZoneEntry."""
         # zone_id = str(int(time.time()))
         # new_zone = ZoneEntry(**data, id=zone_id)
         new_zone = ZoneEntry(**data)
         if not new_zone.id:
-            new_zone = attr.evolve(new_zone, id=self.generate_next_id(self.get_zones()))
+            zones = await self.async_get_zones()
+            new_zone = attr.evolve(new_zone, id=self.generate_next_id(zones))
         self.zones[int(new_zone.id)] = new_zone
         self.async_schedule_save()
         return attr.asdict(new_zone)

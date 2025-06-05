@@ -163,9 +163,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
 
     if entry.unique_id is None:
-        await hass.config_entries.async_update_entry(
-            entry, unique_id=coordinator.id, data={}
-        )
+        hass.config_entries.async_update_entry(entry, unique_id=coordinator.id, data={})
 
     _LOGGER.info("Calling async_forward_entry_setups")
     await hass.config_entries.async_forward_entry_setups(entry, [PLATFORM])
@@ -809,7 +807,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 sensor_in_mapping,
                 static_in_mapping,
             ) = self.check_mapping_sources(mapping_id=mapping_id)
-            the_config = self.store.async_get_config()
+            the_config = await self.store.async_get_config()
             if the_config.get(const.CONF_CONTINUOUS_UPDATES) and not owm_in_mapping:
                 # if continuous updates are enabled, we do not need to update the mappings here for pure sensor mappings
                 _LOGGER.debug(
@@ -1813,11 +1811,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # this should be called by changes from the UI (by user) or by a calculation module (updating a duration), which should be done in python
         else:
             # create a zone
-            entry = self.store.async_create_zone(data)
+            entry = await self.store.async_create_zone(data)
 
             async_dispatcher_send(self.hass, const.DOMAIN + "_register_entity", entry)
 
-            self.store.async_get_config()
+            await self.store.async_get_config()
 
         # update the start event
         _LOGGER.debug("calling register start event from async_update_zone_config")

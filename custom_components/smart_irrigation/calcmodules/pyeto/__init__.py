@@ -137,7 +137,7 @@ class PyETO(SmartIrrigationCalculationModule):
             The mean evapotranspiration delta as a float.
 
         """
-        delta = 0
+        delta = 0.0
         deltas = []
         if weather_data:
             deltas.append(self.calculate_et_for_day(weather_data))
@@ -151,8 +151,9 @@ class PyETO(SmartIrrigationCalculationModule):
                     deltas.append(self.calculate_et_for_day(forecast_data[x]))
         # return average of the collected deltas
         _LOGGER.debug("[pyETO: calculate_et_for_day] collected deltas: %s", deltas)
-        delta = mean(deltas)
-        _LOGGER.debug("[pyETO: calculate]: mean of deltas returned: %s", delta)
+        if delta:
+            delta = mean(deltas)
+            _LOGGER.debug("[pyETO: calculate]: mean of deltas returned: %s", delta)
         return delta
 
     def calculate_et_for_day(self, weather_data):
