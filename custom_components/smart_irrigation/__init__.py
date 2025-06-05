@@ -332,6 +332,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             async_dispatcher_send(self.hass, const.DOMAIN + "_register_entity", zone)
 
     async def async_update_config(self, data):  # noqa: D102
+        _LOGGER.debug("[async_update_config]: config changed: %s", data)
         # handle auto calc changes
         await self.set_up_auto_calc_time(data)
         # handle auto update changes, includings updating OWMClient cache settings
@@ -390,12 +391,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         # WIP v2024.6.X: move to subscriptions
         # remove all existing sensor subscriptions
+        _LOGGER.debug("[update_subscriptions]: removing all sensor subscriptions")
         for s in self._sensor_subscriptions:
             with contextlib.suppress(Exception):
                 s()
 
         if self._sensors_to_subscribe_to is not None:
             for s in self._sensors_to_subscribe_to:
+                _LOGGER.debug("[update_subscriptions]: subscribing to %s", s)
                 self._sensor_subscriptions.append(
                     async_track_state_change_event(
                         self.hass,
@@ -417,8 +420,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 static_in_mapping,
             ) = self.check_mapping_sources(mapping_id=mapping_id)
             mapping = self.store.get_mapping(mapping_id)
+            _LOGGER.debug("[get_sensors_to_subscribe_to]: mapping %s: %s", mapping_id, mapping[const.MAPPING_MAPPINGS])
             if sensor_in_mapping:
-                for the_map in mapping[const.MAPPING_MAPPINGS].values():
+                for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
+                    _LOGGER.debug(
+                        f"[get_sensors_to_subscribe_to]: {key} {the_map}"
+                    )
                     if not isinstance(the_map, str):
                         if the_map.get(
                             const.MAPPING_CONF_SOURCE
@@ -433,13 +440,44 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 sensors_to_subscribe_to.append(
                                     the_map.get(const.MAPPING_CONF_SENSOR)
                                 )
+                            else:
+                                _LOGGER.debug(
+                                    "[get_sensors_to_subscribe_to]: already added"
+                                )
+                        else:
+                            _LOGGER.debug(
+                                "[get_sensors_to_subscribe_to]: not mapped to a sensor"
+                            )
+                    else:
+                        _LOGGER.debug("[get_sensors_to_subscribe_to]: the_map is a str, skipping")
+            else:
+                _LOGGER.debug("[get_sensors_to_subscribe_to]: sensor not in mapping")
 
         return sensors_to_subscribe_to
 
     async def async_sensor_state_changed(
         self, event: Event[EventStateChangedData]
     ) -> None:  # old signature: entity, old_state, new_state):
-        """Handle a sensor state change event."""
+        """Callback fired when a sensor state has changed."""
+        # old_state_obj = event.data["old_state"]
+        new_state_obj = event.data["new_state"]
+        entity = event.data["entity_id"]
+
+        # ignore states that don't have an actual value
+        if new_state_obj.state in [None, STATE_UNKNOWN, STATE_UNAVAILABLE]:
+            _LOGGER.debug(
+                "[async_sensor_state_changed]: new state for %s is %s, ignoring.",
+                entity,
+                new_state_obj.state
+            )
+            return
+        else:
+            _LOGGER.debug(
+                "[async_sensor_state_changed]: new state for %s is %s",
+                entity,
+                new_state_obj.state
+            )
+
         # check if continuous updates are enabled, if not, skip this and log a debug message
         the_config = self.store.async_get_config()
         if const.CONF_CONTINUOUS_UPDATES in the_config:
@@ -448,18 +486,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "[async_sensor_state_changed]: continuous updates are disabled, skipping"
                 )
                 return
-        # old_state_obj = event.data["old_state"]
-        new_state_obj = event.data["new_state"]
-        # handle the sensor update by updating the mapping data
-        entity = event.data["entity_id"]
-        if new_state_obj.state in [None, STATE_UNKNOWN, STATE_UNAVAILABLE]:
-            _LOGGER.debug(
-                "async_sensor_state_changed: new state for %s is %s, ignoring",
-                entity,
-                new_state_obj.state,
-            )
-            # return so we are ignoring these values
-            return
         # get the mapping that uses this sensor
         mappings = self.store.get_mappings()
         for mapping in mappings:
@@ -517,10 +543,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 mapping.get(const.MAPPING_ID), changes
                             )
                             _LOGGER.debug(
-                                "async_sensor_state_changed: updated sensor group %s %s. New value: %s",
+                                "async_sensor_state_changed: updated sensor group %s %s.",
                                 mapping.get(const.MAPPING_ID),
                                 key,
-                                new_state_obj.state,
                             )
             await self.async_continuous_update_for_mapping(
                 mapping.get(const.MAPPING_ID)
@@ -556,7 +581,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                     else:
                                         # module is PyETO. Check the config for forecast days == 0
                                         _LOGGER.debug(
-                                            "[async_continuous_update_for_mapping]: module is PyETO, checking config"
+                                            "[async_continuous_update_for_mapping]: module is PyETO, checking config."
                                         )
                                         if mod.get(const.MODULE_CONFIG):
                                             _LOGGER.debug(
@@ -872,7 +897,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         mapping_data,
                     )
                 _LOGGER.debug(
-                    "async_update_all for mapping %s new mapping_data: %s",
+                    "async_update_all for mapping %s new weatherdata: %s",
                     mapping_id,
                     weatherdata,
                 )
@@ -1189,7 +1214,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 forecastdata = await self.hass.async_add_executor_job(
                     self._WeatherServiceClient.get_forecast_data
                 )
-                # _LOGGER.debug(f"Retrieved forecast data: {forecastdata}")
+                # _LOGGER.debug("Retrieved forecast data: %s", forecastdata)
             else:
                 _LOGGER.error(
                     "Error calculating zone %s. You have configured forecasting but there is no OWM API configured. Either configure the OWM API or stop using forecasting on the PyETO module",
@@ -1270,7 +1295,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         """
         _LOGGER.debug("calculate_module for zone: %s", zone)
-        # _LOGGER.debug(f"[calculate_module] for zone: {zone}, weatherdata: {weatherdata}, forecastdata: {forecastdata}")
+        # _LOGGER.debug("[calculate_module] for zone: %s, weatherdata: %s, forecastdata: %s", zone, weatherdata, forecastdata)
         mod_id = zone.get(const.ZONE_MODULE)
         m = self.store.get_module(mod_id)
         if m is None:
@@ -1338,6 +1363,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "[calculate-module]: capped new bucket because of maximum bucket: %s",
                     newbucket,
                 )
+            bucket_plus_delta_capped = newbucket
+
             # take drainage rate into account
             drainage_rate = zone.get(const.ZONE_DRAINAGE_RATE, 0.0)
             if drainage_rate is None:
@@ -1350,6 +1377,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
             _LOGGER.debug("[calculate-module]: drainage_rate: %s", drainage_rate)
             # drainage only applies above field capacity (bucket > 0)
+            drainage = 0
             if newbucket > 0:
                 # drainage rate is related to water level, such that full drainage_rate
                 # occurs at saturation (maximum_bucket), but is reduced below that point.
@@ -1363,32 +1391,28 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     drainage *= (newbucket / maximum_bucket) ** (
                         (2 + 3 * gamma) / gamma
                     )
-                _LOGGER.debug("[calculate-module]: drainage: %s", drainage)
+                _LOGGER.debug("[calculate-module]: current_drainage: %s", drainage)
                 newbucket = max(0, newbucket - drainage)
+
+            data[const.ZONE_CURRENT_DRAINAGE] = drainage
             _LOGGER.debug("[calculate-module]: newbucket: %s", newbucket)
         else:
             _LOGGER.error("Unknown module for zone %s", zone.get(const.ZONE_NAME))
             return None
-        explanation = (
-            await localize(
-                "module.calculation.explanation.module-returned-evapotranspiration-deficiency",
-                self.hass.config.language,
-            )
-            + f" {round(data[const.ZONE_DELTA], 1)}. "
-        )
-        explanation += (
-            await localize(
-                "module.calculation.explanation.bucket-was", self.hass.config.language
-            )
-            + f" {round(data[const.ZONE_OLD_BUCKET], 1)}"
-        )
+        explanation = await localize(
+            "module.calculation.explanation.module-returned-evapotranspiration-deficiency",
+            self.hass.config.language,
+        ) + " {:.2f}. ".format(data[const.ZONE_DELTA])
+        explanation += await localize(
+            "module.calculation.explanation.bucket-was", self.hass.config.language
+        ) + " {:.2f}".format(data[const.ZONE_OLD_BUCKET])
         explanation += (
             ".<br/>"
             + await localize(
                 "module.calculation.explanation.maximum-bucket-is",
                 self.hass.config.language,
             )
-            + f" {round(float(maximum_bucket), 1)}"
+            + " {:.1f}".format(float(maximum_bucket))
         )
         explanation += (
             ".<br/>"
@@ -1396,29 +1420,104 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 "module.calculation.explanation.drainage-rate-is",
                 self.hass.config.language,
             )
-            + f" {round(float(drainage_rate), 1)}"
+            + " {:.1f}.<br/>".format(float(drainage_rate))
         )
+
+        # Define some localized strings here for cleaner code below
+        hours_loc = await localize(
+            "module.calculation.explanation.hours",
+            self.hass.config.language)
+        drainage_loc = await localize(
+            "module.calculation.explanation.drainage",
+            self.hass.config.language)
+        drainage_rate_loc = await localize(
+            "module.calculation.explanation.drainage-rate",
+            self.hass.config.language)
+        delta_loc = await localize(
+            "module.calculation.explanation.delta",
+            self.hass.config.language)
+        old_bucket_loc = await localize(
+            "module.calculation.explanation.old-bucket-variable",
+            self.hass.config.language)
+        max_bucket_loc = await localize(
+            "module.calculation.explanation.max-bucket-variable",
+            self.hass.config.language)
+        
+        if bucket_plus_delta_capped <= 0:
+            explanation += (await localize(
+                "module.calculation.explanation.no-drainage",
+                self.hass.config.language)
+                + " [{}] + [{}] <= 0 ({:.2f}{:+.2f} = {:.2f})".format(
+                    old_bucket_loc,
+                    delta_loc,
+                    data[const.ZONE_OLD_BUCKET],
+                    data[const.ZONE_DELTA],
+                    bucket_plus_delta_capped
+                )
+            )
+        else:
+            explanation += (
+                await localize(
+                    "module.calculation.explanation.current-drainage-is",
+                    self.hass.config.language,
+                )
+            )
+            if maximum_bucket is None:
+                explanation += (
+                    " [{}] * {} = {:.1f} * {:.2f} = {:.2f}".format(
+                        drainage_rate_loc,
+                        hours_loc,
+                        drainage_rate,
+                        24 * hour_multiplier,
+                        drainage)
+                )
+            else:
+                explanation += (
+                    " [{}] * [{}] * (min([{}] + [{}], [{}]) / [{}])^4 = {:.1f} * {:.2f} * ({:.2f} / {:.1f})^4 = {:.2f}".format(
+                    drainage_rate_loc,
+                    hours_loc,
+                    old_bucket_loc,
+                    delta_loc,
+                    max_bucket_loc,
+                    max_bucket_loc,
+                    drainage_rate,
+                    24 * hour_multiplier,
+                    bucket_plus_delta_capped,
+                    maximum_bucket,
+                    drainage)
+                )
         explanation += (
-            "."
+            ".<br/>"
             + await localize(
                 "module.calculation.explanation.new-bucket-values-is",
                 self.hass.config.language,
             )
-            + " ["
         )
-        explanation += (
-            await localize(
-                "module.calculation.explanation.old-bucket-variable",
-                self.hass.config.language,
+
+        if maximum_bucket is not None:
+            explanation += (
+                " min([{}] + [{}], {}) - [{}] = min({:.2f}{:+.2f}, {:.1f}) - {:.2f} = {:.2f}.<br/>".format(
+                    old_bucket_loc,
+                    delta_loc,
+                    max_bucket_loc,
+                    drainage_loc,
+                    data[const.ZONE_OLD_BUCKET],
+                    data[const.ZONE_DELTA],
+                    maximum_bucket,
+                    drainage,
+                    newbucket)
             )
-            + "]+["
-        )
-        explanation += (
-            await localize(
-                "module.calculation.explanation.delta", self.hass.config.language
+        else:
+            explanation += (
+                " [{}] + [{}] - [{}] = {:.2f} + {:.2f} - {:.2f} = {:.2f}.<br/>".format(
+                    old_bucket_loc,
+                    delta_loc,
+                    drainage_loc,
+                    data[const.ZONE_OLD_BUCKET],
+                    data[const.ZONE_DELTA],
+                    drainage,
+                    newbucket)
             )
-            + f"]={round(data[const.ZONE_OLD_BUCKET], 1)}+{round(data[const.ZONE_DELTA], 1)}-{round(drainage_rate, 1)}={round(newbucket, 1)}.<br/>"
-        )
 
         if newbucket < 0:
             # calculate duration
@@ -1457,7 +1556,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # explanation += "<ol><li>Water budget is defined as abs([bucket])/max(ET)={}</li>".format(water_budget)
             # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
             explanation += (
-                "<li>"
+                "<ol><li>"
                 + await localize(
                     "module.calculation.explanation.precipitation-rate-defined-as",
                     self.hass.config.language,
@@ -1466,9 +1565,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 + await localize(
                     "common.attributes.throughput", self.hass.config.language
                 )
-                + "]*60/["
+                + "] * 60 / ["
                 + await localize("common.attributes.size", self.hass.config.language)
-                + f"]={round(tput, 1)}*60/{round(sz, 1)}={round(precipitation_rate, 1)}</li>"
+                + "] = {:.1f} * 60 / {:.1f} = {:.1f}.</li>".format(
+                    tput, sz, precipitation_rate
+                )
             )
             # v1 only
             # explanation += "<li>The base schedule index is defined as (max(ET)/[precipitation rate]*60)*60=({}/{}*60)*60={}</li>".format(mod.maximum_et,precipitation_rate,round(base_schedule_index,1))
@@ -1484,12 +1585,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 + await localize(
                     "module.calculation.explanation.bucket", self.hass.config.language
                 )
-                + "])/["
+                + "]) / ["
                 + await localize(
                     "module.calculation.explanation.precipitation-rate-variable",
                     self.hass.config.language,
                 )
-                + f"]*3600={abs(round(newbucket, 1))}/{round(precipitation_rate, 1)}*3600={round(duration)}</li>"
+                + "] * 3600 = {:.2f} / {:.1f} * 3600 = {:.0f}.</li>".format(
+                    abs(newbucket),
+                    precipitation_rate,
+                    duration,
+                )
             )
             duration = zone.get(const.ZONE_MULTIPLIER) * duration
             explanation += (
@@ -1500,15 +1605,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
                 + f" {zone.get(const.ZONE_MULTIPLIER)}, "
             )
-            # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
-            explanation += (
-                await localize(
-                    "module.calculation.explanation.duration-after-multiplier-is",
-                    self.hass.config.language,
-                )
-                + f" {round(duration)}</li>"
-            )
-            # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
+            explanation += await localize(
+                "module.calculation.explanation.duration-after-multiplier-is",
+                self.hass.config.language,
+            ) + " {}.</li>".format(round(duration))
 
             # get maximum duration if set and >=0 and override duration if it's higher than maximum duration
             explanation += (
@@ -1517,7 +1617,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "module.calculation.explanation.maximum-duration-is-applied",
                     self.hass.config.language,
                 )
-                + f" {zone.get(const.ZONE_MAXIMUM_DURATION)}, "
+                + " {:.0f}".format(zone.get(const.ZONE_MAXIMUM_DURATION))
             )
             if (
                 zone.get(const.ZONE_MAXIMUM_DURATION) is not None
@@ -1526,12 +1626,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             ):
                 duration = zone.get(const.ZONE_MAXIMUM_DURATION)
                 explanation += (
-                    await localize(
+                    ", "
+                    + await localize(
                         "module.calculation.explanation.duration-after-maximum-duration-is",
-                        self.hass.config.language,
+                        self.hass.config.language
                     )
-                    + f" {round(duration)}</li>"
+                    + " {:.0f}".format(duration)
                 )
+            explanation += ".</li>"
+            
             # add the lead time but only if duration is > 0 at this point
             if duration > 0.0:
                 duration = round(zone.get(const.ZONE_LEAD_TIME) + duration)
@@ -1550,8 +1653,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     )
                     + f" {duration}</li></ol>"
                 )
+                explanation += await localize(
+                    "module.calculation.explanation.duration-after-lead-time-is",
+                    self.hass.config.language,
+                ) + " {}.</li></ol>".format(duration)
 
-                # _LOGGER.debug(f"[calculate-module]: explanation: {explanation}")
+                # _LOGGER.debug("[calculate-module]: explanation: %s", explanation)
         else:
             # no need to irrigate, set duration to 0
             duration = 0
@@ -1614,6 +1721,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             data: The configuration data for the mapping.
 
         """
+        _LOGGER.debug("[async_update_mapping_config]: update for mapping %s, data: %s", mapping_id, data)
         if data is None:
             data = {}
         if mapping_id is not None:
@@ -1767,6 +1875,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             data: The configuration data for the mapping.
 
         """
+        _LOGGER.debug("[async_update_zone_config]: updating zone %s", zone_id)
         if data is None:
             data = {}
         if zone_id is not None:

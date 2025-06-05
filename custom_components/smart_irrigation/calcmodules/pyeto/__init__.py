@@ -166,7 +166,7 @@ class PyETO(SmartIrrigationCalculationModule):
             The evapotranspiration delta as a float.
 
         """
-        # _LOGGER.debug(f"[pyETO: calculate_et_for_day] weather_data: {weather_data}")
+        # _LOGGER.debug("[pyETO: calculate_et_for_day] weather_data: %s", weather_data)
         if weather_data:
             tdew = weather_data.get(MAPPING_DEWPOINT)
             temp_c_min = weather_data.get(MAPPING_MIN_TEMP)

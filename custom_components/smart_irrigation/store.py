@@ -77,6 +77,7 @@ from .const import (
     MODULE_SCHEMA,
     START_EVENT_FIRED_TODAY,
     ZONE_BUCKET,
+    ZONE_CURRENT_DRAINAGE,
     ZONE_DELTA,
     ZONE_DRAINAGE_RATE,
     ZONE_DURATION,
@@ -131,6 +132,7 @@ class ZoneEntry:
     last_updated = attr.ib(type=datetime, default=None)
     number_of_data_points = attr.ib(type=int, default=0)
     drainage_rate = attr.ib(type=float, default=CONF_DEFAULT_DRAINAGE_RATE)
+    current_drainage = attr.ib(type=float, default=0)
 
 
 @attr.s(slots=True, frozen=True)
@@ -304,6 +306,7 @@ class SmartIrrigationStorage:
                             ZONE_NUMBER_OF_DATA_POINTS, None
                         ),
                         drainage_rate=zone.get(ZONE_DRAINAGE_RATE, None),
+                        current_drainage=zone.get(ZONE_CURRENT_DRAINAGE, None),
                     )
             if "modules" in data:
                 for module in data["modules"]:

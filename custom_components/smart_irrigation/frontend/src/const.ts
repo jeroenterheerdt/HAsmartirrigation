@@ -109,3 +109,4 @@ export const ZONE_LEAD_TIME = "lead_time";
 export const ZONE_MAXIMUM_DURATION = "maximum_duration";
 export const ZONE_MAXIMUM_BUCKET = "maximum_bucket";
 export const ZONE_DRAINAGE_RATE = "drainage_rate";
+export const ZONE_CURRENT_DRAINAGE = "current_drainage";
