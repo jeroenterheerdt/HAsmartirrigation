@@ -1,2 +1,9 @@
-name: Run pytest
-uses: pavelzw/pytest-action@v2.2.0
+- name: Install dependencies
+  run: pip install pytest pytest-md pytest-emoji
+- name: Run pytest
+  uses: pavelzw/pytest-action@v2.2.0
+  with:
+      verbose: true
+      emoji: true
+      job-summary: true
+      custom-arguments: '-q'
