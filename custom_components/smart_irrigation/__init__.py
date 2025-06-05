@@ -345,7 +345,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def set_up_auto_update_time(self, data):  # noqa: D102
         # WIP v2024.6.X:
         # experiment to use subscriptions to catch all updates instead of just on a time schedule
-        await self.update_subscriptions()
+        await self.update_subscriptions(data)
         if data[const.CONF_AUTO_UPDATE_ENABLED]:
             # CONF_AUTO_UPDATE_SCHEDULE: minute, hour, day
             # CONF_AUTO_UPDATE_INTERVAL: X
@@ -384,17 +384,27 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self._track_auto_update_time_unsub = None
             self.store.async_update_config(data)
 
-    async def update_subscriptions(self):
+    async def update_subscriptions(self, config = None):
         """Update sensor subscriptions for Smart Irrigation coordinator."""
-        # subscribe to all sensors
-        self._sensors_to_subscribe_to = await self.get_sensors_to_subscribe_to()
-
         # WIP v2024.6.X: move to subscriptions
         # remove all existing sensor subscriptions
         _LOGGER.debug("[update_subscriptions]: removing all sensor subscriptions")
         for s in self._sensor_subscriptions:
             with contextlib.suppress(Exception):
                 s()
+
+        # check if continuous updates are enabled, if not, skip this
+        # and log a debug message
+        if config is None:
+            config = await self.store.async_get_config()
+        if not config.get(const.CONF_CONTINUOUS_UPDATES):
+            _LOGGER.debug(
+                "[update_subscriptions]: continuous updates are disabled, skipping."
+            )
+            return
+
+        # subscribe to all sensors
+        self._sensors_to_subscribe_to = await self.get_sensors_to_subscribe_to()
 
         if self._sensors_to_subscribe_to is not None:
             for s in self._sensors_to_subscribe_to:
@@ -481,14 +491,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             new_state_obj.state,
         )
 
-        # check if continuous updates are enabled, if not, skip this and log a debug message
-        the_config = self.store.async_get_config()
-        if const.CONF_CONTINUOUS_UPDATES in the_config:
-            if not the_config[const.CONF_CONTINUOUS_UPDATES]:
-                _LOGGER.debug(
-                    "[async_sensor_state_changed]: continuous updates are disabled, skipping"
-                )
-                return
         # get the mapping that uses this sensor
         mappings = self.store.get_mappings()
         for mapping in mappings:
@@ -1704,7 +1706,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             async_dispatcher_send(
                 self.hass, const.DOMAIN + "_config_updated", mapping_id
             )
-            await self.update_subscriptions()
         else:
             # create a mapping
             self.store.async_create_mapping(data)
