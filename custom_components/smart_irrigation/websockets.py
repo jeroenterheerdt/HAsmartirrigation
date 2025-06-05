@@ -1,3 +1,5 @@
+"""Websocket and HTTP API views for Smart Irrigation integration."""
+
 import datetime
 import logging
 
@@ -23,7 +25,6 @@ from . import const
 _LOGGER = logging.getLogger(__name__)
 
 
-@callback
 @decorators.websocket_command(
     {
         vol.Required("type"): const.DOMAIN + "_config_updated",
@@ -50,6 +51,8 @@ async def handle_subscribe_updates(hass: HomeAssistant, connection, msg):
 
 
 class SmartIrrigationConfigView(HomeAssistantView):
+    """View to handle Smart Irrigation configuration updates via HTTP API."""
+
     url = "/api/" + const.DOMAIN + "/config"
     name = "api:" + const.DOMAIN + ":config"
 
@@ -79,6 +82,8 @@ class SmartIrrigationConfigView(HomeAssistantView):
 
 
 class SmartIrrigationModuleView(HomeAssistantView):
+    """View to handle Smart Irrigation module configuration via HTTP API."""
+
     url = "/api/" + const.DOMAIN + "/modules"
     name = "api:" + const.DOMAIN + ":modules"
 
@@ -109,11 +114,15 @@ class SmartIrrigationModuleView(HomeAssistantView):
 
 
 class SmartIrrigationAllModuleView(HomeAssistantView):
+    """View to handle retrieval of all Smart Irrigation modules via HTTP API."""
+
     url = "/api/" + const.DOMAIN + "/allmodules"
     name = "api:" + const.DOMAIN + ":allmodules"
 
 
 class SmartIrrigationMappingView(HomeAssistantView):
+    """View to handle Smart Irrigation mapping configuration via HTTP API."""
+
     url = "/api/" + const.DOMAIN + "/mappings"
     name = "api:" + const.DOMAIN + ":mapping"
 
@@ -149,6 +158,8 @@ class SmartIrrigationMappingView(HomeAssistantView):
 
 
 class SmartIrrigationZoneView(HomeAssistantView):
+    """View to handle Smart Irrigation zone configuration via HTTP API."""
+
     url = "/api/" + const.DOMAIN + "/zones"
     name = "api:" + const.DOMAIN + ":zones"
 
@@ -246,6 +257,7 @@ async def websocket_get_mappings(hass: HomeAssistant, connection, msg):
 
 
 async def async_register_websockets(hass: HomeAssistant):
+    """Register Smart Irrigation HTTP views and websocket commands."""
     hass.http.register_view(SmartIrrigationConfigView)
     hass.http.register_view(SmartIrrigationZoneView)
     hass.http.register_view(SmartIrrigationModuleView)

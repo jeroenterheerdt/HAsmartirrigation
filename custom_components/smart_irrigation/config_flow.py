@@ -17,6 +17,7 @@ class SmartIrrigationConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self) -> None:
+        """Initialize the SmartIrrigationConfigFlow instance."""
         self._errors = {}
         self._name = ""
         self._use_weather_service = False

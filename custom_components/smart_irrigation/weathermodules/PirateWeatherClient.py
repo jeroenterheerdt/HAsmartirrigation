@@ -9,7 +9,8 @@ import sys
 import requests
 
 # DO NOT USE THESE FOR TESTING, INSTEAD DEFINE THE CONSTS IN THIS FILE
-from ..const import (
+from ..const import (  # noqa: TID252
+    MAPPING_CURRENT_PRECIPITATION,
     MAPPING_DEWPOINT,
     MAPPING_HUMIDITY,
     MAPPING_MAX_TEMP,
@@ -18,7 +19,6 @@ from ..const import (
     MAPPING_PRESSURE,
     MAPPING_TEMPERATURE,
     MAPPING_WINDSPEED,
-    MAPPING_CURRENT_PRECIPITATION,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -121,16 +121,15 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
                     i = i + 1
                 if req.status_code != 200:
                     _LOGGER.error(
-                        "PirateWeather API returned error status code: {}".format(
-                            req.status_code
-                        )
+                        "PirateWeather API returned error status code: %s",
+                        req.status_code,
                     )
-                    return
+                    return None
                 doc = json.loads(req.text)
                 _LOGGER.debug(
-                    "PirateWeatherClient get_forecast_data called API {} and received {}".format(
-                        self.url, doc
-                    )
+                    "PirateWeatherClient get_forecast_data called API %s and received %s",
+                    self.url,
+                    doc,
                 )
                 # parse out values from daily
                 if PirateWeather_daily_weather_key_name in doc:
@@ -177,13 +176,16 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
                     self._cached_forecast_data = parsed_data_total
                     self._last_time_called = datetime.datetime.now()
                     return parsed_data_total
-                else:
-                    _LOGGER.warning(
-                        f"Ignoring PirateWeather input: missing required key '{PirateWeather_daily_weather_key_name}' in PirateWeather API return"
-                    )
+                _LOGGER.warning(
+                    "Ignoring PirateWeather input: missing required key '%s' in PirateWeather API return",
+                    PirateWeather_daily_weather_key_name,
+                )
                 return None
-            except Exception as ex:
-                _LOGGER.error("Error reading from PirateWeather: {0}".format(ex))
+            except requests.RequestException as ex:
+                _LOGGER.error("Error reading from PirateWeather: %s", ex)
+            except json.JSONDecodeError as ex:
+                _LOGGER.error("Error decoding PirateWeather API response: %s", ex)
+            else:
                 return None
         else:
             # return cached_data
@@ -201,8 +203,7 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
         # Calculate temperature at given height
         temperature = T0 - (g * M * float(height)) / (R * T0)
         # Calculate absolute pressure at given height
-        absolute_pressure = pressure * (T0 / temperature) ** (g * M / (R * 287))
-        return absolute_pressure
+        return pressure * (T0 / temperature) ** (g * M / (R * 287))
 
     def get_data(self):
         """Validate and return data."""
@@ -220,16 +221,15 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
                     i = i + 1
                 if req.status_code != 200:
                     _LOGGER.error(
-                        "PirateWeather API returned error status code: {}".format(
-                            req.status_code
-                        )
+                        "PirateWeather API returned error status code: %s",
+                        req.status_code,
                     )
-                    return
+                    return None
                 doc = json.loads(req.text)
                 _LOGGER.debug(
-                    "PirateWeatherClient get_data called API {} and received {}".format(
-                        self.url, doc
-                    )
+                    "PirateWeatherClient get_data called API %s and received %s",
+                    self.url,
+                    doc,
                 )
                 # parse out values for currently and rain/snow from daily[0].
                 if (
@@ -294,43 +294,44 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
                             PirateWeather_precip_key_name
                         ]
                         _LOGGER.debug(
-                            "PirateWeatherClient daily precipitation: {}".format(
-                                dailydata[PirateWeather_precip_key_name]
-                            )
+                            "PirateWeatherClient daily precipitation: %s",
+                            dailydata[PirateWeather_precip_key_name],
                         )
 
                     else:
                         parsed_data[MAPPING_PRECIPITATION] = 0.0
                     _LOGGER.debug(
-                        "PirateWeatherCLIENT daily precipitation: {}".format(
-                            parsed_data[MAPPING_PRECIPITATION]
-                        )
+                        "PirateWeatherCLIENT daily precipitation: %s",
+                        parsed_data[MAPPING_PRECIPITATION],
                     )
 
                     self._cached_data = parsed_data
                     self._last_time_called = datetime.datetime.now()
                     return parsed_data
-                else:
-                    _LOGGER.warning(
-                        f"Ignoring PirateWeather input: missing required key '{PirateWeather_current_weather_key_name}' and '{PirateWeather_daily_weather_key_name}' in PirateWeather API return"
-                    )
+                _LOGGER.warning(
+                    "Ignoring PirateWeather input: missing required key '%s' and '%s' in PirateWeather API return",
+                    PirateWeather_current_weather_key_name,
+                    PirateWeather_daily_weather_key_name,
+                )
                 return None
             except Exception as ex:
                 _LOGGER.warning(ex)
-                raise ex
+                raise
+            else:
+                return parsed_data
         else:
             # return cached_data
             _LOGGER.info("Returning cached PirateWeather data")
             return self._cached_data
 
     def raiseIOError(self, key):
-        raise IOError("Missing required key {} in PirateWeather API return".format(key))
+        """Raise an OSError when a required key is missing in the PirateWeather API return."""
+        raise OSError(f"Missing required key {key} in PirateWeather API return")
 
     def validationError(self, key, value, minval, maxval):
+        """Raise a ValueError if a value is outside the expected range for a key."""
         raise ValueError(
-            "Value {} is not valid for {}. Excepted range: {}-{}".format(
-                value, key, minval, maxval
-            )
+            f"Value {value} is not valid for {key}. Excepted range: {minval}-{maxval}"
         )
 
 
@@ -338,5 +339,5 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
 if __name__ == "__main__":
     args = sys.argv[1:]
     client = PirateWeatherClient(args[0], args[1], args[2], args[3], args[4])
-    print(client.get_data())
-    print(client.get_forecast_data())
+    print(client.get_data())  # noqa: T201
+    print(client.get_forecast_data())  # noqa: T201

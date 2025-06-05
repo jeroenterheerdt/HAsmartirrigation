@@ -1,5 +1,4 @@
-"""
-Internal validation functions.
+"""Internal validation functions.
 
 :copyright: (c) 2015 by Mark Richards.
 :license: BSD 3-Clause, see LICENSE.txt for more details.
@@ -21,49 +20,45 @@ _MAXSHA_RADIANS = deg2rad(180)
 
 
 def check_day_hours(hours, arg_name):
-    """
-    Check that *hours* is in the range 1 to 24.
+    """Check that *hours* is in the range 1 to 24.
     """
     if not 0 <= hours <= 24:
         raise ValueError(
-            '{0} should be in range 0-24: {1!r}'.format(arg_name, hours))
+            f'{arg_name} should be in range 0-24: {hours!r}')
 
 
 def check_doy(doy):
-    """
-    Check day of the year is valid.
+    """Check day of the year is valid.
     """
     if not 1 <= doy <= 366:
         raise ValueError(
-            'Day of the year (doy) must be in range 1-366: {0!r}'.format(doy))
+            f'Day of the year (doy) must be in range 1-366: {doy!r}')
 
 
 def check_latitude_rad(latitude):
      if not _MINLAT_RADIANS <= latitude <= _MAXLAT_RADIANS:
         raise ValueError(
-            'latitude outside valid range {0!r} to {1!r} rad: {2!r}'
-            .format(_MINLAT_RADIANS, _MAXLAT_RADIANS, latitude))
+            f'latitude outside valid range {_MINLAT_RADIANS!r} to {_MAXLAT_RADIANS!r} rad: {latitude!r}'
+            )
 
 
 def check_sol_dec_rad(sd):
-    """
-    Solar declination can vary between -23.5 and +23.5 degrees.
+    """Solar declination can vary between -23.5 and +23.5 degrees.
 
     See http://mypages.iit.edu/~maslanka/SolarGeo.pdf
     """
     if not _MINSOLDEC_RADIANS <= sd <= _MAXSOLDEC_RADIANS:
         raise ValueError(
-            'solar declination outside valid range {0!r} to {1!r} rad: {2!r}'
-            .format(_MINSOLDEC_RADIANS, _MAXSOLDEC_RADIANS, sd))
+            f'solar declination outside valid range {_MINSOLDEC_RADIANS!r} to {_MAXSOLDEC_RADIANS!r} rad: {sd!r}'
+            )
 
 
 def check_sunset_hour_angle_rad(sha):
-    """
-    Sunset hour angle has the range 0 to 180 degrees.
+    """Sunset hour angle has the range 0 to 180 degrees.
 
     See http://mypages.iit.edu/~maslanka/SolarGeo.pdf
     """
     if not _MINSHA_RADIANS <= sha <= _MAXSHA_RADIANS:
         raise ValueError(
-            'sunset hour angle outside valid range {0!r} to {1!r} rad: {2!r}'
-            .format(_MINSHA_RADIANS, _MAXSHA_RADIANS, sha))
+            f'sunset hour angle outside valid range {_MINSHA_RADIANS!r} to {_MAXSHA_RADIANS!r} rad: {sha!r}'
+            )

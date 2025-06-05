@@ -1,12 +1,16 @@
 """The Static module for Smart Irrigation Integration."""
 
 import logging
+
+from custom_components.smart_irrigation.calcmodules.calcmodule import (
+    SmartIrrigationCalculationModule,
+)
 import voluptuous as vol
-from ..calcmodule import SmartIrrigationCalculationModule
+
+from homeassistant.core import HomeAssistant
 
 # v1 only, no longer used in v2
 # from ...const import CONF_MAXIMUM_ET, DEFAULT_MAXIMUM_ET
-from ..localize import localize
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +25,17 @@ SCHEMA = vol.Schema(
 
 
 class Static(SmartIrrigationCalculationModule):
-    def __init__(self, hass, description, config: {}) -> None:
+    """Calculation module that returns a static delta value for Smart Irrigation."""
+
+    def __init__(self, hass: HomeAssistant | None, description, config: dict) -> None:
+        """Initialize the Static calculation module with configuration.
+
+        Args:
+            hass: The Home Assistant instance.
+            description: Description of the calculation module.
+            config: Configuration dictionary for the module.
+
+        """
         super().__init__(
             name="Static", description=description, config=config, schema=SCHEMA
         )
@@ -33,4 +47,5 @@ class Static(SmartIrrigationCalculationModule):
                 self._delta = float(config.get(CONF_DELTA, DEFAULT_DELTA))
 
     def calculate(self):
+        """Return the static delta value for irrigation calculation."""
         return self._delta

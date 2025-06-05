@@ -1,13 +1,13 @@
 """Diagnostics support for Smart Irrigation."""
 
 from __future__ import annotations
-import json
-import logging
 
+import logging
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+
 from . import const
 
 _LOGGER = logging.getLogger(__name__)

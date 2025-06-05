@@ -1,4 +1,5 @@
-import asyncio
+"""Sensor platform for Smart Irrigation integration."""
+
 import logging
 
 from homeassistant.components.sensor import DOMAIN as PLATFORM, SensorEntity
@@ -9,7 +10,6 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
-from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
@@ -17,7 +17,6 @@ from homeassistant.util import slugify
 
 from . import const
 from .helpers import convert_timestamp
-from .localize import localize
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,7 +30,6 @@ def setup_platform(
     """Set up the sensor platform."""
 
 
-@callback
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
@@ -75,7 +73,7 @@ async def async_setup_entry(
     # register services if any here
 
 
-def check_zone_entity_in_hass_data(hass, entity_id: str) -> bool:
+def check_zone_entity_in_hass_data(hass: HomeAssistant | None, entity_id: str) -> bool:
     """Check if the entity_id is already in hass data."""
     if (
         hass
@@ -91,6 +89,8 @@ def check_zone_entity_in_hass_data(hass, entity_id: str) -> bool:
 
 
 class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
+    """Sensor entity representing a Smart Irrigation zone."""
+
     def __init__(
         self,
         hass: HomeAssistant,
@@ -202,29 +202,36 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
 
     @property
     def device_class(self):
+        """Return the device class of the sensor."""
         return SensorDeviceClass.DURATION
 
     @property
     def native_unit_of_measurement(self):
+        """Return the native unit of measurement for this sensor."""
         return "s"
 
     @property
     def native_value(self):
+        """Return the native value of the sensor."""
         return self._duration
 
     @property
     def suggested_display_precision(self):
+        """Return the suggested display precision for this sensor."""
         return 0
 
     @property
     def suggested_unit_of_measurement(self):
+        """Return the suggested unit of measurement for this sensor."""
         return "s"
 
     @property
     def extra_state_attributes(self):
         """Return the data of the entity."""
         _LOGGER.debug(
-            f"[extra_state_attributes] bucket: {self._bucket}, et_value: {self._delta}"
+            "[extra_state_attributes] bucket: %s, et_value: %s",
+            self._bucket,
+            self._delta,
         )
         return {
             "id": self._id,
@@ -263,7 +270,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
 
     async def async_added_to_hass(self):
         """Connect to dispatcher listening for entity data notifications."""
-        _LOGGER.debug("{} is added to hass".format(self.entity_id))
+        _LOGGER.debug("%s is added to hass", self.entity_id)
         await super().async_added_to_hass()
 
         await self.async_get_last_state()
@@ -281,5 +288,6 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         #    self._bypassed_sensors = state.attributes["bypassed_sensors"]
 
     async def async_will_remove_from_hass(self):
+        """Handle removal of the entity from Home Assistant."""
         await super().async_will_remove_from_hass()
-        _LOGGER.debug("{} is removed from hass".format(self.entity_id))
+        _LOGGER.debug("%s is removed from hass", self.entity_id)

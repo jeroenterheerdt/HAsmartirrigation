@@ -1,1 +1,1 @@
-### Empty __init__
+"""Calculation modules for Smart Irrigation integration."""

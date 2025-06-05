@@ -1,7 +1,10 @@
+"""Storage and management for Smart Irrigation configuration, zones, modules, and mappings."""
+
 from collections import OrderedDict
+from collections.abc import MutableMapping
 import datetime
 import logging
-from typing import MutableMapping, cast
+from typing import cast
 
 import attr
 
@@ -39,15 +42,15 @@ from .const import (
     CONF_IMPERIAL,
     CONF_METRIC,
     CONF_UNITS,
-    CONF_WEATHER_SERVICE,
     CONF_USE_WEATHER_SERVICE,
+    CONF_WEATHER_SERVICE,
     CONF_WEATHER_SERVICE_OWM,
     DOMAIN,
     MAPPING_CONF_SENSOR,
     MAPPING_CONF_SOURCE,
     MAPPING_CONF_SOURCE_NONE,
-    MAPPING_CONF_SOURCE_WEATHER_SERVICE,
     MAPPING_CONF_SOURCE_SENSOR,
+    MAPPING_CONF_SOURCE_WEATHER_SERVICE,
     MAPPING_CONF_UNIT,
     MAPPING_CURRENT_PRECIPITATION,
     MAPPING_DATA,
@@ -93,7 +96,7 @@ from .const import (
     ZONE_STATE_AUTOMATIC,
     ZONE_THROUGHPUT,
 )
-from .helpers import loadModules, convert_list_to_dict
+from .helpers import convert_list_to_dict, loadModules
 from .localize import localize
 
 _LOGGER = logging.getLogger(__name__)
@@ -175,6 +178,8 @@ class Config:
 
 
 class MigratableStore(Store):
+    """Store subclass that supports migration for Smart Irrigation storage."""
+
     async def _async_migrate_func(self, old_version, data: dict):
         if old_version == 3:
             if "config" in data:
@@ -226,9 +231,9 @@ class SmartIrrigationStorage:
             starteventfiredtoday=False,
             continuousupdates=CONF_DEFAULT_CONTINUOUS_UPDATES,
         )
-        zones: "OrderedDict[str, ZoneEntry]" = OrderedDict()
-        modules: "OrderedDict[str, ModuleEntry]" = OrderedDict()
-        mappings: "OrderedDict[str, MappingEntry]" = OrderedDict()
+        zones: OrderedDict[str, ZoneEntry] = OrderedDict()
+        modules: OrderedDict[str, ModuleEntry] = OrderedDict()
+        mappings: OrderedDict[str, MappingEntry] = OrderedDict()
 
         if data is not None:
             config = Config(
@@ -348,6 +353,7 @@ class SmartIrrigationStorage:
         self.mappings = mappings
 
     async def set_up_factory_defaults(self):
+        """Set up factory default zones, modules, and mappings if they do not exist."""
         if not self.zones:
             await self.async_factory_default_zones()
         if not self.modules:
@@ -356,6 +362,7 @@ class SmartIrrigationStorage:
             await self.async_factory_default_mappings()
 
     async def async_factory_default_zones(self):
+        """Set up factory default zones if none exist."""
         # new_zone1 = ZoneEntry(
         #    **{ZONE_ID: 0, ZONE_NAME: localize("defaults.default-zone", self.hass.config.language)+" 1", ZONE_SIZE: 50.5, ZONE_THROUGHPUT: 10.1,ZONE_MODULE:0,ZONE_MAPPING:0,ZONE_LEAD_TIME:0, ZONE_MAXIMUM_DURATION:CONF_DEFAULT_MAXIMUM_DURATION, ZONE_MAXIMUM_BUCKET: CONF_DEFAULT_MAXIMUM_BUCKET}
         # )
@@ -368,6 +375,7 @@ class SmartIrrigationStorage:
         return
 
     async def async_factory_default_modules(self):
+        """Set up factory default modules if none exist."""
         schema_from_code = None
         module0schema = None
         module1schema = None
@@ -408,6 +416,7 @@ class SmartIrrigationStorage:
         self.async_schedule_save()
 
     async def async_factory_default_mappings(self):
+        """Set up factory default mappings if none exist."""
         # this should be Weather Service mapping if a weather service is defined
         mapping_source = ""
         if self.config.use_weather_service:
@@ -427,15 +436,15 @@ class SmartIrrigationStorage:
             MAPPING_WINDSPEED,
         ]
         conf = {}
-        for map in mappings:
+        for mapping_key in mappings:
             map_source = mapping_source
             # evapotranspiration and solrad can only come from a sensor or none
-            if map in [MAPPING_EVAPOTRANSPIRATION, MAPPING_SOLRAD]:
+            if mapping_key in [MAPPING_EVAPOTRANSPIRATION, MAPPING_SOLRAD]:
                 if self.config.use_weather_service:
                     map_source = MAPPING_CONF_SOURCE_NONE
                 else:
                     map_source = MAPPING_CONF_SOURCE_SENSOR
-            conf[map] = {
+            conf[mapping_key] = {
                 MAPPING_CONF_SOURCE: map_source,
                 MAPPING_CONF_SENSOR: "",
                 MAPPING_CONF_UNIT: "",
@@ -485,9 +494,11 @@ class SmartIrrigationStorage:
 
     @callback
     def get_config(self):
+        """Return the current configuration as a dictionary."""
         return attr.asdict(self.config)
 
     async def async_get_config(self):
+        """Return the current configuration as a dictionary asynchronously."""
         return attr.asdict(self.config)
 
     @callback
@@ -519,10 +530,7 @@ class SmartIrrigationStorage:
         #    res[key] = attr.asdict(val)
         # return res
 
-        res = []
-        for val in self.zones.values():
-            res.append(attr.asdict(val))
-        return res
+        return [attr.asdict(val) for val in self.zones.values()]
 
     @callback
     def async_create_zone(self, data: dict) -> ZoneEntry:
@@ -600,21 +608,16 @@ class SmartIrrigationStorage:
         #    res[key] = attr.asdict(val)
         # return res
 
-        res = []
-        for val in self.modules.values():
-            res.append(attr.asdict(val))
-        return res
+        return [attr.asdict(val) for val in self.modules.values()]
 
-    @callback
-    def async_create_module(self, data: dict) -> ModuleEntry:
+    async def async_create_module(self, data: dict) -> ModuleEntry:
         """Create a new ModuleEntry."""
         # module_id = str(int(time.time()))
         # new_module = moduleEntry(**data, id=module_id)
         new_module = ModuleEntry(**data)
         if not new_module.id:
-            new_module = attr.evolve(
-                new_module, id=self.generate_next_id(self.get_modules())
-            )
+            modules = await self.async_get_modules()
+            new_module = attr.evolve(new_module, id=self.generate_next_id(modules))
         self.modules[int(new_module.id)] = new_module
         self.async_schedule_save()
         return attr.asdict(new_module)
@@ -653,19 +656,14 @@ class SmartIrrigationStorage:
         #    res[key] = attr.asdict(val)
         # return res
 
-        res = []
-        for val in self.mappings.values():
-            res.append(attr.asdict(val))
-        return res
+        return [attr.asdict(val) for val in self.mappings.values()]
 
-    @callback
-    def async_create_mapping(self, data: dict) -> MappingEntry:
+    async def async_create_mapping(self, data: dict) -> MappingEntry:
         """Create a new MappingEntry."""
         new_mapping = MappingEntry(**data)
         if not new_mapping.id:
-            new_mapping = attr.evolve(
-                new_mapping, id=self.generate_next_id(self.get_mappings())
-            )
+            mappings = await self.get_mappings()
+            new_mapping = attr.evolve(new_mapping, id=self.generate_next_id(mappings))
         self.mappings[int(new_mapping.id)] = new_mapping
         self.async_schedule_save()
         return attr.asdict(new_mapping)
@@ -708,13 +706,10 @@ class SmartIrrigationStorage:
         """Generate a next id for the_list."""
         if the_list is None or len(the_list) == 0:
             return 0
-        ids = []
-        for i in range(len(the_list)):
-            ids.append(the_list[i]["id"])
+        ids = [the_list[i]["id"] for i in range(len(the_list))]
         if ids is None:
             return 0
-        x = max(ids) + 1
-        return x
+        return max(ids) + 1
 
 
 @bind_hass

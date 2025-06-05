@@ -1,20 +1,16 @@
 
 #import ..pyeto
 
-from .convert import (
-    celsius2kelvin,
-    kelvin2celsius,
-    deg2rad,
-    rad2deg,
-)
-
+from .convert import celsius2kelvin, deg2rad, kelvin2celsius, rad2deg
 from .fao import (
+    SOLAR_CONSTANT,
+    STEFAN_BOLTZMANN_CONSTANT,
     atm_pressure,
-    avp_from_tmin,
-    avp_from_rhmin_rhmax,
     avp_from_rhmax,
     avp_from_rhmean,
+    avp_from_rhmin_rhmax,
     avp_from_tdew,
+    avp_from_tmin,
     avp_from_twet_tdry,
     cs_rad,
     daily_mean_t,
@@ -34,21 +30,15 @@ from .fao import (
     psy_const,
     psy_const_of_psychrometer,
     rh_from_avp_svp,
-    SOLAR_CONSTANT,
     sol_dec,
     sol_rad_from_sun_hours,
     sol_rad_from_t,
     sol_rad_island,
-    STEFAN_BOLTZMANN_CONSTANT,
     sunset_hour_angle,
     svp_from_t,
     wind_speed_2m,
 )
-
-from .thornthwaite import (
-    thornthwaite,
-    monthly_mean_daylight_hours,
-)
+from .thornthwaite import monthly_mean_daylight_hours, thornthwaite
 
 __all__ = [
     # Unit conversions
