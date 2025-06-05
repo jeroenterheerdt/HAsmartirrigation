@@ -1,9 +1,9 @@
 """Module to convert voluptuous schemas to dictionaries."""
+
 from collections.abc import Mapping
 from enum import Enum
 
 import voluptuous as vol
-
 
 TYPES_MAP = {
     int: "integer",
@@ -15,7 +15,7 @@ TYPES_MAP = {
 UNSUPPORTED = object()
 
 
-def convert(schema, *, custom_serializer=None):
+def convert(schema, *, custom_serializer=None):  # noqa: C901
     """Convert a voluptuous schema to a dictionary."""
     # pylint: disable=too-many-return-statements,too-many-branches
     if isinstance(schema, vol.Schema):
@@ -123,4 +123,4 @@ def convert(schema, *, custom_serializer=None):
             "options": [(item.value, item.name) for item in schema],
         }
 
-    raise ValueError("Unable to convert schema: {}".format(schema))
+    raise ValueError(f"Unable to convert schema: {schema}")

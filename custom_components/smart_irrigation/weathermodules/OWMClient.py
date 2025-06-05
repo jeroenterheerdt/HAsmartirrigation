@@ -7,7 +7,8 @@ import math
 
 import requests
 
-from ..const import (
+from ..const import (  # noqa: TID252
+    MAPPING_CURRENT_PRECIPITATION,
     MAPPING_DEWPOINT,
     MAPPING_HUMIDITY,
     MAPPING_MAX_TEMP,
@@ -16,7 +17,6 @@ from ..const import (
     MAPPING_PRESSURE,
     MAPPING_TEMPERATURE,
     MAPPING_WINDSPEED,
-    MAPPING_CURRENT_PRECIPITATION,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -102,15 +102,13 @@ class OWMClient:  # pylint: disable=invalid-name
                 req = requests.get(self.url, timeout=60)  # 60 seconds timeout
                 doc = json.loads(req.text)
                 _LOGGER.debug(
-                    "OWMClient get_forecast_data called API {} and received {}".format(
-                        self.url, doc
-                    )
+                    "OWMClient get_forecast_data called API %s and received %s",
+                    self.url,
+                    doc,
                 )
                 if doc and "cod" in doc:
                     if doc["cod"] != 200:
-                        raise IOError(
-                            "Cannot interact with OWM API, check API key is valid and has not maxed out the allowed requests. If it is a new key, wait at least a day before reporting an issue."
-                        )
+                        self.raiseHTTPError()
                 # parse out values from daily
                 if "daily" in doc:
                     parsed_data_total = []
@@ -118,9 +116,13 @@ class OWMClient:  # pylint: disable=invalid-name
                     for x in range(1, len(doc["daily"]) - 1):
                         data = doc["daily"][x]
                         parsed_data = {}
+
+                        def raise_missing_key_error(key):
+                            self.raiseMissingKeyError(key)
+
                         for k in OWM_required_keys:
                             if k not in data:
-                                self.raiseIOError(k)
+                                raise_missing_key_error(k)
                             elif k not in [
                                 OWM_wind_speed_key_name,
                                 OWM_temp_key_name,
@@ -139,7 +141,7 @@ class OWMClient:  # pylint: disable=invalid-name
                             elif k is OWM_temp_key_name:
                                 for kt in OWM_required_key_temp:
                                     if kt not in data[OWM_temp_key_name]:
-                                        self.raiseIOError(kt)
+                                        raise_missing_key_error(kt)
                                     elif (
                                         data[OWM_temp_key_name][kt]
                                         < OWM_validators["temp"]["min"]
@@ -190,13 +192,13 @@ class OWMClient:  # pylint: disable=invalid-name
                     self._cached_forecast_data = parsed_data_total
                     self._last_time_called = datetime.datetime.now()
                     return parsed_data_total
-                else:
-                    _LOGGER.warning(
-                        "Ignoring OWM input: missing required key 'daily' in OWM API return"
-                    )
+                _LOGGER.warning(
+                    "Ignoring OWM input: missing required key 'daily' in OWM API return"
+                )
                 return None
-            except Exception as ex:
-                _LOGGER.error("Error reading from OWM: {0}".format(ex))
+            except (requests.RequestException, json.JSONDecodeError) as ex:
+                _LOGGER.error("Error reading from OWM: %s", ex)
+            else:
                 return None
         else:
             # return cached_data
@@ -214,8 +216,7 @@ class OWMClient:  # pylint: disable=invalid-name
         # Calculate temperature at given height
         temperature = T0 - (g * M * height) / (R * T0)
         # Calculate absolute pressure at given height
-        absolute_pressure = pressure * (T0 / temperature) ** (g * M / (R * 287))
-        return absolute_pressure
+        return pressure * (T0 / temperature) ** (g * M / (R * 287))
 
     def get_data(self):
         """Validate and return data."""
@@ -229,15 +230,13 @@ class OWMClient:  # pylint: disable=invalid-name
                 req = requests.get(self.url, timeout=60)  # 60 seconds timeout
                 doc = json.loads(req.text)
                 _LOGGER.debug(
-                    "OWMClient get_data called API {} and received {}".format(
-                        self.url, doc
-                    )
+                    "OWMClient get_data called API %s and received %s",
+                    self.url,
+                    doc,
                 )
                 if "cod" in doc:
                     if doc["cod"] != 200:
-                        raise IOError(
-                            "Cannot interact with OWM API, check API key is valid and has not maxed out the allowed requests. If it is a new key, wait at least a day before reporting an issue."
-                        )
+                        self.raiseHTTPError()
                 # parse out values for current and rain/snow from daily[0].
                 if "current" in doc and "daily" in doc:
                     parsed_data = {}
@@ -245,7 +244,7 @@ class OWMClient:  # pylint: disable=invalid-name
                     data = doc["current"]
                     for k in OWM_required_keys:
                         if k not in data:
-                            self.raiseIOError(k)
+                            self.raiseMissingKeyError(k)
                         elif k not in [
                             OWM_wind_speed_key_name,
                             OWM_pressure_key_name,
@@ -305,7 +304,7 @@ class OWMClient:  # pylint: disable=invalid-name
                         if "snow" in dailydata:
                             snow = float(dailydata["snow"])
                         parsed_data[MAPPING_PRECIPITATION] = rain + snow
-                        _LOGGER.debug("OWMCLIENT daily rain: {}".format(rain))
+                        _LOGGER.debug("OWMCLIENT daily rain: %s", rain)
 
                         # get max temp and min temp and store
                         # removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
@@ -314,33 +313,50 @@ class OWMClient:  # pylint: disable=invalid-name
                     else:
                         parsed_data[MAPPING_PRECIPITATION] = 0.0
                     _LOGGER.debug(
-                        "OWMCLIENT daily precipitation: {}".format(
-                            parsed_data[MAPPING_PRECIPITATION]
-                        )
+                        "OWMCLIENT daily precipitation: %s",
+                        parsed_data[MAPPING_PRECIPITATION],
                     )
 
                     self._cached_data = parsed_data
                     self._last_time_called = datetime.datetime.now()
                     return parsed_data
-                else:
-                    _LOGGER.warning(
-                        "Ignoring OWM input: missing required key 'current' and 'daily' in OWM API return"
-                    )
+                _LOGGER.warning(
+                    "Ignoring OWM input: missing required key 'current' and 'daily' in OWM API return"
+                )
                 return None
             except Exception as ex:
                 _LOGGER.warning(ex)
-                raise ex
+                raise
+            else:
+                return None
         else:
             # return cached_data
             _LOGGER.info("Returning cached OWM data")
             return self._cached_data
 
-    def raiseIOError(self, key):
-        raise IOError("Missing required key {} in OWM API return".format(key))
+    def raiseHTTPError(self):
+        """Raise an OSError when the OWM API returns an HTTP error."""
+        raise OSError(
+            "Cannot interact with OWM API, check API key is valid and has not maxed out the allowed requests. If it is a new key, wait at least a day before reporting an issue."
+        )
+
+    def raiseMissingKeyError(self, key):
+        """Raise an OSError when a required key is missing in the OWM API return."""
+        raise OSError(f"Missing required key {key} in OWM API return")
 
     def validationError(self, key, value, minval, maxval):
+        """Raise a ValueError if the value for a key is outside the expected range.
+
+        Args:
+            key: The key being validated.
+            value: The value to validate.
+            minval: The minimum allowed value.
+            maxval: The maximum allowed value.
+
+        Raises:
+            ValueError: If the value is not within the specified range.
+
+        """
         raise ValueError(
-            "Value {} is not valid for {}. Excepted range: {}-{}".format(
-                value, key, minval, maxval
-            )
+            f"Value {value} is not valid for {key}. Excepted range: {minval}-{maxval}"
         )

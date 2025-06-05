@@ -1,3 +1,5 @@
+"""Options flow handler for Smart Irrigation integration."""
+
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -71,9 +73,8 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                     # forcing it to be 3.0 because of sunsetting of 2.5 API by OWM in June 2024
                     # user_input[const.CONF_WEATHER_SERVICE_API_VERSION] = "3.0"
                     return self.async_create_entry(title="", data=user_input)
-                else:
-                    # show the next step where you can configure / update API key/version
-                    return await self._show_step_1(user_input)
+                # show the next step where you can configure / update API key/version
+                return await self._show_step_1(user_input)
 
             except InvalidAuth:
                 self._errors["base"] = "auth"

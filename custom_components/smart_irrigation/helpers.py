@@ -1,11 +1,14 @@
+"""Helpers for the Smart Irrigation integration."""
+
 from datetime import datetime
 import importlib
 import logging
 import os
+from pathlib import Path
 import sys
 
 from homeassistant import exceptions
-from homeassistant.const import UnitOfTemperature, STATE_UNAVAILABLE, STATE_UNKNOWN
+from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 
 from .const import (
@@ -73,7 +76,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def friendly_name_for_entity_id(entity_id: str, hass: HomeAssistant):
-    """Helper to get friendly name for entity."""
+    """Return the friendly name for an entity."""
     state = hass.states.get(entity_id)
     if state and state.attributes.get("friendly_name"):
         return state.attributes["friendly_name"]
@@ -82,6 +85,7 @@ def friendly_name_for_entity_id(entity_id: str, hass: HomeAssistant):
 
 
 def omit(obj: dict, blacklisted_keys: list):
+    """Return a copy of obj omitting keys present in blacklisted_keys."""
     return {key: val for key, val in obj.items() if key not in blacklisted_keys}
 
 
@@ -93,26 +97,39 @@ def check_time(itime):
     try:
         hours = int(timesplit[0])
         minutes = int(timesplit[1])
-        if hours in range(0, 24) and minutes in range(
-            0, 60
+        if hours in range(24) and minutes in range(
+            60
         ):  # range does not include upper bound
             return True
-        return False
     except ValueError:
+        return False
+    else:
         return False
 
 
 def convert_timestamp(val):
+    """Convert a datetime or ISO string to a formatted timestamp string."""
     outputformat = "%Y-%m-%d %H:%M:%S"
     if isinstance(val, str):
         return (datetime.fromisoformat(val).strftime(outputformat),)
-    elif isinstance(val, datetime):
+    if isinstance(val, datetime):
         return val.strftime(outputformat)
-    else:
-        return None
+    return None
 
 
 def convert_mapping_to_metric(val, mapping, unit, system_is_metric):
+    """Convert a value to its metric equivalent based on mapping, unit, and system settings.
+
+    Args:
+        val: The value to convert.
+        mapping: The type of measurement being converted.
+        unit: The current unit of the value.
+        system_is_metric: Whether the system is using metric units.
+
+    Returns:
+        The value converted to metric units, or None if conversion is not possible.
+
+    """
     if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
         return None
     if mapping == MAPPING_HUMIDITY:
@@ -131,70 +148,78 @@ def convert_mapping_to_metric(val, mapping, unit, system_is_metric):
                 from_unit=unit, to_unit=UnitOfTemperature.CELSIUS, val=val
             )
         # no unit was set, so it's dependent on system_is_metric if we need to convert
-        elif system_is_metric:
+        if system_is_metric:
             return val
-        else:
-            # assume the unit is in F
-            return convert_between(
-                from_unit=UnitOfTemperature.FAHRENHEIT,
-                to_unit=UnitOfTemperature.CELSIUS,
-                val=val,
-            )
-    elif mapping in [MAPPING_PRECIPITATION, MAPPING_EVAPOTRANSPIRATION]:
+        # assume the unit is in F
+        return convert_between(
+            from_unit=UnitOfTemperature.FAHRENHEIT,
+            to_unit=UnitOfTemperature.CELSIUS,
+            val=val,
+        )
+    if mapping in [MAPPING_PRECIPITATION, MAPPING_EVAPOTRANSPIRATION]:
         # either mm or inch. If mm no need to convert.
         if unit:
             return convert_between(from_unit=unit, to_unit=UNIT_MM, val=val)
-        elif system_is_metric:
+        if system_is_metric:
             return val
-        else:
-            # assume the unit is in inch
-            return convert_between(from_unit=UNIT_INCH, to_unit=UNIT_MM, val=val)
-    elif mapping == MAPPING_PRESSURE:
+        # assume the unit is in inch
+        return convert_between(from_unit=UNIT_INCH, to_unit=UNIT_MM, val=val)
+    if mapping == MAPPING_PRESSURE:
         # either: mbar, hpa (default for metric), psi or inhg (default for imperial)
         if unit:
             return convert_between(from_unit=unit, to_unit=UNIT_HPA, val=val)
-        elif system_is_metric:
+        if system_is_metric:
             return val
-        else:
-            # assume it's inHG
-            return convert_between(from_unit=UNIT_INHG, to_unit=UNIT_HPA, val=val)
-    elif mapping == MAPPING_SOLRAD:
+        # assume it's inHG
+        return convert_between(from_unit=UNIT_INHG, to_unit=UNIT_HPA, val=val)
+    if mapping == MAPPING_SOLRAD:
         # either: assume w/m2 for metric, w/sqft for imperial
         if unit:
             _LOGGER.debug(
-                f"[convert_mapping_to_metric]: unit set, converting {val} from {unit} to {UNIT_MJ_DAY_M2}"
+                "[convert_mapping_to_metric]: unit set, converting %s from %s to %s",
+                val,
+                unit,
+                UNIT_MJ_DAY_M2,
             )
             return convert_between(from_unit=unit, to_unit=UNIT_MJ_DAY_M2, val=val)
-        elif system_is_metric:
+        if system_is_metric:
             # assume it's w/m2
             _LOGGER.debug(
-                f"[convert_mapping_to_metric]: since system is metric and unit was not set, converting {val} from W/m2 to MJ/day/m2"
+                "[convert_mapping_to_metric]: since system is metric and unit was not set, converting %s from W/m2 to MJ/day/m2",
+                val,
             )
             return convert_between(from_unit=UNIT_W_M2, to_unit=UNIT_MJ_DAY_M2, val=val)
-        else:
-            # assume it's w/sqft
-            _LOGGER.debug(
-                f"[convert_mapping_to_metric]: since system is imperial and unit was not set, converting {val} from W/sq ft to MJ/day/m2"
-            )
-            return convert_between(
-                from_unit=UNIT_W_SQFT, to_unit=UNIT_MJ_DAY_M2, val=val
-            )
-    elif mapping == MAPPING_WINDSPEED:
+        # assume it's w/sqft
+        _LOGGER.debug(
+            "[convert_mapping_to_metric]: since system is imperial and unit was not set, converting %s from W/sq ft to MJ/day/m2",
+            val,
+        )
+        return convert_between(from_unit=UNIT_W_SQFT, to_unit=UNIT_MJ_DAY_M2, val=val)
+    if mapping == MAPPING_WINDSPEED:
         # either UNIT_KMH, unit: UNIT_MS (Default for metric), m/h (imperial)
         if unit:
             return convert_between(from_unit=unit, to_unit=UNIT_MS, val=val)
-        elif system_is_metric:
+        if system_is_metric:
             return val
-        else:
-            # assume it's m/h
-            return convert_between(from_unit=UNIT_MH, to_unit=UNIT_MS, val=val)
-    else:
-        return None
+        # assume it's m/h
+        return convert_between(from_unit=UNIT_MH, to_unit=UNIT_MS, val=val)
+    return None
 
 
 def convert_between(from_unit, to_unit, val):
+    """Convert a value from one unit to another based on the provided units.
+
+    Args:
+        from_unit: The unit of the input value.
+        to_unit: The unit to convert the value to.
+        val: The value to be converted.
+
+    Returns:
+        The converted value, or None if conversion is not possible.
+
+    """
     _LOGGER.debug(
-        "[convert_between]: Converting {} from {} to {}".format(val, from_unit, to_unit)
+        "[convert_between]: Converting %s from %s to %s", val, from_unit, to_unit
     )
     if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
         _LOGGER.debug(
@@ -204,11 +229,11 @@ def convert_between(from_unit, to_unit, val):
     if from_unit == to_unit or from_unit in [UNIT_PERCENT, UNIT_SECONDS]:
         # no conversion necessary here!
         _LOGGER.debug(
-            "[convert_between]: No conversion necessary, returning value {}".format(val)
+            "[convert_between]: No conversion necessary, returning value %s", val
         )
         return val
     # convert temperatures
-    elif from_unit in [
+    if from_unit in [
         UnitOfTemperature.CELSIUS,
         UnitOfTemperature.FAHRENHEIT,
         UnitOfTemperature.KELVIN,
@@ -216,39 +241,50 @@ def convert_between(from_unit, to_unit, val):
         _LOGGER.debug("[convert_between]: Converting temperatures")
         return convert_temperatures(from_unit, to_unit, val)
     # convert lengths
-    elif from_unit in [UNIT_MM, UNIT_INCH]:
+    if from_unit in [UNIT_MM, UNIT_INCH]:
         _LOGGER.debug("[convert_between]: Converting lengths")
         return convert_length(from_unit, to_unit, val)
     # convert volumes
-    elif from_unit in [UNIT_LPM, UNIT_GPM]:
+    if from_unit in [UNIT_LPM, UNIT_GPM]:
         _LOGGER.debug("[convert_between]: Converting volumes")
         return convert_volume(from_unit, to_unit, val)
     # convert areas
-    elif from_unit in [UNIT_M2, UNIT_SQ_FT]:
+    if from_unit in [UNIT_M2, UNIT_SQ_FT]:
         _LOGGER.debug("[convert_between]: Converting areas")
         return convert_area(from_unit, to_unit, val)
     # convert pressures
-    elif from_unit in [UNIT_MBAR, UNIT_MILLIBAR, UNIT_HPA, UNIT_PSI, UNIT_INHG]:
+    if from_unit in [UNIT_MBAR, UNIT_MILLIBAR, UNIT_HPA, UNIT_PSI, UNIT_INHG]:
         _LOGGER.debug("[convert_between]: Converting pressures")
         return convert_pressure(from_unit, to_unit, val)
     # convert speeds
-    elif from_unit in [UNIT_KMH, UNIT_MS, UNIT_MH]:
+    if from_unit in [UNIT_KMH, UNIT_MS, UNIT_MH]:
         _LOGGER.debug("[convert_between]: Converting speeds")
         return convert_speed(from_unit, to_unit, val)
     # convert production/area
-    elif from_unit in [UNIT_W_M2, UNIT_MJ_DAY_M2, UNIT_W_SQFT, UNIT_MJ_DAY_SQFT]:
+    if from_unit in [UNIT_W_M2, UNIT_MJ_DAY_M2, UNIT_W_SQFT, UNIT_MJ_DAY_SQFT]:
         _LOGGER.debug("[convert_between]: Converting production/area")
         return convert_production(from_unit, to_unit, val)
     # unexpected from_unit
     _LOGGER.warning(
-        "Unexpected conversion of {} from {} to {}".format(val, from_unit, to_unit)
+        "Unexpected conversion of %s from %s to %s", val, from_unit, to_unit
     )
     return None
 
 
 def convert_production(from_unit, to_unit, val):
+    """Convert production/area values between different units.
+
+    Args:
+        from_unit: The unit of the input value.
+        to_unit: The unit to convert the value to.
+        val: The value to be converted.
+
+    Returns:
+        The converted value, or None if conversion is not possible.
+
+    """
     _LOGGER.debug(
-        f"[convert production]: converting {val} from {from_unit} to {to_unit}"
+        "[convert production]: converting %s from %s to %s", val, from_unit, to_unit
     )
     if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
         _LOGGER.debug("[convert production]: Value is None, Unknown or Unavailable")
@@ -261,19 +297,25 @@ def convert_production(from_unit, to_unit, val):
         if from_unit == UNIT_W_M2:
             outval = float(float(val) * W_TO_MJ_DAY_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from W/m2 to MJ/day/m2. Result: {outval}"
+                "[convert production]: Converting %s from W/m2 to MJ/day/m2. Result: %s",
+                val,
+                outval,
             )
             return outval
         if from_unit == UNIT_W_SQFT:
             outval = float((float(val) * W_SQ_FT_TO_W_M2_FACTOR) * W_TO_MJ_DAY_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from W/sq ft to MJ/day/m2. Result: {outval}"
+                "[convert production]: Converting %s from W/sq ft to MJ/day/m2. Result: %s",
+                val,
+                outval,
             )
             return outval
         if from_unit == UNIT_MJ_DAY_SQFT:
             outval = float(float(val) * SQ_FT_TO_M2_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from MJ/day/sq ft to MJ/day/m2. Result: {outval}"
+                "[convert production]: Converting %s from MJ/day/sq ft to MJ/day/m2. Result: %s",
+                val,
+                outval,
             )
             return outval
     elif to_unit == UNIT_MJ_DAY_SQFT:
@@ -281,19 +323,25 @@ def convert_production(from_unit, to_unit, val):
         if from_unit == UNIT_W_M2:
             outval = float((float(val) * W_M2_TO_W_SQ_FT_FACTOR) * W_TO_MJ_DAY_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from W/m2 to MJ/day/sq ft. Result: {outval}"
+                "[convert production]: Converting %s from W/m2 to MJ/day/sq ft. Result: %s",
+                val,
+                outval,
             )
             return outval
         if from_unit == UNIT_W_SQFT:
             outval = float(float(val) * W_TO_MJ_DAY_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from W/sq ft to MJ/day/sq ft. Result: {outval}"
+                "[convert production]: Converting %s from W/sq ft to MJ/day/sq ft. Result: %s",
+                val,
+                outval,
             )
             return outval
         if from_unit == UNIT_MJ_DAY_M2:
             outval = float(float(val) * M2_TO_SQ_FT_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from MJ/day/m2 to MJ/day/sq ft. Result: {outval}"
+                "[convert production]: Converting %s from MJ/day/m2 to MJ/day/sq ft. Result: %s",
+                val,
+                outval,
             )
             return outval
     elif to_unit == UNIT_W_M2:
@@ -301,19 +349,25 @@ def convert_production(from_unit, to_unit, val):
         if from_unit == UNIT_W_SQFT:
             outval = float(float(val) * W_SQ_FT_TO_W_M2_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from W/sq ft to W/m2. Result: {outval}"
+                "[convert production]: Converting %s from W/sq ft to W/m2. Result: %s",
+                val,
+                outval,
             )
             return outval
         if from_unit == UNIT_MJ_DAY_SQFT:
             outval = float((float(val) / W_TO_MJ_DAY_FACTOR) * W_SQ_FT_TO_W_M2_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from MJ/day/sq ft to W/m2. Result: {outval}"
+                "[convert production]: Converting %s from MJ/day/sq ft to W/m2. Result: %s",
+                val,
+                outval,
             )
             return outval
         if from_unit == UNIT_MJ_DAY_M2:
             outval = float(float(val) / W_TO_MJ_DAY_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from MJ/day/m2 to W/m2. Result: {outval}"
+                "[convert production]: Converting %s from MJ/day/m2 to W/m2. Result: %s",
+                val,
+                outval,
             )
             return outval
     elif to_unit == UNIT_W_SQFT:
@@ -321,19 +375,25 @@ def convert_production(from_unit, to_unit, val):
         if from_unit == UNIT_W_M2:
             outval = float(float(val) * W_M2_TO_W_SQ_FT_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from W/m2 to W/sq ft. Result: {outval}"
+                "[convert production]: Converting %s from W/m2 to W/sq ft. Result: %s",
+                val,
+                outval,
             )
             return outval
         if from_unit == UNIT_MJ_DAY_M2:
             outval = float((float(val) / W_TO_MJ_DAY_FACTOR) * W_M2_TO_W_SQ_FT_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from MJ/day/m2 to W/sq ft. Result: {outval}"
+                "[convert production]: Converting %s from MJ/day/m2 to W/sq ft. Result: %s",
+                val,
+                outval,
             )
             return outval
         if from_unit == UNIT_MJ_DAY_SQFT:
             outval = float(float(val) / W_TO_MJ_DAY_FACTOR)
             _LOGGER.debug(
-                f"[convert production]: Converting {val} from MJ/day/sq ft to W/sq ft. Result: {outval}"
+                "[convert production]: Converting %s from MJ/day/sq ft to W/sq ft. Result: %s",
+                val,
+                outval,
             )
             return outval
     # unknown conversion
@@ -341,6 +401,17 @@ def convert_production(from_unit, to_unit, val):
 
 
 def convert_speed(from_unit, to_unit, val):
+    """Convert speed values between different units.
+
+    Args:
+        from_unit: The unit of the input value.
+        to_unit: The unit to convert the value to.
+        val: The value to be converted.
+
+    Returns:
+        The converted value, or None if conversion is not possible.
+
+    """
     if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
         return None
     if to_unit == from_unit:
@@ -348,23 +419,34 @@ def convert_speed(from_unit, to_unit, val):
     if to_unit == UNIT_KMH:
         if from_unit == UNIT_MS:
             return float(float(val) * MS_TO_KMH_FACTOR)
-        elif from_unit == UNIT_MH:
+        if from_unit == UNIT_MH:
             return float(float(val) * MILESH_TO_KMH_FACTOR)
     elif to_unit == UNIT_MS:
         if from_unit == UNIT_KMH:
             return float(float(val) * KMH_TO_MS_FACTOR)
-        elif from_unit == UNIT_MH:
+        if from_unit == UNIT_MH:
             return float(float(val) * MILESH_TO_MS_FACTOR)
     elif to_unit == UNIT_MH:
         if from_unit == UNIT_KMH:
             return float(float(val) * KMH_TO_MILESH_FACTOR)
-        elif from_unit == UNIT_MS:
+        if from_unit == UNIT_MS:
             return float(float(val) * MS_TO_MILESH_FACTOR)
     # unknown conversion
     return None
 
 
 def convert_pressure(from_unit, to_unit, val):
+    """Convert pressure values between different units.
+
+    Args:
+        from_unit: The unit of the input value.
+        to_unit: The unit to convert the value to.
+        val: The value to be converted.
+
+    Returns:
+        The converted value, or None if conversion is not possible.
+
+    """
     if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
         return None
     if to_unit == from_unit:
@@ -373,25 +455,36 @@ def convert_pressure(from_unit, to_unit, val):
         if from_unit in [UNIT_HPA, UNIT_MBAR]:
             # 1 mbar = 1hpa
             return val
-        elif from_unit == UNIT_PSI:
+        if from_unit == UNIT_PSI:
             return float(float(val) * PSI_TO_HPA_FACTOR)
-        elif from_unit == UNIT_INHG:
+        if from_unit == UNIT_INHG:
             return float(float(val) * INHG_TO_HPA_FACTOR)
     if to_unit == UNIT_PSI:
         if from_unit in [UNIT_HPA, UNIT_MBAR]:
             return float(float(val) * MBAR_TO_PSI_FACTOR)
-        elif from_unit == UNIT_INHG:
+        if from_unit == UNIT_INHG:
             return float(float(val) * INHG_TO_PSI_FACTOR)
     if to_unit == UNIT_INHG:
         if from_unit in [UNIT_HPA, UNIT_MBAR]:
             return float(float(val) * MBAR_TO_INHG_FACTOR)
-        elif from_unit == UNIT_PSI:
+        if from_unit == UNIT_PSI:
             return float(float(val) * PSI_TO_INHG_FACTOR)
     # unknown conversion
     return None
 
 
 def convert_area(from_unit, to_unit, val):
+    """Convert area values between different units.
+
+    Args:
+        from_unit: The unit of the input value.
+        to_unit: The unit to convert the value to.
+        val: The value to be converted.
+
+    Returns:
+        The converted value, or None if conversion is not possible.
+
+    """
     if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
         return None
     if to_unit == from_unit:
@@ -407,6 +500,17 @@ def convert_area(from_unit, to_unit, val):
 
 
 def convert_volume(from_unit, to_unit, val):
+    """Convert volume values between different units.
+
+    Args:
+        from_unit: The unit of the input value.
+        to_unit: The unit to convert the value to.
+        val: The value to be converted.
+
+    Returns:
+        The converted value, or None if conversion is not possible.
+
+    """
     if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
         return None
     if to_unit == from_unit:
@@ -418,10 +522,21 @@ def convert_volume(from_unit, to_unit, val):
         if from_unit == UNIT_LPM:
             return float(float(val) * LITER_TO_GALLON_FACTOR)
     # unknown conversion
-    return
+    return None
 
 
 def convert_length(from_unit, to_unit, val):
+    """Convert length values between different units.
+
+    Args:
+        from_unit: The unit of the input value.
+        to_unit: The unit to convert the value to.
+        val: The value to be converted.
+
+    Returns:
+        The converted value, or None if conversion is not possible.
+
+    """
     if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
         return None
     if to_unit == from_unit:
@@ -437,6 +552,17 @@ def convert_length(from_unit, to_unit, val):
 
 
 def convert_temperatures(from_unit, to_unit, val):
+    """Convert temperature values between different units.
+
+    Args:
+        from_unit: The unit of the input value.
+        to_unit: The unit to convert the value to.
+        val: The value to be converted.
+
+    Returns:
+        The converted value, or None if conversion is not possible.
+
+    """
     if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
         return None
     if to_unit == from_unit:
@@ -444,17 +570,17 @@ def convert_temperatures(from_unit, to_unit, val):
     if to_unit == UnitOfTemperature.CELSIUS:
         if from_unit == UnitOfTemperature.FAHRENHEIT:
             return float((float(val) - 32.0) / 1.8)
-        elif from_unit == UnitOfTemperature.KELVIN:
+        if from_unit == UnitOfTemperature.KELVIN:
             return val - K_TO_C_FACTOR
     elif to_unit == UnitOfTemperature.FAHRENHEIT:
         if from_unit == UnitOfTemperature.CELSIUS:
             return float((val * 1.8) + 32.0)
-        elif from_unit == UnitOfTemperature.KELVIN:
+        if from_unit == UnitOfTemperature.KELVIN:
             return float(1.8 * (val - 273) + 32)
     elif to_unit == UnitOfTemperature.KELVIN:
         if from_unit == UnitOfTemperature.FAHRENHEIT:
             return (val + 459.67) * (5.0 / 9.0)
-        elif from_unit == UnitOfTemperature.CELSIUS:
+        if from_unit == UnitOfTemperature.CELSIUS:
             return val + K_TO_C_FACTOR
     # unable to do conversion because of unexpected to or from unit
     return None
@@ -473,9 +599,10 @@ def check_reference_et(reference_et):
         # test that max > 0
         if all_floats and max(reference_et) == 0:
             return False
-        return all_floats
-    except Exception:  # pylint: disable=broad-except
+    except (TypeError, ValueError):
         return False
+    else:
+        return all_floats
 
 
 def relative_to_absolute_pressure(pressure, height):
@@ -490,9 +617,7 @@ def relative_to_absolute_pressure(pressure, height):
     temperature = T0 - (g * M * height) / (R * T0)
 
     # Calculate absolute pressure at given height
-    absolute_pressure = pressure * (T0 / temperature) ** (g * M / (R * 287))
-
-    return absolute_pressure
+    return pressure * (T0 / temperature) ** (g * M / (R * 287))
 
 
 def altitudeToPressure(alt):
@@ -525,29 +650,45 @@ async def test_api_key(hass: HomeAssistant, weather_service, api_key):
     if client:
         try:
             await hass.async_add_executor_job(client.get_data)
-        except OSError:
-            raise InvalidAuth
-        except Exception:
-            raise CannotConnect
+        except OSError as err:
+            raise InvalidAuth from err
+        except Exception as err:
+            raise CannotConnect from err
 
 
 def loadModules(moduleDir=None):
+    """Dynamically load modules from a given directory and return a dictionary of module and class information.
+
+    Args:
+        moduleDir: The directory containing modules to load.
+
+    Returns:
+        A dictionary mapping module names to their module and class information, or None if no directory is provided.
+
+    """
     if moduleDir:
         res = {}
-        moduleDirFullPath = (
-            os.path.dirname(os.path.realpath(__file__)) + os.sep + moduleDir
-        )
+        moduleDirFullPath = str(Path(__file__).resolve().parent / moduleDir)
         if moduleDirFullPath not in sys.path:
             sys.path.append(moduleDirFullPath)
         # check subfolders
-        lst = os.listdir(moduleDirFullPath)
-        # lst = os.listdir(os.path.abspath(moduleDir))
+        module_path = Path(moduleDirFullPath)
         thedir = []
-        for d in lst:
-            s = os.path.abspath(moduleDirFullPath) + os.sep + d
-            if os.path.isdir(s) and os.path.exists(s + os.sep + "__init__.py"):
-                thedir.append(d)
+        for d in module_path.iterdir():
+            s = d
+            if s.is_dir() and (s / "__init__.py").exists():
+                thedir.append(d.name)
         # load the detected modules
+
+        def extract_classname(theclass):
+            """Extract the class name from the __init__ method."""
+            if "__init__" in theclass.__dict__:
+                return (
+                    str(theclass.__dict__["__init__"])
+                    .split(".", maxsplit=1)[0]
+                    .split(" ")[1]
+                )
+            return None
 
         for d in thedir:
             if moduleDirFullPath + os.sep + d not in sys.path:
@@ -555,24 +696,20 @@ def loadModules(moduleDir=None):
             mod = importlib.import_module(
                 "." + d, package=CUSTOM_COMPONENTS + "." + DOMAIN + "." + moduleDir
             )
-            if mod:
-                theclasses = [
-                    mod.__dict__[c]
-                    for c in mod.__dict__
-                    if (
-                        isinstance(mod.__dict__[c], type)
-                        and mod.__dict__[c].__module__ == mod.__name__
-                    )
-                ]
-                if theclasses:
-                    for theclass in theclasses:
-                        if "__init__" in theclass.__dict__:
-                            classname = (
-                                str(theclass.__dict__["__init__"])
-                                .split(".")[0]
-                                .split(" ")[1]
-                            )
-                            res[d] = {"module": mod, "class": classname}
+            if not mod:
+                continue
+            theclasses = [
+                mod.__dict__[c]
+                for c in mod.__dict__
+                if (
+                    isinstance(mod.__dict__[c], type)
+                    and mod.__dict__[c].__module__ == mod.__name__
+                )
+            ]
+            for theclass in theclasses:
+                classname = extract_classname(theclass)
+                if classname:
+                    res[d] = {"module": mod, "class": classname}
         return res
     return None
 

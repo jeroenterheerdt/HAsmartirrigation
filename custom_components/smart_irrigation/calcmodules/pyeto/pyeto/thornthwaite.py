@@ -1,5 +1,4 @@
-"""
-Calculate potential evapotranspiration using the Thornthwaite (1948 method)
+"""Calculate potential evapotranspiration using the Thornthwaite (1948 method)
 
 :copyright: (c) 2015 by Mark Richards.
 :license: BSD 3-Clause, see LICENSE.txt for more details.
@@ -8,6 +7,7 @@ References
 ----------
 Thornthwaite CW (1948) An approach toward a rational classification of
     climate. Geographical Review, 38, 55-94.
+
 """
 
 import calendar
@@ -20,8 +20,7 @@ _LEAP_MONTHDAYS = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 
 
 def thornthwaite(monthly_t, monthly_mean_dlh, year=None):
-    """
-    Estimate monthly potential evapotranspiration (PET) using the
+    """Estimate monthly potential evapotranspiration (PET) using the
     Thornthwaite (1948) method.
 
     Thornthwaite equation:
@@ -54,12 +53,12 @@ def thornthwaite(monthly_t, monthly_mean_dlh, year=None):
     """
     if len(monthly_t) != 12:
         raise ValueError(
-            'monthly_t should be length 12 but is length {0}.'
-            .format(len(monthly_t)))
+            f'monthly_t should be length 12 but is length {len(monthly_t)}.'
+            )
     if len(monthly_mean_dlh) != 12:
         raise ValueError(
-            'monthly_mean_dlh should be length 12 but is length {0}.'
-            .format(len(monthly_mean_dlh)))
+            f'monthly_mean_dlh should be length 12 but is length {len(monthly_mean_dlh)}.'
+            )
 
     if year is None or not calendar.isleap(year):
         month_days = _MONTHDAYS
@@ -78,7 +77,7 @@ def thornthwaite(monthly_t, monthly_mean_dlh, year=None):
     a = (6.75e-07 * I ** 3) - (7.71e-05 * I ** 2) + (1.792e-02 * I) + 0.49239
 
     pet = []
-    for Ta, L, N in zip(adj_monthly_t, monthly_mean_dlh, month_days):
+    for Ta, L, N in zip(adj_monthly_t, monthly_mean_dlh, month_days, strict=False):
         # Multiply by 10 to convert cm/month --> mm/month
         pet.append(
             1.6 * (L / 12.0) * (N / 30.0) * ((10.0 * Ta / I) ** a) * 10.0)
@@ -87,8 +86,7 @@ def thornthwaite(monthly_t, monthly_mean_dlh, year=None):
 
 
 def monthly_mean_daylight_hours(latitude, year=None):
-    """
-    Calculate mean daylight hours for each month of the year for a given
+    """Calculate mean daylight hours for each month of the year for a given
     latitude.
 
     :param latitude: Latitude [radians]

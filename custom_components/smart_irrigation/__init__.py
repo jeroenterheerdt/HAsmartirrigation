@@ -241,6 +241,10 @@ async def async_remove_entry(hass: HomeAssistant, entry):
         del hass.data[const.DOMAIN]
 
 
+class SmartIrrigationError(Exception):
+    """Exception raised for errors in the Smart Irrigation integration."""
+
+
 class SmartIrrigationCoordinator(DataUpdateCoordinator):
     """Define an object to hold Smart Irrigation device."""
 
@@ -313,7 +317,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         # set up sunrise tracking
         _LOGGER.debug("calling register start event from init")
-        self.register_start_event()
+        asyncio.create_task(self.register_start_event())
 
         # set up midnight tracking
         self._track_midnight_time_unsub = async_track_time_change(
@@ -1074,7 +1078,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         aggregate,
                     )
                 _LOGGER.debug(
-                    "[async_aggregate_to_mapping_data]: key: %s, aggregate: %s, data: %s.",
+                    "[async_aggregate_to_mapping_data]: key: %s, aggregate: %s, data: %s",
                     key,
                     aggregate,
                     d,
@@ -1151,13 +1155,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
                 if weather_service_in_mapping:
                     _LOGGER.debug(
-                        "[async_calculate_all]: zone %s uses a weather service so should be included in the calculation even though continuous updates are on.",
+                        "[async_calculate_all]: zone %s uses a weather service so should be included in the calculation even though continuous updates are on",
                         z.get(const.ZONE_ID),
                     )
                     zones.append(z)
                 else:
                     _LOGGER.debug(
-                        "[async_calculate_all]: Skipping zone %s from calculation because it uses a pure sensor mapping and continuous updates are enabled.",
+                        "[async_calculate_all]: Skipping zone %s from calculation because it uses a pure sensor mapping and continuous updates are enabled",
                         z.get(const.ZONE_ID),
                     )
         else:
@@ -1197,15 +1201,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         Args:
             zone_id: The ID of the zone to calculate.
             continuous_updates: Whether to use continuous updates for calculation.
+
         """
-        _LOGGER.debug(f"async_calculate_zone: Calculating zone {zone_id}")
+        _LOGGER.debug("async_calculate_zone: Calculating zone %s", zone_id)
         zone = self.store.get_zone(zone_id)
         mapping_id = zone[const.ZONE_MAPPING]
         # o_i_m, s_i_m, sv_in_m = self.check_mapping_sources(mapping_id = mapping_id)
         # if using pyeto and using a forecast o_i_m needs to be set to true!
         modinst = await self.getModuleInstanceByID(zone.get(const.ZONE_MODULE))
         forecastdata = None
-        if modinst and modinst.name == "PyETO" and modinst._forecast_days > 0:
+        if modinst and modinst.name == "PyETO" and modinst.forecast_days > 0:
             if self.use_weather_service:
                 # get forecast info from OWM
                 forecastdata = await self.hass.async_add_executor_job(
@@ -1214,9 +1219,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 # _LOGGER.debug(f"Retrieved forecast data: {forecastdata}")
             else:
                 _LOGGER.error(
-                    "Error calculating zone {}. You have configured forecasting but but there is no OWM API configured. Either configure the OWM API or stop using forcasting on the PyETO module.".format(
-                        zone.get(const.ZONE_NAME)
-                    )
+                    "Error calculating zone %s. You have configured forecasting but there is no OWM API configured. Either configure the OWM API or stop using forecasting on the PyETO module",
+                    zone.get(const.ZONE_NAME),
                 )
                 return
         mapping = self.store.get_mapping(mapping_id)
@@ -1246,18 +1250,25 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             else:
                 # no data to calculate with!
                 _LOGGER.warning(
-                    "Calculate for zone {} failed: no data available.".format(
-                        zone.get(const.ZONE_NAME)
-                    )
+                    "Calculate for zone %s failed: no data available",
+                    zone.get(const.ZONE_NAME),
                 )
         else:
             _LOGGER.warning(
-                "Calculate for zone {} failed: invalid sensor group specified".format(
-                    zone.get(const.ZONE_NAME)
-                )
+                "Calculate for zone %s failed: invalid sensor group specified",
+                zone.get(const.ZONE_NAME),
             )
 
     async def getModuleInstanceByID(self, module_id):
+        """Retrieve and instantiate a module by its ID.
+
+        Args:
+            module_id: The ID of the module to retrieve.
+
+        Returns:
+            The instantiated module object, or None if not found.
+
+        """
         m = self.store.get_module(module_id)
         if m is None:
             return None
@@ -1274,7 +1285,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         return modinst
 
     async def calculate_module(self, zone, weatherdata, forecastdata):
-        _LOGGER.debug(f"calculate_module for zone: {zone}")
+        """Calculate irrigation values for a zone using the specified weather and forecast data.
+
+        Args:
+            zone: The zone dictionary containing configuration and state.
+            weatherdata: Aggregated weather data for the calculation.
+            forecastdata: Forecast data if required by the module.
+
+        Returns:
+            dict: Updated zone data including calculation results and explanation.
+
+        """
+        _LOGGER.debug("calculate_module for zone: %s", zone)
         # _LOGGER.debug(f"[calculate_module] for zone: {zone}, weatherdata: {weatherdata}, forecastdata: {forecastdata}")
         mod_id = zone.get(const.ZONE_MODULE)
         m = self.store.get_module(mod_id)
@@ -1318,19 +1340,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     )
                 else:
                     _LOGGER.error(
-                        "No evapotranspiration value provided for Passthrough module for zone {}".format(
-                            zone.get(const.ZONE_NAME)
-                        )
+                        "No evapotranspiration value provided for Passthrough module for zone %s",
+                        zone.get(const.ZONE_NAME),
                     )
                     return None
             # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
             # data[const.ZONE_BUCKET] = round(bucket+delta,1)
             # data[const.ZONE_DELTA] = round(delta,1)
-            _LOGGER.debug(f"[calculate-module]: retrieved from module: {delta}")
+            _LOGGER.debug("[calculate-module]: retrieved from module: %s", delta)
             hour_multiplier = weatherdata.get(const.MAPPING_DATA_MULTIPLIER, 1.0)
-            _LOGGER.debug(f"[calculate-module]: hour_multiplier: {hour_multiplier}")
+            _LOGGER.debug("[calculate-module]: hour_multiplier: %s", hour_multiplier)
             data[const.ZONE_DELTA] = delta * hour_multiplier
-            _LOGGER.debug(f"[calculate-module]: new delta: {delta * hour_multiplier}")
+            _LOGGER.debug("[calculate-module]: new delta: %s", delta * hour_multiplier)
             newbucket = bucket + (delta * hour_multiplier)
 
             # if maximum bucket configured, limit bucket with that.
@@ -1341,7 +1362,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             ):
                 newbucket = float(maximum_bucket)
                 _LOGGER.debug(
-                    f"[calculate-module]: capped new bucket because of maximum bucket: {newbucket}"
+                    "[calculate-module]: capped new bucket because of maximum bucket: %s",
+                    newbucket,
                 )
             bucket_plus_delta_capped = newbucket
 
@@ -1355,8 +1377,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 drainage_rate = convert_between(
                     const.UNIT_INCH, const.UNIT_MM, drainage_rate
                 )
-            _LOGGER.debug(f"[calculate-module]: drainage_rate: {drainage_rate}")
-
+            _LOGGER.debug("[calculate-module]: drainage_rate: %s", drainage_rate)
             # drainage only applies above field capacity (bucket > 0)
             drainage = 0
             if newbucket > 0:
@@ -1372,15 +1393,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     drainage *= (newbucket / maximum_bucket) ** (
                         (2 + 3 * gamma) / gamma
                     )
-                _LOGGER.debug(f"[calculate-module]: current_drainage: {drainage}")
+                _LOGGER.debug("[calculate-module]: current_drainage: %s", drainage)
                 newbucket = max(0, newbucket - drainage)
 
             data[const.ZONE_CURRENT_DRAINAGE] = drainage
-            _LOGGER.debug(f"[calculate-module]: newbucket: {newbucket}")
+            _LOGGER.debug("[calculate-module]: newbucket: %s", newbucket)
         else:
-            _LOGGER.error(
-                "Unknown module for zone {}".format(zone.get(const.ZONE_NAME))
-            )
+            _LOGGER.error("Unknown module for zone %s", zone.get(const.ZONE_NAME))
             return None
         explanation = await localize(
             "module.calculation.explanation.module-returned-evapotranspiration-deficiency",
@@ -1586,7 +1605,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "module.calculation.explanation.multiplier-is-applied",
                     self.hass.config.language,
                 )
-                + " {}, ".format(zone.get(const.ZONE_MULTIPLIER))
+                + f" {zone.get(const.ZONE_MULTIPLIER)}, "
             )
             explanation += await localize(
                 "module.calculation.explanation.duration-after-multiplier-is",
@@ -1627,7 +1646,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         "module.calculation.explanation.lead-time-is-applied",
                         self.hass.config.language,
                     )
-                    + " {}, ".format(zone.get(const.ZONE_LEAD_TIME))
+                    + f" {zone.get(const.ZONE_LEAD_TIME)}, "
+                )
+                explanation += (
+                    await localize(
+                        "module.calculation.explanation.duration-after-lead-time-is",
+                        self.hass.config.language,
+                    )
+                    + f" {duration}</li></ol>"
                 )
                 explanation += await localize(
                     "module.calculation.explanation.duration-after-lead-time-is",
@@ -1638,10 +1664,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         else:
             # no need to irrigate, set duration to 0
             duration = 0
-            explanation += await localize(
-                "module.calculation.explanation.bucket-larger-than-or-equal-to-zero-no-irrigation-necessary",
-                self.hass.config.language,
-            ) + " {}".format(duration)
+            explanation += (
+                await localize(
+                    "module.calculation.explanation.bucket-larger-than-or-equal-to-zero-no-irrigation-necessary",
+                    self.hass.config.language,
+                )
+                + f" {duration}"
+            )
 
         data[const.ZONE_BUCKET] = newbucket
         if not ha_config_is_metric:
@@ -1654,7 +1683,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         return data
 
     async def async_update_module_config(
-        self, module_id: int = None, data: dict = None
+        self, module_id: int | None = None, data: dict | None = None
     ):
         """Update, create, or delete a module configuration.
 
@@ -1681,13 +1710,22 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             )
         else:
             # create a module
-            self.store.async_create_module(data)
-            self.store.async_get_config()
+            asyncio.create_task(self.store.async_create_module(data))
+            asyncio.create_task(self.store.async_get_config())
 
     async def async_update_mapping_config(
-        self, mapping_id: int = None, data: dict = {}
+        self, mapping_id: int | None = None, data: dict | None = None
     ):
-        _LOGGER.debug(f"[async_update_mapping_config]: update for mapping {mapping_id}, data: {data}")
+        """Update, create, or delete a mapping configuration.
+
+        Args:
+            mapping_id: The ID of the mapping to update or delete.
+            data: The configuration data for the mapping.
+
+        """
+        _LOGGER.debug("[async_update_mapping_config]: update for mapping %s, data: %s", mapping_id, data)
+        if data is None:
+            data = {}
         if mapping_id is not None:
             mapping_id = int(mapping_id)
         if const.ATTR_REMOVE in data:
@@ -1712,6 +1750,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         await self.update_subscriptions()
 
     def check_mapping_sources(self, mapping_id):
+        """Check which data sources (weather service, sensor, static value) are present in a mapping.
+
+        Args:
+            mapping_id: The ID of the mapping to check.
+
+        Returns:
+            Tuple of booleans: (owm_in_mapping, sensor_in_mapping, static_in_mapping)
+
+        """
         owm_in_mapping = False
         sensor_in_mapping = False
         static_in_mapping = False
@@ -1737,16 +1784,27 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             static_in_mapping = True
             else:
                 _LOGGER.debug(
-                    f"[check_mapping_sources] sensor group {mapping_id} is None"
+                    "[check_mapping_sources] sensor group %s is None", mapping_id
                 )
             _LOGGER.debug(
-                "check_mapping_sources for mapping_id {} returns OWM: {}, sensor: {}, static: {}".format(
-                    mapping_id, owm_in_mapping, sensor_in_mapping, static_in_mapping
-                )
+                "check_mapping_sources for mapping_id %s returns OWM: %s, sensor: %s, static: %s",
+                mapping_id,
+                owm_in_mapping,
+                sensor_in_mapping,
+                static_in_mapping,
             )
         return owm_in_mapping, sensor_in_mapping, static_in_mapping
 
     def build_sensor_values_for_mapping(self, mapping):
+        """Build a dictionary of sensor values for a given mapping by retrieving and converting sensor states from Home Assistant.
+
+        Args:
+            mapping: The mapping dictionary containing sensor configuration.
+
+        Returns:
+            dict: A dictionary of sensor keys and their corresponding metric values.
+
+        """
         sensor_values = {}
         for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
             if not isinstance(the_map, str):
@@ -1772,16 +1830,24 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                             )
                             # add val to sensor values
                             sensor_values[key] = val
-                        except Exception:
+                        except (ValueError, TypeError):
                             _LOGGER.warning(
-                                "No / unknown value for sensor {}".format(
-                                    the_map.get(const.MAPPING_CONF_SENSOR)
-                                )
+                                "No / unknown value for sensor %s",
+                                the_map.get(const.MAPPING_CONF_SENSOR),
                             )
 
         return sensor_values
 
     def build_static_values_for_mapping(self, mapping):
+        """Build a dictionary of static values for a given mapping by retrieving and converting static values.
+
+        Args:
+            mapping: The mapping dictionary containing static value configuration.
+
+        Returns:
+            dict: A dictionary of sensor keys and their corresponding static metric values.
+
+        """
         static_values = {}
         for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
             if not isinstance(the_map, str):
@@ -1801,8 +1867,19 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     static_values[key] = val
         return static_values
 
-    async def async_update_zone_config(self, zone_id: int = None, data: dict = {}):
-        _LOGGER.debug(f"[async_update_zone_config]: updating zone {zone_id}")
+    async def async_update_zone_config(
+        self, zone_id: int | None = None, data: dict | None = None
+    ):
+        """Update, create, or delete a zone configuration.
+
+        Args:
+            zone_id: The ID of the zone to update or delete.
+            data: The configuration data for the mapping.
+
+        """
+        _LOGGER.debug("[async_update_zone_config]: updating zone %s", zone_id)
+        if data is None:
+            data = {}
         if zone_id is not None:
             zone_id = int(zone_id)
         if const.ATTR_REMOVE in data:
@@ -1814,100 +1891,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             await self.async_remove_entity(zone_id)
 
         elif const.ATTR_CALCULATE in data:
-            if isinstance(data, dict):
-                data.pop(const.ATTR_CALCULATE)
-            # this should not retrieve new data from sensors!
-            # calculate a zone
-            res = self.store.get_zone(zone_id)
-            mapping_id = res[const.ZONE_MAPPING]
-            _LOGGER.info("Calculating zone {}".format(res[const.ZONE_NAME]))
-            if not res:
-                return
-            # call the calculate method on the module for the zone
-            # does the mapping use OWM?
-            # if using pyeto and using a forecast retrieve that from own
-            modinst = await self.getModuleInstanceByID(res.get(const.ZONE_MODULE))
-            forecastdata = None
-            if modinst:
-                if modinst.name == "PyETO" and modinst._forecast_days > 0:
-                    if self.use_weather_service:
-                        # set override cache if set
-                        self._WeatherServiceClient.override_cache = data.get(
-                            const.ATTR_OVERRIDE_CACHE, False
-                        )
-                        # get forecast info from OWM
-                        forecastdata = await self.hass.async_add_executor_job(
-                            self._WeatherServiceClient.get_forecast_data
-                        )
-                    else:
-                        _LOGGER.error(
-                            "Error calculating zone {}. You have configured forecasting but but there is no Weather API configured. Either configure the OWM API or stop using forcasting on the PyETO module.".format(
-                                res[const.ZONE_NAME]
-                            )
-                        )
-                        return
-            else:
-                _LOGGER.error(
-                    "Calculate zone {} failed: no module selected.".format(
-                        res[const.ZONE_NAME]
-                    )
-                )
-                return
-            mapping = self.store.get_mapping(mapping_id)
-            if mapping:
-                # if there is sensor data on the mapping, apply aggregates to it.
-                sensor_values = None
-                if const.MAPPING_DATA in mapping and mapping.get(const.MAPPING_DATA):
-                    sensor_values = await self.apply_aggregates_to_mapping_data(mapping)
-                # do conversions for pressure/solar radiation/wind speed here based on units. data in sensor_values should already be in metric
-                # pressure is expected in hPa
-                # solar radiation is expected in MJ/m2/day
-                # windspeed is expected in m/s
-
-                # precip_from_sensor = None
-                # sol_rad_from_sensor = None
-                # et_data = None
-                # ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
-                if sensor_values:
-                    # if "daily" not in weatherdata:
-                    #    weatherdata["daily"] = []
-                    #    weatherdata["daily"].append({})
-                    # if sensor_values:
-                    # loop over sensor values and put them in weatherdata in the right keys
-                    # weatherdata,precip_from_sensor, sol_rad_from_sensor,et_data = self.insert_sensor_values_in_weatherdata(mapping=mapping, sensor_values=sensor_values, weatherdata=weatherdata, ha_config_is_metric=ha_config_is_metric)
-                    wdata = await self.calculate_module(
-                        res, weatherdata=sensor_values, forecastdata=forecastdata
-                    )
-                    # remove mapping sensor data?
-                    if data.get(const.ATTR_DELETE_WEATHER_DATA, True):
-                        # only remove weather data if there are no other zones dependent on this mapping
-                        dependent_zones = self._get_zones_that_use_this_mapping(
-                            mapping_id
-                        )
-                        if zone_id in dependent_zones:
-                            dependent_zones.remove(zone_id)
-                        if not dependent_zones:
-                            changes = {}
-                            changes[const.MAPPING_DATA] = []
-                            self.store.async_update_mapping(mapping_id, changes=changes)
-                        self.store.async_update_zone(zone_id, wdata)
-                        async_dispatcher_send(
-                            self.hass, const.DOMAIN + "_config_updated", zone_id
-                        )
-
-                elif not sensor_values:
-                    # no data to calculate with!
-                    _LOGGER.warning(
-                        "Calculate zone {} failed: no data available. Did you update before calculating?".format(
-                            res[const.ZONE_NAME]
-                        )
-                    )
-            else:
-                _LOGGER.error(
-                    "Calculate zone {} failed: no sensor group selected.".format(
-                        res[const.ZONE_NAME]
-                    )
-                )
+            await self._async_calculate_single_zone(zone_id, data)
         elif const.ATTR_CALCULATE_ALL in data:
             # calculate all zones
             _LOGGER.info("Calculating all zones")
@@ -1915,99 +1899,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             await self._async_calculate_all()
 
         elif const.ATTR_UPDATE in data:
-            # update weather data for a zone
-            res = self.store.get_zone(zone_id)
-            _LOGGER.info("Updating zone {}".format(res[const.ZONE_NAME]))
-            if not res:
-                return
-            sensor_values = {}
-            mapping_id = res[const.ZONE_MAPPING]
-            (
-                owm_in_mapping,
-                sensor_in_mapping,
-                static_in_mapping,
-            ) = self.check_mapping_sources(mapping_id=mapping_id)
-
-            mapping = self.store.get_mapping(mapping_id)
-            weatherdata = None
-            if self.use_weather_service and owm_in_mapping:
-                self._WeatherServiceClient.override_cache = data.get(
-                    const.ATTR_OVERRIDE_CACHE, False
-                )
-                # retrieve data from OWM
-                weatherdata = await self.hass.async_add_executor_job(
-                    self._WeatherServiceClient.get_data
-                )
-            if sensor_in_mapping:
-                sensor_values = self.build_sensor_values_for_mapping(mapping)
-                if weatherdata:
-                    weatherdata = await self.merge_weatherdata_and_sensor_values(
-                        weatherdata, sensor_values
-                    )
-                else:
-                    weatherdata = sensor_values
-            if static_in_mapping:
-                static_values = self.build_static_values_for_mapping(mapping)
-                if weatherdata:
-                    weatherdata = await self.merge_weatherdata_and_sensor_values(
-                        weatherdata, static_values
-                    )
-                else:
-                    weatherdata = static_values
-            if sensor_in_mapping or static_in_mapping:
-                # if pressure type is set to relative, replace it with absolute. not necessary for OWM as it already happened
-                if (
-                    mapping.get(const.MAPPING_MAPPINGS)
-                    .get(const.MAPPING_PRESSURE)
-                    .get(const.MAPPING_CONF_PRESSURE_TYPE)
-                    == const.MAPPING_CONF_PRESSURE_RELATIVE
-                ):
-                    # convert the relative pressure to absolute or estimate from height
-                    if const.MAPPING_PRESSURE in weatherdata:
-                        weatherdata[const.MAPPING_PRESSURE] = (
-                            relative_to_absolute_pressure(
-                                weatherdata[const.MAPPING_PRESSURE],
-                                self.hass.config.as_dict().get(CONF_ELEVATION),
-                            )
-                        )
-                    else:
-                        weatherdata[const.MAPPING_PRESSURE] = altitudeToPressure(
-                            self.hass.config.as_dict().get(CONF_ELEVATION)
-                        )
-
-            # add the weatherdata value to the mappings sensor values
-            if mapping:
-                mapping_data = mapping[const.MAPPING_DATA]
-                weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
-                mapping_data.append(weatherdata)
-                # _LOGGER.debug(
-                #    "async_update_zone_config for mapping {} new mapping_data: {}".format(
-                #        mapping_id, weatherdata
-                #    )
-                # )
-                changes = {
-                    "data": mapping_data,
-                    const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now(),
-                }
-                self.store.async_update_mapping(mapping_id, changes)
-
-                # store last updated and number of data points in the zone here.
-                changes_to_zone = {
-                    const.ZONE_LAST_UPDATED: changes[const.MAPPING_DATA_LAST_UPDATED],
-                    const.ZONE_NUMBER_OF_DATA_POINTS: len(mapping_data) - 1,
-                }
-                zones_to_loop = self._get_zones_that_use_this_mapping(mapping_id)
-                for z in zones_to_loop:
-                    self.store.async_update_zone(z, changes_to_zone)
-                    async_dispatcher_send(
-                        self.hass,
-                        const.DOMAIN + "_config_updated",
-                        z,
-                    )
-            else:
-                _LOGGER.warning(
-                    f"Failed to update zone {zone_id}: no or invalid sensor group selected."
-                )
+            await self._async_update_zone_weatherdata(zone_id, data)
         elif const.ATTR_UPDATE_ALL in data:
             _LOGGER.info("Updating all zones")
             await self._async_update_all()
@@ -2041,6 +1933,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         await self.register_start_event()
 
     async def register_start_event(self):
+        """Register a callback to fire the irrigation start event before sunrise based on total duration of enabled zones."""
         # sun_state = self.hass.states.get("sun.sun")
         # if sun_state is not None:
         #    sun_rise = sun_state.attributes.get("next_rising")
@@ -2072,12 +1965,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # self._track_sunrise_event_unsub = async_call_later(self.hass, time_to_wait,self._fire_start_event)
             event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
             _LOGGER.info(
-                "Start irrigation event {} will fire at {} seconds before sunrise".format(
-                    event_to_fire, total_duration
-                )
+                "Start irrigation event %s will fire at %s seconds before sunrise",
+                event_to_fire,
+                total_duration,
             )
 
     async def get_total_duration_all_enabled_zones(self):
+        """Calculate the total duration for all enabled (automatic or manual) zones.
+
+        Returns:
+            int: The sum of durations for all enabled zones.
+
+        """
         total_duration = 0
         zones = await self.store.async_get_zones()
         for zone in zones:
@@ -2093,7 +1992,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         if not self._start_event_fired_today:
             event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
             self.hass.bus.fire(event_to_fire, {})
-            _LOGGER.info("Fired start event: {}".format(event_to_fire))
+            _LOGGER.info("Fired start event: %s", event_to_fire)
             self._start_event_fired_today = True
             # save config
             self.store.async_update_config(
@@ -2123,13 +2022,19 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 {
                     "name": s.name,
                     "description": s.description,
-                    "config": s._config,
+                    "config": s.config,
                     "schema": s.schema_serialized(),
                 }
             )
         return res
 
     async def async_remove_entity(self, zone_id: str):
+        """Remove an entity corresponding to the given zone ID from Home Assistant.
+
+        Args:
+            zone_id: The ID of the zone whose entity should be removed.
+
+        """
         entity_registry = er.async_get(self.hass)
         zone_id = int(zone_id)
         entity = self.hass.data[const.DOMAIN]["zones"][zone_id]
@@ -2145,7 +2050,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             await self.async_remove_entity(zone)
 
         # remove subscriptions for coordinator
-        while len(self._subscriptions):
+        while self._subscriptions:
             self._subscriptions.pop()()
 
     async def async_delete_config(self):
@@ -2187,9 +2092,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         """Calculate specific zone."""
         if const.SERVICE_ENTITY_ID in call.data:
             for entity in call.data[const.SERVICE_ENTITY_ID]:
-                _LOGGER.info(
-                    "Calculate zone service called for zone {}.".format(entity)
-                )
+                _LOGGER.info("Calculate zone service called for zone %s", entity)
                 # find entity zone id and call calculate on the zone
                 state = self.hass.states.get(entity)
                 if state:
@@ -2212,7 +2115,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         """Update specific zone."""
         if const.SERVICE_ENTITY_ID in call.data:
             for entity in call.data[const.SERVICE_ENTITY_ID]:
-                _LOGGER.info("Update zone service called for zone {}.".format(entity))
+                _LOGGER.info("Update zone service called for zone %s", entity)
                 # find entity zone id and call update on the zone
                 state = self.hass.states.get(entity)
                 if state:
@@ -2230,7 +2133,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if not isinstance(eid, list):
                 eid = [call.data[const.SERVICE_ENTITY_ID]]
             for entity in eid:
-                _LOGGER.info("Reset bucket service called for zone {}.".format(entity))
+                _LOGGER.info("Reset bucket service called for zone %s", entity)
                 # find entity zone id and call calculate on the zone
                 state = self.hass.states.get(entity)
                 if state:
@@ -2251,14 +2154,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         """Reset all buckets to new value."""
         if const.ATTR_NEW_BUCKET_VALUE in call.data:
             new_value = call.data[const.ATTR_NEW_BUCKET_VALUE]
-            _LOGGER.info(
-                "Set all buckets service called, new value: {}".format(new_value)
-            )
+            _LOGGER.info("Set all buckets service called, new value: %s", new_value)
             await self._async_set_all_buckets(new_value)
 
     async def handle_set_zone(self, call):
         """Reset a specific zone state to new value."""
-        if not const.SERVICE_ENTITY_ID in call.data:
+        if const.SERVICE_ENTITY_ID not in call.data:
             return
 
         eid = call.data[const.SERVICE_ENTITY_ID]
@@ -2269,54 +2170,54 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         data.pop(const.SERVICE_ENTITY_ID)
 
         for entity in eid:
-            _LOGGER.info("Set zone data service called with zone {}.".format(entity))
+            _LOGGER.info("Set zone data service called with zone %s", entity)
 
             # find entity zone id and call calculate on the zone
             state = self.hass.states.get(entity)
             if not state:
-                raise Exception("No state found for entity {}.".format(entity))
+                raise SmartIrrigationError(f"No state found for entity {entity}")
 
             # find zone_id for zone with name
             zone_id = state.attributes.get(const.ZONE_ID)
             if zone_id is None:
-                raise Exception("No zone_id found in state attributes.")
+                raise SmartIrrigationError("No zone_id found in state attributes.")
 
             zone = self.store.get_zone(zone_id)
             zone_data = {}
             count = 0
             for v in data:
                 if (
-                    not v in const.LIST_SET_ZONE_ALLOWED_ARGS
+                    v not in const.LIST_SET_ZONE_ALLOWED_ARGS
                     and v != const.SERVICE_ENTITY_ID
                 ):
-                    raise Exception("Argument ({}) is not allowed".format(v))
+                    raise SmartIrrigationError(f"Argument ({v}) is not allowed")
 
                 if (
                     v == const.ATTR_NEW_DURATION_VALUE
                     and zone.get(const.ZONE_STATE) != const.ZONE_STATE_MANUAL
                 ):
-                    raise Exception(
+                    raise SmartIrrigationError(
                         "Can only set duration if zone state is set to manual."
                     )
                 if v == const.ATTR_NEW_BUCKET_VALUE and data[v] > zone.get(
                     const.ZONE_MAXIMUM_BUCKET
                 ):
-                    raise Exception(
+                    raise SmartIrrigationError(
                         "Bucket size is above maximmum bucket allowed value."
                     )
                 if v == const.ATTR_NEW_STATE_VALUE and data[v] in const.ZONE_STATE:
-                    raise Exception(
-                        "Invalid value ({}) for zone state.".format(data[v])
+                    raise SmartIrrigationError(
+                        f"Invalid value ({data[v]}) for zone state."
                     )
 
                 m = re.match("^new_(.+)_value$", v)
                 if m:
                     zone_data[m.group(1)] = data[v]
-                    _LOGGER.info("Setting value for {}.".format(m.group(1)))
+                    _LOGGER.info("Setting value for %s", m.group(1))
                     count += 1
 
             if count == 0:
-                raise Exception("No valid parameter provided")
+                raise SmartIrrigationError("No valid parameter provided")
 
             if count > 0:
                 self.store.async_update_zone(zone_id, zone_data)
@@ -2330,9 +2231,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         """Reset all multipliers to new value."""
         if const.ATTR_NEW_MULTIPLIER_VALUE in call.data:
             new_value = call.data[const.ATTR_NEW_MULTIPLIER_VALUE]
-            _LOGGER.info(
-                "Set all multipliers service called, new value: {}".format(new_value)
-            )
+            _LOGGER.info("Set all multipliers service called, new value: %s", new_value)
             await self._async_set_all_multipliers(new_value)
 
     async def handle_clear_weatherdata(self, call):
