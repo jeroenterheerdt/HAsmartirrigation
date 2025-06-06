@@ -141,10 +141,10 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
 
   private handleEditMapping(
     index: number,
-    updatedMapping: SmartIrrigationMapping
+    updatedMapping: SmartIrrigationMapping,
   ): void {
     this.mappings = Object.values(this.mappings).map((mapping, i) =>
-      i === index ? updatedMapping : mapping
+      i === index ? updatedMapping : mapping,
     );
     console.log(updatedMapping);
     this.saveToHA(updatedMapping);
@@ -170,17 +170,17 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                 message:
                   localize(
                     "panels.mappings.cards.mapping.errors.source_does_not_exist",
-                    this.hass.language
+                    this.hass.language,
                   ) +
                   ": " +
                   mapping.mappings[m].sensorentity,
               },
               error: localize(
                 "panels.mappings.cards.mapping.errors.invalid_source",
-                this.hass.language
+                this.hass.language,
               ),
             },
-            this.shadowRoot!.querySelector("ha-card") as HTMLElement
+            this.shadowRoot!.querySelector("ha-card") as HTMLElement,
           );
           break;
         }
@@ -192,13 +192,13 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   }
   private renderMapping(
     mapping: SmartIrrigationMapping,
-    index: number
+    index: number,
   ): TemplateResult {
     if (!this.hass) {
       return html``;
     } else {
       const numberofzonesusingthismapping = this.zones.filter(
-        (o) => o.mapping === mapping.id
+        (o) => o.mapping === mapping.id,
       ).length;
       //below here we should go over all the mappings on the mapping object
       return html`
@@ -208,7 +208,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
             <label for="name${mapping.id}"
               >${localize(
                 "panels.mappings.labels.mapping-name",
-                this.hass.language
+                this.hass.language,
               )}:</label
             >
             <input
@@ -222,13 +222,13 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                 })}"
             />
             ${Object.entries(mapping.mappings).map(([value]) =>
-              this.renderMappingSetting(index, value)
+              this.renderMappingSetting(index, value),
             )}
             ${
               numberofzonesusingthismapping
                 ? html`${localize(
                     "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
-                    this.hass.language
+                    this.hass.language,
                   )}`
                 : html` <svg
                     style="width:24px;height:24px"
@@ -258,7 +258,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       <label for="${value + index}"
         >${localize(
           "panels.mappings.cards.mapping.items." + value.toLowerCase(),
-          this.hass.language
+          this.hass.language,
         )}
       </label>
     </div> `;
@@ -270,7 +270,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         <label for="${value + index + MAPPING_CONF_SOURCE}"
           >${localize(
             "panels.mappings.cards.mapping.source",
-            this.hass.language
+            this.hass.language,
           )}:</label
         >
       </div>`;
@@ -300,7 +300,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         /><label for="${value + index + MAPPING_CONF_SOURCE_NONE}"
           >${localize(
             "panels.mappings.cards.mapping.sources.none",
-            this.hass.language
+            this.hass.language,
           )}</label
         > `;
     } else {
@@ -335,7 +335,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           for="${value + index + MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
           >${localize(
             "panels.mappings.cards.mapping.sources.weather_service",
-            this.hass.language
+            this.hass.language,
           )}</label
         >`;
     }
@@ -362,7 +362,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         /><label for="${value + index + MAPPING_CONF_SOURCE_SENSOR}"
           >${localize(
             "panels.mappings.cards.mapping.sources.sensor",
-            this.hass.language
+            this.hass.language,
           )}</label
         >
       </div>`;
@@ -390,7 +390,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       /><label for="${value + index + MAPPING_CONF_SOURCE_STATIC_VALUE}"
         >${localize(
           "panels.mappings.cards.mapping.sources.static",
-          this.hass.language
+          this.hass.language,
         )}</label
       >
     </div>`;
@@ -400,7 +400,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           <label for="${value + index + MAPPING_CONF_SENSOR}"
             >${localize(
               "panels.mappings.cards.mapping.sensor-entity",
-              this.hass.language
+              this.hass.language,
             )}:</label
           >
           <input
@@ -427,7 +427,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           <label for="${value + index + MAPPING_CONF_STATIC_VALUE}"
             >${localize(
               "panels.mappings.cards.mapping.static_value",
-              this.hass.language
+              this.hass.language,
             )}:</label
           >
           <input
@@ -458,7 +458,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           <label for="${value + index + MAPPING_CONF_UNIT}"
             >${localize(
               "panels.mappings.cards.mapping.input-units",
-              this.hass.language
+              this.hass.language,
             )}:</label
           >
           <select
@@ -487,7 +487,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
             <label for="${value + index + MAPPING_CONF_PRESSURE_TYPE}"
               >${localize(
                 "panels.mappings.cards.mapping.pressure-type",
-                this.hass.language
+                this.hass.language,
               )}:</label
             >
             <select
@@ -518,7 +518,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           <label for="${value + index + MAPPING_CONF_AGGREGATE}"
             >${localize(
               "panels.mappings.cards.mapping.sensor-aggregate-use-the",
-              this.hass.language
+              this.hass.language,
             )}
           </label>
           <select
@@ -542,7 +542,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           <label for="${value + index + MAPPING_CONF_AGGREGATE}"
             >${localize(
               "panels.mappings.cards.mapping.sensor-aggregate-of-sensor-values-to-calculate",
-              this.hass.language
+              this.hass.language,
             )}</label
           >
         </div>`;
@@ -554,7 +554,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
 
   private renderAggregateOptionsForMapping(
     value: any,
-    mappingline: any
+    mappingline: any,
   ): TemplateResult {
     if (!this.hass || !this.config) {
       return html``;
@@ -611,7 +611,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           ${localize(
             "panels.mappings.cards.mapping.pressure_types." +
               MAPPING_CONF_PRESSURE_ABSOLUTE,
-            this.hass.language
+            this.hass.language,
           )}
         </option>
         <option
@@ -621,7 +621,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           ${localize(
             "panels.mappings.cards.mapping.pressure_types." +
               MAPPING_CONF_PRESSURE_RELATIVE,
-            this.hass.language
+            this.hass.language,
           )}
         </option>`;
       return r;
@@ -629,7 +629,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   }
   private renderUnitOptionsForMapping(
     value: any,
-    mappingline: any
+    mappingline: any,
   ): TemplateResult {
     if (!this.hass || !this.config) {
       return html``;
@@ -677,28 +677,28 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         <ha-card
           header="${localize(
             "panels.mappings.cards.add-mapping.header",
-            this.hass.language
+            this.hass.language,
           )}"
         >
           <div class="card-content">
             <label for="mappingNameInput"
               >${localize(
                 "panels.mappings.labels.mapping-name",
-                this.hass.language
+                this.hass.language,
               )}:</label
             >
             <input id="mappingNameInput" type="text" />
             <button @click="${this.handleAddMapping}">
               ${localize(
                 "panels.mappings.cards.add-mapping.actions.add",
-                this.hass.language
+                this.hass.language,
               )}
             </button>
           </div>
         </ha-card>
 
         ${Object.entries(this.mappings).map(([key, value]) =>
-          this.renderMapping(value, parseInt(key))
+          this.renderMapping(value, parseInt(key)),
         )}
       `;
     }

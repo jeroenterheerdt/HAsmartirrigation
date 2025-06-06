@@ -175,7 +175,7 @@ export function Unique<TValue>(arr: TValue[]) {
   arr.forEach((item) => {
     if (
       !res.find((e) =>
-        typeof item === "object" ? isEqual(e, item) : e === item
+        typeof item === "object" ? isEqual(e, item) : e === item,
       )
     )
       res.push(item);
@@ -189,7 +189,7 @@ export function Without(array: any[], item: any) {
 
 export function pick(
   obj: Dictionary<any> | null | undefined,
-  keys: string[]
+  keys: string[],
 ): Dictionary<any> {
   if (!obj) return {};
   return Object.entries(obj)
@@ -204,12 +204,15 @@ export function flatten<U>(arr: U[][]): U[] {
   return arr.reduce(
     (acc, val) =>
       acc.concat(Array.isArray(val) ? flatten(val as unknown as U[][]) : val),
-    []
+    [],
   );
 }
 
 interface Omit {
-  <T extends object, K extends [...(keyof T)[]]>(obj: T, ...keys: K): {
+  <T extends object, K extends [...(keyof T)[]]>(
+    obj: T,
+    ...keys: K
+  ): {
     [K2 in Exclude<keyof T, K[number]>]: T[K2];
   };
 }
@@ -228,14 +231,14 @@ export const omit: Omit = (obj, ...keys) => {
 };
 
 export function isDefined<TValue>(
-  value: TValue | null | undefined
+  value: TValue | null | undefined,
 ): value is TValue {
   return value !== null && value !== undefined;
 }
 
 export function IsEqual(
   obj1: Record<string, any> | any[],
-  obj2: Record<string, any> | any[]
+  obj2: Record<string, any> | any[],
 ) {
   if (obj1 === null || obj2 === null) return obj1 === obj2;
   const keys1 = Object.keys(obj1);
@@ -253,7 +256,7 @@ export function IsEqual(
 export function showConfirmationDialog(
   ev: Event | HTMLElement,
   message: string | TemplateResult,
-  target: number
+  target: number,
 ) {
   const elem = ev.hasOwnProperty("tagName")
     ? (ev as HTMLElement)
@@ -266,7 +269,7 @@ export function showConfirmationDialog(
 }
 export function showErrorDialog(
   ev: Event | HTMLElement,
-  error: string | TemplateResult
+  error: string | TemplateResult,
 ) {
   /*const elem = ev.hasOwnProperty("tagName")
     ? (ev as HTMLElement)
@@ -288,7 +291,7 @@ export function handleError(err: any, ev: Event | HTMLElement) {
 
 export function Assign<Type extends {}>(
   obj: Type,
-  changes: Partial<Type>
+  changes: Partial<Type>,
 ): Type {
   Object.entries(changes).forEach(([key, val]) => {
     if (key in obj && typeof obj[key] == "object" && obj[key] !== null)
@@ -300,7 +303,7 @@ export function Assign<Type extends {}>(
 
 export function sortAlphabetically(
   a: string | { name: string },
-  b: string | { name: string }
+  b: string | { name: string },
 ) {
   const stringVal = (s: string | { name: string }) =>
     typeof s === "object" ? stringVal(s.name) : s.trim().toLowerCase();

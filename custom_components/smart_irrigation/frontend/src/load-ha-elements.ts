@@ -1,5 +1,9 @@
 export const loadHaForm = async () => {
-  if (customElements.get("ha-checkbox") && customElements.get("ha-slider") && customElements.get('ha-panel-config'))
+  if (
+    customElements.get("ha-checkbox") &&
+    customElements.get("ha-slider") &&
+    customElements.get("ha-panel-config")
+  )
     return;
 
   await customElements.whenDefined("partial-panel-resolver");

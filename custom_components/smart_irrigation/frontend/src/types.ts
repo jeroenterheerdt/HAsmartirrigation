@@ -92,7 +92,7 @@ export class SmartIrrigationZone {
     s: number,
     t: number,
     st: SmartIrrigationZoneState,
-    d: number
+    d: number,
   ) {
     this.id = i;
     this.name = n;
