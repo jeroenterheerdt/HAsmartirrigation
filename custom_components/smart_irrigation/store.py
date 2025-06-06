@@ -22,7 +22,7 @@ from .const import (ATTR_NEW_BUCKET_VALUE, ATTR_NEW_MULTIPLIER_VALUE,
                     CONF_DEFAULT_AUTO_UPDATE_DELAY,
                     CONF_DEFAULT_AUTO_UPDATE_INTERVAL,
                     CONF_DEFAULT_AUTO_UPDATE_SCHEDULE,
-                    CONF_DEFAULT_AUTO_UPDATED_ENABLED, CONF_DEFAULT_CALC_TIME,
+                    CONF_DEFAULT_AUTO_UPDATE_ENABLED, CONF_DEFAULT_CALC_TIME,
                     CONF_DEFAULT_CLEAR_TIME, CONF_DEFAULT_CONTINUOUS_UPDATES,
                     CONF_DEFAULT_DRAINAGE_RATE, CONF_DEFAULT_MAXIMUM_BUCKET,
                     CONF_DEFAULT_MAXIMUM_DURATION,
@@ -41,7 +41,7 @@ from .const import (ATTR_NEW_BUCKET_VALUE, ATTR_NEW_MULTIPLIER_VALUE,
                     MAPPING_CONF_SOURCE_NONE, MAPPING_CONF_SOURCE_SENSOR,
                     MAPPING_CONF_SOURCE_WEATHER_SERVICE, MAPPING_CONF_UNIT,
                     MAPPING_CURRENT_PRECIPITATION, MAPPING_DATA,
-                    MAPPING_DATA_LAST_ENTRY, MAPPING_DATA_LAST_UPDATED,
+                    MAPPING_DATA_LAST_ENTRY, MAPPING_DATA_LAST_CALCULATION,
                     MAPPING_DEWPOINT, MAPPING_EVAPOTRANSPIRATION,
                     MAPPING_HUMIDITY, MAPPING_ID, MAPPING_MAPPINGS,
                     MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_NAME,
@@ -54,13 +54,12 @@ from .const import (ATTR_NEW_BUCKET_VALUE, ATTR_NEW_MULTIPLIER_VALUE,
                     TRIGGER_CONF_ACCOUNT_FOR_DURATION,
                     TRIGGER_TYPE_SUNRISE, ZONE_BUCKET,
                     ZONE_CURRENT_DRAINAGE, ZONE_DELTA, ZONE_DRAINAGE_RATE,
-                    ZONE_DURATION, ZONE_ID, ZONE_LAST_CALCULATED,
-                    ZONE_LAST_UPDATED, ZONE_LEAD_TIME, ZONE_MAPPING,
-                    ZONE_MAXIMUM_BUCKET, ZONE_MAXIMUM_DURATION, ZONE_MODULE,
-                    ZONE_MULTIPLIER, ZONE_NAME, ZONE_NUMBER_OF_DATA_POINTS,
-                    ZONE_SIZE, ZONE_STATE, ZONE_STATE_AUTOMATIC,
-                    ZONE_THROUGHPUT)
-from .helpers import convert_list_to_dict, loadModules
+                    ZONE_DURATION, ZONE_ID, ZONE_LAST_UPDATED, ZONE_LEAD_TIME,
+                    ZONE_MAPPING, ZONE_MAXIMUM_BUCKET, ZONE_MAXIMUM_DURATION,
+                    ZONE_MODULE, ZONE_MULTIPLIER, ZONE_NAME,
+                    ZONE_NUMBER_OF_DATA_POINTS, ZONE_SIZE, ZONE_STATE,
+                    ZONE_STATE_AUTOMATIC, ZONE_THROUGHPUT)
+from .helpers import loadModules
 from .localize import localize
 
 _LOGGER = logging.getLogger(__name__)
@@ -116,8 +115,8 @@ class MappingEntry:
     name = attr.ib(type=str, default=None)
     mappings = attr.ib(type=str, default=None)
     data = attr.ib(type=str, default="[]")
-    data_last_updated = attr.ib(type=datetime, default=None)
     data_last_entry = attr.ib(type=str, default={})
+    data_last_calculation = attr.ib(type=str, default={})
 
 
 @attr.s(slots=True, frozen=True)
@@ -264,7 +263,7 @@ class SmartIrrigationStorage:
             use_weather_service=CONF_DEFAULT_USE_WEATHER_SERVICE,
             weather_service=CONF_DEFAULT_WEATHER_SERVICE,
             autocalcenabled=CONF_DEFAULT_AUTO_CALC_ENABLED,
-            autoupdateenabled=CONF_DEFAULT_AUTO_UPDATED_ENABLED,
+            autoupdateenabled=CONF_DEFAULT_AUTO_UPDATE_ENABLED,
             autoupdateschedule=CONF_DEFAULT_AUTO_UPDATE_SCHEDULE,
             autoupdatedelay=CONF_DEFAULT_AUTO_UPDATE_DELAY,
             autoupdateinterval=CONF_DEFAULT_AUTO_UPDATE_INTERVAL,
@@ -299,7 +298,7 @@ class SmartIrrigationStorage:
                     CONF_AUTO_CALC_ENABLED, CONF_DEFAULT_AUTO_CALC_ENABLED
                 ),
                 autoupdateenabled=data["config"].get(
-                    CONF_AUTO_UPDATE_ENABLED, CONF_DEFAULT_AUTO_UPDATED_ENABLED
+                    CONF_AUTO_UPDATE_ENABLED, CONF_DEFAULT_AUTO_UPDATE_ENABLED
                 ),
                 autoupdateschedule=data["config"].get(
                     CONF_AUTO_UPDATE_SCHEDULE, CONF_DEFAULT_AUTO_UPDATE_SCHEDULE
@@ -355,7 +354,6 @@ class SmartIrrigationStorage:
                         maximum_bucket=zone.get(
                             ZONE_MAXIMUM_BUCKET, CONF_DEFAULT_MAXIMUM_BUCKET
                         ),
-                        last_calculated=zone.get(ZONE_LAST_CALCULATED, None),
                         last_updated=zone.get(ZONE_LAST_UPDATED, None),
                         number_of_data_points=zone.get(
                             ZONE_NUMBER_OF_DATA_POINTS, None
@@ -401,8 +399,10 @@ class SmartIrrigationStorage:
                         name=mapping[MAPPING_NAME],
                         mappings=the_map,
                         data=mapping.get(MAPPING_DATA),
-                        data_last_updated=mapping.get(MAPPING_DATA_LAST_UPDATED, None),
                         data_last_entry=mapping.get(MAPPING_DATA_LAST_ENTRY, {}),
+                        data_last_calculation=mapping.get(
+                            MAPPING_DATA_LAST_CALCULATION, {}
+                        ),
                     )
 
         self.config = config
@@ -738,17 +738,22 @@ class SmartIrrigationStorage:
         changes.pop("id", None)
         if old is not None:
             if old.data_last_entry is not None and len(old.data_last_entry) > 0:
-                if isinstance(old.data_last_entry, list):
-                    data_last_entry_dict = convert_list_to_dict(old.data_last_entry)
-                else:
-                    data_last_entry_dict = old.data_last_entry
                 if MAPPING_DATA_LAST_ENTRY not in changes:
                     changes[MAPPING_DATA_LAST_ENTRY] = {}
-                for key in data_last_entry_dict:
+                for key in old.data_last_entry:
                     if key not in changes[MAPPING_DATA_LAST_ENTRY]:
-                        changes[MAPPING_DATA_LAST_ENTRY][key] = data_last_entry_dict[
-                            key
-                        ]
+                        changes[MAPPING_DATA_LAST_ENTRY][key] = old.data_last_entry[key]
+            if (
+                old.data_last_calculation is not None
+                and len(old.data_last_calculation) > 0
+            ):
+                if MAPPING_DATA_LAST_CALCULATION not in changes:
+                    changes[MAPPING_DATA_LAST_CALCULATION] = {}
+                for key in old.data_last_calculation:
+                    if key not in changes[MAPPING_DATA_LAST_CALCULATION]:
+                        changes[MAPPING_DATA_LAST_CALCULATION][key] = (
+                            old.data_last_calculation[key]
+                        )
         new = self.mappings[mapping_id] = attr.evolve(old, **changes)
         self.async_schedule_save()
         return attr.asdict(new)

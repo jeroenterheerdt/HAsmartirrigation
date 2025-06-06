@@ -157,14 +157,12 @@ export class SmartIrrigationMapping {
   id?: number;
   name: string;
   mappings: object;
-  data_last_updated?: Date;
   data?: any[];
 
   constructor(i: number, n: string, m: object) {
     this.id = i;
     this.name = n;
     this.mappings = m;
-    this.data_last_updated = undefined;
     this.data = undefined;
   }
 }

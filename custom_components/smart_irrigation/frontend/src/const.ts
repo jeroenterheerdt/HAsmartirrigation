@@ -42,9 +42,6 @@ export const CONF_METRIC = "metric";
 export const MAPPING_DEWPOINT = "Dewpoint";
 export const MAPPING_EVAPOTRANSPIRATION = "Evapotranspiration";
 export const MAPPING_HUMIDITY = "Humidity";
-//removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
-//export const MAPPING_MAX_TEMP = "Maximum Temperature";
-//export const MAPPING_MIN_TEMP = "Minimum Temperature";
 export const MAPPING_PRECIPITATION = "Precipitation";
 export const MAPPING_CURRENT_PRECIPITATION = "Current Precipitation";
 export const MAPPING_PRESSURE = "Pressure";
@@ -66,12 +63,9 @@ export const MAPPING_CONF_UNIT = "unit";
 export const MAPPING_DATA = "data";
 export const MAPPING_CONF_AGGREGATE = "aggregate";
 export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT = "average";
-export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION = "maximum";
+export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION = "delta";
 export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_CURRENT_PRECIPITATION =
-  "last";
-//removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
-//export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP = "maximum";
-//export const MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP = "minimum";
+  "average";
 export const MAPPING_CONF_AGGREGATE_OPTIONS = [
   "average",
   "first",
@@ -81,6 +75,7 @@ export const MAPPING_CONF_AGGREGATE_OPTIONS = [
   "minimum",
   "riemannsum",
   "sum",
+  "delta"
 ];
 
 export const UNIT_M2 = "m<sup>2</sup>";

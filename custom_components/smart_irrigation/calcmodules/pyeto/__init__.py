@@ -129,9 +129,7 @@ class PyETO(SmartIrrigationCalculationModule):
                     x,
                 )
                 if len(forecast_data) - 1 >= x:
-                    deltas.append(
-                        self.calculate_et_for_day(weather_data=forecast_data[x])
-                    )
+                    deltas.append(self.calculate_et_for_day(forecast_data[x]))
         # return average of the collected deltas
         _LOGGER.debug("[pyETO: calculate_et_for_day] collected deltas: %s", deltas)
         if deltas:

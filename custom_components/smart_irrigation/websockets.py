@@ -163,11 +163,11 @@ class SmartIrrigationMappingView(HomeAssistantView):
                 vol.Optional(const.MAPPING_MAPPINGS): vol.Coerce(dict),
                 vol.Optional(const.ATTR_REMOVE): cv.boolean,
                 vol.Optional(const.MAPPING_DATA): vol.Coerce(list),
-                vol.Optional(const.MAPPING_DATA_LAST_UPDATED): vol.Or(
-                    None, str, datetime.datetime
-                ),
                 vol.Optional(const.MAPPING_DATA_LAST_ENTRY): vol.Or(
-                    None, vol.Coerce(list)
+                    None, vol.Coerce(dict)
+                ),
+                vol.Optional(const.MAPPING_DATA_LAST_CALCULATION): vol.Or(
+                    None, vol.Coerce(dict)
                 ),
             }
         )

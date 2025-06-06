@@ -745,6 +745,18 @@ def convert_list_to_dict(lst):
                 res_dict[lst[i]] = lst[i + 1]
     return res_dict
 
+def parse_datetime(val) -> datetime | None:
+    """Gets a datetime value or converts one from a string."""
+    if isinstance(val, datetime):
+        return val
+    elif isinstance(val, str):
+        return datetime.strptime(val, "%Y-%m-%dT%H:%M:%S.%f")
+    else:
+        _LOGGER.warning(
+            "[get_datetime]: value not instanceof datetime or string: %s",
+            val
+        )
+        return None
 
 class CannotConnect(exceptions.HomeAssistantError):
     """Error to indicate we cannot connect."""

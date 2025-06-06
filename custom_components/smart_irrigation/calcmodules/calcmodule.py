@@ -47,7 +47,8 @@ class SmartIrrigationCalculationModule:
         return self._description
 
     def calculate(self) -> float:
-        """Perform the calculation and return the result as an integer."""
+        """Perform the calculation and return the result as a float."""
+        return 0
 
     def schema_serialized(self):
         """Return the serialized voluptuous schema if available, otherwise None."""
