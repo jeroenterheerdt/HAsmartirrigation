@@ -400,7 +400,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             config = await self.store.async_get_config()
         if not config.get(const.CONF_CONTINUOUS_UPDATES):
             _LOGGER.debug(
-                "[update_subscriptions]: continuous updates are disabled, skipping."
+                "[update_subscriptions]: continuous updates are disabled, skipping"
             )
             return
 
@@ -592,9 +592,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 await self.async_continuous_update_for_mapping(mapping_id)
 
     async def async_continuous_update_for_mapping(self, mapping_id):
+        """Perform a continuous update for a specific mapping if it does not use a weather service.
+
+        Args:
+            mapping_id: The ID of the mapping to update.
+
+        This method checks if the mapping uses a weather service to avoid unnecessary API calls,
+        and if not, updates and calculates all automatic zones that use this mapping, assuming their modules do not use forecasting.
+
+        """
         self._debounced_update_cancel = None
 
-        """First, check is mapping doesn't use a Weather Service (to avoid API overload). Then perform update and calculate for all automatic zones that use this mapping, assuming their modules do not use forecasting."""
         if mapping_id is None:
             return
         mapping = self.store.get_mapping(mapping_id)
@@ -607,7 +615,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         )
         if self.check_mapping_sources(mapping_id)[0]:
             _LOGGER.info(
-                "[async_continuous_update_for_mapping] sensor group uses weather service, skipping automatic update to avoid API calls that can incur costs."
+                "[async_continuous_update_for_mapping] sensor group uses weather service, skipping automatic update to avoid API calls that can incur costs"
             )
             return
 
@@ -619,13 +627,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             zone = self.store.get_zone(z)
             if zone is None or zone.get(const.ZONE_STATE) != const.ZONE_STATE_AUTOMATIC:
                 _LOGGER.info(
-                    "[async_continuous_update_for_mapping] zone %s is not automatic, skipping.",
+                    "[async_continuous_update_for_mapping] zone %s is not automatic, skipping",
                     z,
                 )
                 continue
-            elif zone.get(const.ZONE_MODULE) is None:
+            if zone.get(const.ZONE_MODULE) is None:
                 _LOGGER.info(
-                    "[async_continuous_update_for_mapping] zone %s has no module, skipping.",
+                    "[async_continuous_update_for_mapping] zone %s has no module, skipping",
                     z,
                 )
                 continue
@@ -645,7 +653,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             else:
                 # module is PyETO. Check the config for forecast days == 0
                 _LOGGER.debug(
-                    "[async_continuous_update_for_mapping]: module is PyETO, checking config."
+                    "[async_continuous_update_for_mapping]: module is PyETO, checking config"
                 )
                 if mod.get(const.MODULE_CONFIG):
                     _LOGGER.debug(
@@ -675,12 +683,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     ):
                         can_calculate = True
                         _LOGGER.info(
-                            "checked config for PyETO module on zone %s, forecast_days==0 or None, so we can calculate",
+                            "Checked config for PyETO module on zone %s, forecast_days==0 or None, so we can calculate",
                             zone.get(const.ZONE_ID),
                         )
                     else:
                         _LOGGER.info(
-                            "checked config for PyETO module on zone %s, forecast_days>0, skipping to avoid API calls that can incur costs",
+                            "Checked config for PyETO module on zone %s, forecast_days>0, skipping to avoid API calls that can incur costs",
                             zone.get(const.ZONE_ID),
                         )
                 else:
@@ -1018,6 +1026,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         """Apply aggregation functions to mapping data and return the aggregated result.
 
         Args:
+            zone: The zone dictionary for which to aggregate mapping data.
             mapping: The mapping dictionary containing sensor data.
             continuous_updates: Whether continuous updates are enabled.
 
@@ -1095,8 +1104,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 _LOGGER.debug(
                     "[apply_aggregates_to_mapping_data]: zone has never been calculated, skipping"
                 )
-                return None
-            elif isinstance(val, datetime.datetime):
+                return
+            if isinstance(val, datetime.datetime):
                 # already in datetime format
                 last_zone_calc = val
             else:

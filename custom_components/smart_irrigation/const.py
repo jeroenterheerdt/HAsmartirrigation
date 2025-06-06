@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2025.6.0-beta2"
+VERSION = "v2025.6.0-beta3"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -73,7 +73,7 @@ CONF_DEFAULT_DRAINAGE_RATE = 50.8  # mm / hour (=2 inch per hour)
 CONF_DEFAULT_CONTINUOUS_UPDATES = False  # continuous updates are disabled by default
 CONF_CONTINUOUS_UPDATES = "continuousupdates"
 CONF_SENSOR_DEBOUNCE = "sensor_debounce"
-CONF_DEFAULT_SENSOR_DEBOUNCE = 100 # milliseconds, 0 = disabled
+CONF_DEFAULT_SENSOR_DEBOUNCE = 100  # milliseconds, 0 = disabled
 
 # PyETO specific config consts
 CONF_PYETO_COASTAL = "coastal"
