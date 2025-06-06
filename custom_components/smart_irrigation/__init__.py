@@ -504,7 +504,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             )
 
         # get the mapping that uses this sensor
-        mappings = self.store.get_mappings()
+        mappings = await self.store.async_get_mappings()
         for mapping in mappings:
             if mapping.get(const.MAPPING_MAPPINGS):
                 for key, val in mapping.get(const.MAPPING_MAPPINGS).items():
@@ -612,7 +612,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             return
 
         # mapping does not use Weather Service
-        zones = self._get_zones_that_use_this_mapping(mapping_id)
+        zones = await self._get_zones_that_use_this_mapping(mapping_id)
         zones_to_calculate = []
         for z in zones:
             zones_to_calculate.append(z)
@@ -857,11 +857,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # remove duplicates
         return list(set(mappings))
 
-    def _get_zones_that_use_this_mapping(self, mapping):
+    async def _get_zones_that_use_this_mapping(self, mapping):
         """Return a list of zone IDs that use the specified mapping."""
         return [
             z.get(const.ZONE_ID)
-            for z in self.store.get_zones()
+            for z in await self.store.async_get_zones()
             if z.get(const.ZONE_MAPPING) == mapping
         ]
 
@@ -958,7 +958,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     const.ZONE_LAST_UPDATED: changes[const.MAPPING_DATA_LAST_UPDATED],
                     const.ZONE_NUMBER_OF_DATA_POINTS: len(mapping_data) - 1,
                 }
-                zones_to_loop = self._get_zones_that_use_this_mapping(mapping_id)
+                zones_to_loop = await self._get_zones_that_use_this_mapping(mapping_id)
                 for z in zones_to_loop:
                     self.store.async_update_zone(z, changes_to_zone)
                     async_dispatcher_send(
@@ -1200,7 +1200,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def _async_clear_all_weatherdata(self, *args):
         _LOGGER.info("Clearing all weatherdata")
-        mappings = self.store.get_mappings()
+        mappings = await self.store.async_get_mappings()
         for mapping in mappings:
             changes = {}
             changes = self.clear_weatherdata_for_mapping(mapping)
@@ -1211,10 +1211,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # get all zones that are in automatic and for all of those, loop over the unique list of mappings
         # are any modules using OWM / sensors?
 
-        unfiltered_zones = self.store.get_zones()
+        unfiltered_zones = await self.store.async_get_zones()
 
         # skip over zones that use pure sensors (not weather service) if continuous updates are enabled
-        the_config = self.store.async_get_config()
+        the_config = await self.store.async_get_config()
         zones = []
         if the_config.get(const.CONF_CONTINUOUS_UPDATES):
             _LOGGER.debug(
@@ -2090,7 +2090,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def _async_set_all_buckets(self, val=0):
         """Set all buckets to val."""
-        zones = self.store.get_zones()
+        zones = await self.store.async_get_zones()
         data = {}
         data[const.ATTR_SET_BUCKET] = {}
         data[const.ATTR_NEW_BUCKET_VALUE] = val
@@ -2102,7 +2102,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def _async_set_all_multipliers(self, val=0):
         """Set all multipliers to val."""
-        zones = self.store.get_zones()
+        zones = await self.store.async_get_zones()
         data = {}
         data[const.ATTR_SET_MULTIPLIER] = {}
         data[const.ATTR_NEW_MULTIPLIER_VALUE] = val

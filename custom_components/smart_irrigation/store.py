@@ -671,7 +671,7 @@ class SmartIrrigationStorage:
         """Create a new MappingEntry."""
         new_mapping = MappingEntry(**data)
         if not new_mapping.id:
-            mappings = await self.get_mappings()
+            mappings = await self.async_get_mappings()
             new_mapping = attr.evolve(new_mapping, id=self.generate_next_id(mappings))
         self.mappings[int(new_mapping.id)] = new_mapping
         self.async_schedule_save()
