@@ -46,7 +46,7 @@ class SmartIrrigationCalculationModule:
         """Return the description of the calculation module."""
         return self._description
 
-    def calculate(self) -> int:
+    def calculate(self) -> float:
         """Perform the calculation and return the result as an integer."""
 
     def schema_serialized(self):

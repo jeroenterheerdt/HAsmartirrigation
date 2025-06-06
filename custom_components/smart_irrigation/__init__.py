@@ -1471,7 +1471,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if sensor_values:
                 # make sure we convert forecast data pressure to absolute!
                 data = await self.calculate_module(
-                    zone, weatherdata=sensor_values, forecastdata=forecastdata
+                    zone,
+                    weatherdata=sensor_values,
+                    forecastdata=forecastdata,
                 )
                 # if continuous updates are on, add the current date time to set the last updated time
                 if continuous_updates:
@@ -1554,23 +1556,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         old_bucket = bucket
         explanation = ""
 
-        hour_multiplier = weatherdata.get(const.MAPPING_DATA_MULTIPLIER, 1.0)
-
         if modinst:
-            # if m[const.MODULE_NAME] == "PyETO":
-            # if we have precip info from a sensor we don't need to call OWM to get it.
-            # if precip_from_sensor is None:
-            #        precip = self._OWMClient.get_precipitation(weatherdata)
-            # else:
-            #    precip = precip_from_sensor
+            precip = 0
             if m[const.MODULE_NAME] == "PyETO":
                 # pyeto expects pressure in hpa, solar radiation in mj/m2/day and wind speed in m/s
-
                 delta = modinst.calculate(
                     weather_data=weatherdata,
-                    forecast_data=forecastdata,
-                    hour_multiplier=hour_multiplier,
+                    forecast_data=forecastdata
                 )
+                # only PyETO uses precipitation
+                precip = weatherdata.get(const.MAPPING_PRECIPITATION, 0)
+                _LOGGER.debug("[calculate-module]: precip: %s", precip)
             elif m[const.MODULE_NAME] == "Static":
                 delta = modinst.calculate()
             elif m[const.MODULE_NAME] == "Passthrough":
@@ -1584,10 +1580,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         zone.get(const.ZONE_NAME),
                     )
                     return None
-            # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
-            # data[const.ZONE_BUCKET] = round(bucket+delta,1)
-            # data[const.ZONE_DELTA] = round(delta,1)
+            # Scale module ET value by interval (hour_multiplier = fractional days)
             _LOGGER.debug("[calculate-module]: retrieved from module: %s", delta)
+            hour_multiplier = weatherdata.get(const.MAPPING_DATA_MULTIPLIER, 1.0)
+            _LOGGER.debug("[calculate-module]: hour_multiplier: %s", hour_multiplier)
+            delta = delta * hour_multiplier + precip
             data[const.ZONE_DELTA] = delta
             _LOGGER.debug("[calculate-module]: new delta: %s", delta)
             newbucket = bucket + delta
@@ -3041,7 +3038,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         }
 
         # Calculate daily ET and scale to monthly
-        daily_et_delta = modinst.calculate_et_for_day(weather_data, hour_multiplier=1.0)
+        daily_et_delta = modinst.calculate_et_for_day(weather_data)
 
         # Get days in month
         import calendar
