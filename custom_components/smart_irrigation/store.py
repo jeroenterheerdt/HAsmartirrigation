@@ -181,6 +181,7 @@ class Config:
     )  # continuous updates are disabled by default for now
     sensor_debounce = attr.ib(type=int, default=CONF_DEFAULT_SENSOR_DEBOUNCE)
 
+
 class MigratableStore(Store):
     """Store subclass that supports migration for Smart Irrigation storage."""
 
@@ -234,7 +235,7 @@ class SmartIrrigationStorage:
             cleardatatime=CONF_DEFAULT_CLEAR_TIME,
             starteventfiredtoday=False,
             continuousupdates=CONF_DEFAULT_CONTINUOUS_UPDATES,
-            sensor_debounce=CONF_DEFAULT_SENSOR_DEBOUNCE
+            sensor_debounce=CONF_DEFAULT_SENSOR_DEBOUNCE,
         )
         zones: OrderedDict[str, ZoneEntry] = OrderedDict()
         modules: OrderedDict[str, ModuleEntry] = OrderedDict()
@@ -282,7 +283,7 @@ class SmartIrrigationStorage:
                 ),
                 sensor_debounce=data["config"].get(
                     CONF_SENSOR_DEBOUNCE, CONF_DEFAULT_SENSOR_DEBOUNCE
-                )
+                ),
             )
 
             if "zones" in data:

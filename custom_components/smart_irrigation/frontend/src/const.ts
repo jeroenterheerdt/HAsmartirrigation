@@ -63,6 +63,7 @@ export const MAPPING_CONF_AGGREGATE_OPTIONS = [
   "maximum",
   "median",
   "minimum",
+  "riemannsum",
   "sum",
 ];
 

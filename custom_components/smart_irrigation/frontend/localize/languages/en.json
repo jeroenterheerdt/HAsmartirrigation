@@ -145,6 +145,7 @@
             "maximum": "Maximum",
             "median": "Median",
             "minimum": "Minimum",
+            "riemannsum": "Riemann sum",
             "sum": "Sum"
           },
           "errors": {

@@ -1179,6 +1179,50 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     resultdata[key] = statistics.median(d)
                 elif aggregate == const.MAPPING_CONF_AGGREGATE_SUM:
                     resultdata[key] = sum(d)
+                elif aggregate == const.MAPPING_CONF_AGGREGATE_RIEMANNSUM:
+                    # apply the riemann sum to the data in d
+                    # Use the trapezoidal rule for Riemann sum approximation
+                    # Assume each value in d is sampled at equal intervals
+                    if len(d) < 2:
+                        resultdata[key] = float(d[0])
+                    else:
+                        # Trapezoidal rule: sum((d[i] + d[i+1]) / 2) * dt
+                        # dt is the interval between samples, assume 1 if not available
+                        dt = 1.0
+                        # If we have timestamps, use them to get dt
+                        if const.RETRIEVED_AT in data_by_sensor:
+                            timestamps = data_by_sensor[const.RETRIEVED_AT]
+                            if len(timestamps) == len(d):
+                                try:
+                                    # Convert all to datetime
+                                    date_format_string = "%Y-%m-%dT%H:%M:%S.%f"
+                                    times = []
+                                    for t in timestamps:
+                                        if isinstance(t, datetime.datetime):
+                                            times.append(t)
+                                        elif isinstance(t, str):
+                                            times.append(
+                                                datetime.datetime.strptime(
+                                                    t, date_format_string
+                                                )
+                                            )
+                                    # Calculate average dt in seconds
+                                    if len(times) > 1:
+                                        dts = [
+                                            (times[i + 1] - times[i]).total_seconds()
+                                            for i in range(len(times) - 1)
+                                        ]
+                                        dt = statistics.mean(dts)
+                                except (ValueError, TypeError) as err:
+                                    _LOGGER.debug(
+                                        "Failed to parse timestamps for Riemann sum: %s",
+                                        err,
+                                    )
+                        # Calculate the sum
+                        riemann_sum = 0.0
+                        for i in range(len(d) - 1):
+                            riemann_sum += ((d[i] + d[i + 1]) / 2) * dt
+                        resultdata[key] = riemann_sum
             else:
                 if key == const.MAPPING_TEMPERATURE:
                     resultdata[const.MAPPING_MAX_TEMP] = d[0]
@@ -1931,7 +1975,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             await self.async_remove_entity(zone_id)
 
         elif const.ATTR_CALCULATE in data:
-            await self._async_calculate_single_zone(zone_id, data)
+            await self.async_calculate_zone(zone_id, data)
         elif const.ATTR_CALCULATE_ALL in data:
             # calculate all zones
             _LOGGER.info("Calculating all zones")
