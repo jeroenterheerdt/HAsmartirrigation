@@ -68,7 +68,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
 
   private handleAddModule(): void {
     const m = this.allmodules.filter(
-      (o) => o.name == this.moduleInput.selectedOptions[0].text
+      (o) => o.name == this.moduleInput.selectedOptions[0].text,
     )[0];
     if (!m) {
       return;
@@ -104,13 +104,13 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
   }
   private renderModule(
     module: SmartIrrigationModule,
-    index: number
+    index: number,
   ): TemplateResult {
     if (!this.hass) {
       return html``;
     } else {
       const numberofzonesusingthismodule = this.zones.filter(
-        (o) => o.module === module.id
+        (o) => o.module === module.id,
       ).length;
       return html`
         <ha-card header="${module.id}: ${module.name}">
@@ -120,24 +120,24 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
               <label class="subheader"
                 >${localize(
                   "panels.modules.cards.module.labels.configuration",
-                  this.hass.language
+                  this.hass.language,
                 )}
                 (*
                 ${localize(
                   "panels.modules.cards.module.labels.required",
-                  this.hass.language
+                  this.hass.language,
                 )})</label
               >
               ${module.schema
                 ? Object.entries(module.schema).map(([value]) =>
-                    this.renderConfig(index, value)
+                    this.renderConfig(index, value),
                   )
                 : null}
             </div>
             ${numberofzonesusingthismodule
               ? html` ${localize(
                   "panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it",
-                  this.hass.language
+                  this.hass.language,
                 )}`
               : html` <svg
                   style="width:24px;height:24px"
@@ -253,9 +253,9 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
                 ${localize(
                   "panels.modules.cards.module.translated-options." +
                     getPart(value, 1),
-                  hasslanguage
+                  hasslanguage,
                 )}
-              </option>`
+              </option>`,
           )}
         </select>`;
     }
@@ -269,7 +269,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
 
   handleEditConfig(index: number, updatedModule: SmartIrrigationModule) {
     this.modules = Object.values(this.modules).map((module, i) =>
-      i === index ? updatedModule : module
+      i === index ? updatedModule : module,
     );
     this.saveToHA(updatedModule);
   }
@@ -296,7 +296,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
         <ha-card
           header="${localize(
             "panels.modules.cards.add-module.header",
-            this.hass.language
+            this.hass.language,
           )}"
         >
           <div class="card-content">
@@ -306,20 +306,20 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
             <select id="moduleInput">
               ${Object.entries(this.allmodules).map(
                 ([key, value]) =>
-                  html`<option value="${value.id}">${value.name}</option>`
+                  html`<option value="${value.id}">${value.name}</option>`,
               )}
             </select>
             <button @click="${this.handleAddModule}">
               ${localize(
                 "panels.modules.cards.add-module.actions.add",
-                this.hass.language
+                this.hass.language,
               )}
             </button>
           </div>
         </ha-card>
 
         ${Object.entries(this.modules).map(([key, value]) =>
-          this.renderModule(value, parseInt(key))
+          this.renderModule(value, parseInt(key)),
         )}
       `;
     }

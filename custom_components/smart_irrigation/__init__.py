@@ -293,6 +293,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self._track_auto_clear_time_unsub = None
         self._track_sunrise_event_unsub = None
         self._track_midnight_time_unsub = None
+        self._debounced_update_cancel = None
         # set up auto calc time and auto update time from data
         the_config = self.store.get_config()
         the_config[const.CONF_USE_WEATHER_SERVICE] = self.use_weather_service
@@ -345,7 +346,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def set_up_auto_update_time(self, data):  # noqa: D102
         # WIP v2024.6.X:
         # experiment to use subscriptions to catch all updates instead of just on a time schedule
-        await self.update_subscriptions()
+        await self.update_subscriptions(data)
         if data[const.CONF_AUTO_UPDATE_ENABLED]:
             # CONF_AUTO_UPDATE_SCHEDULE: minute, hour, day
             # CONF_AUTO_UPDATE_INTERVAL: X
@@ -384,17 +385,27 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self._track_auto_update_time_unsub = None
             self.store.async_update_config(data)
 
-    async def update_subscriptions(self):
+    async def update_subscriptions(self, config=None):
         """Update sensor subscriptions for Smart Irrigation coordinator."""
-        # subscribe to all sensors
-        self._sensors_to_subscribe_to = await self.get_sensors_to_subscribe_to()
-
         # WIP v2024.6.X: move to subscriptions
         # remove all existing sensor subscriptions
         _LOGGER.debug("[update_subscriptions]: removing all sensor subscriptions")
         for s in self._sensor_subscriptions:
             with contextlib.suppress(Exception):
                 s()
+
+        # check if continuous updates are enabled, if not, skip this
+        # and log a debug message
+        if config is None:
+            config = await self.store.async_get_config()
+        if not config.get(const.CONF_CONTINUOUS_UPDATES):
+            _LOGGER.debug(
+                "[update_subscriptions]: continuous updates are disabled, skipping."
+            )
+            return
+
+        # subscribe to all sensors
+        self._sensors_to_subscribe_to = await self.get_sensors_to_subscribe_to()
 
         if self._sensors_to_subscribe_to is not None:
             for s in self._sensors_to_subscribe_to:
@@ -463,6 +474,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self, event: Event[EventStateChangedData]
     ) -> None:  # old signature: entity, old_state, new_state):
         """Handle a sensor state change event."""
+        timestamp = datetime.datetime.now()
+
         # old_state_obj = event.data["old_state"]
         new_state_obj = event.data["new_state"]
         entity = event.data["entity_id"]
@@ -481,215 +494,246 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             new_state_obj.state,
         )
 
-        # check if continuous updates are enabled, if not, skip this and log a debug message
-        the_config = self.store.async_get_config()
-        if const.CONF_CONTINUOUS_UPDATES in the_config:
-            if not the_config[const.CONF_CONTINUOUS_UPDATES]:
-                _LOGGER.debug(
-                    "[async_sensor_state_changed]: continuous updates are disabled, skipping"
-                )
-                return
+        # get sensor debounce time from config
+        debounce = 0
+        the_config = await self.store.async_get_config()
+        if the_config[const.CONF_SENSOR_DEBOUNCE]:
+            debounce = int(the_config[const.CONF_SENSOR_DEBOUNCE])
+            _LOGGER.debug(
+                "[async_sensor_state_changed]: sensor debounce is %s ms", debounce
+            )
+
         # get the mapping that uses this sensor
-        mappings = self.store.get_mappings()
+        mappings = await self.store.async_get_mappings()
         for mapping in mappings:
             if mapping.get(const.MAPPING_MAPPINGS):
                 for key, val in mapping.get(const.MAPPING_MAPPINGS).items():
                     if (
-                        not isinstance(val, str)
-                        and val.get(const.MAPPING_CONF_SENSOR) == entity
-                    ) or val.get(
+                        isinstance(val, str)
+                        or val.get(const.MAPPING_CONF_SENSOR) != entity
+                    ) and val.get(
                         const.MAPPING_CONF_SOURCE
-                    ) == const.MAPPING_CONF_SOURCE_STATIC_VALUE:
-                        the_new_state = new_state_obj.state
-                        if (
-                            val.get(const.MAPPING_CONF_SOURCE)
-                            == const.MAPPING_CONF_SOURCE_STATIC_VALUE
-                        ):
-                            the_new_state = val.get(const.MAPPING_CONF_STATIC_VALUE)
-                        # add the mapping data with the new sensor value
-                        if the_new_state is not None:
-                            if const.MAPPING_DATA in mapping:
-                                mapping_data = mapping.get(const.MAPPING_DATA)
-                            else:
-                                mapping_data = []
-                            # val = convert_mapping_to_metric(
-                            #    val,
-                            #    key,
-                            #    the_map.get(const.MAPPING_CONF_UNIT),
-                            #    self.hass.config.units is METRIC_SYSTEM,
-                            # )
-                            # conversion to metric
-                            mapping_data.append(
-                                {
-                                    key: convert_mapping_to_metric(
-                                        float(the_new_state),
-                                        key,
-                                        mapping.get(const.MAPPING_CONF_UNIT),
-                                        self.hass.config.units is METRIC_SYSTEM,
-                                    ),
-                                    const.RETRIEVED_AT: datetime.datetime.now(),
-                                }
-                            )
-                            # store the value in the last entry
-                            data_last_entry = mapping.get(const.MAPPING_DATA_LAST_ENTRY)
-                            if data_last_entry is None or len(data_last_entry) == 0:
-                                data_last_entry = {}
-                            if isinstance(data_last_entry, list):
-                                data_last_entry = convert_list_to_dict(data_last_entry)
-                            data_last_entry[key] = mapping_data[-1][key]
-                            changes = {
-                                const.MAPPING_DATA: mapping_data,
-                                const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now(),
-                                const.MAPPING_DATA_LAST_ENTRY: data_last_entry,
-                            }
-                            self.store.async_update_mapping(
-                                mapping.get(const.MAPPING_ID), changes
-                            )
-                            _LOGGER.debug(
-                                "async_sensor_state_changed: updated sensor group %s %s",
-                                mapping.get(const.MAPPING_ID),
+                    ) != const.MAPPING_CONF_SOURCE_STATIC_VALUE:
+                        continue
+
+                    the_new_state = new_state_obj.state
+                    if (
+                        val.get(const.MAPPING_CONF_SOURCE)
+                        == const.MAPPING_CONF_SOURCE_STATIC_VALUE
+                    ):
+                        the_new_state = val.get(const.MAPPING_CONF_STATIC_VALUE)
+                    # add the mapping data with the new sensor value
+                    if the_new_state is None:
+                        continue
+
+                    if const.MAPPING_DATA in mapping:
+                        mapping_data = mapping.get(const.MAPPING_DATA)
+                    else:
+                        mapping_data = []
+                    # conversion to metric
+                    mapping_data.append(
+                        {
+                            key: convert_mapping_to_metric(
+                                float(the_new_state),
                                 key,
-                            )
-            await self.async_continuous_update_for_mapping(
-                mapping.get(const.MAPPING_ID)
-            )
+                                val.get(const.MAPPING_CONF_UNIT),
+                                self.hass.config.units is METRIC_SYSTEM,
+                            ),
+                            const.RETRIEVED_AT: timestamp,
+                        }
+                    )
+                    # store the value in the last entry
+                    data_last_entry = mapping.get(const.MAPPING_DATA_LAST_ENTRY)
+                    if data_last_entry is None or len(data_last_entry) == 0:
+                        data_last_entry = {}
+                    if isinstance(data_last_entry, list):
+                        data_last_entry = convert_list_to_dict(data_last_entry)
+                    data_last_entry[key] = mapping_data[-1][key]
+                    changes = {
+                        const.MAPPING_DATA: mapping_data,
+                        const.MAPPING_DATA_LAST_UPDATED: timestamp,
+                        const.MAPPING_DATA_LAST_ENTRY: data_last_entry,
+                    }
+                    self.store.async_update_mapping(
+                        mapping.get(const.MAPPING_ID), changes
+                    )
+                    _LOGGER.debug(
+                        "[async_sensor_state_changed]: updated sensor group %s %s",
+                        mapping.get(const.MAPPING_ID),
+                        key,
+                    )
+
+            mapping_id = mapping.get(const.MAPPING_ID)
+            if debounce > 0:
+                # Cancel any previously scheduled update
+                if self._debounced_update_cancel:
+                    _LOGGER.debug(
+                        "[async_sensor_state_changed]: cancelling previously scheduled update"
+                    )
+                    self._debounced_update_cancel()
+
+                # Schedule the update
+                _LOGGER.debug(
+                    "[async_sensor_state_changed]: scheduling update in %s ms", debounce
+                )
+                self._debounced_update_cancel = async_call_later(
+                    self.hass,
+                    timedelta(milliseconds=debounce),
+                    # This callback may run off-loop, so use call_soon_threadsafe
+                    lambda now, mid=mapping_id: self.hass.loop.call_soon_threadsafe(
+                        self.hass.async_create_task,
+                        self.async_continuous_update_for_mapping(mid),
+                    ),
+                )
+            else:
+                _LOGGER.debug(
+                    "[async_sensor_state_changed]: no debounce, doing update now"
+                )
+                await self.async_continuous_update_for_mapping(mapping_id)
 
     async def async_continuous_update_for_mapping(self, mapping_id):
-        """First, check is mapping doesn't use a Weather Service (to avoid API overload). Then perform update and calculate for all automatic zones that use this mapping, assuming their modules do not use forecasting."""
-        if mapping_id is not None:
-            mapping = self.store.get_mapping(mapping_id)
-            if mapping is not None:
-                if not self.check_mapping_sources(mapping_id)[0]:
-                    # mapping does not use Weather Service
-                    zones = self._get_zones_that_use_this_mapping(mapping_id)
-                    zones_to_calculate = []
-                    for z in zones:
-                        zones_to_calculate.append(z)
-                        zone = self.store.get_zone(z)
-                        if (
-                            zone is not None
-                            and zone.get(const.ZONE_STATE) == const.ZONE_STATE_AUTOMATIC
-                        ):
-                            if zone.get(const.ZONE_MODULE) is not None:
-                                # check the module is not pyeto or if it is, that it does not use forecasting
-                                mod = self.store.get_module(zone.get(const.ZONE_MODULE))
-                                if mod is not None:
-                                    can_calculate = False
-                                    if mod.get(const.MODULE_NAME) != "PyETO":
-                                        can_calculate = True
-                                        _LOGGER.info(
-                                            "[async_continuous_update_for_mapping]: module is not PyETO, so we can calculate for zone %s",
-                                            zone.get(const.ZONE_ID),
-                                        )
-                                    else:
-                                        # module is PyETO. Check the config for forecast days == 0
-                                        _LOGGER.debug(
-                                            "[async_continuous_update_for_mapping]: module is PyETO, checking config"
-                                        )
-                                        if mod.get(const.MODULE_CONFIG):
-                                            _LOGGER.debug(
-                                                "[async_continuous_update_for_mapping]: module has config: %s",
-                                                mod.get(const.MODULE_CONFIG),
-                                            )
-                                            _LOGGER.debug(
-                                                "[async_continuous_update_for_mapping]: mod.get(forecast_days,0) returns forecast_days: %s",
-                                                mod.get(const.MODULE_CONFIG).get(
-                                                    const.CONF_PYETO_FORECAST_DAYS, 0
-                                                ),
-                                            )
-                                            # there is a config on the module, so let's check it
-                                            if (
-                                                mod.get(const.MODULE_CONFIG).get(
-                                                    const.CONF_PYETO_FORECAST_DAYS, 0
-                                                )
-                                                == 0
-                                                or mod.get(const.MODULE_CONFIG).get(
-                                                    const.CONF_PYETO_FORECAST_DAYS
-                                                )
-                                                == "0"
-                                                or mod.get(const.MODULE_CONFIG).get(
-                                                    const.CONF_PYETO_FORECAST_DAYS
-                                                )
-                                                is None
-                                            ):
-                                                can_calculate = True
-                                                _LOGGER.info(
-                                                    "Checked config for PyETO module on zone %s, forecast_days==0 or None, so we can calculate",
-                                                    zone.get(const.ZONE_ID),
-                                                )
-                                            else:
-                                                _LOGGER.info(
-                                                    "Checked config for PyETO module on zone %s, forecast_days>0, skipping to avoid API calls that can incur costs",
-                                                    zone.get(const.ZONE_ID),
-                                                )
-                                        else:
-                                            # default config for pyeto is forecast = 0, since there is no config we can calculate
-                                            can_calculate = True
-                                            _LOGGER.info(
-                                                "No config on PyETO module, since default is forecast_days==0, we can calculate for zone %s",
-                                                zone.get(const.ZONE_ID),
-                                            )
+        self._debounced_update_cancel = None
 
-                                    _LOGGER.debug(
-                                        "[async_continuous_update_for_mapping]: can_calculate: %s",
-                                        can_calculate,
-                                    )
-                                    if can_calculate:
-                                        # get the zone and calculate
-                                        _LOGGER.debug(
-                                            "[async_continuous_update_for_mapping] for sensor group %s: calculating zone %s",
-                                            mapping_id,
-                                            zone.get(const.ZONE_ID),
-                                        )
-                                        await self.async_calculate_zone(
-                                            z,
-                                            continuous_updates=True,
-                                        )
-                                        zones_to_calculate.remove(z)
-                                    else:
-                                        _LOGGER.info(
-                                            "[async_continuous_update_for_mapping] for sensor group %s: zone %s has module %s that uses forecasting, skipping to avoid API calls that can incur costs",
-                                            mapping_id,
-                                            z,
-                                            mod.get(const.MODULE_NAME),
-                                        )
-                            else:
-                                _LOGGER.info(
-                                    "[async_continuous_update_for_mapping] for sensor group %s: zone %s has no module, skipping",
-                                    mapping_id,
-                                    z,
-                                )
-                        else:
-                            _LOGGER.info(
-                                "[async_continuous_update_for_mapping] for sensor group %s: zone %s is not automatic, skipping",
-                                mapping_id,
-                                z,
-                            )
-                    # remove weather data from this mapping unless there are zones we did not calculate!
+        """First, check is mapping doesn't use a Weather Service (to avoid API overload). Then perform update and calculate for all automatic zones that use this mapping, assuming their modules do not use forecasting."""
+        if mapping_id is None:
+            return
+        mapping = self.store.get_mapping(mapping_id)
+        if mapping is None:
+            return
+
+        _LOGGER.info(
+            "[async_continuous_update_for_mapping] considering sensor group %s",
+            mapping_id,
+        )
+        if self.check_mapping_sources(mapping_id)[0]:
+            _LOGGER.info(
+                "[async_continuous_update_for_mapping] sensor group uses weather service, skipping automatic update to avoid API calls that can incur costs."
+            )
+            return
+
+        # mapping does not use Weather Service
+        zones = await self._get_zones_that_use_this_mapping(mapping_id)
+        zones_to_calculate = []
+        for z in zones:
+            zones_to_calculate.append(z)
+            zone = self.store.get_zone(z)
+            if zone is None or zone.get(const.ZONE_STATE) != const.ZONE_STATE_AUTOMATIC:
+                _LOGGER.info(
+                    "[async_continuous_update_for_mapping] zone %s is not automatic, skipping.",
+                    z,
+                )
+                continue
+            elif zone.get(const.ZONE_MODULE) is None:
+                _LOGGER.info(
+                    "[async_continuous_update_for_mapping] zone %s has no module, skipping.",
+                    z,
+                )
+                continue
+
+            # check the module is not pyeto or if it is, that it does not use forecasting
+            mod = self.store.get_module(zone.get(const.ZONE_MODULE))
+            if mod is None:
+                continue
+
+            can_calculate = False
+            if mod.get(const.MODULE_NAME) != "PyETO":
+                can_calculate = True
+                _LOGGER.info(
+                    "[async_continuous_update_for_mapping]: module is not PyETO, so we can calculate for zone %s",
+                    zone.get(const.ZONE_ID),
+                )
+            else:
+                # module is PyETO. Check the config for forecast days == 0
+                _LOGGER.debug(
+                    "[async_continuous_update_for_mapping]: module is PyETO, checking config."
+                )
+                if mod.get(const.MODULE_CONFIG):
                     _LOGGER.debug(
-                        "[async_continuous_update_for_mapping] for sensor group %s: zones_to_calculate: %s. if this is empty this means that all zones for this sensor group have been calculated and therefore we can remove the weather data",
-                        mapping_id,
-                        zones_to_calculate,
+                        "[async_continuous_update_for_mapping]: module has config: %s",
+                        mod.get(const.MODULE_CONFIG),
                     )
-                    if zones_to_calculate and len(zones_to_calculate) > 0:
-                        _LOGGER.debug(
-                            "[async_continuous_update_for_mapping] for sensor group %s: did not calculate all zones, keeping weather data for the sensor group",
-                            mapping_id,
+                    _LOGGER.debug(
+                        "[async_continuous_update_for_mapping]: mod.get(forecast_days,0) returns forecast_days: %s",
+                        mod.get(const.MODULE_CONFIG).get(
+                            const.CONF_PYETO_FORECAST_DAYS, 0
+                        ),
+                    )
+                    # there is a config on the module, so let's check it
+                    if (
+                        mod.get(const.MODULE_CONFIG).get(
+                            const.CONF_PYETO_FORECAST_DAYS, 0
+                        )
+                        == 0
+                        or mod.get(const.MODULE_CONFIG).get(
+                            const.CONF_PYETO_FORECAST_DAYS
+                        )
+                        == "0"
+                        or mod.get(const.MODULE_CONFIG).get(
+                            const.CONF_PYETO_FORECAST_DAYS
+                        )
+                        is None
+                    ):
+                        can_calculate = True
+                        _LOGGER.info(
+                            "checked config for PyETO module on zone %s, forecast_days==0 or None, so we can calculate",
+                            zone.get(const.ZONE_ID),
                         )
                     else:
-                        _LOGGER.debug(
-                            "clearing weather data for sensor group %s since we calculated all dependent zones",
-                            mapping_id,
+                        _LOGGER.info(
+                            "checked config for PyETO module on zone %s, forecast_days>0, skipping to avoid API calls that can incur costs",
+                            zone.get(const.ZONE_ID),
                         )
-                        changes = {}
-                        changes = self.clear_weatherdata_for_mapping(mapping)
-                        self.store.async_update_mapping(mapping_id, changes=changes)
-
                 else:
+                    # default config for pyeto is forecast = 0, since there is no config we can calculate
+                    can_calculate = True
                     _LOGGER.info(
                         "[async_continuous_update_for_mapping] for sensor group %s: sensor group does use weather service, skipping automatic update to avoid API calls that can incur costs",
                         mapping_id,
                     )
+
+            _LOGGER.debug(
+                "[async_continuous_update_for_mapping]: can_calculate: %s",
+                can_calculate,
+            )
+            if can_calculate:
+                # get the zone and calculate
+                _LOGGER.debug(
+                    "[async_continuous_update_for_mapping] for sensor group %s: calculating zone %s",
+                    mapping_id,
+                    zone.get(const.ZONE_ID),
+                )
+                await self.async_calculate_zone(
+                    z,
+                    continuous_updates=True,
+                )
+                zones_to_calculate.remove(z)
+            else:
+                _LOGGER.info(
+                    "[async_continuous_update_for_mapping] for sensor group %s: zone %s has module %s that uses forecasting, skipping to avoid API calls that can incur costs",
+                    mapping_id,
+                    z,
+                    mod.get(const.MODULE_NAME),
+                )
+
+        # remove weather data from this mapping unless there are zones we did not calculate!
+        _LOGGER.debug(
+            "[async_continuous_update_for_mapping] for sensor group %s: zones_to_calculate: %s. if this is empty this means that all zones for this sensor group have been calculated and therefore we can remove the weather data",
+            mapping_id,
+            zones_to_calculate,
+        )
+        if zones_to_calculate and len(zones_to_calculate) > 0:
+            _LOGGER.debug(
+                "[async_continuous_update_for_mapping] for sensor group %s: did not calculate all zones, keeping weather data for the sensor group",
+                mapping_id,
+            )
+        else:
+            _LOGGER.debug(
+                "clearing weather data for sensor group %s since we calculated all dependent zones",
+                mapping_id,
+            )
+            changes = {}
+            changes = self.clear_weatherdata_for_mapping(mapping)
+            self.store.async_update_mapping(mapping_id, changes=changes)
 
     def clear_weatherdata_for_mapping(self, mapping):
         """Clear weather data for a given mapping and reset last updated timestamp.
@@ -813,11 +857,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # remove duplicates
         return list(set(mappings))
 
-    def _get_zones_that_use_this_mapping(self, mapping):
+    async def _get_zones_that_use_this_mapping(self, mapping):
         """Return a list of zone IDs that use the specified mapping."""
         return [
             z.get(const.ZONE_ID)
-            for z in self.store.get_zones()
+            for z in await self.store.async_get_zones()
             if z.get(const.ZONE_MAPPING) == mapping
         ]
 
@@ -914,7 +958,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     const.ZONE_LAST_UPDATED: changes[const.MAPPING_DATA_LAST_UPDATED],
                     const.ZONE_NUMBER_OF_DATA_POINTS: len(mapping_data) - 1,
                 }
-                zones_to_loop = self._get_zones_that_use_this_mapping(mapping_id)
+                zones_to_loop = await self._get_zones_that_use_this_mapping(mapping_id)
                 for z in zones_to_loop:
                     self.store.async_update_zone(z, changes_to_zone)
                     async_dispatcher_send(
@@ -968,7 +1012,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         return retval
 
-    async def apply_aggregates_to_mapping_data(self, mapping, continuous_updates=False):
+    async def apply_aggregates_to_mapping_data(
+        self, zone, mapping, continuous_updates=False
+    ):
         """Apply aggregation functions to mapping data and return the aggregated result.
 
         Args:
@@ -979,7 +1025,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             dict or None: Aggregated mapping data or None if no data is available.
 
         """
-        _LOGGER.debug("[apply_aggregates_to_mapping_data]: mapping: %s", mapping)
+        _LOGGER.debug(
+            "[apply_aggregates_to_mapping_data]: zone: %s mapping: %s", zone, mapping
+        )
         if not mapping.get(const.MAPPING_DATA):
             return None
 
@@ -990,7 +1038,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         data_by_sensor = self._group_data_by_sensor(data)
         resultdata = {}
 
-        self._handle_retrieved_at(data_by_sensor, resultdata, continuous_updates)
+        self._handle_retrieved_at(data_by_sensor, zone, resultdata, continuous_updates)
         self._aggregate_sensor_data(data_by_sensor, mapping, resultdata)
         self._fill_missing_from_last_entry(mapping, resultdata)
 
@@ -1010,7 +1058,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         data_by_sensor.pop(const.MAPPING_MIN_TEMP, None)
         return data_by_sensor
 
-    def _handle_retrieved_at(self, data_by_sensor, resultdata, continuous_updates):
+    def _handle_retrieved_at(
+        self, data_by_sensor, zone, resultdata, continuous_updates
+    ):
         """Process retrieved_at timestamps and update resultdata with multiplier."""
         if const.RETRIEVED_AT not in data_by_sensor:
             return
@@ -1027,22 +1077,44 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
         if not formatted_retrieved_ats:
             return
+
+        diff = None
         if not continuous_updates:
             first_retrieved_at = min(formatted_retrieved_ats)
             last_retrieved_at = max(formatted_retrieved_ats)
+            diff = last_retrieved_at - first_retrieved_at
+            _LOGGER.debug(
+                "[apply_aggregates_to_mapping_data]: first_retrieved_at: %s, last_retrieved_at: %s",
+                first_retrieved_at,
+                last_retrieved_at,
+            )
         else:
-            if len(formatted_retrieved_ats) < 2:
-                return
-            first_retrieved_at = formatted_retrieved_ats[-2]
-            last_retrieved_at = formatted_retrieved_ats[-1]
-        diff = last_retrieved_at - first_retrieved_at
+            # for continuous updates, use interval from last calculation to now
+            val = zone[const.ZONE_LAST_CALCULATED]
+            if not val:
+                _LOGGER.debug(
+                    "[apply_aggregates_to_mapping_data]: zone has never been calculated, skipping"
+                )
+                return None
+            elif isinstance(val, datetime.datetime):
+                # already in datetime format
+                last_zone_calc = val
+            else:
+                # string format, parse to datetime
+                last_zone_calc = datetime.datetime.strptime(val, date_format_string)
+            diff = datetime.datetime.now() - last_zone_calc
+            _LOGGER.debug(
+                "[apply_aggregates_to_mapping_data]: zone last calculated: %s",
+                last_zone_calc,
+            )
+
+        # Get interval in hours, then days
         diff_in_hours = abs(diff.total_seconds() / 3600)
         hour_multiplier = diff_in_hours / 24
         resultdata[const.MAPPING_DATA_MULTIPLIER] = hour_multiplier
         _LOGGER.debug(
-            "[apply_aggregates_to_mapping_data]: first_retrieved_at: %s, last_retrieved_at: %s, diff_in_seconds: %s, diff_in_hours: %s, hour_multiplier: %s",
-            first_retrieved_at,
-            last_retrieved_at,
+            "[apply_aggregates_to_mapping_data]: diff: %s diff_in_seconds: %s, diff_in_hours: %s, hour_multiplier: %s",
+            diff,
             diff.total_seconds(),
             diff_in_hours,
             hour_multiplier,
@@ -1128,7 +1200,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def _async_clear_all_weatherdata(self, *args):
         _LOGGER.info("Clearing all weatherdata")
-        mappings = self.store.get_mappings()
+        mappings = await self.store.async_get_mappings()
         for mapping in mappings:
             changes = {}
             changes = self.clear_weatherdata_for_mapping(mapping)
@@ -1139,10 +1211,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # get all zones that are in automatic and for all of those, loop over the unique list of mappings
         # are any modules using OWM / sensors?
 
-        unfiltered_zones = self.store.get_zones()
+        unfiltered_zones = await self.store.async_get_zones()
 
         # skip over zones that use pure sensors (not weather service) if continuous updates are enabled
-        the_config = self.store.async_get_config()
+        the_config = await self.store.async_get_config()
         zones = []
         if the_config.get(const.CONF_CONTINUOUS_UPDATES):
             _LOGGER.debug(
@@ -1230,7 +1302,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         if mapping is not None:
             if const.MAPPING_DATA in mapping and mapping.get(const.MAPPING_DATA):
                 sensor_values = await self.apply_aggregates_to_mapping_data(
-                    mapping, continuous_updates
+                    zone, mapping, continuous_updates
                 )
             if sensor_values:
                 # make sure we convert forecast data pressure to absolute!
@@ -1307,8 +1379,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # precip = 0
         ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
         bucket = zone.get(const.ZONE_BUCKET)
-        if zone.get(const.ZONE_MAXIMUM_BUCKET) is not None:
-            maximum_bucket = zone.get(const.ZONE_MAXIMUM_BUCKET)
+        maximum_bucket = zone.get(const.ZONE_MAXIMUM_BUCKET)
         if not ha_config_is_metric:
             bucket = convert_between(const.UNIT_INCH, const.UNIT_MM, bucket)
             if zone.get(const.ZONE_MAXIMUM_BUCKET) is not None:
@@ -1357,10 +1428,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
             # if maximum bucket configured, limit bucket with that.
             # any water above maximum is removed with runoff / bypass flow.
-            if (
-                zone.get(const.ZONE_MAXIMUM_BUCKET) is not None
-                and newbucket > maximum_bucket
-            ):
+            if maximum_bucket is not None and newbucket > maximum_bucket:
                 newbucket = float(maximum_bucket)
                 _LOGGER.debug(
                     "[calculate-module]: capped new bucket because of maximum bucket: %s",
@@ -1658,8 +1726,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             module_id = int(module_id)
         if const.ATTR_REMOVE in data:
             # delete a module
-            res = self.store.get_module(module_id)
-            if not res:
+            zone = self.store.get_module(module_id)
+            if not zone:
                 return
             self.store.async_delete_module(module_id)
         elif module_id is not None and self.store.get_module(module_id):
@@ -1704,7 +1772,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             async_dispatcher_send(
                 self.hass, const.DOMAIN + "_config_updated", mapping_id
             )
-            await self.update_subscriptions()
         else:
             # create a mapping
             self.store.async_create_mapping(data)
@@ -1848,8 +1915,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             zone_id = int(zone_id)
         if const.ATTR_REMOVE in data:
             # delete a zone
-            res = self.store.get_zone(zone_id)
-            if not res:
+            zone = self.store.get_zone(zone_id)
+            if not zone:
                 return
             self.store.async_delete_zone(zone_id)
             await self.async_remove_entity(zone_id)
@@ -2023,7 +2090,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def _async_set_all_buckets(self, val=0):
         """Set all buckets to val."""
-        zones = self.store.get_zones()
+        zones = await self.store.async_get_zones()
         data = {}
         data[const.ATTR_SET_BUCKET] = {}
         data[const.ATTR_NEW_BUCKET_VALUE] = val
@@ -2035,7 +2102,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def _async_set_all_multipliers(self, val=0):
         """Set all multipliers to val."""
-        zones = self.store.get_zones()
+        zones = await self.store.async_get_zones()
         data = {}
         data[const.ATTR_SET_MULTIPLIER] = {}
         data[const.ATTR_NEW_MULTIPLIER_VALUE] = val

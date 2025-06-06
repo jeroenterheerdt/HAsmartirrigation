@@ -176,13 +176,13 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
   private handleEditZone(
     index: number,
-    updatedZone: SmartIrrigationZone
+    updatedZone: SmartIrrigationZone,
   ): void {
     if (!this.hass) {
       return;
     }
     this.zones = Object.values(this.zones).map((zone, i) =>
-      i === index ? updatedZone : zone
+      i === index ? updatedZone : zone,
     );
     this.saveToHA(updatedZone);
   }
@@ -248,7 +248,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         selected === undefined
       }">---${localize(
         "common.labels.select",
-        this.hass.language
+        this.hass.language,
       )}---</option>`;
       Object.entries(thelist).map(
         ([key, value]) =>
@@ -263,7 +263,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
               ?selected="${selected === value["id"]}"
             >
               ${value["id"]}: ${value["name"]}
-            </option>`)
+            </option>`),
       );
       return r;
     }
@@ -330,8 +330,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
       //get mapping last updated and datapoints
       let the_mapping;
-      let mapping_last_updated = "-";
-      let mapping_number_of_datapoints = 0;
+      const mapping_last_updated = "-";
+      const mapping_number_of_datapoints = 0;
       if (zone.mapping != undefined) {
         the_mapping = this.mappings.filter((o) => o.id === zone.mapping)[0];
         if (the_mapping != undefined) {
@@ -349,29 +349,33 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
             <label for="last_calculated${index}"
               >${localize(
                 "panels.zones.labels.last_calculated",
-                this.hass.language
+                this.hass.language,
               )}:
-              ${zone.last_calculated
-                ? moment(zone.last_calculated).format("YYYY-MM-DD HH:mm:ss")
-                : "-"}</label
+              ${
+                zone.last_calculated
+                  ? moment(zone.last_calculated).format("YYYY-MM-DD HH:mm:ss")
+                  : "-"
+              }</label
             >
           </div>
           <div class="card-content">
             <label for="last_updated${index}"
               >${localize(
                 "panels.zones.labels.data-last-updated",
-                this.hass.language
+                this.hass.language,
               )}:
-              ${zone.last_updated
-        ? moment(zone.last_updated).format("YYYY-MM-DD HH:mm:ss")
-            : "-"}</label
+              ${
+                zone.last_updated
+                  ? moment(zone.last_updated).format("YYYY-MM-DD HH:mm:ss")
+                  : "-"
+              }</label
             >
           </div>
           <div class="card-content">
             <label for="last_updated${index}"
               >${localize(
                 "panels.zones.labels.data-number-of-data-points",
-                this.hass.language
+                this.hass.language,
               )}:
               ${zone.number_of_data_points}</label
             >
@@ -380,7 +384,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
             <label for="name${index}"
               >${localize(
                 "panels.zones.labels.name",
-                this.hass.language
+                this.hass.language,
               )}:</label
             >
             <input
@@ -411,7 +415,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
               <label for="throughput${index}"
                 >${localize(
                   "panels.zones.labels.throughput",
-                  this.hass.language
+                  this.hass.language,
                 )}
                 (${output_unit(this.config, ZONE_THROUGHPUT)}):</label
               >
@@ -424,7 +428,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                   this.handleEditZone(index, {
                     ...zone,
                     [ZONE_THROUGHPUT]: parseFloat(
-                      (e.target as HTMLInputElement).value
+                      (e.target as HTMLInputElement).value,
                     ),
                   })}"
               />
@@ -433,7 +437,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
               <label for="drainage_rate${index}"
                 >${localize(
                   "panels.zones.labels.drainage_rate",
-                  this.hass.language
+                  this.hass.language,
                 )}
                 (${output_unit(this.config, ZONE_DRAINAGE_RATE)}):</label
               >
@@ -446,7 +450,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                   this.handleEditZone(index, {
                     ...zone,
                     [ZONE_DRAINAGE_RATE]: parseFloat(
-                      (e.target as HTMLInputElement).value
+                      (e.target as HTMLInputElement).value,
                     ),
                   })}"
               />
@@ -455,7 +459,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
               <label for="state${index}"
                 >${localize(
                   "panels.zones.labels.state",
-                  this.hass.language
+                  this.hass.language,
                 )}:</label
               >
               <select
@@ -471,22 +475,24 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
               >
                 <option
                   value="${SmartIrrigationZoneState.Automatic}"
-                  ?selected="${zone.state ===
-                  SmartIrrigationZoneState.Automatic}"
+                  ?selected="${
+                    zone.state === SmartIrrigationZoneState.Automatic
+                  }"
                 >
                   ${localize(
                     "panels.zones.labels.states.automatic",
-                    this.hass.language
+                    this.hass.language,
                   )}
                 </option>
                 <option
                   value="${SmartIrrigationZoneState.Disabled}"
-                  ?selected="${zone.state ===
-                  SmartIrrigationZoneState.Disabled}"
+                  ?selected="${
+                    zone.state === SmartIrrigationZoneState.Disabled
+                  }"
                 >
                   ${localize(
                     "panels.zones.labels.states.disabled",
-                    this.hass.language
+                    this.hass.language,
                   )}
                 </option>
                 <option
@@ -495,7 +501,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 >
                   ${localize(
                     "panels.zones.labels.states.manual",
-                    this.hass.language
+                    this.hass.language,
                   )}
                 </option>
               </select>
@@ -509,7 +515,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                   this.handleEditZone(index, {
                     ...zone,
                     [ZONE_MODULE]: parseInt(
-                      (e.target as HTMLSelectElement).value
+                      (e.target as HTMLSelectElement).value,
                     ),
                   })}"
               >
@@ -518,7 +524,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
               <label for="module${index}"
                 >${localize(
                   "panels.zones.labels.mapping",
-                  this.hass.language
+                  this.hass.language,
                 )}:</label
               >
 
@@ -528,7 +534,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                   this.handleEditZone(index, {
                     ...zone,
                     [ZONE_MAPPING]: parseInt(
-                      (e.target as HTMLSelectElement).value
+                      (e.target as HTMLSelectElement).value,
                     ),
                   })}"
               >
@@ -549,14 +555,14 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                   this.handleEditZone(index, {
                     ...zone,
                     [ZONE_BUCKET]: parseFloat(
-                      (e.target as HTMLInputElement).value
+                      (e.target as HTMLInputElement).value,
                     ),
                   })}"
               />
               <label for="maximum-bucket${index}"
                 >${localize(
                   "panels.zones.labels.maximum-bucket",
-                  this.hass.language
+                  this.hass.language,
                 )}
                 (${output_unit(this.config, ZONE_BUCKET)}):</label
               >
@@ -569,7 +575,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                   this.handleEditZone(index, {
                     ...zone,
                     [ZONE_MAXIMUM_BUCKET]: parseFloat(
-                      (e.target as HTMLInputElement).value
+                      (e.target as HTMLInputElement).value,
                     ),
                   })}"
               />
@@ -577,7 +583,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
               <label for="lead_time${index}"
                 >${localize(
                   "panels.zones.labels.lead-time",
-                  this.hass.language
+                  this.hass.language,
                 )}
                 (s):</label
               >
@@ -591,14 +597,14 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                     ...zone,
                     [ZONE_LEAD_TIME]: parseInt(
                       (e.target as HTMLInputElement).value,
-                      10
+                      10,
                     ),
                   })}"
               />
               <label for="maximum-duration${index}"
                 >${localize(
                   "panels.zones.labels.maximum-duration",
-                  this.hass.language
+                  this.hass.language,
                 )}
                 (s):</label
               >
@@ -612,7 +618,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                     ...zone,
                     [ZONE_MAXIMUM_DURATION]: parseInt(
                       (e.target as HTMLInputElement).value,
-                      10
+                      10,
                     ),
                   })}"
               />
@@ -621,7 +627,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
               <label for="multiplier${index}"
                 >${localize(
                   "panels.zones.labels.multiplier",
-                  this.hass.language
+                  this.hass.language,
                 )}:</label
               >
               <input
@@ -633,7 +639,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                   this.handleEditZone(index, {
                     ...zone,
                     [ZONE_MULTIPLIER]: parseFloat(
-                      (e.target as HTMLInputElement).value
+                      (e.target as HTMLInputElement).value,
                     ),
                   })}"
               />
@@ -646,14 +652,16 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 id="duration${index}"
                 type="number"
                 .value="${zone.duration}"
-                ?readonly="${zone.state === SmartIrrigationZoneState.Disabled ||
-                zone.state === SmartIrrigationZoneState.Automatic}"
+                ?readonly="${
+                  zone.state === SmartIrrigationZoneState.Disabled ||
+                  zone.state === SmartIrrigationZoneState.Automatic
+                }"
                 @input="${(e: Event) =>
                   this.handleEditZone(index, {
                     ...zone,
                     [ZONE_DURATION]: parseInt(
                       (e.target as HTMLInputElement).value,
-                      10
+                      10,
                     ),
                   })}"
               />
@@ -715,63 +723,63 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         </ha-card>
           <ha-card header="${localize(
             "panels.zones.cards.add-zone.header",
-            this.hass.language
+            this.hass.language,
           )}">
             <div class="card-content">
               <div class="zoneline"><label for="nameInput">${localize(
                 "panels.zones.labels.name",
-                this.hass.language
+                this.hass.language,
               )}:</label>
               <input id="nameInput" type="text"/>
               </div>
               <div class="zoneline">
               <label for="sizeInput">${localize(
                 "panels.zones.labels.size",
-                this.hass.language
+                this.hass.language,
               )} (${output_unit(this.config, ZONE_SIZE)}):</label>
               <input class="shortinput" id="sizeInput" type="number"/>
               </div>
               <div class="zoneline">
               <label for="throughputInput">${localize(
                 "panels.zones.labels.throughput",
-                this.hass.language
+                this.hass.language,
               )} (${output_unit(this.config, ZONE_THROUGHPUT)}):</label>
               <input id="throughputInput" class="shortinput" type="number"/>
               </div>
               <div class="zoneline">
               <button @click="${this.handleAddZone}">${localize(
-        "panels.zones.cards.add-zone.actions.add",
-        this.hass.language
-      )}</button>
+                "panels.zones.cards.add-zone.actions.add",
+                this.hass.language,
+              )}</button>
               </div>
             </div>
             </ha-card>
             <ha-card header="${localize(
               "panels.zones.cards.zone-actions.header",
-              this.hass.language
+              this.hass.language,
             )}">
             <div class="card-content">
                 <button @click="${this.handleUpdateAllZones}">${localize(
-        "panels.zones.cards.zone-actions.actions.update-all",
-        this.hass.language
-      )}</button>
+                  "panels.zones.cards.zone-actions.actions.update-all",
+                  this.hass.language,
+                )}</button>
                 <button @click="${this.handleCalculateAllZones}">${localize(
-        "panels.zones.cards.zone-actions.actions.calculate-all",
-        this.hass.language
-      )}</button>
+                  "panels.zones.cards.zone-actions.actions.calculate-all",
+                  this.hass.language,
+                )}</button>
                 <button @click="${this.handleResetAllBuckets}">${localize(
-        "panels.zones.cards.zone-actions.actions.reset-all-buckets",
-        this.hass.language
-      )}</button>
+                  "panels.zones.cards.zone-actions.actions.reset-all-buckets",
+                  this.hass.language,
+                )}</button>
       <button @click="${this.handleClearAllWeatherdata}">${localize(
         "panels.zones.cards.zone-actions.actions.clear-all-weatherdata",
-        this.hass.language
+        this.hass.language,
       )}</button>
             </div>
           </ha-card>
 
           ${Object.entries(this.zones).map(([key, value]) =>
-            this.renderZone(value, parseInt(key))
+            this.renderZone(value, parseInt(key)),
           )}
         </ha-card>
       `;

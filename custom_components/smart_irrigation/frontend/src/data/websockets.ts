@@ -8,7 +8,7 @@ import {
 import { DOMAIN } from "../const";
 
 export const fetchConfig = (
-  hass: HomeAssistant
+  hass: HomeAssistant,
 ): Promise<SmartIrrigationConfig> =>
   hass.callWS({
     type: DOMAIN + "/config",
@@ -16,7 +16,7 @@ export const fetchConfig = (
 
 export const saveConfig = (
   hass: HomeAssistant,
-  config: Partial<SmartIrrigationConfig>
+  config: Partial<SmartIrrigationConfig>,
 ): Promise<boolean> => {
   return hass.callApi("POST", DOMAIN + "/config", config);
 };
@@ -25,7 +25,7 @@ export const saveConfig = (
   hass: HomeAssistant
 ): Promise<Dictionary<SmartIrrigationZone>> =>*/
 export const fetchZones = (
-  hass: HomeAssistant
+  hass: HomeAssistant,
 ): Promise<SmartIrrigationZone[]> =>
   hass.callWS({
     type: DOMAIN + "/zones",
@@ -33,14 +33,14 @@ export const fetchZones = (
 
 export const saveZone = (
   hass: HomeAssistant,
-  config: Partial<SmartIrrigationZone>
+  config: Partial<SmartIrrigationZone>,
 ): Promise<boolean> => {
   return hass.callApi("POST", DOMAIN + "/zones", config);
 };
 
 export const calculateZone = (
   hass: HomeAssistant,
-  zone_id: string
+  zone_id: string,
 ): Promise<boolean> => {
   return hass.callApi("POST", DOMAIN + "/zones", {
     id: zone_id,
@@ -51,7 +51,7 @@ export const calculateZone = (
 
 export const updateZone = (
   hass: HomeAssistant,
-  zone_id: string
+  zone_id: string,
 ): Promise<boolean> => {
   return hass.callApi("POST", DOMAIN + "/zones", {
     id: zone_id,
@@ -84,7 +84,7 @@ export const clearAllWeatherdata = (hass: HomeAssistant): Promise<boolean> => {
 
 export const deleteZone = (
   hass: HomeAssistant,
-  zone_id: string
+  zone_id: string,
 ): Promise<boolean> => {
   return hass.callApi("POST", DOMAIN + "/zones", {
     id: zone_id,
@@ -93,14 +93,14 @@ export const deleteZone = (
 };
 
 export const fetchModules = (
-  hass: HomeAssistant
+  hass: HomeAssistant,
 ): Promise<SmartIrrigationModule[]> =>
   hass.callWS({
     type: DOMAIN + "/modules",
   });
 
 export const fetchAllModules = (
-  hass: HomeAssistant
+  hass: HomeAssistant,
 ): Promise<SmartIrrigationModule[]> =>
   hass.callWS({
     type: DOMAIN + "/allmodules",
@@ -108,14 +108,14 @@ export const fetchAllModules = (
 
 export const saveModule = (
   hass: HomeAssistant,
-  config: Partial<SmartIrrigationModule>
+  config: Partial<SmartIrrigationModule>,
 ): Promise<boolean> => {
   return hass.callApi("POST", DOMAIN + "/modules", config);
 };
 
 export const deleteModule = (
   hass: HomeAssistant,
-  module_id: string
+  module_id: string,
 ): Promise<boolean> => {
   return hass.callApi("POST", DOMAIN + "/modules", {
     id: module_id,
@@ -124,21 +124,21 @@ export const deleteModule = (
 };
 
 export const fetchMappings = (
-  hass: HomeAssistant
+  hass: HomeAssistant,
 ): Promise<SmartIrrigationMapping[]> =>
   hass.callWS({
     type: DOMAIN + "/mappings",
   });
 export const saveMapping = (
   hass: HomeAssistant,
-  config: Partial<SmartIrrigationMapping>
+  config: Partial<SmartIrrigationMapping>,
 ): Promise<boolean> => {
   return hass.callApi("POST", DOMAIN + "/mappings", config);
 };
 
 export const deleteMapping = (
   hass: HomeAssistant,
-  mapping_id: string
+  mapping_id: string,
 ): Promise<boolean> => {
   return hass.callApi("POST", DOMAIN + "/mappings", {
     id: mapping_id,

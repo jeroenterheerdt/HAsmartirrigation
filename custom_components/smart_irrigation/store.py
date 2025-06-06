@@ -34,6 +34,8 @@ from .const import (
     CONF_DEFAULT_CALC_TIME,
     CONF_DEFAULT_CLEAR_TIME,
     CONF_DEFAULT_CONTINUOUS_UPDATES,
+    CONF_SENSOR_DEBOUNCE,
+    CONF_DEFAULT_SENSOR_DEBOUNCE,
     CONF_DEFAULT_DRAINAGE_RATE,
     CONF_DEFAULT_MAXIMUM_BUCKET,
     CONF_DEFAULT_MAXIMUM_DURATION,
@@ -177,7 +179,7 @@ class Config:
     continuousupdates = attr.ib(
         type=bool, default=CONF_DEFAULT_CONTINUOUS_UPDATES
     )  # continuous updates are disabled by default for now
-
+    sensor_debounce = attr.ib(type=int, default=CONF_DEFAULT_SENSOR_DEBOUNCE)
 
 class MigratableStore(Store):
     """Store subclass that supports migration for Smart Irrigation storage."""
@@ -232,6 +234,7 @@ class SmartIrrigationStorage:
             cleardatatime=CONF_DEFAULT_CLEAR_TIME,
             starteventfiredtoday=False,
             continuousupdates=CONF_DEFAULT_CONTINUOUS_UPDATES,
+            sensor_debounce=CONF_DEFAULT_SENSOR_DEBOUNCE
         )
         zones: OrderedDict[str, ZoneEntry] = OrderedDict()
         modules: OrderedDict[str, ModuleEntry] = OrderedDict()
@@ -277,6 +280,9 @@ class SmartIrrigationStorage:
                 continuousupdates=data["config"].get(
                     CONF_CONTINUOUS_UPDATES, CONF_DEFAULT_CONTINUOUS_UPDATES
                 ),
+                sensor_debounce=data["config"].get(
+                    CONF_SENSOR_DEBOUNCE, CONF_DEFAULT_SENSOR_DEBOUNCE
+                )
             )
 
             if "zones" in data:
@@ -665,7 +671,7 @@ class SmartIrrigationStorage:
         """Create a new MappingEntry."""
         new_mapping = MappingEntry(**data)
         if not new_mapping.id:
-            mappings = await self.get_mappings()
+            mappings = await self.async_get_mappings()
             new_mapping = attr.evolve(new_mapping, id=self.generate_next_id(mappings))
         self.mappings[int(new_mapping.id)] = new_mapping
         self.async_schedule_save()

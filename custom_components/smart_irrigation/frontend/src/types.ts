@@ -37,6 +37,7 @@ export class SmartIrrigationConfig {
   cleardatatime: string;
   autoclearenabled: boolean;
   continuousupdates: boolean;
+  sensor_debounce: number;
 
   constructor() {
     this.calctime = "23:00";
@@ -51,6 +52,7 @@ export class SmartIrrigationConfig {
     this.cleardatatime = "23:59";
     // continuousupdates are disabled by default
     this.continuousupdates = false;
+    this.sensor_debounce = 100;
   }
 }
 
@@ -90,7 +92,7 @@ export class SmartIrrigationZone {
     s: number,
     t: number,
     st: SmartIrrigationZoneState,
-    d: number
+    d: number,
   ) {
     this.id = i;
     this.name = n;

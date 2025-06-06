@@ -21,32 +21,33 @@
   },
   "homepage": "https://github.com/jeroenterheerdt/HASmartIrrigation#readme",
   "dependencies": {
-    "@babel/core": "*",
-    "@babel/plugin-transform-class-properties": "*",
-    "@babel/plugin-proposal-decorators": "*",
     "@mdi/js": "*",
+    "custom-card-helpers": "^1.9.0",
+    "intl-messageformat": "*",
+    "lit": "^2.7.6",
+    "moment": "^2.29.4"
+  },
+  "devDependencies": {
+    "@babel/cli": "*",
+    "@babel/core": "*",
+    "@babel/plugin-proposal-decorators": "*",
+    "@babel/plugin-transform-class-properties": "*",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.28.0",
     "@rollup/plugin-babel": "*",
     "@rollup/plugin-commonjs": "*",
     "@rollup/plugin-json": "*",
     "@rollup/plugin-node-resolve": "*",
-    "@typescript-eslint/eslint-plugin": "*",
+    "@rollup/plugin-terser": "*",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
     "@typescript-eslint/parser": "*",
-    "custom-card-helpers": "^1.9.0",
-    "eslint": "*",
+    "eslint": "^9.28.0",
     "eslint-config-prettier": "*",
     "eslint-plugin-import": "*",
     "eslint-plugin-prettier": "*",
-    "intl-messageformat": "*",
-    "lit": "^2.7.6",
-    "moment": "^2.29.4",
     "prettier": "*",
     "rollup": "*",
-    "@rollup/plugin-terser": "*",
     "rollup-plugin-typescript2": "*",
     "typescript": "*"
-  },
-  "devDependencies": {
-    "@babel/cli": "*",
-    "@rollup/plugin-commonjs": "*"
   }
 }

@@ -52,16 +52,16 @@ export class SmartIrrigationPanel extends LitElement {
           <sl-tab slot="nav" panel="general" .active=${path.page === "general"}>
             ${localize("panels.general.title", this.hass.language)}
           </sl-tab>
-          <sl-tab slot="nav" panel="zones" .active=${path.page==="zones"}>
+          <sl-tab slot="nav" panel="zones" .active=${path.page === "zones"}>
             ${localize("panels.zones.title", this.hass.language)}
           </sl-tab>
-          <sl-tab slot="nav" panel="modules" active=${path.page==="modules"}
+          <sl-tab slot="nav" panel="modules" active=${path.page === "modules"}
             >${localize("panels.modules.title", this.hass.language)}</sl-tab
           >
-          <sl-tab slot="nav" panel="mappings" active=${path.page==="mappings"}
+          <sl-tab slot="nav" panel="mappings" active=${path.page === "mappings"}
             >${localize("panels.mappings.title", this.hass.language)}</sl-tab
           >
-          <sl-tab slot="nav" panel="help" active=${path.page==="help"}
+          <sl-tab slot="nav" panel="help" active=${path.page === "help"}
             >${localize("panels.help.title", this.hass.language)}</sl-tab
           >
         </sl-tab-group>
@@ -109,43 +109,45 @@ export class SmartIrrigationPanel extends LitElement {
         return html`<ha-card
           header="${localize(
             "panels.help.cards.how-to-get-help.title",
-            this.hass.language
+            this.hass.language,
           )}"
         >
           <div class="card-content">
-          ${localize(
-            "panels.help.cards.how-to-get-help.first-read-the",
-            this.hass.language
-          )} <a href="https://github.com/jeroenterheerdt/HAsmartirrigation/wiki"
+            ${localize(
+              "panels.help.cards.how-to-get-help.first-read-the",
+              this.hass.language,
+            )}
+            <a href="https://github.com/jeroenterheerdt/HAsmartirrigation/wiki"
               >${localize(
                 "panels.help.cards.how-to-get-help.wiki",
-                this.hass.language
+                this.hass.language,
               )}</a
-            >. ${localize(
+            >.
+            ${localize(
               "panels.help.cards.how-to-get-help.if-you-still-need-help",
-              this.hass.language
+              this.hass.language,
             )}
             <a
               href="https://community.home-assistant.io/t/smart-irrigation-save-water-by-precisely-watering-your-lawn-garden"
               >${localize(
                 "panels.help.cards.how-to-get-help.community-forum",
-                this.hass.language
+                this.hass.language,
               )}</a
             >
             ${localize(
               "panels.help.cards.how-to-get-help.or-open-a",
-              this.hass.language
+              this.hass.language,
             )}
             <a
               href="https://github.com/jeroenterheerdt/HAsmartirrigation/issues"
               >${localize(
                 "panels.help.cards.how-to-get-help.github-issue",
-                this.hass.language
+                this.hass.language,
               )}</a
             >
             (${localize(
               "panels.help.cards.how-to-get-help.english-only",
-              this.hass.language
+              this.hass.language,
             )}).
           </div></ha-card
         >`;
@@ -161,7 +163,7 @@ export class SmartIrrigationPanel extends LitElement {
     }
   }
 
-  handlePageSelected(ev:CustomEvent) {
+  handlePageSelected(ev: CustomEvent) {
     //const newPage = ev.detail.item.getAttribute("page-name");
     const newPage = ev.detail.name;
     //this was newPage !== getPath() but I am pretty sure that is a bug.
