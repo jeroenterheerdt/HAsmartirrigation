@@ -1012,7 +1012,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         return retval
 
-    async def apply_aggregates_to_mapping_data(self, mapping, continuous_updates=False):
+    async def apply_aggregates_to_mapping_data(
+        self, zone, mapping, continuous_updates=False
+    ):
         """Apply aggregation functions to mapping data and return the aggregated result.
 
         Args:
@@ -1023,7 +1025,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             dict or None: Aggregated mapping data or None if no data is available.
 
         """
-        _LOGGER.debug("[apply_aggregates_to_mapping_data]: mapping: %s", mapping)
+        _LOGGER.debug(
+            "[apply_aggregates_to_mapping_data]: zone: %s mapping: %s", zone, mapping
+        )
         if not mapping.get(const.MAPPING_DATA):
             return None
 
@@ -1034,7 +1038,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         data_by_sensor = self._group_data_by_sensor(data)
         resultdata = {}
 
-        self._handle_retrieved_at(data_by_sensor, resultdata, continuous_updates)
+        self._handle_retrieved_at(data_by_sensor, zone, resultdata, continuous_updates)
         self._aggregate_sensor_data(data_by_sensor, mapping, resultdata)
         self._fill_missing_from_last_entry(mapping, resultdata)
 
@@ -1054,7 +1058,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         data_by_sensor.pop(const.MAPPING_MIN_TEMP, None)
         return data_by_sensor
 
-    def _handle_retrieved_at(self, data_by_sensor, resultdata, continuous_updates):
+    def _handle_retrieved_at(
+        self, data_by_sensor, zone, resultdata, continuous_updates
+    ):
         """Process retrieved_at timestamps and update resultdata with multiplier."""
         if const.RETRIEVED_AT not in data_by_sensor:
             return
@@ -1071,22 +1077,44 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
         if not formatted_retrieved_ats:
             return
+
+        diff = None
         if not continuous_updates:
             first_retrieved_at = min(formatted_retrieved_ats)
             last_retrieved_at = max(formatted_retrieved_ats)
+            diff = last_retrieved_at - first_retrieved_at
+            _LOGGER.debug(
+                "[apply_aggregates_to_mapping_data]: first_retrieved_at: %s, last_retrieved_at: %s",
+                first_retrieved_at,
+                last_retrieved_at,
+            )
         else:
-            if len(formatted_retrieved_ats) < 2:
-                return
-            first_retrieved_at = formatted_retrieved_ats[-2]
-            last_retrieved_at = formatted_retrieved_ats[-1]
-        diff = last_retrieved_at - first_retrieved_at
+            # for continuous updates, use interval from last calculation to now
+            val = zone[const.ZONE_LAST_CALCULATED]
+            if not val:
+                _LOGGER.debug(
+                    "[apply_aggregates_to_mapping_data]: zone has never been calculated, skipping"
+                )
+                return None
+            elif isinstance(val, datetime.datetime):
+                # already in datetime format
+                last_zone_calc = val
+            else:
+                # string format, parse to datetime
+                last_zone_calc = datetime.datetime.strptime(val, date_format_string)
+            diff = datetime.datetime.now() - last_zone_calc
+            _LOGGER.debug(
+                "[apply_aggregates_to_mapping_data]: zone last calculated: %s",
+                last_zone_calc,
+            )
+
+        # Get interval in hours, then days
         diff_in_hours = abs(diff.total_seconds() / 3600)
         hour_multiplier = diff_in_hours / 24
         resultdata[const.MAPPING_DATA_MULTIPLIER] = hour_multiplier
         _LOGGER.debug(
-            "[apply_aggregates_to_mapping_data]: first_retrieved_at: %s, last_retrieved_at: %s, diff_in_seconds: %s, diff_in_hours: %s, hour_multiplier: %s",
-            first_retrieved_at,
-            last_retrieved_at,
+            "[apply_aggregates_to_mapping_data]: diff: %s diff_in_seconds: %s, diff_in_hours: %s, hour_multiplier: %s",
+            diff,
             diff.total_seconds(),
             diff_in_hours,
             hour_multiplier,
@@ -1274,7 +1302,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         if mapping is not None:
             if const.MAPPING_DATA in mapping and mapping.get(const.MAPPING_DATA):
                 sensor_values = await self.apply_aggregates_to_mapping_data(
-                    mapping, continuous_updates
+                    zone, mapping, continuous_updates
                 )
             if sensor_values:
                 # make sure we convert forecast data pressure to absolute!
@@ -1351,8 +1379,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # precip = 0
         ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
         bucket = zone.get(const.ZONE_BUCKET)
-        if zone.get(const.ZONE_MAXIMUM_BUCKET) is not None:
-            maximum_bucket = zone.get(const.ZONE_MAXIMUM_BUCKET)
+        maximum_bucket = zone.get(const.ZONE_MAXIMUM_BUCKET)
         if not ha_config_is_metric:
             bucket = convert_between(const.UNIT_INCH, const.UNIT_MM, bucket)
             if zone.get(const.ZONE_MAXIMUM_BUCKET) is not None:
@@ -1401,10 +1428,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
             # if maximum bucket configured, limit bucket with that.
             # any water above maximum is removed with runoff / bypass flow.
-            if (
-                zone.get(const.ZONE_MAXIMUM_BUCKET) is not None
-                and newbucket > maximum_bucket
-            ):
+            if maximum_bucket is not None and newbucket > maximum_bucket:
                 newbucket = float(maximum_bucket)
                 _LOGGER.debug(
                     "[calculate-module]: capped new bucket because of maximum bucket: %s",
@@ -1702,8 +1726,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             module_id = int(module_id)
         if const.ATTR_REMOVE in data:
             # delete a module
-            res = self.store.get_module(module_id)
-            if not res:
+            zone = self.store.get_module(module_id)
+            if not zone:
                 return
             self.store.async_delete_module(module_id)
         elif module_id is not None and self.store.get_module(module_id):
@@ -1891,8 +1915,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             zone_id = int(zone_id)
         if const.ATTR_REMOVE in data:
             # delete a zone
-            res = self.store.get_zone(zone_id)
-            if not res:
+            zone = self.store.get_zone(zone_id)
+            if not zone:
                 return
             self.store.async_delete_zone(zone_id)
             await self.async_remove_entity(zone_id)
