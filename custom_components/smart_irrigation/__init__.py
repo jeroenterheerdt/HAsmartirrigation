@@ -1551,7 +1551,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     const.UNIT_INCH, const.UNIT_MM, zone.get(const.ZONE_MAXIMUM_BUCKET)
                 )
         data = {}
-        data[const.ZONE_OLD_BUCKET] = bucket
+        old_bucket = bucket
         explanation = ""
 
         hour_multiplier = weatherdata.get(const.MAPPING_DATA_MULTIPLIER, 1.0)
@@ -1647,7 +1647,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             await localize(
                 "module.calculation.explanation.bucket-was", self.hass.config.language
             )
-            + f" {data[const.ZONE_OLD_BUCKET]:.2f}"
+            + f" {old_bucket:.2f}"
         )
         explanation += (
             ".<br/>"
@@ -1694,7 +1694,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "module.calculation.explanation.no-drainage",
                     self.hass.config.language,
                 )
-                + f" [{old_bucket_loc}] + [{delta_loc}] <= 0 ({data[const.ZONE_OLD_BUCKET]:.2f}{data[const.ZONE_DELTA]:+.2f} = {bucket_plus_delta_capped:.2f})"
+                + f" [{old_bucket_loc}] + [{delta_loc}] <= 0 ({old_bucket:.2f}{data[const.ZONE_DELTA]:+.2f} = {bucket_plus_delta_capped:.2f})"
             )
         else:
             explanation += await localize(
@@ -1711,9 +1711,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         )
 
         if maximum_bucket is not None and maximum_bucket > 0:
-            explanation += f" min([{old_bucket_loc}] + [{delta_loc}], {max_bucket_loc}) - [{drainage_loc}] = min({data[const.ZONE_OLD_BUCKET]:.2f}{data[const.ZONE_DELTA]:+.2f}, {maximum_bucket:.1f}) - {drainage:.2f} = {newbucket:.2f}.<br/>"
+            explanation += f" min([{old_bucket_loc}] + [{delta_loc}], {max_bucket_loc}) - [{drainage_loc}] = min({old_bucket:.2f}{data[const.ZONE_DELTA]:+.2f}, {maximum_bucket:.1f}) - {drainage:.2f} = {newbucket:.2f}.<br/>"
         else:
-            explanation += f" [{old_bucket_loc}] + [{delta_loc}] - [{drainage_loc}] = {data[const.ZONE_OLD_BUCKET]:.2f} + {data[const.ZONE_DELTA]:.2f} - {drainage:.2f} = {newbucket:.2f}.<br/>"
+            explanation += f" [{old_bucket_loc}] + [{delta_loc}] - [{drainage_loc}] = {old_bucket:.2f} + {data[const.ZONE_DELTA]:.2f} - {drainage:.2f} = {newbucket:.2f}.<br/>"
 
         if newbucket < 0:
             # calculate duration

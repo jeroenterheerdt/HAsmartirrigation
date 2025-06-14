@@ -118,7 +118,6 @@ export const ZONE_STATE_MANUAL = "manual";
 export const ZONE_STATE_AUTOMATIC = "automatic";
 export const ZONE_MODULE = "module";
 export const ZONE_BUCKET = "bucket";
-export const ZONE_OLD_BUCKET = "old_bucket";
 export const ZONE_DELTA = "delta";
 export const ZONE_EXPLANATION = "explanation";
 export const ZONE_MULTIPLIER = "multiplier";

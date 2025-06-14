@@ -203,7 +203,6 @@ class SmartIrrigationZoneView(HomeAssistantView):
                 vol.Optional(const.ZONE_STATE): vol.In(const.ZONE_STATES),
                 vol.Optional(const.ZONE_DURATION): vol.Or(float, int, str, None),
                 vol.Optional(const.ZONE_BUCKET): vol.Or(float, int, str, None),
-                vol.Optional(const.ZONE_OLD_BUCKET): vol.Or(float, int, str, None),
                 vol.Optional(const.ZONE_DELTA): vol.Or(float, int, str, None),
                 vol.Optional(const.ZONE_MODULE): vol.Or(int, str, None),
                 vol.Optional(const.ATTR_REMOVE): cv.boolean,

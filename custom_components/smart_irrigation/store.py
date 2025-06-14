@@ -81,7 +81,6 @@ class ZoneEntry:
     throughput = attr.ib(type=float, default=0.0)
     state = attr.ib(type=str, default="automatic")
     bucket = attr.ib(type=float, default=0)
-    old_bucket = attr.ib(type=float, default=0)
     delta = attr.ib(type=float, default=0)
     duration = attr.ib(type=float, default=0)
     module = attr.ib(type=str, default=None)
