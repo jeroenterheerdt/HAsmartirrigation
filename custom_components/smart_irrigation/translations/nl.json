@@ -13,7 +13,7 @@
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Unieke naam",
-          "use_weather_service": "Gebruik een weersdient (Open Weather Map of Pirate Weather) voor weergegevens en voorspellingen. Zet dit aan als je van plan bent dit te gebruiken voor in ieder geval een deel van de benodigde weersinformatie of voorspellingen. Zet het uit als je een andere weersdienst of een andere bron (zoals een eigen weersstation) wilt gebruiken. In dat geval zijn er geen voorspellingen beschikbaar."
+          "use_weather_service": "Gebruik een weersdient (Open Weather Map, Pirate Weather of KNMI) voor weergegevens en voorspellingen. Zet dit aan als je van plan bent dit te gebruiken voor in ieder geval een deel van de benodigde weersinformatie of voorspellingen. Zet het uit als je een andere weersdienst of een andere bron (zoals een eigen weersstation) wilt gebruiken. In dat geval zijn er geen voorspellingen beschikbaar."
         }
       },
       "step1": {
@@ -36,7 +36,7 @@
         "title": "Weerdienst API instellingen",
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "use_weather_service": "Gebruik een weersdient (Open Weather Map of Pirate Weather) voor weergegevens en voorspellingen. Zet dit aan als je van plan bent dit te gebruiken voor in ieder geval een deel van de benodigde weersinformatie of voorspellingen. Zet het uit als je een andere weersdienst of een andere bron (zoals een eigen weersstation) wilt gebruiken. In dat geval zijn er geen voorspellingen beschikbaar."
+          "use_weather_service": "Gebruik een weersdient (Open Weather Map, Pirate Weather of KNMI) voor weergegevens en voorspellingen. Zet dit aan als je van plan bent dit te gebruiken voor in ieder geval een deel van de benodigde weersinformatie of voorspellingen. Zet het uit als je een andere weersdienst of een andere bron (zoals een eigen weersstation) wilt gebruiken. In dat geval zijn er geen voorspellingen beschikbaar."
         }
       },
       "step1": {

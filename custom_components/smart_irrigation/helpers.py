@@ -14,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from .const import (
     CONF_WEATHER_SERVICE_OWM,
     CONF_WEATHER_SERVICE_PW,
+    CONF_WEATHER_SERVICE_KNMI,
     CUSTOM_COMPONENTS,
     DOMAIN,
     GALLON_TO_LITER_FACTOR,
@@ -71,6 +72,7 @@ from .const import (
 )
 from .weathermodules.OWMClient import OWMClient
 from .weathermodules.PirateWeatherClient import PirateWeatherClient
+from .weathermodules.KNMIClient import KNMIClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -641,6 +643,14 @@ async def test_api_key(hass: HomeAssistant, weather_service, api_key):
         )
     elif weather_service == CONF_WEATHER_SERVICE_PW:
         client = PirateWeatherClient(
+            api_key=api_key.strip(),
+            api_version="1",
+            latitude=test_lat,
+            longitude=test_lon,
+            elevation=test_elev,
+        )
+    elif weather_service == CONF_WEATHER_SERVICE_KNMI:
+        client = KNMIClient(
             api_key=api_key.strip(),
             api_version="1",
             latitude=test_lat,

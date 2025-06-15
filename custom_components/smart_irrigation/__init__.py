@@ -58,6 +58,7 @@ from .panel import async_register_panel, async_unregister_panel
 from .store import async_get_registry
 from .weathermodules.OWMClient import OWMClient
 from .weathermodules.PirateWeatherClient import PirateWeatherClient
+from .weathermodules.KNMIClient import KNMIClient
 from .websockets import async_register_websockets
 
 _LOGGER = logging.getLogger(__name__)
@@ -275,6 +276,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 self._WeatherServiceClient = PirateWeatherClient(
                     api_key=hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY],
                     api_version="1",
+                    latitude=self.hass.config.as_dict().get(CONF_LATITUDE),
+                    longitude=self.hass.config.as_dict().get(CONF_LONGITUDE),
+                    elevation=self.hass.config.as_dict().get(CONF_ELEVATION),
+                )
+            elif self.weather_service == const.CONF_WEATHER_SERVICE_KNMI:
+                self._WeatherServiceClient = KNMIClient(
+                    api_key=hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY],
+                    api_version=hass.data[const.DOMAIN].get(
+                        const.CONF_WEATHER_SERVICE_API_VERSION, "1"
+                    ),
                     latitude=self.hass.config.as_dict().get(CONF_LATITUDE),
                     longitude=self.hass.config.as_dict().get(CONF_LONGITUDE),
                     elevation=self.hass.config.as_dict().get(CONF_ELEVATION),
