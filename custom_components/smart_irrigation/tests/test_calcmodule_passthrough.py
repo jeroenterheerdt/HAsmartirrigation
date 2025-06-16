@@ -1,6 +1,7 @@
 """Tests for the Smart Irrigation Passthrough calculation module."""
 
-from custom_components.smart_irrigation.calcmodules.passthrough import Passthrough
+from custom_components.smart_irrigation.calcmodules.passthrough import \
+    Passthrough
 
 
 def test_passthrough_returns_float(hass) -> None:

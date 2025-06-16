@@ -1,4 +1,0 @@
--r custom_components/smart_irrigation/requirements.txt
-pytest
-pytest-cov
-pytest-homeassistant-custom-component

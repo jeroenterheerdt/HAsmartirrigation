@@ -1,7 +1,6 @@
 """Options flow handler for Smart Irrigation integration."""
 
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.helpers.selector import selector
 

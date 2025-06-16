@@ -53,12 +53,12 @@ def thornthwaite(monthly_t, monthly_mean_dlh, year=None):
     """
     if len(monthly_t) != 12:
         raise ValueError(
-            f'monthly_t should be length 12 but is length {len(monthly_t)}.'
-            )
+            f"monthly_t should be length 12 but is length {len(monthly_t)}."
+        )
     if len(monthly_mean_dlh) != 12:
         raise ValueError(
-            f'monthly_mean_dlh should be length 12 but is length {len(monthly_mean_dlh)}.'
-            )
+            f"monthly_mean_dlh should be length 12 but is length {len(monthly_mean_dlh)}."
+        )
 
     if year is None or not calendar.isleap(year):
         month_days = _MONTHDAYS
@@ -74,13 +74,12 @@ def thornthwaite(monthly_t, monthly_mean_dlh, year=None):
         if Tai / 5.0 > 0.0:
             I += (Tai / 5.0) ** 1.514
 
-    a = (6.75e-07 * I ** 3) - (7.71e-05 * I ** 2) + (1.792e-02 * I) + 0.49239
+    a = (6.75e-07 * I**3) - (7.71e-05 * I**2) + (1.792e-02 * I) + 0.49239
 
     pet = []
     for Ta, L, N in zip(adj_monthly_t, monthly_mean_dlh, month_days, strict=False):
         # Multiply by 10 to convert cm/month --> mm/month
-        pet.append(
-            1.6 * (L / 12.0) * (N / 30.0) * ((10.0 * Ta / I) ** a) * 10.0)
+        pet.append(1.6 * (L / 12.0) * (N / 30.0) * ((10.0 * Ta / I) ** a) * 10.0)
 
     return pet
 
@@ -104,9 +103,9 @@ def monthly_mean_daylight_hours(latitude, year=None):
     else:
         month_days = _LEAP_MONTHDAYS
     monthly_mean_dlh = []
-    doy = 1         # Day of the year
+    doy = 1  # Day of the year
     for mdays in month_days:
-        dlh = 0.0   # Cumulative daylight hours for the month
+        dlh = 0.0  # Cumulative daylight hours for the month
         for daynum in range(1, mdays + 1):
             sd = fao.sol_dec(doy)
             sha = fao.sunset_hour_angle(latitude, sd)

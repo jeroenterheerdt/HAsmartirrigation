@@ -1,7 +1,6 @@
 """Config flow for the Smart Irrigation integration."""
 
 import voluptuous as vol
-
 from homeassistant import config_entries, exceptions
 from homeassistant.core import callback
 from homeassistant.helpers.selector import selector

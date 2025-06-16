@@ -2,17 +2,15 @@
 
 import pytest
 
-from custom_components.smart_irrigation.const import (
-    MAPPING_TEMPERATURE,
-    MAPPING_HUMIDITY,
-    MAPPING_PRESSURE,
-    MAPPING_MIN_TEMP,
-    MAPPING_MAX_TEMP,
-    MAPPING_WINDSPEED,
-    MAPPING_SOLRAD,
-    MAPPING_DEWPOINT,
-)
 from custom_components.smart_irrigation.calcmodules.pyeto import PyETO
+from custom_components.smart_irrigation.const import (MAPPING_DEWPOINT,
+                                                      MAPPING_HUMIDITY,
+                                                      MAPPING_MAX_TEMP,
+                                                      MAPPING_MIN_TEMP,
+                                                      MAPPING_PRESSURE,
+                                                      MAPPING_SOLRAD,
+                                                      MAPPING_TEMPERATURE,
+                                                      MAPPING_WINDSPEED)
 
 
 @pytest.fixture

@@ -2,14 +2,13 @@
 
 import logging
 
-from homeassistant.components.sensor import DOMAIN as PLATFORM, SensorEntity
+from homeassistant.components.sensor import DOMAIN as PLATFORM
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor.const import SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.dispatcher import (
-    async_dispatcher_connect,
-    async_dispatcher_send,
-)
+from homeassistant.helpers.dispatcher import (async_dispatcher_connect,
+                                              async_dispatcher_send)
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
@@ -108,7 +107,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         number_of_data_points: int,
         delta: float,
         drainage_rate: float,
-        current_drainage: float
+        current_drainage: float,
     ) -> None:
         """Initialize the sensor entity."""
         self._hass = hass
@@ -238,7 +237,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             "[extra_state_attributes] bucket: %s, et_value: %s, current_drainage: %s",
             self._bucket,
             self._delta,
-            self._current_drainage
+            self._current_drainage,
         )
         return {
             "id": self._id,
