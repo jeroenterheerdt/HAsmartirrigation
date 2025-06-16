@@ -5,7 +5,6 @@ import logging
 from pathlib import Path
 
 import aiofiles
-
 from smart_irrigation.const import LANGUAGE_FILES_DIR, SUPPORTED_LANGUAGES
 
 _LOGGER = logging.getLogger(__name__)

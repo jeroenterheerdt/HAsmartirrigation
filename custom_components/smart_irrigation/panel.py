@@ -7,17 +7,9 @@ from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.core import HomeAssistant
 
-from .const import (
-    CUSTOM_COMPONENTS,
-    DOMAIN,
-    INTEGRATION_FOLDER,
-    PANEL_FILENAME,
-    PANEL_FOLDER,
-    PANEL_ICON,
-    PANEL_NAME,
-    PANEL_TITLE,
-    PANEL_URL,
-)
+from .const import (CUSTOM_COMPONENTS, DOMAIN, INTEGRATION_FOLDER,
+                    PANEL_FILENAME, PANEL_FOLDER, PANEL_ICON, PANEL_NAME,
+                    PANEL_TITLE, PANEL_URL)
 
 _LOGGER = logging.getLogger(__name__)
 

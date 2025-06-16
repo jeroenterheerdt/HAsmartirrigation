@@ -9,13 +9,11 @@ meteorological data.
 
 import math
 
-from ._check import (
-    check_day_hours as _check_day_hours,
-    check_doy as _check_doy,
-    check_latitude_rad as _check_latitude_rad,
-    check_sol_dec_rad as _check_sol_dec_rad,
-    check_sunset_hour_angle_rad as _check_sunset_hour_angle_rad,
-)
+from ._check import check_day_hours as _check_day_hours
+from ._check import check_doy as _check_doy
+from ._check import check_latitude_rad as _check_latitude_rad
+from ._check import check_sol_dec_rad as _check_sol_dec_rad
+from ._check import check_sunset_hour_angle_rad as _check_sunset_hour_angle_rad
 
 #: Solar constant [ MJ m-2 min-1]
 SOLAR_CONSTANT = 0.0820
@@ -292,10 +290,8 @@ def fao56_penman_monteith(net_rad, t, ws, svp, avp, delta_svp, psy, shf=0.0):
         grass reference surface [mm day-1].
     :rtype: float
     """
-    a1 = (0.408 * (net_rad - shf) * delta_svp /
-          (delta_svp + (psy * (1 + 0.34 * ws))))
-    a2 = (900 * ws / t * (svp - avp) * psy /
-          (delta_svp + (psy * (1 + 0.34 * ws))))
+    a1 = 0.408 * (net_rad - shf) * delta_svp / (delta_svp + (psy * (1 + 0.34 * ws)))
+    a2 = 900 * ws / t * (svp - avp) * psy / (delta_svp + (psy * (1 + 0.34 * ws)))
     return a1 + a2
 
 
@@ -450,9 +446,8 @@ def net_out_lw_rad(tmin, tmax, sol_rad, cs_rad, avp):
     :return: Net outgoing longwave radiation [MJ m-2 day-1]
     :rtype: float
     """
-    tmp1 = (STEFAN_BOLTZMANN_CONSTANT *
-        ((math.pow(tmax, 4) + math.pow(tmin, 4)) / 2))
-    tmp2 = (0.34 - (0.14 * math.sqrt(avp)))
+    tmp1 = STEFAN_BOLTZMANN_CONSTANT * ((math.pow(tmax, 4) + math.pow(tmin, 4)) / 2)
+    tmp2 = 0.34 - (0.14 * math.sqrt(avp))
     tmp3 = 1.35 * (sol_rad / cs_rad) - 0.35
     return tmp1 * tmp2 * tmp3
 
@@ -519,8 +514,7 @@ def psy_const_of_psychrometer(psychrometer, atmos_pres):
     elif psychrometer == 3:
         psy_coeff = 0.001200
     else:
-        raise ValueError(
-            f'psychrometer should be in range 1 to 3: {psychrometer!r}')
+        raise ValueError(f"psychrometer should be in range 1 to 3: {psychrometer!r}")
 
     return psy_coeff * atmos_pres
 
@@ -578,8 +572,8 @@ def sol_rad_from_sun_hours(daylight_hours, sunshine_hours, et_rad):
     :return: Incoming solar (or shortwave) radiation [MJ m-2 day-1]
     :rtype: float
     """
-    _check_day_hours(sunshine_hours, 'sun_hours')
-    _check_day_hours(daylight_hours, 'daylight_hours')
+    _check_day_hours(sunshine_hours, "sun_hours")
+    _check_day_hours(daylight_hours, "daylight_hours")
 
     # 0.5 and 0.25 are default values of regression constants (Angstrom values)
     # recommended by FAO when calibrated values are unavailable.

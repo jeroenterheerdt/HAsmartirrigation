@@ -29,4 +29,29 @@ If it rains or snows less than the amount of moisture lost, then irrigation is r
 The integration can take into account weather forecasts for the coming days and also keeps track of the total moisture lost or added ('bucket')
 Multiple zones are supported with each zone having it own configuration and set up.
 
+## Development
+
+For contributors and developers:
+
+### Quick Setup
+
+```bash
+# Clone and setup development environment
+git clone <repository-url>
+cd HAsmartirrigation
+make setup
+```
+
+### Available Commands
+
+```bash
+make help        # Show all available commands
+make test        # Run all tests
+make test-knmi   # Test KNMI integration
+make format      # Format code
+make lint        # Run linting
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development instructions.
+
 ## Read the docs: https://jeroenterheerdt.github.io/HAsmartirrigation/

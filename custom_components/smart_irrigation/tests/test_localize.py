@@ -2,8 +2,10 @@
 
 from pathlib import Path
 
-from custom_components.smart_irrigation.localize import get_string_from_data, localize
 import pytest
+
+from custom_components.smart_irrigation.localize import (get_string_from_data,
+                                                         localize)
 
 
 @pytest.mark.asyncio
