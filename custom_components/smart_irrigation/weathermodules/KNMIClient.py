@@ -25,6 +25,9 @@ _LOGGER = logging.getLogger(__name__)
 KNMI_OBSERVATIONS_URL = (
     "https://api.dataplatform.knmi.nl/edr/v1/collections/observations/position"
 )
+KNMI_LOCATIONS_URL = (
+    "https://api.dataplatform.knmi.nl/edr/v1/collections/observations/locations"
+)
 KNMI_FORECAST_URL = "https://api.dataplatform.knmi.nl/edr/v1/collections/harmonie_arome_cy43_p1/position"
 
 RETRY_TIMES = 3
@@ -87,14 +90,11 @@ class KNMIClient:  # pylint: disable=invalid-name
         """Init."""
         self.api_key = api_key.strip().replace(" ", "")
         self.api_version = (
-            api_version.strip()
+            api_version.strip() if api_version is not None else "1.0"
         )  # Not used by KNMI but kept for compatibility
         self.longitude = longitude
         self.latitude = latitude
         self.elevation = elevation
-
-        # KNMI EDR API expects coords in specific format
-        self.coords = f"POINT({self.longitude} {self.latitude})"
 
         # Set up headers for API authentication
         self.headers = {
@@ -102,7 +102,7 @@ class KNMIClient:  # pylint: disable=invalid-name
             "Accept": "application/json",
         }
 
-        # defaults to no cache
+        # Initialize cache variables
         self.cache_seconds = cache_seconds
         self.override_cache = override_cache
         # disabling cache for now
@@ -110,6 +110,12 @@ class KNMIClient:  # pylint: disable=invalid-name
         self._last_time_called = datetime.datetime(1900, 1, 1, 0, 0, 0)
         self._cached_data = None
         self._cached_forecast_data = None
+        self._weather_stations = None  # Cache for weather stations
+        
+        # Defer nearest station lookup until first API call to avoid blocking HTTP requests during init
+        self.nearest_station = None
+        self._station_initialized = False
+        self.coords = None  # Will be set when station is found
 
     def get_forecast_data(self):
         """Return forecast data.
@@ -123,8 +129,39 @@ class KNMIClient:  # pylint: disable=invalid-name
         )
         return None
 
+    def _ensure_station_initialized(self):
+        """Ensure nearest weather station is found and coordinates are set."""
+        if not self._station_initialized:
+            # Find nearest weather station and use its coordinates
+            self.nearest_station = self._find_nearest_station(self.latitude, self.longitude)
+            if self.nearest_station:
+                _LOGGER.info(
+                    "Using KNMI weather station '%s' (ID: %s) at [%.4f, %.4f] for location [%.4f, %.4f]",
+                    self.nearest_station["name"],
+                    self.nearest_station["id"],
+                    self.nearest_station["longitude"],
+                    self.nearest_station["latitude"],
+                    self.longitude,
+                    self.latitude,
+                )
+                # Use station coordinates for API calls
+                self.coords = f"POINT({self.nearest_station['longitude']} {self.nearest_station['latitude']})"
+            else:
+                _LOGGER.warning(
+                    "No KNMI weather station found near [%.4f, %.4f], using original coordinates",
+                    self.longitude,
+                    self.latitude,
+                )
+                # KNMI EDR API expects coords in specific format
+                self.coords = f"POINT({self.longitude} {self.latitude})"
+            
+            self._station_initialized = True
+
     def get_data(self):
         """Validate and return current weather data."""
+        # Ensure station is initialized before making API calls
+        self._ensure_station_initialized()
+        
         if (
             self._cached_data is None
             or self.override_cache
@@ -132,9 +169,11 @@ class KNMIClient:  # pylint: disable=invalid-name
             >= self._last_time_called + datetime.timedelta(seconds=self.cache_seconds)
         ):
             try:
-                # Get current observations (last hour)
-                end_time = datetime.datetime.now()
-                start_time = end_time - datetime.timedelta(hours=1)
+                # Get current observations (with delay for processing)
+                end_time = datetime.datetime.now() - datetime.timedelta(
+                    hours=2
+                )  # 2 hours ago to account for processing delay
+                start_time = end_time - datetime.timedelta(hours=1)  # 1 hour window
 
                 # Format times for KNMI API
                 datetime_param = f"{start_time.isoformat()}Z/{end_time.isoformat()}Z"
@@ -337,11 +376,14 @@ class KNMIClient:  # pylint: disable=invalid-name
 
     def _get_daily_precipitation(self):
         """Get daily precipitation sum from last 24 hours."""
+        # Ensure station is initialized before making API calls
+        self._ensure_station_initialized()
+        
         try:
             # Get precipitation data for last 24 hours
             end_time = datetime.datetime.now() - datetime.timedelta(
-                hours=1
-            )  # Account for processing delay
+                hours=3
+            )  # 3 hours ago to account for processing delay
             start_time = end_time - datetime.timedelta(hours=24)
 
             datetime_param = f"{start_time.isoformat()}Z/{end_time.isoformat()}Z"
@@ -399,6 +441,105 @@ class KNMIClient:  # pylint: disable=invalid-name
             return 0.0
         values = [v for v in data_dict[key] if v is not None]
         return sum(values) if values else 0.0
+
+    def _find_nearest_station(self, lat, lon):
+        """Find the nearest KNMI weather station to given coordinates."""
+        try:
+            stations = self._get_weather_stations()
+            if not stations:
+                return None
+
+            min_distance = float("inf")
+            nearest_station = None
+
+            for station in stations:
+                station_lat = station["latitude"]
+                station_lon = station["longitude"]
+
+                # Calculate distance using Haversine formula
+                distance = self._calculate_distance(lat, lon, station_lat, station_lon)
+
+                if distance < min_distance:
+                    min_distance = distance
+                    nearest_station = station
+
+            if nearest_station:
+                _LOGGER.debug(
+                    "Nearest KNMI station: %s (%.2f km away)",
+                    nearest_station["name"],
+                    min_distance,
+                )
+
+            return nearest_station
+
+        except Exception as ex:
+            _LOGGER.warning("Could not find nearest KNMI weather station: %s", ex)
+            return None
+
+    def _get_weather_stations(self):
+        """Get list of all KNMI weather stations."""
+        if self._weather_stations is not None:
+            return self._weather_stations
+
+        try:
+            req = requests.get(
+                KNMI_LOCATIONS_URL,
+                headers=self.headers,
+                timeout=30,
+            )
+
+            if req.status_code == 200:
+                data = json.loads(req.text)
+                stations = []
+
+                for feature in data.get("features", []):
+                    if feature.get("type") == "Feature":
+                        coords = feature.get("geometry", {}).get("coordinates", [])
+                        properties = feature.get("properties", {})
+
+                        if len(coords) >= 2:
+                            station = {
+                                "id": feature.get("id"),
+                                "name": properties.get("name", "Unknown"),
+                                "longitude": coords[0],
+                                "latitude": coords[1],
+                                "elevation": coords[2] if len(coords) > 2 else 0,
+                            }
+                            stations.append(station)
+
+                self._weather_stations = stations
+                _LOGGER.debug("Loaded %d KNMI weather stations", len(stations))
+                return stations
+            else:
+                _LOGGER.error("Failed to get KNMI weather stations: %s", req.status_code)
+                return []
+
+        except Exception as ex:
+            _LOGGER.warning("Error getting KNMI weather stations: %s", ex)
+            return []
+
+    def _calculate_distance(self, lat1, lon1, lat2, lon2):
+        """Calculate distance between two points using Haversine formula (in km)."""
+        # Convert to radians
+        lat1_rad = math.radians(lat1)
+        lon1_rad = math.radians(lon1)
+        lat2_rad = math.radians(lat2)
+        lon2_rad = math.radians(lon2)
+
+        # Haversine formula
+        dlat = lat2_rad - lat1_rad
+        dlon = lon2_rad - lon1_rad
+
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2
+        )
+        c = 2 * math.asin(math.sqrt(a))
+
+        # Earth's radius in kilometers
+        earth_radius = 6371.0
+
+        return earth_radius * c
 
     def raiseIOError(self, key):
         """Raise an OSError when a required key is missing in the KNMI API return."""
