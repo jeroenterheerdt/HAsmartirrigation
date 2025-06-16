@@ -38,8 +38,8 @@ KNMI_pressure_key_name = "p_nap_msl_10"  # Atmospheric pressure in hPa
 KNMI_humidity_key_name = "u_10"  # Relative humidity in %
 KNMI_temp_key_name = "t_dryb_10"  # Air temperature in Celsius
 KNMI_dew_point_key_name = "t_dewp_10"  # Dew point temperature in Celsius
-KNMI_precip_key_name = "ri_regenm_10"  # Precipitation intensity in mm/h
-KNMI_precip_duration_key_name = "dr_regenm_10"  # Precipitation duration in seconds
+KNMI_precip_key_name = "ri_regenm_10"  # Precipitation intensity in mm/h (10-minute average)
+KNMI_precip_duration_key_name = "dr_regenm_10"  # Precipitation duration in seconds (within 10-minute period)
 
 # For forecast data - using gridded collections
 KNMI_max_temp_key_name = "tx_dryb_10"  # Maximum temperature
@@ -267,16 +267,15 @@ class KNMIClient:  # pylint: disable=invalid-name
                     parsed_data[MAPPING_DEWPOINT] = latest_data[KNMI_dew_point_key_name]
 
                     # Calculate current precipitation intensity (mm/h)
-                    precip_mm = latest_data.get(KNMI_precip_key_name, 0.0)
-                    precip_duration_min = latest_data.get(
-                        KNMI_precip_duration_key_name, 0.0
-                    )
+                    # KNMI provides ri_regenm_10 as precipitation intensity in mm/h
+                    # and dr_regenm_10 as duration of precipitation in seconds within the 10-min period
+                    precip_intensity_mm_h = latest_data.get(KNMI_precip_key_name, 0.0)
+                    precip_duration_sec = latest_data.get(KNMI_precip_duration_key_name, 0.0)
 
-                    if precip_duration_min > 0:
-                        # Convert to mm/h
-                        parsed_data[MAPPING_CURRENT_PRECIPITATION] = (
-                            precip_mm * 60
-                        ) / precip_duration_min
+                    # Use the intensity directly as it's already in mm/h
+                    # Only report precipitation if there was actual precipitation duration
+                    if precip_duration_sec > 0 and precip_intensity_mm_h > 0:
+                        parsed_data[MAPPING_CURRENT_PRECIPITATION] = precip_intensity_mm_h
                     else:
                         parsed_data[MAPPING_CURRENT_PRECIPITATION] = 0.0
 
@@ -403,10 +402,10 @@ class KNMIClient:  # pylint: disable=invalid-name
                 doc = json.loads(req.text)
                 if "ranges" in doc and KNMI_precip_key_name in doc["ranges"]:
                     values = doc["ranges"][KNMI_precip_key_name].get("values", [])
-                    # Sum all precipitation values (they are intensities, need to convert to totals)
                     # KNMI provides precipitation intensity in mm/h for 10-minute periods
-                    # So we need to convert: intensity * (10 minutes / 60 minutes) = mm per 10-min period
-                    total_precip = sum(v * (10 / 60) for v in values if v is not None)
+                    # Convert each 10-minute intensity reading to actual precipitation amount
+                    # intensity (mm/h) * (10 minutes / 60 minutes) = mm in that 10-minute period
+                    total_precip = sum(v * (10 / 60) for v in values if v is not None and v > 0)
                     return total_precip
 
         except Exception as ex:
