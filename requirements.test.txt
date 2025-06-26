@@ -1,27 +1,10 @@
-# Development requirements for Smart Irrigation project
-# This includes all dependencies needed for development, testing, and running test scripts
+# Testing requirements for Smart Irrigation project
 
 # Core component requirements
 -r custom_components/smart_irrigation/requirements.txt
 
-# Additional dependencies for test scripts and development
-requests>=2.25.0
-python-dotenv>=0.19.0
-
-# Home Assistant development (useful for local testing)
-homeassistant>=2024.6.0
-
-# Development tools
-black>=22.0.0
-flake8>=4.0.0
-isort>=5.10.0
-mypy>=0.950
-pre-commit>=2.17.0
-
-# Documentation
-markdown>=3.3.0
-
 # Testing dependencies
+homeassistant>=2024.6.0
 pytest
 pytest-cov
 pytest-homeassistant-custom-component
