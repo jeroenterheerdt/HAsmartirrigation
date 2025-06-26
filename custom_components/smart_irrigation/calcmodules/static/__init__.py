@@ -2,12 +2,11 @@
 
 import logging
 
-from custom_components.smart_irrigation.calcmodules.calcmodule import (
-    SmartIrrigationCalculationModule,
-)
 import voluptuous as vol
-
 from homeassistant.core import HomeAssistant
+
+from custom_components.smart_irrigation.calcmodules.calcmodule import \
+    SmartIrrigationCalculationModule
 
 # v1 only, no longer used in v2
 # from ...const import CONF_MAXIMUM_ET, DEFAULT_MAXIMUM_ET

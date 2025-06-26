@@ -1,104 +1,55 @@
 """Storage and management for Smart Irrigation configuration, zones, modules, and mappings."""
 
-from collections import OrderedDict
-from collections.abc import MutableMapping
 import datetime
 import logging
+from collections import OrderedDict
+from collections.abc import MutableMapping
 from typing import cast
 
 import attr
-
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.storage import Store
 from homeassistant.loader import bind_hass
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
-from .const import (
-    ATTR_NEW_BUCKET_VALUE,
-    ATTR_NEW_MULTIPLIER_VALUE,
-    CONF_AUTO_CALC_ENABLED,
-    CONF_AUTO_CLEAR_ENABLED,
-    CONF_AUTO_UPDATE_DELAY,
-    CONF_AUTO_UPDATE_ENABLED,
-    CONF_AUTO_UPDATE_INTERVAL,
-    CONF_AUTO_UPDATE_SCHEDULE,
-    CONF_CALC_TIME,
-    CONF_CLEAR_TIME,
-    CONF_CONTINUOUS_UPDATES,
-    CONF_DEFAULT_AUTO_CALC_ENABLED,
-    CONF_DEFAULT_AUTO_CLEAR_ENABLED,
-    CONF_DEFAULT_AUTO_UPDATE_DELAY,
-    CONF_DEFAULT_AUTO_UPDATE_INTERVAL,
-    CONF_DEFAULT_AUTO_UPDATE_SCHEDULE,
-    CONF_DEFAULT_AUTO_UPDATED_ENABLED,
-    CONF_DEFAULT_CALC_TIME,
-    CONF_DEFAULT_CLEAR_TIME,
-    CONF_DEFAULT_CONTINUOUS_UPDATES,
-    CONF_SENSOR_DEBOUNCE,
-    CONF_DEFAULT_SENSOR_DEBOUNCE,
-    CONF_DEFAULT_DRAINAGE_RATE,
-    CONF_DEFAULT_MAXIMUM_BUCKET,
-    CONF_DEFAULT_MAXIMUM_DURATION,
-    CONF_DEFAULT_USE_WEATHER_SERVICE,
-    CONF_DEFAULT_WEATHER_SERVICE,
-    CONF_IMPERIAL,
-    CONF_METRIC,
-    CONF_UNITS,
-    CONF_USE_WEATHER_SERVICE,
-    CONF_WEATHER_SERVICE,
-    CONF_WEATHER_SERVICE_OWM,
-    DOMAIN,
-    MAPPING_CONF_SENSOR,
-    MAPPING_CONF_SOURCE,
-    MAPPING_CONF_SOURCE_NONE,
-    MAPPING_CONF_SOURCE_SENSOR,
-    MAPPING_CONF_SOURCE_WEATHER_SERVICE,
-    MAPPING_CONF_UNIT,
-    MAPPING_CURRENT_PRECIPITATION,
-    MAPPING_DATA,
-    MAPPING_DATA_LAST_ENTRY,
-    MAPPING_DATA_LAST_UPDATED,
-    MAPPING_DEWPOINT,
-    MAPPING_EVAPOTRANSPIRATION,
-    MAPPING_HUMIDITY,
-    MAPPING_ID,
-    MAPPING_MAPPINGS,
-    MAPPING_MAX_TEMP,
-    MAPPING_MIN_TEMP,
-    MAPPING_NAME,
-    MAPPING_PRECIPITATION,
-    MAPPING_PRESSURE,
-    MAPPING_SOLRAD,
-    MAPPING_TEMPERATURE,
-    MAPPING_WINDSPEED,
-    MODULE_CONFIG,
-    MODULE_DESCRIPTION,
-    MODULE_DIR,
-    MODULE_ID,
-    MODULE_NAME,
-    MODULE_SCHEMA,
-    START_EVENT_FIRED_TODAY,
-    ZONE_BUCKET,
-    ZONE_CURRENT_DRAINAGE,
-    ZONE_DELTA,
-    ZONE_DRAINAGE_RATE,
-    ZONE_DURATION,
-    ZONE_ID,
-    ZONE_LAST_CALCULATED,
-    ZONE_LAST_UPDATED,
-    ZONE_LEAD_TIME,
-    ZONE_MAPPING,
-    ZONE_MAXIMUM_BUCKET,
-    ZONE_MAXIMUM_DURATION,
-    ZONE_MODULE,
-    ZONE_MULTIPLIER,
-    ZONE_NAME,
-    ZONE_NUMBER_OF_DATA_POINTS,
-    ZONE_SIZE,
-    ZONE_STATE,
-    ZONE_STATE_AUTOMATIC,
-    ZONE_THROUGHPUT,
-)
+from .const import (ATTR_NEW_BUCKET_VALUE, ATTR_NEW_MULTIPLIER_VALUE,
+                    CONF_AUTO_CALC_ENABLED, CONF_AUTO_CLEAR_ENABLED,
+                    CONF_AUTO_UPDATE_DELAY, CONF_AUTO_UPDATE_ENABLED,
+                    CONF_AUTO_UPDATE_INTERVAL, CONF_AUTO_UPDATE_SCHEDULE,
+                    CONF_CALC_TIME, CONF_CLEAR_TIME, CONF_CONTINUOUS_UPDATES,
+                    CONF_DEFAULT_AUTO_CALC_ENABLED,
+                    CONF_DEFAULT_AUTO_CLEAR_ENABLED,
+                    CONF_DEFAULT_AUTO_UPDATE_DELAY,
+                    CONF_DEFAULT_AUTO_UPDATE_INTERVAL,
+                    CONF_DEFAULT_AUTO_UPDATE_SCHEDULE,
+                    CONF_DEFAULT_AUTO_UPDATED_ENABLED, CONF_DEFAULT_CALC_TIME,
+                    CONF_DEFAULT_CLEAR_TIME, CONF_DEFAULT_CONTINUOUS_UPDATES,
+                    CONF_DEFAULT_DRAINAGE_RATE, CONF_DEFAULT_MAXIMUM_BUCKET,
+                    CONF_DEFAULT_MAXIMUM_DURATION,
+                    CONF_DEFAULT_SENSOR_DEBOUNCE,
+                    CONF_DEFAULT_USE_WEATHER_SERVICE,
+                    CONF_DEFAULT_WEATHER_SERVICE, CONF_IMPERIAL, CONF_METRIC,
+                    CONF_SENSOR_DEBOUNCE, CONF_UNITS, CONF_USE_WEATHER_SERVICE,
+                    CONF_WEATHER_SERVICE, CONF_WEATHER_SERVICE_OWM, DOMAIN,
+                    MAPPING_CONF_SENSOR, MAPPING_CONF_SOURCE,
+                    MAPPING_CONF_SOURCE_NONE, MAPPING_CONF_SOURCE_SENSOR,
+                    MAPPING_CONF_SOURCE_WEATHER_SERVICE, MAPPING_CONF_UNIT,
+                    MAPPING_CURRENT_PRECIPITATION, MAPPING_DATA,
+                    MAPPING_DATA_LAST_ENTRY, MAPPING_DATA_LAST_UPDATED,
+                    MAPPING_DEWPOINT, MAPPING_EVAPOTRANSPIRATION,
+                    MAPPING_HUMIDITY, MAPPING_ID, MAPPING_MAPPINGS,
+                    MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_NAME,
+                    MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_SOLRAD,
+                    MAPPING_TEMPERATURE, MAPPING_WINDSPEED, MODULE_CONFIG,
+                    MODULE_DESCRIPTION, MODULE_DIR, MODULE_ID, MODULE_NAME,
+                    MODULE_SCHEMA, START_EVENT_FIRED_TODAY, ZONE_BUCKET,
+                    ZONE_CURRENT_DRAINAGE, ZONE_DELTA, ZONE_DRAINAGE_RATE,
+                    ZONE_DURATION, ZONE_ID, ZONE_LAST_CALCULATED,
+                    ZONE_LAST_UPDATED, ZONE_LEAD_TIME, ZONE_MAPPING,
+                    ZONE_MAXIMUM_BUCKET, ZONE_MAXIMUM_DURATION, ZONE_MODULE,
+                    ZONE_MULTIPLIER, ZONE_NAME, ZONE_NUMBER_OF_DATA_POINTS,
+                    ZONE_SIZE, ZONE_STATE, ZONE_STATE_AUTOMATIC,
+                    ZONE_THROUGHPUT)
 from .helpers import convert_list_to_dict, loadModules
 from .localize import localize
 
@@ -221,9 +172,11 @@ class SmartIrrigationStorage:
         data = await self._store.async_load()
         config: Config = Config(
             calctime=CONF_DEFAULT_CALC_TIME,
-            units=CONF_METRIC
-            if self.hass.config.units is METRIC_SYSTEM
-            else CONF_IMPERIAL,
+            units=(
+                CONF_METRIC
+                if self.hass.config.units is METRIC_SYSTEM
+                else CONF_IMPERIAL
+            ),
             use_weather_service=CONF_DEFAULT_USE_WEATHER_SERVICE,
             weather_service=CONF_DEFAULT_WEATHER_SERVICE,
             autocalcenabled=CONF_DEFAULT_AUTO_CALC_ENABLED,
@@ -246,9 +199,11 @@ class SmartIrrigationStorage:
                 calctime=data["config"].get(CONF_CALC_TIME, CONF_DEFAULT_CALC_TIME),
                 units=data["config"].get(
                     CONF_UNITS,
-                    CONF_METRIC
-                    if self.hass.config.units is METRIC_SYSTEM
-                    else CONF_IMPERIAL,
+                    (
+                        CONF_METRIC
+                        if self.hass.config.units is METRIC_SYSTEM
+                        else CONF_IMPERIAL
+                    ),
                 ),
                 use_weather_service=data["config"].get(
                     CONF_USE_WEATHER_SERVICE, CONF_DEFAULT_USE_WEATHER_SERVICE
