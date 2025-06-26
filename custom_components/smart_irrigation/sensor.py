@@ -201,11 +201,6 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         return False
 
     @property
-    def state(self):
-        """Return the state of the device."""
-        return self._duration
-
-    @property
     def device_class(self):
         """Return the device class of the sensor."""
         return SensorDeviceClass.DURATION
