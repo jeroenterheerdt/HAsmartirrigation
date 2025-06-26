@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install aiofiles pytest pytest-mock pytest-cov pytest-homeassistant-custom-component
+          pip install aiofiles pytest pytest-mock pytest-cov homeassistant pytest-homeassistant-custom-component
           pip install ruff pylint
 
       - name: Check Home Assistant version
