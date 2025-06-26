@@ -1,23 +1,39 @@
-name: Run Python tests
+name: CI - Smart Irrigation
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
-    name: Run tests
+    name: Run Tests, Ruff, Pylint
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        python-version: ["3.13"]
+        python-version: [ "3.11" ]
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: pip install pytest pytest-md pytest-emoji
-      - uses: pavelzw/pytest-action@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
-          emoji: true
-          verbose: true
-          job-summary: true
-          custom-arguments: config/custom_components/smart_irrigation/tests
-          custom-pytest: PYTHONPATH=config pytest
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-mock pytest-cov pytest-homeassistant-custom-component
+          pip install ruff pylint
+
+      - name: Run tests
+        run: |
+          pytest --cov=custom_components.smart_irrigation --cov-report=xml --disable-warnings
+
+      - name: Run ruff (linting)
+        run: |
+          ruff custom_components/smart_
