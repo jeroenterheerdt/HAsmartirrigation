@@ -4,7 +4,7 @@
 -r custom_components/smart_irrigation/requirements.txt
 
 # Testing dependencies
-homeassistant>=2024.6.0
+git+https://github.com/home-assistant/core.git@2024.6.3#egg=homeassistant
 pytest
 pytest-cov
 pytest-homeassistant-custom-component
