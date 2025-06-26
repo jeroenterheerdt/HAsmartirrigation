@@ -30,6 +30,9 @@ jobs:
           pip install aiofiles pytest pytest-mock pytest-cov pytest-homeassistant-custom-component
           pip install ruff pylint
 
+      - name: Print versions
+        run: |
+          python -c "import homeassistant; print('HA version:', homeassistant.__version__)"
       - name: Run tests
         run: |
           pytest --cov=custom_components.smart_irrigation --cov-report=xml --disable-warnings
