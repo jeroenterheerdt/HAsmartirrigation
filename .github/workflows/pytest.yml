@@ -30,9 +30,9 @@ jobs:
           pip install aiofiles pytest pytest-mock pytest-cov homeassistant pytest-homeassistant-custom-component
           pip install ruff pylint
 
-      - name: Check Home Assistant version
-        run: |
-          pip show homeassistant || echo "Home Assistant not installed"
+      - name: Show Home Assistant version
+        run: python -c "import pkg_resources; print(pkg_resources.get_distribution('homeassistant').version)"
+        
       - name: Run tests
         run: |
           pytest --cov=custom_components.smart_irrigation --cov-report=xml --disable-warnings
