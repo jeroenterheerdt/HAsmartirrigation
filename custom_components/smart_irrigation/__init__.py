@@ -9,28 +9,42 @@ from datetime import timedelta
 
 from homeassistant.components.sensor import DOMAIN as PLATFORM
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE,
-                                 STATE_UNAVAILABLE, STATE_UNKNOWN)
-from homeassistant.core import (Event, EventStateChangedData, HomeAssistant,
-                                asyncio, callback)
+from homeassistant.const import (
+    CONF_ELEVATION,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    STATE_UNAVAILABLE,
+    STATE_UNKNOWN,
+)
+from homeassistant.core import Event, HomeAssistant, State, asyncio, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.dispatcher import (async_dispatcher_connect,
-                                              async_dispatcher_send)
-from homeassistant.helpers.event import (async_call_later,
-                                         async_track_state_change_event,
-                                         async_track_sunrise,
-                                         async_track_time_change,
-                                         async_track_time_interval)
+from homeassistant.helpers.dispatcher import (
+    async_dispatcher_connect,
+    async_dispatcher_send,
+)
+from homeassistant.helpers.event import (
+    async_call_later,
+    async_track_state_change_event,
+    async_track_sunrise,
+    async_track_time_change,
+    async_track_time_interval,
+)
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from . import const
-from .helpers import (altitudeToPressure, check_time, convert_between,
-                      convert_list_to_dict, convert_mapping_to_metric,
-                      loadModules, relative_to_absolute_pressure)
+from .helpers import (
+    altitudeToPressure,
+    check_time,
+    convert_between,
+    convert_list_to_dict,
+    convert_mapping_to_metric,
+    loadModules,
+    relative_to_absolute_pressure,
+)
 from .localize import localize
 from .panel import async_register_panel, async_unregister_panel
 from .store import async_get_registry
@@ -460,27 +474,30 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         return sensors_to_subscribe_to
 
     async def async_sensor_state_changed(
-        self, event: Event[EventStateChangedData]
+        self, event: Event
     ) -> None:  # old signature: entity, old_state, new_state):
         """Handle a sensor state change event."""
         timestamp = datetime.datetime.now()
 
-        # old_state_obj = event.data["old_state"]
-        new_state_obj = event.data["new_state"]
-        entity = event.data["entity_id"]
+        # old_state_obj = event.data.get("old_state")
+        new_state_obj: State | None = event.data.get("new_state")
+        if new_state_obj is None:
+            return
+        entity = event.data.get("entity_id")
+        the_new_state = new_state_obj.state
 
         # ignore states that don't have an actual value
         if new_state_obj.state in [None, STATE_UNKNOWN, STATE_UNAVAILABLE]:
             _LOGGER.debug(
                 "[async_sensor_state_changed]: new state for %s is %s, ignoring",
                 entity,
-                new_state_obj.state,
+                the_new_state,
             )
             return
         _LOGGER.debug(
             "[async_sensor_state_changed]: new state for %s is %s",
             entity,
-            new_state_obj.state,
+            the_new_state,
         )
 
         # get sensor debounce time from config
@@ -505,7 +522,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     ) != const.MAPPING_CONF_SOURCE_STATIC_VALUE:
                         continue
 
-                    the_new_state = new_state_obj.state
                     if (
                         val.get(const.MAPPING_CONF_SOURCE)
                         == const.MAPPING_CONF_SOURCE_STATIC_VALUE
