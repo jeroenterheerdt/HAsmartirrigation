@@ -24,13 +24,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Install test dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libffi-dev libssl-dev libjpeg-dev zlib1g-dev build-essential
           python -m pip install --upgrade pip
-          pip install aiofiles pytest pytest-mock pytest-cov "homeassistant>=2024.6.0" pytest-homeassistant-custom-component
-          pip install ruff pylint
+          pip install -r requirements.test.txt
 
       - name: Show Home Assistant version
         run: python -c "import pkg_resources; print(pkg_resources.get_distribution('homeassistant').version)"
