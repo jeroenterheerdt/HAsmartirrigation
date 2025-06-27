@@ -7,4 +7,4 @@
 aiofiles
 
 # Use HA's full test requirements (from local clone)
--r ../core/requirements_test_all.txt
+-r core/requirements_test_all.txt
