@@ -1,27 +1,21 @@
-name: Run tests
+name: Run tests in Docker
 
 on: [push, pull_request]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: python:3.13
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-
-      - name: Install main dependencies
+      - name: Install dependencies
         run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-      - name: Install test dependencies
-        run: |
-          if [ -f requirements.test.txt ]; then pip install -r requirements.test.txt; fi
+          pip install --upgrade pip
+          pip install -r requirements.test.txt
 
       - name: Run tests
         run: pytest
