@@ -5,7 +5,8 @@
 
 # Testing dependencies
 aiofiles
-pytest>=7.4
-pytest-cov>=4.1
-pytest-homeassistant-custom-component>=0.13.0
-git+https://github.com/home-assistant/core.git@dev#egg=homeassistant
+-r https://raw.githubusercontent.com/home-assistant/core/dev/requirements_test_all.txt
+#pytest>=7.4
+#pytest-cov>=4.1
+#pytest-homeassistant-custom-component>=0.13.0
+#git+https://github.com/home-assistant/core.git@dev#egg=homeassistant
