@@ -28,7 +28,7 @@ jobs:
           python -m pip install --upgrade pip uv
           uv venv
           uv pip install -e core  # Editable install of HA
-          uv pip install -r requirements.test.txt
+          uv pip install -r requirements.test.txt --system
 
       - name: Run tests
         run: pytest tests --durations=10
