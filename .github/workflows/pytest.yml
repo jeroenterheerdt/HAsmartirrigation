@@ -8,14 +8,21 @@ jobs:
     container:
       image: python:3.13
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install dependencies
+      - name: Upgrade pip and install dependencies
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.test.txt
 
+      - name: Show installed packages
+        run: pip list
+
       - name: Run tests
-        run: pytest
+        run: python -m pytest -v
