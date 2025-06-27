@@ -6,6 +6,6 @@
 # Testing dependencies
 aiofiles
 git+https://github.com/home-assistant/core.git@dev#egg=homeassistant
-pytest
+pytest>=7.4
 pytest-cov
 pytest-homeassistant-custom-component
