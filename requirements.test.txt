@@ -3,10 +3,8 @@
 # Core component requirements
 -r custom_components/smart_irrigation/requirements.txt
 
-# Testing dependencies
+# Component-specific dependency
 aiofiles
--r https://raw.githubusercontent.com/home-assistant/core/dev/requirements_test_all.txt
-#pytest>=7.4
-#pytest-cov>=4.1
-#pytest-homeassistant-custom-component>=0.13.0
-#git+https://github.com/home-assistant/core.git@dev#egg=homeassistant
+
+# Use HA's full test requirements (from local clone)
+-r ../core/requirements_test_all.txt
