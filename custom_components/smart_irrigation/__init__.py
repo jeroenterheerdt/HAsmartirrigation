@@ -1832,8 +1832,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             )
         else:
             # create a mapping
-            self.store.async_create_mapping(data)
-            self.store.async_get_config()
+            await self.store.async_create_mapping(data)
+            await self.store.async_get_config()
 
         # update the list of sensors to follow - then unsubscribe / subscribe
         await self.update_subscriptions()
