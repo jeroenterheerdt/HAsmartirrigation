@@ -1094,14 +1094,36 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         diff = None
         if not continuous_updates:
-            first_retrieved_at = min(formatted_retrieved_ats)
-            last_retrieved_at = max(formatted_retrieved_ats)
-            diff = last_retrieved_at - first_retrieved_at
-            _LOGGER.debug(
-                "[apply_aggregates_to_mapping_data]: first_retrieved_at: %s, last_retrieved_at: %s",
-                first_retrieved_at,
-                last_retrieved_at,
-            )
+            last_calc_val = zone.get(const.ZONE_LAST_CALCULATED)
+            diff = None
+
+            # try to calculate difference between last calculation an previous calculation
+            if last_calc_val:
+                if isinstance(last_calc_val, str):
+                    try:
+                        last_calculated_dt = datetime.datetime.fromisoformat(last_calc_val)
+                    except ValueError:
+                        last_calculated_dt = datetime.datetime.strptime(last_calc_val, "%Y-%m-%dT%H:%M:%S")
+                else:
+                    last_calculated_dt = last_calc_val
+
+                last_retrieved_at = max(formatted_retrieved_ats)
+                diff = last_retrieved_at - last_calculated_dt
+                _LOGGER.debug(
+                    "[apply_aggregates_to_mapping_data]: last_calculated_dt: %s, last_retrieved_at: %s",
+                    last_calculated_dt,
+                    last_retrieved_at,
+                )
+            else:
+                # Fallback for first startup without a previous calculation
+                first_retrieved_at = min(formatted_retrieved_ats)
+                last_retrieved_at = max(formatted_retrieved_ats)
+                diff = last_retrieved_at - first_retrieved_at
+                _LOGGER.debug(
+                    "[apply_aggregates_to_mapping_data]: first_retrieved_at: %s, last_retrieved_at: %s",
+                    first_retrieved_at,
+                    last_retrieved_at,
+                )
         else:
             # for continuous updates, use interval from last calculation to now
             val = zone[const.ZONE_LAST_CALCULATED]
