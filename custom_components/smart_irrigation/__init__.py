@@ -1448,6 +1448,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         data[const.ZONE_OLD_BUCKET] = bucket
         explanation = ""
 
+        hour_multiplier = weatherdata.get(const.MAPPING_DATA_MULTIPLIER, 1.0)
+
         if modinst:
             # if m[const.MODULE_NAME] == "PyETO":
             # if we have precip info from a sensor we don't need to call OWM to get it.
@@ -1459,7 +1461,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 # pyeto expects pressure in hpa, solar radiation in mj/m2/day and wind speed in m/s
 
                 delta = modinst.calculate(
-                    weather_data=weatherdata, forecast_data=forecastdata
+                    weather_data=weatherdata,
+                    forecast_data=forecastdata,
+                    hour_multiplier=hour_multiplier
                 )
             elif m[const.MODULE_NAME] == "Static":
                 delta = modinst.calculate()
@@ -1478,11 +1482,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # data[const.ZONE_BUCKET] = round(bucket+delta,1)
             # data[const.ZONE_DELTA] = round(delta,1)
             _LOGGER.debug("[calculate-module]: retrieved from module: %s", delta)
-            hour_multiplier = weatherdata.get(const.MAPPING_DATA_MULTIPLIER, 1.0)
-            _LOGGER.debug("[calculate-module]: hour_multiplier: %s", hour_multiplier)
-            data[const.ZONE_DELTA] = delta * hour_multiplier
-            _LOGGER.debug("[calculate-module]: new delta: %s", delta * hour_multiplier)
-            newbucket = bucket + (delta * hour_multiplier)
+            data[const.ZONE_DELTA] = delta
+            _LOGGER.debug("[calculate-module]: new delta: %s", delta)
+            newbucket = bucket + delta
 
             # if maximum bucket configured, limit bucket with that.
             # any water above maximum is removed with runoff / bypass flow.
