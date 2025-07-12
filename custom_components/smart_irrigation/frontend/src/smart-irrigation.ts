@@ -18,19 +18,48 @@ export class SmartIrrigationPanel extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ type: Boolean, reflect: true }) public narrow!: boolean;
 
+  private _updateScheduled = false;
+  private _lastNavigationTime = 0;
+  private _navigationThrottleDelay = 100; // Prevent too rapid navigation updates
+
+  private _scheduleUpdate() {
+    if (this._updateScheduled) return;
+    this._updateScheduled = true;
+    requestAnimationFrame(() => {
+      this._updateScheduled = false;
+      this.requestUpdate();
+    });
+  }
+
   async firstUpdated() {
     window.addEventListener("location-changed", () => {
       if (!window.location.pathname.includes(PLATFORM)) return;
-      this.requestUpdate();
+
+      // Throttle navigation updates to prevent browser throttling
+      const now = performance.now();
+      if (now - this._lastNavigationTime < this._navigationThrottleDelay) {
+        return; // Skip this update if too soon
+      }
+      this._lastNavigationTime = now;
+
+      this._scheduleUpdate();
     });
 
-    await loadHaForm();
-    this.requestUpdate();
+    // Load HA form elements in background without blocking initial render
+    loadHaForm()
+      .then(() => {
+        // Trigger re-render once HA elements are loaded for better UX
+        this._scheduleUpdate();
+      })
+      .catch((error) => {
+        console.error("Failed to load HA form elements:", error);
+        // Still trigger update to show whatever we can
+        this._scheduleUpdate();
+      });
   }
 
   render() {
-    if (!customElements.get("ha-panel-config")) return html` loading... `;
-
+    // Remove the blocking check - let the app render even if HA elements aren't fully loaded
     const path = getPath();
     return html`
       <div class="header">
@@ -55,15 +84,19 @@ export class SmartIrrigationPanel extends LitElement {
           <sl-tab slot="nav" panel="zones" .active=${path.page === "zones"}>
             ${localize("panels.zones.title", this.hass.language)}
           </sl-tab>
-          <sl-tab slot="nav" panel="modules" active=${path.page === "modules"}
-            >${localize("panels.modules.title", this.hass.language)}</sl-tab
+          <sl-tab slot="nav" panel="modules" .active=${path.page === "modules"}>
+            ${localize("panels.modules.title", this.hass.language)}
+          </sl-tab>
+          <sl-tab
+            slot="nav"
+            panel="mappings"
+            .active=${path.page === "mappings"}
           >
-          <sl-tab slot="nav" panel="mappings" active=${path.page === "mappings"}
-            >${localize("panels.mappings.title", this.hass.language)}</sl-tab
-          >
-          <sl-tab slot="nav" panel="help" active=${path.page === "help"}
-            >${localize("panels.help.title", this.hass.language)}</sl-tab
-          >
+            ${localize("panels.mappings.title", this.hass.language)}
+          </sl-tab>
+          <sl-tab slot="nav" panel="help" .active=${path.page === "help"}>
+            ${localize("panels.help.title", this.hass.language)}
+          </sl-tab>
         </sl-tab-group>
       </div>
       <div class="view">${this.getView(path)}</div>
@@ -164,12 +197,16 @@ export class SmartIrrigationPanel extends LitElement {
   }
 
   handlePageSelected(ev: CustomEvent) {
-    //const newPage = ev.detail.item.getAttribute("page-name");
-    const newPage = ev.detail.name;
-    //this was newPage !== getPath() but I am pretty sure that is a bug.
-    if (newPage !== getPath().page) {
+    // Try multiple ways to get the page name
+    const newPage =
+      ev.detail.name ||
+      ev.detail.panel ||
+      (ev.target as any)?.getAttribute?.("panel") ||
+      ev.detail.item?.getAttribute?.("panel");
+
+    if (newPage && newPage !== getPath().page) {
       navigate(this, exportPath(newPage));
-      this.requestUpdate();
+      // Don't call requestUpdate here - the location-changed event will handle it
     } else {
       scrollTo(0, 0);
     }

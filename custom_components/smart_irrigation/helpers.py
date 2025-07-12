@@ -8,30 +8,68 @@ from datetime import datetime
 from pathlib import Path
 
 from homeassistant import exceptions
-from homeassistant.const import (STATE_UNAVAILABLE, STATE_UNKNOWN,
-                                 UnitOfTemperature)
+from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 
-from .const import (CONF_WEATHER_SERVICE_KNMI, CONF_WEATHER_SERVICE_OWM,
-                    CONF_WEATHER_SERVICE_PW, CUSTOM_COMPONENTS, DOMAIN,
-                    GALLON_TO_LITER_FACTOR, INCH_TO_MM_FACTOR,
-                    INHG_TO_HPA_FACTOR, INHG_TO_PSI_FACTOR, K_TO_C_FACTOR,
-                    KMH_TO_MILESH_FACTOR, KMH_TO_MS_FACTOR,
-                    LITER_TO_GALLON_FACTOR, M2_TO_SQ_FT_FACTOR,
-                    MAPPING_DEWPOINT, MAPPING_EVAPOTRANSPIRATION,
-                    MAPPING_HUMIDITY, MAPPING_MAX_TEMP, MAPPING_MIN_TEMP,
-                    MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_SOLRAD,
-                    MAPPING_TEMPERATURE, MAPPING_WINDSPEED,
-                    MBAR_TO_INHG_FACTOR, MBAR_TO_PSI_FACTOR,
-                    MILESH_TO_KMH_FACTOR, MILESH_TO_MS_FACTOR,
-                    MM_TO_INCH_FACTOR, MS_TO_KMH_FACTOR, MS_TO_MILESH_FACTOR,
-                    PSI_TO_HPA_FACTOR, PSI_TO_INHG_FACTOR, SQ_FT_TO_M2_FACTOR,
-                    UNIT_GPM, UNIT_HPA, UNIT_INCH, UNIT_INHG, UNIT_KMH,
-                    UNIT_LPM, UNIT_M2, UNIT_MBAR, UNIT_MH, UNIT_MILLIBAR,
-                    UNIT_MJ_DAY_M2, UNIT_MJ_DAY_SQFT, UNIT_MM, UNIT_MS,
-                    UNIT_PERCENT, UNIT_PSI, UNIT_SECONDS, UNIT_SQ_FT,
-                    UNIT_W_M2, UNIT_W_SQFT, W_M2_TO_W_SQ_FT_FACTOR,
-                    W_SQ_FT_TO_W_M2_FACTOR, W_TO_MJ_DAY_FACTOR)
+from .const import (
+    CONF_WEATHER_SERVICE_KNMI,
+    CONF_WEATHER_SERVICE_OWM,
+    CONF_WEATHER_SERVICE_PW,
+    CUSTOM_COMPONENTS,
+    DOMAIN,
+    GALLON_TO_LITER_FACTOR,
+    INCH_TO_MM_FACTOR,
+    INHG_TO_HPA_FACTOR,
+    INHG_TO_PSI_FACTOR,
+    K_TO_C_FACTOR,
+    KMH_TO_MILESH_FACTOR,
+    KMH_TO_MS_FACTOR,
+    LITER_TO_GALLON_FACTOR,
+    M2_TO_SQ_FT_FACTOR,
+    MAPPING_DEWPOINT,
+    MAPPING_EVAPOTRANSPIRATION,
+    MAPPING_HUMIDITY,
+    MAPPING_MAX_TEMP,
+    MAPPING_MIN_TEMP,
+    MAPPING_PRECIPITATION,
+    MAPPING_PRESSURE,
+    MAPPING_SOLRAD,
+    MAPPING_TEMPERATURE,
+    MAPPING_WINDSPEED,
+    MBAR_TO_INHG_FACTOR,
+    MBAR_TO_PSI_FACTOR,
+    MILESH_TO_KMH_FACTOR,
+    MILESH_TO_MS_FACTOR,
+    MM_TO_INCH_FACTOR,
+    MS_TO_KMH_FACTOR,
+    MS_TO_MILESH_FACTOR,
+    PSI_TO_HPA_FACTOR,
+    PSI_TO_INHG_FACTOR,
+    SQ_FT_TO_M2_FACTOR,
+    UNIT_GPM,
+    UNIT_HPA,
+    UNIT_INCH,
+    UNIT_INHG,
+    UNIT_KMH,
+    UNIT_LPM,
+    UNIT_M2,
+    UNIT_MBAR,
+    UNIT_MH,
+    UNIT_MILLIBAR,
+    UNIT_MJ_DAY_M2,
+    UNIT_MJ_DAY_SQFT,
+    UNIT_MM,
+    UNIT_MS,
+    UNIT_PERCENT,
+    UNIT_PSI,
+    UNIT_SECONDS,
+    UNIT_SQ_FT,
+    UNIT_W_M2,
+    UNIT_W_SQFT,
+    W_M2_TO_W_SQ_FT_FACTOR,
+    W_SQ_FT_TO_W_M2_FACTOR,
+    W_TO_MJ_DAY_FACTOR,
+)
 from .weathermodules.KNMIClient import KNMIClient
 from .weathermodules.OWMClient import OWMClient
 from .weathermodules.PirateWeatherClient import PirateWeatherClient
@@ -73,12 +111,20 @@ def check_time(itime):
 
 def convert_timestamp(val):
     """Convert a datetime or ISO string to a formatted timestamp string."""
+    if val is None:
+        return None
+
     outputformat = "%Y-%m-%d %H:%M:%S"
+
     if isinstance(val, str):
-        return (datetime.fromisoformat(val).strftime(outputformat),)
-    if isinstance(val, datetime):
+        try:
+            return datetime.fromisoformat(val).strftime(outputformat)
+        except (ValueError, TypeError):
+            return val  # Return original if parsing fails
+    elif isinstance(val, datetime):
         return val.strftime(outputformat)
-    return None
+
+    return str(val)  # Fallback to string representation
 
 
 def convert_mapping_to_metric(val, mapping, unit, system_is_metric):

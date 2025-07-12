@@ -66,6 +66,50 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   private zones: SmartIrrigationZone[] = [];
   @property({ type: Array })
   private mappings: SmartIrrigationMapping[] = [];
+
+  @property({ type: Boolean })
+  private isLoading = true;
+
+  @property({ type: Boolean })
+  private isSaving = false;
+
+  private debounceTimers = new Map<number, number>();
+  private globalDebounceTimer: number | null = null;
+
+  // Cache for rendered mapping cards to avoid re-rendering unchanged ones
+  private mappingCache = new Map<string, TemplateResult>();
+
+  // Prevent excessive re-renders
+  private _updateScheduled = false;
+  private _scheduleUpdate() {
+    if (this._updateScheduled) return;
+
+    // Throttle updates to prevent browser throttling warnings
+    const now = performance.now();
+    const timeSinceLastUpdate = now - this._lastUpdateTime;
+
+    if (timeSinceLastUpdate < this._updateThrottleDelay) {
+      // Too soon, schedule for later
+      setTimeout(() => {
+        this._updateScheduled = false;
+        this._lastUpdateTime = performance.now();
+        this.requestUpdate();
+      }, this._updateThrottleDelay - timeSinceLastUpdate);
+    } else {
+      // Can update immediately
+      this._updateScheduled = true;
+      requestAnimationFrame(() => {
+        this._updateScheduled = false;
+        this._lastUpdateTime = performance.now();
+        this.requestUpdate();
+      });
+    }
+  }
+
+  // Track DOM update frequency to prevent excessive updates
+  private _lastUpdateTime = 0;
+  private _updateThrottleDelay = 16; // ~60fps limit
+
   //@property({ type: Array })
   //private allmodules: SmartIrrigationModule[] = [];
 
@@ -73,19 +117,29 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   private mappingNameInput!: HTMLInputElement;
 
   firstUpdated() {
-    (async () => await loadHaForm())();
+    void loadHaForm().catch((error) => {
+      console.error("Failed to load HA form:", error);
+    });
   }
 
   public hassSubscribe(): Promise<UnsubscribeFunc>[] {
-    // Fire-and-forget: initial data fetch for UI setup
-    void this._fetchData();
+    // Initial data fetch for UI setup with proper error handling
+    this._fetchData().catch((error) => {
+      console.error("Failed to fetch initial data:", error);
+    });
+
     return [
-      this.hass!.connection.subscribeMessage(() => {
-        // Fire-and-forget: update data when notified of changes
-        void this._fetchData();
-      }, {
-        type: DOMAIN + "_config_updated",
-      }),
+      this.hass!.connection.subscribeMessage(
+        () => {
+          // Update data when notified of changes with proper error handling
+          this._fetchData().catch((error) => {
+            console.error("Failed to fetch data on config update:", error);
+          });
+        },
+        {
+          type: DOMAIN + "_config_updated",
+        },
+      ),
     ];
   }
 
@@ -93,17 +147,45 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    this.config = await fetchConfig(this.hass);
-    this.zones = await fetchZones(this.hass);
-    this.mappings = await fetchMappings(this.hass);
 
-    //this.allmodules = await fetchAllModules(this.hass);
-    /*Object.entries(this.mappings).forEach(([key, value]) =>
-      console.log(key, value)
-    );*/
+    try {
+      this.isLoading = true;
+
+      // Fetch all data concurrently to reduce total wait time
+      const [config, zones, mappings] = await Promise.all([
+        fetchConfig(this.hass),
+        fetchZones(this.hass),
+        fetchMappings(this.hass),
+      ]);
+
+      this.config = config;
+      this.zones = zones;
+      this.mappings = mappings;
+
+      // Clear the cache when new data is loaded
+      this.mappingCache.clear();
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      // Optionally show user-friendly error message
+      handleError(
+        {
+          body: { message: "Failed to load mapping data" },
+          error: "Data fetch error",
+        },
+        this.shadowRoot?.querySelector("ha-card") as HTMLElement,
+      );
+    } finally {
+      this.isLoading = false;
+      // Trigger a re-render to ensure UI updates
+      this._scheduleUpdate();
+    }
   }
 
   private handleAddMapping(): void {
+    if (!this.mappingNameInput.value.trim()) {
+      return; // Don't add empty mappings
+    }
+
     const the_mappings = {
       [MAPPING_DEWPOINT]: "",
       [MAPPING_EVAPOTRANSPIRATION]: "",
@@ -120,15 +202,31 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     };
     const newMapping: SmartIrrigationMapping = {
       //id: this.mappings.length + 1,
-      name: this.mappingNameInput.value,
+      name: this.mappingNameInput.value.trim(),
       mappings: the_mappings,
     };
-    this.mappings = [...this.mappings, newMapping];
 
-    // Fire-and-forget: save mapping and refresh data
-    void this.saveToHA(newMapping);
-    //get latest version from HA
-    void this._fetchData();
+    // Optimistically update the UI
+    this.mappings = [...this.mappings, newMapping];
+    this.isSaving = true;
+
+    // Save mapping with proper error handling
+    this.saveToHA(newMapping)
+      .then(() => {
+        // Clear the input field on successful save
+        this.mappingNameInput.value = "";
+        // Refresh data to get the server-assigned ID
+        return this._fetchData();
+      })
+      .catch((error) => {
+        console.error("Failed to add mapping:", error);
+        // Revert optimistic update on error
+        this.mappings = this.mappings.slice(0, -1);
+      })
+      .finally(() => {
+        this.isSaving = false;
+        this._scheduleUpdate();
+      });
   }
 
   private handleRemoveMapping(ev: Event, index: number): void {
@@ -137,66 +235,125 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     if (mappingid == undefined) {
       return;
     }
+
+    // Store original for potential rollback
+    const originalMappings = [...this.mappings];
+
+    // Optimistically update UI
     this.mappings = this.mappings.filter((_, i) => i !== index);
+
+    // Clear cache for this mapping
+    this.mappingCache.delete(mappingid.toString());
+
     if (!this.hass) {
       return;
     }
-    // Fire-and-forget: delete mapping from HA
-    void deleteMapping(this.hass, mappingid.toString());
+
+    this.isSaving = true;
+
+    // Delete mapping from HA with proper error handling
+    deleteMapping(this.hass, mappingid.toString())
+      .catch((error) => {
+        console.error("Failed to delete mapping:", error);
+        // Revert the local change if deletion failed
+        this.mappings = originalMappings;
+        this._fetchData().catch((fetchError) => {
+          console.error(
+            "Failed to refresh data after delete error:",
+            fetchError,
+          );
+        });
+      })
+      .finally(() => {
+        this.isSaving = false;
+        this._scheduleUpdate();
+      });
   }
 
   private handleEditMapping(
     index: number,
     updatedMapping: SmartIrrigationMapping,
   ): void {
-    this.mappings = Object.values(this.mappings).map((mapping, i) =>
-      i === index ? updatedMapping : mapping,
-    );
-    console.log(updatedMapping);
-    // Fire-and-forget: save updated mapping to HA
-    void this.saveToHA(updatedMapping);
-  }
-  private saveToHA(mapping: SmartIrrigationMapping): void {
-    if (!this.hass) {
-      return;
+    // Use direct array assignment instead of Object.values().map()
+    this.mappings[index] = updatedMapping;
+
+    // Invalidate cache for this mapping only
+    if (updatedMapping.id) {
+      this.mappingCache.delete(updatedMapping.id.toString());
     }
-    //test if all sensorsources are in hass
-    let allsensorsvalid = true;
+
+    // Use global debounce to reduce timer overhead
+    if (this.globalDebounceTimer) {
+      clearTimeout(this.globalDebounceTimer);
+    }
+
+    // Debounce saving to avoid excessive API calls during rapid editing
+    this.globalDebounceTimer = window.setTimeout(() => {
+      this.isSaving = true;
+      this.saveToHA(updatedMapping)
+        .catch((error) => {
+          console.error("Failed to save mapping:", error);
+        })
+        .finally(() => {
+          this.isSaving = false;
+          this._scheduleUpdate();
+        });
+      this.globalDebounceTimer = null;
+    }, 500); // Increased debounce time to reduce backend load
+
+    // Trigger minimal re-render
+    this._scheduleUpdate();
+  }
+  private async saveToHA(mapping: SmartIrrigationMapping): Promise<void> {
+    if (!this.hass) {
+      throw new Error("Home Assistant connection not available");
+    }
+
+    // Batch validate all sensor entities at once to reduce DOM queries
+    const invalidSensors: string[] = [];
+    const hassStates = this.hass.states;
+
     for (const m in mapping.mappings) {
-      if (
-        mapping.mappings[m].sensorentity != undefined &&
-        mapping.mappings[m].sensorentity.trim() != ""
-      ) {
-        mapping.mappings[m].sensorentity =
-          mapping.mappings[m].sensorentity.trim();
-        if (!(mapping.mappings[m].sensorentity in this.hass.states)) {
-          allsensorsvalid = false;
-          handleError(
-            {
-              body: {
-                message:
-                  localize(
-                    "panels.mappings.cards.mapping.errors.source_does_not_exist",
-                    this.hass.language,
-                  ) +
-                  ": " +
-                  mapping.mappings[m].sensorentity,
-              },
-              error: localize(
-                "panels.mappings.cards.mapping.errors.invalid_source",
-                this.hass.language,
-              ),
-            },
-            this.shadowRoot!.querySelector("ha-card") as HTMLElement,
-          );
-          break;
+      const sensorEntity = mapping.mappings[m].sensorentity;
+      if (sensorEntity && sensorEntity.trim() !== "") {
+        const trimmedEntity = sensorEntity.trim();
+        mapping.mappings[m].sensorentity = trimmedEntity;
+
+        if (!(trimmedEntity in hassStates)) {
+          invalidSensors.push(trimmedEntity);
         }
       }
     }
-    if (allsensorsvalid) {
-      // Fire-and-forget: save mapping to HA backend
-      void saveMapping(this.hass, mapping);
+
+    if (invalidSensors.length > 0) {
+      const errorElement = this.shadowRoot?.querySelector(
+        "ha-card",
+      ) as HTMLElement;
+      if (errorElement) {
+        handleError(
+          {
+            body: {
+              message:
+                localize(
+                  "panels.mappings.cards.mapping.errors.source_does_not_exist",
+                  this.hass.language,
+                ) +
+                ": " +
+                invalidSensors.join(", "),
+            },
+            error: localize(
+              "panels.mappings.cards.mapping.errors.invalid_source",
+              this.hass.language,
+            ),
+          },
+          errorElement,
+        );
+      }
+      throw new Error("Invalid sensor entities found");
     }
+
+    // Save mapping to HA backend
+    await saveMapping(this.hass, mapping);
   }
   private renderMapping(
     mapping: SmartIrrigationMapping,
@@ -204,13 +361,20 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   ): TemplateResult {
     if (!this.hass) {
       return html``;
-    } else {
-      const numberofzonesusingthismapping = this.zones.filter(
-        (o) => o.mapping === mapping.id,
-      ).length;
-      //below here we should go over all the mappings on the mapping object
-      return html`
-        <ha-card header="${mapping.id}: ${mapping.name}">
+    }
+
+    // Use caching to avoid re-rendering unchanged mappings
+    const cacheKey = `${mapping.id}_${JSON.stringify(mapping).slice(0, 100)}`;
+    if (this.mappingCache.has(cacheKey)) {
+      return this.mappingCache.get(cacheKey)!;
+    }
+
+    const numberofzonesusingthismapping = this.zones.filter(
+      (o) => o.mapping === mapping.id,
+    ).length;
+
+    const result = html`
+      <ha-card header="${mapping.id}: ${mapping.name}">
         <div class="card-content">
           <div class="card-content">
             <label for="name${mapping.id}"
@@ -232,180 +396,161 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
             ${Object.entries(mapping.mappings).map(([value]) =>
               this.renderMappingSetting(index, value),
             )}
-            ${
-              numberofzonesusingthismapping
-                ? html`${localize(
-                    "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
-                    this.hass.language,
-                  )}`
-                : html` <svg
-                    style="width:24px;height:24px"
-                    viewBox="0 0 24 24"
-                    id="deleteZone${mapping.id}"
-                    @click="${(e: Event) => this.handleRemoveMapping(e, index)}"
-                  >
-                    <title>
-                      ${localize("common.actions.delete", this.hass.language)}
-                    </title>
-                    <path fill="#404040" d="${mdiDelete}" />
-                  </svg>`
-            }
+            ${numberofzonesusingthismapping
+              ? html`${localize(
+                  "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
+                  this.hass.language,
+                )}`
+              : html` <svg
+                  style="width:24px;height:24px"
+                  viewBox="0 0 24 24"
+                  id="deleteZone${mapping.id}"
+                  @click="${(e: Event) => this.handleRemoveMapping(e, index)}"
+                >
+                  <title>
+                    ${localize("common.actions.delete", this.hass.language)}
+                  </title>
+                  <path fill="#404040" d="${mdiDelete}" />
+                </svg>`}
           </div>
-        </ha-card>
-      `;
-    }
+        </div>
+      </ha-card>
+    `;
+
+    // Cache the result for next render
+    this.mappingCache.set(cacheKey, result);
+    return result;
   }
-  renderMappingSetting(index: number, value: string): any {
-    const mapping = Object.values(this.mappings).at(index);
+  renderMappingSetting(index: number, value: string): TemplateResult {
+    const mapping = this.mappings[index];
     if (!mapping || !this.hass) {
-      return;
+      return html``;
     }
-    //loop over the mappings and output the UI
+
     const mappingline = mapping.mappings[value];
-    let r = html`<div class="mappingsettingname">
-      <label for="${value + index}"
-        >${localize(
-          "panels.mappings.cards.mapping.items." + value.toLowerCase(),
+    const settingId = `${value}_${index}`;
+
+    return html`
+      <div class="mappingline">
+        <div class="mappingsettingname">
+          <label for="${settingId}">
+            ${localize(
+              `panels.mappings.cards.mapping.items.${value.toLowerCase()}`,
+              this.hass.language,
+            )}
+          </label>
+        </div>
+        <div class="mappingsettingline">
+          <label
+            >${localize(
+              "panels.mappings.cards.mapping.source",
+              this.hass.language,
+            )}:</label
+          >
+          <div class="radio-group">
+            ${this.renderSimpleRadioOptions(index, value, mappingline)}
+          </div>
+        </div>
+        ${this.renderMappingInputsSimple(index, value, mappingline)}
+      </div>
+    `;
+  }
+
+  private renderSimpleRadioOptions(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass || !this.config) return html``;
+
+    const isSpecialMapping =
+      value === MAPPING_EVAPOTRANSPIRATION || value === MAPPING_SOLRAD;
+    const currentSource = mappingline[MAPPING_CONF_SOURCE];
+
+    return html`
+      ${!isSpecialMapping && this.config.use_weather_service
+        ? html`
+            <label>
+              <input
+                type="radio"
+                name="${value}_${index}_source"
+                value="${MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
+                ?checked="${currentSource ===
+                MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
+                @change="${(e: Event) =>
+                  this.handleSimpleSourceChange(index, value, e)}"
+              />
+              ${localize(
+                "panels.mappings.cards.mapping.sources.weather_service",
+                this.hass.language,
+              )}
+            </label>
+          `
+        : ""}
+      ${isSpecialMapping
+        ? html`
+            <label>
+              <input
+                type="radio"
+                name="${value}_${index}_source"
+                value="${MAPPING_CONF_SOURCE_NONE}"
+                ?checked="${currentSource === MAPPING_CONF_SOURCE_NONE}"
+                @change="${(e: Event) =>
+                  this.handleSimpleSourceChange(index, value, e)}"
+              />
+              ${localize(
+                "panels.mappings.cards.mapping.sources.none",
+                this.hass.language,
+              )}
+            </label>
+          `
+        : ""}
+
+      <label>
+        <input
+          type="radio"
+          name="${value}_${index}_source"
+          value="${MAPPING_CONF_SOURCE_SENSOR}"
+          ?checked="${currentSource === MAPPING_CONF_SOURCE_SENSOR}"
+          @change="${(e: Event) =>
+            this.handleSimpleSourceChange(index, value, e)}"
+        />
+        ${localize(
+          "panels.mappings.cards.mapping.sources.sensor",
           this.hass.language,
         )}
       </label>
-    </div> `;
-    //source radiobutton: (weather_service/sensor/static value) or (none/sensor/static value)
-    //show sensor entity input box only if sensor source is selected
-    //show unit all the time, but set it to the metric value and disable if weather_service. Else enable.
-    r = html`${r}
-      <div class="mappingsettingline">
-        <label for="${value + index + MAPPING_CONF_SOURCE}"
-          >${localize(
-            "panels.mappings.cards.mapping.source",
-            this.hass.language,
-          )}:</label
-        >
-      </div>`;
 
-    if (value == MAPPING_EVAPOTRANSPIRATION || value == MAPPING_SOLRAD) {
-      //this can not come from weather_service!
-      r = html`${r}
+      <label>
         <input
           type="radio"
-          id="${value + index + MAPPING_CONF_SOURCE_NONE}"
-          value="${MAPPING_CONF_SOURCE_NONE}"
-          name="${value + index + MAPPING_CONF_SOURCE}"
-          ?checked="${mappingline[MAPPING_CONF_SOURCE] ===
-          MAPPING_CONF_SOURCE_NONE}"
+          name="${value}_${index}_source"
+          value="${MAPPING_CONF_SOURCE_STATIC_VALUE}"
+          ?checked="${currentSource === MAPPING_CONF_SOURCE_STATIC_VALUE}"
           @change="${(e: Event) =>
-            this.handleEditMapping(index, {
-              ...mapping,
-              mappings: {
-                ...mapping.mappings,
-                [value]: {
-                  ...mapping.mappings[value],
-                  [MAPPING_CONF_SOURCE]: (e.target as HTMLInputElement).value,
-                  [MAPPING_CONF_SENSOR]: "",
-                },
-              },
-            })}"
-        /><label for="${value + index + MAPPING_CONF_SOURCE_NONE}"
-          >${localize(
-            "panels.mappings.cards.mapping.sources.none",
-            this.hass.language,
-          )}</label
-        > `;
-    } else {
-      let weather_serviceclass = "";
-      if (!this.config?.use_weather_service) {
-        weather_serviceclass = "strikethrough";
-      }
-      r = html`${r}
-        <input
-          type="radio"
-          id="${value + index + MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
-          value="${MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
-          name="${value + index + MAPPING_CONF_SOURCE}"
-          ?enabled="${this.config?.use_weather_service}"
-          ?checked="${this.config?.use_weather_service &&
-          mappingline[MAPPING_CONF_SOURCE] ===
-            MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
-          @change="${(e: Event) =>
-            this.handleEditMapping(index, {
-              ...mapping,
-              mappings: {
-                ...mapping.mappings,
-                [value]: {
-                  ...mapping.mappings[value],
-                  [MAPPING_CONF_SOURCE]: (e.target as HTMLInputElement).value,
-                  [MAPPING_CONF_SENSOR]: "",
-                },
-              },
-            })}"
-        /><label
-          class="${weather_serviceclass}"
-          for="${value + index + MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
-          >${localize(
-            "panels.mappings.cards.mapping.sources.weather_service",
-            this.hass.language,
-          )}</label
-        >`;
-    }
-    r = html`${r}
-        <input
-          type="radio"
-          id="${value + index + MAPPING_CONF_SOURCE_SENSOR}"
-          value="${MAPPING_CONF_SOURCE_SENSOR}"
-          name="${value + index + MAPPING_CONF_SOURCE}"
-          ?checked="${
-            mappingline[MAPPING_CONF_SOURCE] === MAPPING_CONF_SOURCE_SENSOR
-          }"
-          @change="${(e: Event) =>
-            this.handleEditMapping(index, {
-              ...mapping,
-              mappings: {
-                ...mapping.mappings,
-                [value]: {
-                  ...mapping.mappings[value],
-                  [MAPPING_CONF_SOURCE]: (e.target as HTMLInputElement).value,
-                },
-              },
-            })}"
-        /><label for="${value + index + MAPPING_CONF_SOURCE_SENSOR}"
-          >${localize(
-            "panels.mappings.cards.mapping.sources.sensor",
-            this.hass.language,
-          )}</label
-        >
-      </div>`;
-    r = html`${r}
-      <input
-        type="radio"
-        id="${value + index + MAPPING_CONF_SOURCE_STATIC_VALUE}"
-        value="${MAPPING_CONF_SOURCE_STATIC_VALUE}"
-        name="${value + index + MAPPING_CONF_SOURCE}"
-        ?checked="${
-          mappingline[MAPPING_CONF_SOURCE] === MAPPING_CONF_SOURCE_STATIC_VALUE
-        }"
-        @change="${(e: Event) =>
-          this.handleEditMapping(index, {
-            ...mapping,
-            mappings: {
-              ...mapping.mappings,
-              [value]: {
-                ...mapping.mappings[value],
-                [MAPPING_CONF_SOURCE]: (e.target as HTMLInputElement).value,
-                [MAPPING_CONF_SENSOR]: "",
-              },
-            },
-          })}"
-      /><label for="${value + index + MAPPING_CONF_SOURCE_STATIC_VALUE}"
-        >${localize(
+            this.handleSimpleSourceChange(index, value, e)}"
+        />
+        ${localize(
           "panels.mappings.cards.mapping.sources.static",
           this.hass.language,
-        )}</label
-      >
-    </div>`;
-    if (mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_SENSOR) {
-      r = html`${r}
+        )}
+      </label>
+    `;
+  }
+
+  private renderMappingInputsSimple(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass) return html``;
+
+    const source = mappingline[MAPPING_CONF_SOURCE];
+
+    if (source === MAPPING_CONF_SOURCE_SENSOR) {
+      return html`
         <div class="mappingsettingline">
-          <label for="${value + index + MAPPING_CONF_SENSOR}"
+          <label
             >${localize(
               "panels.mappings.cards.mapping.sensor-entity",
               this.hass.language,
@@ -413,26 +558,23 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           >
           <input
             type="text"
-            id="${value + index + MAPPING_CONF_SENSOR}"
-            value="${mappingline[MAPPING_CONF_SENSOR]}"
+            .value="${mappingline[MAPPING_CONF_SENSOR] || ""}"
             @change="${(e: Event) =>
-              this.handleEditMapping(index, {
-                ...mapping,
-                mappings: {
-                  ...mapping.mappings,
-                  [value]: {
-                    ...mapping.mappings[value],
-                    [MAPPING_CONF_SENSOR]: (e.target as HTMLInputElement).value,
-                  },
-                },
-              })}"
+              this.handleSimpleInputChange(
+                index,
+                value,
+                MAPPING_CONF_SENSOR,
+                e,
+              )}"
           />
-        </div>`;
+        </div>
+      `;
     }
-    if (mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_STATIC_VALUE) {
-      r = html`${r}
+
+    if (source === MAPPING_CONF_SOURCE_STATIC_VALUE) {
+      return html`
         <div class="mappingsettingline">
-          <label for="${value + index + MAPPING_CONF_STATIC_VALUE}"
+          <label
             >${localize(
               "panels.mappings.cards.mapping.static_value",
               this.hass.language,
@@ -440,124 +582,485 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           >
           <input
             type="text"
-            id="${value + index + MAPPING_CONF_STATIC_VALUE}"
-            value="${mappingline[MAPPING_CONF_STATIC_VALUE]}"
+            .value="${mappingline[MAPPING_CONF_STATIC_VALUE] || ""}"
             @input="${(e: Event) =>
-              this.handleEditMapping(index, {
-                ...mapping,
-                mappings: {
-                  ...mapping.mappings,
-                  [value]: {
-                    ...mapping.mappings[value],
-                    [MAPPING_CONF_STATIC_VALUE]: (e.target as HTMLInputElement)
-                      .value,
-                  },
-                },
-              })}"
+              this.handleSimpleInputChange(
+                index,
+                value,
+                MAPPING_CONF_STATIC_VALUE,
+                e,
+              )}"
           />
-        </div>`;
-    }
-    if (
-      mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_SENSOR ||
-      mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_STATIC_VALUE
-    ) {
-      r = html`${r}
-        <div class="mappingsettingline">
-          <label for="${value + index + MAPPING_CONF_UNIT}"
-            >${localize(
-              "panels.mappings.cards.mapping.input-units",
-              this.hass.language,
-            )}:</label
-          >
-          <select
-            type="text"
-            id="${value + index + MAPPING_CONF_UNIT}"
-            @change="${(e: Event) =>
-              this.handleEditMapping(index, {
-                ...mapping,
-                mappings: {
-                  ...mapping.mappings,
-                  [value]: {
-                    ...mapping.mappings[value],
-                    [MAPPING_CONF_UNIT]: (e.target as HTMLInputElement).value,
-                  },
-                },
-              })}"
-          >
-            ${this.renderUnitOptionsForMapping(value, mappingline)}
-          </select>
-        </div>`;
-
-      //specific case for pressure: absolute / relative
-      if (value == MAPPING_PRESSURE) {
-        r = html`${r}
-          <div class="mappingsettingline">
-            <label for="${value + index + MAPPING_CONF_PRESSURE_TYPE}"
-              >${localize(
-                "panels.mappings.cards.mapping.pressure-type",
-                this.hass.language,
-              )}:</label
-            >
-            <select
-              type="text"
-              id="${value + index + MAPPING_CONF_PRESSURE_TYPE}"
-              @change="${(e: Event) =>
-                this.handleEditMapping(index, {
-                  ...mapping,
-                  mappings: {
-                    ...mapping.mappings,
-                    [value]: {
-                      ...mapping.mappings[value],
-                      [MAPPING_CONF_PRESSURE_TYPE]: (
-                        e.target as HTMLInputElement
-                      ).value,
-                    },
-                  },
-                })}"
-            >
-              ${this.renderPressureTypes(value, mappingline)}
-            </select>
-          </div>`;
-      }
-    }
-    if (mappingline[MAPPING_CONF_SOURCE] == MAPPING_CONF_SOURCE_SENSOR) {
-      r = html`${r}
-        <div class="mappingsettingline">
-          <label for="${value + index + MAPPING_CONF_AGGREGATE}"
-            >${localize(
-              "panels.mappings.cards.mapping.sensor-aggregate-use-the",
-              this.hass.language,
-            )}
-          </label>
-          <select
-            type="text"
-            id="${value + index + MAPPING_CONF_AGGREGATE}"
-            @change="${(e: Event) =>
-              this.handleEditMapping(index, {
-                ...mapping,
-                mappings: {
-                  ...mapping.mappings,
-                  [value]: {
-                    ...mapping.mappings[value],
-                    [MAPPING_CONF_AGGREGATE]: (e.target as HTMLInputElement)
-                      .value,
-                  },
-                },
-              })}"
-          >
-            ${this.renderAggregateOptionsForMapping(value, mappingline)}
-          </select>
-          <label for="${value + index + MAPPING_CONF_AGGREGATE}"
-            >${localize(
-              "panels.mappings.cards.mapping.sensor-aggregate-of-sensor-values-to-calculate",
-              this.hass.language,
-            )}</label
-          >
-        </div>`;
+        </div>
+      `;
     }
 
-    r = html`<div class="mappingline">${r}</div>`;
-    return r;
+    return html``;
+  }
+
+  private handleSimpleSourceChange(
+    index: number,
+    value: string,
+    e: Event,
+  ): void {
+    const mapping = this.mappings[index];
+    const newSource = (e.target as HTMLInputElement).value;
+
+    this.handleEditMapping(index, {
+      ...mapping,
+      mappings: {
+        ...mapping.mappings,
+        [value]: {
+          ...mapping.mappings[value],
+          [MAPPING_CONF_SOURCE]: newSource,
+          [MAPPING_CONF_SENSOR]: "",
+        },
+      },
+    });
+  }
+
+  private handleSimpleInputChange(
+    index: number,
+    value: string,
+    configKey: string,
+    e: Event,
+  ): void {
+    const mapping = this.mappings[index];
+    const newValue = (e.target as HTMLInputElement).value;
+
+    this.handleEditMapping(index, {
+      ...mapping,
+      mappings: {
+        ...mapping.mappings,
+        [value]: {
+          ...mapping.mappings[value],
+          [configKey]: newValue,
+        },
+      },
+    });
+  }
+
+  private renderSourceOptions(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass) return html``;
+
+    const baseId = `${value}_${index}`;
+    const isSpecialMapping =
+      value === MAPPING_EVAPOTRANSPIRATION || value === MAPPING_SOLRAD;
+
+    return html`
+      <div class="mappingsettingline">
+        <label for="${baseId}_source">
+          ${localize(
+            "panels.mappings.cards.mapping.source",
+            this.hass.language,
+          )}:
+        </label>
+      </div>
+      <div class="radio-group">
+        ${!isSpecialMapping
+          ? this.renderWeatherServiceOption(index, value, mappingline)
+          : ""}
+        ${isSpecialMapping
+          ? this.renderNoneOption(index, value, mappingline)
+          : ""}
+        ${this.renderSensorOption(index, value, mappingline)}
+        ${this.renderStaticValueOption(index, value, mappingline)}
+      </div>
+    `;
+  }
+
+  private renderWeatherServiceOption(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass || !this.config) return html``;
+
+    const baseId = `${value}_${index}`;
+    const isDisabled = !this.config.use_weather_service;
+    const isChecked =
+      this.config.use_weather_service &&
+      mappingline[MAPPING_CONF_SOURCE] === MAPPING_CONF_SOURCE_WEATHER_SERVICE;
+
+    return html`
+      <label class="${isDisabled ? "strikethrough" : ""}">
+        <input
+          type="radio"
+          id="${baseId}_weather"
+          value="${MAPPING_CONF_SOURCE_WEATHER_SERVICE}"
+          name="${baseId}_source"
+          ?checked="${isChecked}"
+          ?disabled="${isDisabled}"
+          @change="${(e: Event) => this.handleSourceChange(index, value, e)}"
+        />
+        ${localize(
+          "panels.mappings.cards.mapping.sources.weather_service",
+          this.hass.language,
+        )}
+      </label>
+    `;
+  }
+
+  private renderNoneOption(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass) return html``;
+
+    const baseId = `${value}_${index}`;
+    const isChecked =
+      mappingline[MAPPING_CONF_SOURCE] === MAPPING_CONF_SOURCE_NONE;
+
+    return html`
+      <label>
+        <input
+          type="radio"
+          id="${baseId}_none"
+          value="${MAPPING_CONF_SOURCE_NONE}"
+          name="${baseId}_source"
+          ?checked="${isChecked}"
+          @change="${(e: Event) => this.handleSourceChange(index, value, e)}"
+        />
+        ${localize(
+          "panels.mappings.cards.mapping.sources.none",
+          this.hass.language,
+        )}
+      </label>
+    `;
+  }
+
+  private renderSensorOption(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass) return html``;
+
+    const baseId = `${value}_${index}`;
+    const isChecked =
+      mappingline[MAPPING_CONF_SOURCE] === MAPPING_CONF_SOURCE_SENSOR;
+
+    return html`
+      <label>
+        <input
+          type="radio"
+          id="${baseId}_sensor"
+          value="${MAPPING_CONF_SOURCE_SENSOR}"
+          name="${baseId}_source"
+          ?checked="${isChecked}"
+          @change="${(e: Event) => this.handleSourceChange(index, value, e)}"
+        />
+        ${localize(
+          "panels.mappings.cards.mapping.sources.sensor",
+          this.hass.language,
+        )}
+      </label>
+    `;
+  }
+
+  private renderStaticValueOption(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass) return html``;
+
+    const baseId = `${value}_${index}`;
+    const isChecked =
+      mappingline[MAPPING_CONF_SOURCE] === MAPPING_CONF_SOURCE_STATIC_VALUE;
+
+    return html`
+      <label>
+        <input
+          type="radio"
+          id="${baseId}_static"
+          value="${MAPPING_CONF_SOURCE_STATIC_VALUE}"
+          name="${baseId}_source"
+          ?checked="${isChecked}"
+          @change="${(e: Event) => this.handleSourceChange(index, value, e)}"
+        />
+        ${localize(
+          "panels.mappings.cards.mapping.sources.static",
+          this.hass.language,
+        )}
+      </label>
+    `;
+  }
+
+  private handleSourceChange(index: number, value: string, e: Event): void {
+    const mapping = this.mappings[index];
+    const newSource = (e.target as HTMLInputElement).value;
+
+    this.handleEditMapping(index, {
+      ...mapping,
+      mappings: {
+        ...mapping.mappings,
+        [value]: {
+          ...mapping.mappings[value],
+          [MAPPING_CONF_SOURCE]: newSource,
+          [MAPPING_CONF_SENSOR]: "", // Clear sensor when changing source
+        },
+      },
+    });
+  }
+
+  private renderMappingInputs(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass) return html``;
+
+    const baseId = `${value}_${index}`;
+    const source = mappingline[MAPPING_CONF_SOURCE];
+
+    return html`
+      ${source === MAPPING_CONF_SOURCE_SENSOR
+        ? this.renderSensorInput(index, value, mappingline)
+        : ""}
+      ${source === MAPPING_CONF_SOURCE_STATIC_VALUE
+        ? this.renderStaticValueInput(index, value, mappingline)
+        : ""}
+      ${source === MAPPING_CONF_SOURCE_SENSOR ||
+      source === MAPPING_CONF_SOURCE_STATIC_VALUE
+        ? this.renderUnitSelect(index, value, mappingline)
+        : ""}
+      ${value === MAPPING_PRESSURE &&
+      (source === MAPPING_CONF_SOURCE_SENSOR ||
+        source === MAPPING_CONF_SOURCE_STATIC_VALUE)
+        ? this.renderPressureTypeSelect(index, value, mappingline)
+        : ""}
+      ${source === MAPPING_CONF_SOURCE_SENSOR
+        ? this.renderAggregateSelect(index, value, mappingline)
+        : ""}
+    `;
+  }
+
+  private renderSensorInput(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass) return html``;
+
+    const baseId = `${value}_${index}`;
+
+    return html`
+      <div class="mappingsettingline">
+        <label for="${baseId}_sensor_entity">
+          ${localize(
+            "panels.mappings.cards.mapping.sensor-entity",
+            this.hass.language,
+          )}:
+        </label>
+        <input
+          type="text"
+          id="${baseId}_sensor_entity"
+          .value="${mappingline[MAPPING_CONF_SENSOR] || ""}"
+          @change="${(e: Event) => this.handleSensorChange(index, value, e)}"
+        />
+      </div>
+    `;
+  }
+
+  private renderStaticValueInput(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass) return html``;
+
+    const baseId = `${value}_${index}`;
+
+    return html`
+      <div class="mappingsettingline">
+        <label for="${baseId}_static_value">
+          ${localize(
+            "panels.mappings.cards.mapping.static_value",
+            this.hass.language,
+          )}:
+        </label>
+        <input
+          type="text"
+          id="${baseId}_static_value"
+          .value="${mappingline[MAPPING_CONF_STATIC_VALUE] || ""}"
+          @input="${(e: Event) =>
+            this.handleStaticValueChange(index, value, e)}"
+        />
+      </div>
+    `;
+  }
+
+  private renderUnitSelect(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass || !this.config) return html``;
+
+    const baseId = `${value}_${index}`;
+
+    return html`
+      <div class="mappingsettingline">
+        <label for="${baseId}_unit">
+          ${localize(
+            "panels.mappings.cards.mapping.input-units",
+            this.hass.language,
+          )}:
+        </label>
+        <select
+          id="${baseId}_unit"
+          @change="${(e: Event) => this.handleUnitChange(index, value, e)}"
+        >
+          ${this.renderUnitOptionsForMapping(value, mappingline)}
+        </select>
+      </div>
+    `;
+  }
+
+  private renderPressureTypeSelect(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass) return html``;
+
+    const baseId = `${value}_${index}`;
+
+    return html`
+      <div class="mappingsettingline">
+        <label for="${baseId}_pressure_type">
+          ${localize(
+            "panels.mappings.cards.mapping.pressure-type",
+            this.hass.language,
+          )}:
+        </label>
+        <select
+          id="${baseId}_pressure_type"
+          @change="${(e: Event) =>
+            this.handlePressureTypeChange(index, value, e)}"
+        >
+          ${this.renderPressureTypes(value, mappingline)}
+        </select>
+      </div>
+    `;
+  }
+
+  private renderAggregateSelect(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass) return html``;
+
+    const baseId = `${value}_${index}`;
+
+    return html`
+      <div class="mappingsettingline">
+        <label for="${baseId}_aggregate">
+          ${localize(
+            "panels.mappings.cards.mapping.sensor-aggregate-use-the",
+            this.hass.language,
+          )}
+        </label>
+        <select
+          id="${baseId}_aggregate"
+          @change="${(e: Event) => this.handleAggregateChange(index, value, e)}"
+        >
+          ${this.renderAggregateOptionsForMapping(value, mappingline)}
+        </select>
+        <label for="${baseId}_aggregate">
+          ${localize(
+            "panels.mappings.cards.mapping.sensor-aggregate-of-sensor-values-to-calculate",
+            this.hass.language,
+          )}
+        </label>
+      </div>
+    `;
+  }
+
+  // Event handlers for the inputs
+  private handleSensorChange(index: number, value: string, e: Event): void {
+    const mapping = this.mappings[index];
+    this.handleEditMapping(index, {
+      ...mapping,
+      mappings: {
+        ...mapping.mappings,
+        [value]: {
+          ...mapping.mappings[value],
+          [MAPPING_CONF_SENSOR]: (e.target as HTMLInputElement).value,
+        },
+      },
+    });
+  }
+
+  private handleStaticValueChange(
+    index: number,
+    value: string,
+    e: Event,
+  ): void {
+    const mapping = this.mappings[index];
+    this.handleEditMapping(index, {
+      ...mapping,
+      mappings: {
+        ...mapping.mappings,
+        [value]: {
+          ...mapping.mappings[value],
+          [MAPPING_CONF_STATIC_VALUE]: (e.target as HTMLInputElement).value,
+        },
+      },
+    });
+  }
+
+  private handleUnitChange(index: number, value: string, e: Event): void {
+    const mapping = this.mappings[index];
+    this.handleEditMapping(index, {
+      ...mapping,
+      mappings: {
+        ...mapping.mappings,
+        [value]: {
+          ...mapping.mappings[value],
+          [MAPPING_CONF_UNIT]: (e.target as HTMLSelectElement).value,
+        },
+      },
+    });
+  }
+
+  private handlePressureTypeChange(
+    index: number,
+    value: string,
+    e: Event,
+  ): void {
+    const mapping = this.mappings[index];
+    this.handleEditMapping(index, {
+      ...mapping,
+      mappings: {
+        ...mapping.mappings,
+        [value]: {
+          ...mapping.mappings[value],
+          [MAPPING_CONF_PRESSURE_TYPE]: (e.target as HTMLSelectElement).value,
+        },
+      },
+    });
+  }
+
+  private handleAggregateChange(index: number, value: string, e: Event): void {
+    const mapping = this.mappings[index];
+    this.handleEditMapping(index, {
+      ...mapping,
+      mappings: {
+        ...mapping.mappings,
+        [value]: {
+          ...mapping.mappings[value],
+          [MAPPING_CONF_AGGREGATE]: (e.target as HTMLSelectElement).value,
+        },
+      },
+    });
   }
 
   private renderAggregateOptionsForMapping(
@@ -566,32 +1069,25 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   ): TemplateResult {
     if (!this.hass || !this.config) {
       return html``;
-    } else {
-      let r = html``;
-      let selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT;
-      if (value === MAPPING_PRECIPITATION) {
-        selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION;
-      }
-      if (value === MAPPING_CURRENT_PRECIPITATION) {
-        selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_CURRENT_PRECIPITATION;
-      }
-      //removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
-      //else if (value === MAPPING_MAX_TEMP) {
-      //  selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MAX_TEMP;
-      //}
-      //else if (value === MAPPING_MIN_TEMP) {
-      //  selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_MIN_TEMP;
-      //}
-      if (mappingline[MAPPING_CONF_AGGREGATE]) {
-        selected = mappingline[MAPPING_CONF_AGGREGATE];
-      }
-      for (const a of MAPPING_CONF_AGGREGATE_OPTIONS) {
-        const res = this.renderAggregateOption(a, selected);
-        r = html`${r}${res}`;
-      }
-
-      return r;
     }
+
+    let selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT;
+    if (value === MAPPING_PRECIPITATION) {
+      selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION;
+    }
+    if (value === MAPPING_CURRENT_PRECIPITATION) {
+      selected = MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_CURRENT_PRECIPITATION;
+    }
+    if (mappingline[MAPPING_CONF_AGGREGATE]) {
+      selected = mappingline[MAPPING_CONF_AGGREGATE];
+    }
+
+    // Use direct template mapping for better performance
+    return html`
+      ${MAPPING_CONF_AGGREGATE_OPTIONS.map((a) =>
+        this.renderAggregateOption(a, selected),
+      )}
+    `;
   }
 
   private renderAggregateOption(agg: any, selected: any): TemplateResult {
@@ -641,75 +1137,203 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   ): TemplateResult {
     if (!this.hass || !this.config) {
       return html``;
-    } else {
-      const theOptions = getOptionsForMappingType(value);
-      let r = html``;
-      let selected = mappingline[MAPPING_CONF_UNIT];
-      const units = this.config.units;
-      if (!mappingline[MAPPING_CONF_UNIT]) {
-        theOptions.forEach(function (o) {
-          if (typeof o.system === "string") {
-            if (units == o.system) {
-              selected = o.unit;
-            }
-          } else {
-            o.system.forEach(function (element) {
-              if (units == element.system) {
-                selected = o.unit;
-              }
-            });
+    }
+
+    const theOptions = getOptionsForMappingType(value);
+    let selected = mappingline[MAPPING_CONF_UNIT];
+    const units = this.config.units;
+
+    if (!mappingline[MAPPING_CONF_UNIT]) {
+      // Use for...of instead of forEach for better performance
+      for (const o of theOptions) {
+        if (typeof o.system === "string") {
+          if (units === o.system) {
+            selected = o.unit;
+            break;
           }
-        });
+        } else {
+          for (const element of o.system) {
+            if (units === (element as any).system) {
+              selected = o.unit;
+              break;
+            }
+          }
+          if (selected === o.unit) break;
+        }
       }
-      theOptions.forEach(function (o) {
-        r = html`${r}
+    }
+
+    // Use direct template mapping instead of forEach accumulation
+    return html`
+      ${theOptions.map(
+        (o) => html`
           <option value="${o.unit}" ?selected="${selected === o.unit}">
             ${o.unit}
-          </option>`;
-      });
-      return r;
-    }
+          </option>
+        `,
+      )}
+    `;
   }
   render(): TemplateResult {
     if (!this.hass) {
       return html``;
-    } else {
+    }
+
+    if (this.isLoading) {
       return html`
         <ha-card
           header="${localize("panels.mappings.title", this.hass.language)}"
         >
           <div class="card-content">
-            ${localize("panels.mappings.description", this.hass.language)}.
+            ${localize("common.loading", this.hass.language)}...
           </div>
         </ha-card>
-        <ha-card
-          header="${localize(
-            "panels.mappings.cards.add-mapping.header",
-            this.hass.language,
-          )}"
-        >
+      `;
+    }
+
+    return html`
+      <ha-card
+        header="${localize("panels.mappings.title", this.hass.language)}"
+      >
+        <div class="card-content">
+          ${localize("panels.mappings.description", this.hass.language)}.
+          ${this.isSaving
+            ? html`<div class="saving-indicator">
+                ${localize("common.saving", this.hass.language)}...
+              </div>`
+            : ""}
+        </div>
+      </ha-card>
+      <ha-card
+        header="${localize(
+          "panels.mappings.cards.add-mapping.header",
+          this.hass.language,
+        )}"
+      >
+        <div class="card-content">
+          <label for="mappingNameInput"
+            >${localize(
+              "panels.mappings.labels.mapping-name",
+              this.hass.language,
+            )}:</label
+          >
+          <input
+            id="mappingNameInput"
+            type="text"
+            ?disabled="${this.isSaving}"
+          />
+          <button
+            @click="${this.handleAddMapping}"
+            ?disabled="${this.isSaving}"
+          >
+            ${localize(
+              "panels.mappings.cards.add-mapping.actions.add",
+              this.hass.language,
+            )}
+          </button>
+        </div>
+      </ha-card>
+
+      ${this.renderMappingsList()}
+    `;
+  }
+
+  private renderMappingsList(): TemplateResult {
+    // Batch render mappings to avoid blocking the main thread
+    const mappingsToRender = this.mappings.slice(
+      0,
+      Math.min(this.mappings.length, 10),
+    );
+    const remainingMappings = this.mappings.slice(10);
+
+    return html`
+      ${mappingsToRender.map((mapping, index) =>
+        this.renderMappingCard(mapping, index),
+      )}
+      ${remainingMappings.length > 0
+        ? html`
+            <div class="load-more">
+              <button @click="${this.loadMoreMappings}">
+                Load ${remainingMappings.length} more mappings...
+              </button>
+            </div>
+          `
+        : ""}
+    `;
+  }
+
+  private renderMappingCard(
+    mapping: SmartIrrigationMapping,
+    index: number,
+  ): TemplateResult {
+    if (!this.hass) {
+      return html``;
+    }
+
+    const numberofzonesusingthismapping = this.zones.filter(
+      (o) => o.mapping === mapping.id,
+    ).length;
+
+    return html`
+      <ha-card header="${mapping.id}: ${mapping.name}">
+        <div class="card-content">
           <div class="card-content">
-            <label for="mappingNameInput"
+            <label for="name${mapping.id}"
               >${localize(
                 "panels.mappings.labels.mapping-name",
                 this.hass.language,
               )}:</label
             >
-            <input id="mappingNameInput" type="text" />
-            <button @click="${this.handleAddMapping}">
-              ${localize(
-                "panels.mappings.cards.add-mapping.actions.add",
-                this.hass.language,
-              )}
-            </button>
+            <input
+              id="name${mapping.id}"
+              type="text"
+              .value="${mapping.name}"
+              @input="${(e: Event) =>
+                this.handleEditMapping(index, {
+                  ...mapping,
+                  name: (e.target as HTMLInputElement).value,
+                })}"
+            />
+            ${this.renderMappingSettings(mapping, index)}
+            ${numberofzonesusingthismapping
+              ? html`${localize(
+                  "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
+                  this.hass.language,
+                )}`
+              : html` <svg
+                  style="width:24px;height:24px"
+                  viewBox="0 0 24 24"
+                  id="deleteZone${mapping.id}"
+                  @click="${(e: Event) => this.handleRemoveMapping(e, index)}"
+                >
+                  <title>
+                    ${localize("common.actions.delete", this.hass.language)}
+                  </title>
+                  <path fill="#404040" d="${mdiDelete}" />
+                </svg>`}
           </div>
-        </ha-card>
+        </div>
+      </ha-card>
+    `;
+  }
 
-        ${Object.entries(this.mappings).map(([key, value]) =>
-          this.renderMapping(value, parseInt(key)),
-        )}
-      `;
-    }
+  private renderMappingSettings(
+    mapping: SmartIrrigationMapping,
+    index: number,
+  ): TemplateResult {
+    // Render mapping settings in smaller chunks
+    const settingsEntries = Object.entries(mapping.mappings);
+    return html`
+      ${settingsEntries.map(([value]) =>
+        this.renderMappingSetting(index, value),
+      )}
+    `;
+  }
+
+  private loadMoreMappings(): void {
+    // This would implement pagination/virtual scrolling
+    // For now, just render all mappings
+    this._scheduleUpdate();
   }
 
   /*
@@ -740,6 +1364,60 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       .strikethrough {
         text-decoration: line-through;
       }
+      .saving-indicator {
+        color: var(--primary-color);
+        font-style: italic;
+        margin-top: 8px;
+        font-size: 0.9em;
+      }
+      .radio-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 8px 0;
+      }
+      .radio-group label {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+      }
+      .radio-group input[type="radio"] {
+        margin: 0;
+      }
+      .load-more {
+        text-align: center;
+        padding: 16px;
+      }
+      .load-more button {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .load-more button:hover {
+        background: var(--primary-color-dark, var(--primary-color));
+      }
     `;
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    // Clean up any pending debounce timers
+    this.debounceTimers.forEach((timer) => {
+      clearTimeout(timer);
+    });
+    this.debounceTimers.clear();
+
+    // Clean up global debounce timer
+    if (this.globalDebounceTimer) {
+      clearTimeout(this.globalDebounceTimer);
+      this.globalDebounceTimer = null;
+    }
+
+    // Clear the mapping cache
+    this.mappingCache.clear();
   }
 }

@@ -37,23 +37,57 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
   @property({ type: Array })
   private allmodules: SmartIrrigationModule[] = [];
 
+  @property({ type: Boolean })
+  private isLoading = true;
+
+  @property({ type: Boolean })
+  private isSaving = false;
+
+  // Prevent excessive re-renders
+  private _updateScheduled = false;
+  private _scheduleUpdate() {
+    if (this._updateScheduled) return;
+    this._updateScheduled = true;
+    requestAnimationFrame(() => {
+      this._updateScheduled = false;
+      this.requestUpdate();
+    });
+  }
+
+  // Global debounce timer for better performance
+  private globalDebounceTimer: number | null = null;
+
+  // Cache for rendered module cards
+  private moduleCache = new Map<string, TemplateResult>();
+
   @query("#moduleInput")
   private moduleInput!: HTMLSelectElement;
 
   firstUpdated() {
-    (async () => await loadHaForm())();
+    // Load HA form elements in background without blocking UI
+    loadHaForm().catch((error) => {
+      console.error("Failed to load HA form:", error);
+    });
   }
 
   public hassSubscribe(): Promise<UnsubscribeFunc>[] {
-    // Fire-and-forget: initial data fetch for UI setup
-    void this._fetchData();
+    // Initial data fetch for UI setup with proper error handling
+    this._fetchData().catch((error) => {
+      console.error("Failed to fetch initial data:", error);
+    });
+
     return [
-      this.hass!.connection.subscribeMessage(() => {
-        // Fire-and-forget: update data when notified of changes
-        void this._fetchData();
-      }, {
-        type: DOMAIN + "_config_updated",
-      }),
+      this.hass!.connection.subscribeMessage(
+        () => {
+          // Update data when notified of changes with proper error handling
+          this._fetchData().catch((error) => {
+            console.error("Failed to fetch data on config update:", error);
+          });
+        },
+        {
+          type: DOMAIN + "_config_updated",
+        },
+      ),
     ];
   }
 
@@ -61,52 +95,137 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    this.config = await fetchConfig(this.hass);
-    this.zones = await fetchZones(this.hass);
-    this.modules = await fetchModules(this.hass);
-    this.allmodules = await fetchAllModules(this.hass);
-    /*Object.entries(this.modules).forEach(([key, value]) =>
-      console.log(key, value)
-    );*/
+
+    this.isLoading = true;
+    this._scheduleUpdate();
+
+    try {
+      // Fetch all data concurrently for better performance
+      const [config, zones, modules, allmodules] = await Promise.all([
+        fetchConfig(this.hass),
+        fetchZones(this.hass),
+        fetchModules(this.hass),
+        fetchAllModules(this.hass),
+      ]);
+
+      this.config = config;
+      this.zones = zones;
+      this.modules = modules;
+      this.allmodules = allmodules;
+
+      // Clear module cache when data changes
+      this.moduleCache.clear();
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      // Handle error gracefully - keep existing data if fetch fails
+    } finally {
+      this.isLoading = false;
+      this._scheduleUpdate();
+    }
   }
 
-  private handleAddModule(): void {
-    const m = this.allmodules.filter(
-      (o) => o.name == this.moduleInput.selectedOptions[0].text,
-    )[0];
-    if (!m) {
-      return;
-    }
-    const newModule: SmartIrrigationModule = {
-      //id: this.modules.length + 1,
-      name: this.moduleInput.selectedOptions[0].text,
-      description: m.description,
-      config: m.config,
-      schema: m.schema,
+  // Debounced save operation for better performance
+  private debouncedSave = (() => {
+    let timeoutId: number | null = null;
+    return (module: SmartIrrigationModule) => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = window.setTimeout(() => {
+        this.saveToHA(module);
+        timeoutId = null;
+      }, 500); // 500ms debounce
     };
-    this.modules = [...this.modules, newModule];
+  })();
 
-    this.saveToHA(newModule);
-  }
-
-  private handleRemoveModule(ev: Event, index: number): void {
-    const moduleid = this.modules[index].id;
-    this.modules = this.modules.filter((_, i) => i !== index);
-    if (!this.hass || moduleid == undefined) {
+  private async handleAddModule(): Promise<void> {
+    if (!this.moduleInput?.selectedOptions?.[0] || this.isSaving) {
       return;
     }
-    // Fire-and-forget: delete module from HA
-    void deleteModule(this.hass, moduleid.toString());
+
+    this.isSaving = true;
+    this._scheduleUpdate();
+
+    try {
+      const selectedText = this.moduleInput.selectedOptions[0].text;
+      const m = this.allmodules.find((o) => o.name === selectedText);
+
+      if (!m) {
+        return;
+      }
+
+      const newModule: SmartIrrigationModule = {
+        name: selectedText,
+        description: m.description,
+        config: m.config,
+        schema: m.schema,
+      };
+
+      // Optimistic update
+      this.modules = [...this.modules, newModule];
+      this.moduleCache.clear(); // Clear cache when modules change
+      this._scheduleUpdate();
+
+      // Save to backend
+      await this.saveToHA(newModule);
+
+      // Refresh data to get the new module with ID
+      await this._fetchData();
+    } catch (error) {
+      console.error("Error adding module:", error);
+      // Rollback optimistic update on error
+      await this._fetchData();
+    } finally {
+      this.isSaving = false;
+      this._scheduleUpdate();
+    }
   }
 
-  private saveToHA(module: SmartIrrigationModule): void {
+  private async handleRemoveModule(ev: Event, index: number): Promise<void> {
+    if (this.isSaving) {
+      return;
+    }
+
+    this.isSaving = true;
+    this._scheduleUpdate();
+
+    try {
+      const moduleToRemove = this.modules[index];
+      const moduleid = moduleToRemove?.id;
+
+      // Optimistic update
+      const originalModules = this.modules;
+      this.modules = this.modules.filter((_, i) => i !== index);
+      this.moduleCache.clear(); // Clear cache when modules change
+      this._scheduleUpdate();
+
+      if (this.hass && moduleid !== undefined) {
+        await deleteModule(this.hass, moduleid.toString());
+      } else {
+        // If no ID, just remove from local state (not saved yet)
+      }
+    } catch (error) {
+      console.error("Error removing module:", error);
+      // Rollback optimistic update on error
+      await this._fetchData();
+    } finally {
+      this.isSaving = false;
+      this._scheduleUpdate();
+    }
+  }
+
+  private async saveToHA(module: SmartIrrigationModule): Promise<void> {
     if (!this.hass) {
       return;
     }
-    // Fire-and-forget: save module to HA backend
-    void saveModule(this.hass, module);
-    //get latest version from HA
-    void this._fetchData();
+
+    try {
+      await saveModule(this.hass, module);
+      // Data will be updated via WebSocket subscription
+    } catch (error) {
+      console.error("Error saving module:", error);
+      throw error; // Re-throw to handle in calling function
+    }
   }
   private renderModule(
     module: SmartIrrigationModule,
@@ -114,52 +233,62 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
   ): TemplateResult {
     if (!this.hass) {
       return html``;
-    } else {
-      const numberofzonesusingthismodule = this.zones.filter(
-        (o) => o.module === module.id,
-      ).length;
-      return html`
-        <ha-card header="${module.id}: ${module.name}">
-          <div class="card-content">
-            <div class="moduledescription${index}">${module.description}</div>
-            <div class="moduleconfig">
-              <label class="subheader"
-                >${localize(
-                  "panels.modules.cards.module.labels.configuration",
-                  this.hass.language,
-                )}
-                (*
-                ${localize(
-                  "panels.modules.cards.module.labels.required",
-                  this.hass.language,
-                )})</label
-              >
-              ${module.schema
-                ? Object.entries(module.schema).map(([value]) =>
-                    this.renderConfig(index, value),
-                  )
-                : null}
-            </div>
-            ${numberofzonesusingthismodule
-              ? html` ${localize(
-                  "panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it",
-                  this.hass.language,
-                )}`
-              : html` <svg
-                  style="width:24px;height:24px"
-                  viewBox="0 0 24 24"
-                  id="deleteZone${index}"
-                  @click="${(e: Event) => this.handleRemoveModule(e, index)}"
-                >
-                  <title>
-                    ${localize("common.actions.delete", this.hass.language)}
-                  </title>
-                  <path fill="#404040" d="${mdiDelete}" />
-                </svg>`}
-          </div>
-        </ha-card>
-      `;
     }
+
+    // Use cache for better performance
+    const cacheKey = `module-${module.id || index}-${JSON.stringify(module)}`;
+    if (this.moduleCache.has(cacheKey)) {
+      return this.moduleCache.get(cacheKey)!;
+    }
+
+    const numberofzonesusingthismodule = this.zones.filter(
+      (o) => o.module === module.id,
+    ).length;
+
+    const result = html`
+      <ha-card header="${module.id}: ${module.name}">
+        <div class="card-content">
+          <div class="moduledescription${index}">${module.description}</div>
+          <div class="moduleconfig">
+            <label class="subheader"
+              >${localize(
+                "panels.modules.cards.module.labels.configuration",
+                this.hass.language,
+              )}
+              (*
+              ${localize(
+                "panels.modules.cards.module.labels.required",
+                this.hass.language,
+              )})</label
+            >
+            ${module.schema
+              ? Object.entries(module.schema).map(([value]) =>
+                  this.renderConfig(index, value),
+                )
+              : null}
+          </div>
+          ${numberofzonesusingthismodule
+            ? html` ${localize(
+                "panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it",
+                this.hass.language,
+              )}`
+            : html` <svg
+                style="width:24px;height:24px"
+                viewBox="0 0 24 24"
+                id="deleteZone${index}"
+                @click="${(e: Event) => this.handleRemoveModule(e, index)}"
+              >
+                <title>
+                  ${localize("common.actions.delete", this.hass.language)}
+                </title>
+                <path fill="#404040" d="${mdiDelete}" />
+              </svg>`}
+        </div>
+      </ha-card>
+    `;
+
+    this.moduleCache.set(cacheKey, result);
+    return result;
   }
 
   /*
@@ -274,10 +403,17 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
   }
 
   handleEditConfig(index: number, updatedModule: SmartIrrigationModule) {
+    // Optimistic update for responsive UI
     this.modules = Object.values(this.modules).map((module, i) =>
       i === index ? updatedModule : module,
     );
-    this.saveToHA(updatedModule);
+
+    // Clear cache for this module
+    this.moduleCache.clear();
+    this._scheduleUpdate();
+
+    // Debounced save to reduce backend calls
+    this.debouncedSave(updatedModule);
   }
 
   private renderOption(value: any, description: any): TemplateResult {
@@ -290,45 +426,71 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
   render(): TemplateResult {
     if (!this.hass) {
       return html``;
-    } else {
-      return html`
-        <ha-card
-          header="${localize("panels.modules.title", this.hass.language)}"
-        >
-          <div class="card-content">
-            ${localize("panels.modules.description", this.hass.language)}
-          </div>
-        </ha-card>
-        <ha-card
-          header="${localize(
-            "panels.modules.cards.add-module.header",
-            this.hass.language,
-          )}"
-        >
-          <div class="card-content">
-            <label for="moduleInput"
-              >${localize("common.labels.module", this.hass.language)}:</label
-            >
-            <select id="moduleInput">
-              ${Object.entries(this.allmodules).map(
-                ([key, value]) =>
-                  html`<option value="${value.id}">${value.name}</option>`,
-              )}
-            </select>
-            <button @click="${this.handleAddModule}">
-              ${localize(
-                "panels.modules.cards.add-module.actions.add",
-                this.hass.language,
-              )}
-            </button>
-          </div>
-        </ha-card>
-
-        ${Object.entries(this.modules).map(([key, value]) =>
-          this.renderModule(value, parseInt(key)),
-        )}
-      `;
     }
+
+    return html`
+      <ha-card header="${localize("panels.modules.title", this.hass.language)}">
+        <div class="card-content">
+          ${localize("panels.modules.description", this.hass.language)}
+        </div>
+      </ha-card>
+
+      <ha-card
+        header="${localize(
+          "panels.modules.cards.add-module.header",
+          this.hass.language,
+        )}"
+      >
+        <div class="card-content">
+          ${this.isLoading
+            ? html`<div class="loading-indicator">Loading...</div>`
+            : html`
+                <label for="moduleInput"
+                  >${localize(
+                    "common.labels.module",
+                    this.hass.language,
+                  )}:</label
+                >
+                <select id="moduleInput" ?disabled="${this.isSaving}">
+                  ${Object.entries(this.allmodules).map(
+                    ([key, value]) =>
+                      html`<option value="${value.id}">${value.name}</option>`,
+                  )}
+                </select>
+                <button
+                  @click="${this.handleAddModule}"
+                  ?disabled="${this.isSaving}"
+                  class="${this.isSaving ? "saving" : ""}"
+                >
+                  ${this.isSaving
+                    ? "Adding..."
+                    : localize(
+                        "panels.modules.cards.add-module.actions.add",
+                        this.hass.language,
+                      )}
+                </button>
+              `}
+        </div>
+      </ha-card>
+
+      ${this.isLoading
+        ? html`<div class="loading-indicator">Loading modules...</div>`
+        : Object.entries(this.modules).map(([key, value]) =>
+            this.renderModule(value, parseInt(key)),
+          )}
+    `;
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
+    // Clean up timers and caches
+    if (this.globalDebounceTimer) {
+      clearTimeout(this.globalDebounceTimer);
+      this.globalDebounceTimer = null;
+    }
+
+    this.moduleCache.clear();
   }
 
   /*
@@ -352,6 +514,24 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
       }
       .subheader {
         font-weight: bold;
+      }
+      .loading-indicator {
+        text-align: center;
+        padding: 20px;
+        color: var(--primary-text-color);
+        font-style: italic;
+      }
+      .saving {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      select:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
     `;
   }

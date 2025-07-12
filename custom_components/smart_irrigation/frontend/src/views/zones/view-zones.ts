@@ -69,6 +69,29 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   @property({ type: Array })
   private mappings: SmartIrrigationMapping[] = [];
 
+  @property({ type: Boolean })
+  private isLoading = true;
+
+  @property({ type: Boolean })
+  private isSaving = false;
+
+  // Prevent excessive re-renders
+  private _updateScheduled = false;
+  private _scheduleUpdate() {
+    if (this._updateScheduled) return;
+    this._updateScheduled = true;
+    requestAnimationFrame(() => {
+      this._updateScheduled = false;
+      this.requestUpdate();
+    });
+  }
+
+  // Global debounce timer for better performance
+  private globalDebounceTimer: number | null = null;
+
+  // Cache for rendered zone cards
+  private zoneCache = new Map<string, TemplateResult>();
+
   @query("#nameInput")
   private nameInput!: HTMLInputElement;
 
@@ -83,20 +106,30 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     this._fetchData();
   }*/
   firstUpdated() {
-    (async () => await loadHaForm())();
+    loadHaForm().catch((error) => {
+      console.error("Failed to load HA form:", error);
+    });
     //this._fetchData();
   }
 
   public hassSubscribe(): Promise<UnsubscribeFunc>[] {
-    // Fire-and-forget: initial data fetch for UI setup
-    void this._fetchData();
+    // Initial data fetch for UI setup with proper error handling
+    this._fetchData().catch((error) => {
+      console.error("Failed to fetch initial data:", error);
+    });
+
     return [
-      this.hass!.connection.subscribeMessage(() => {
-        // Fire-and-forget: update data when notified of changes
-        void this._fetchData();
-      }, {
-        type: DOMAIN + "_config_updated",
-      }),
+      this.hass!.connection.subscribeMessage(
+        () => {
+          // Update data when notified of changes with proper error handling
+          this._fetchData().catch((error) => {
+            console.error("Failed to fetch data on config update:", error);
+          });
+        },
+        {
+          type: DOMAIN + "_config_updated",
+        },
+      ),
     ];
   }
 
@@ -104,63 +137,104 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    this.config = await fetchConfig(this.hass);
-    this.zones = await fetchZones(this.hass);
 
-    //add dummy module and mapping
-    /*const mods: SmartIrrigationModule[] = [];
-    const dummyModule: SmartIrrigationModule = {
-      id: undefined,
-      name: "--SELECT--",
-      description: "",
-      config: Object,
-      schema: Object,
-    };
-    mods.push(dummyModule);
-    mods.concat(await fetchModules(this.hass));
-    this.modules = mods;*/
-    this.modules = await fetchModules(this.hass);
-    this.mappings = await fetchMappings(this.hass);
+    try {
+      this.isLoading = true;
+
+      // Fetch all data concurrently to reduce total wait time
+      const [config, zones, modules, mappings] = await Promise.all([
+        fetchConfig(this.hass),
+        fetchZones(this.hass),
+        fetchModules(this.hass),
+        fetchMappings(this.hass),
+      ]);
+
+      this.config = config;
+      this.zones = zones;
+      this.modules = modules;
+      this.mappings = mappings;
+
+      // Clear the cache when new data is loaded
+      this.zoneCache.clear();
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      this.isLoading = false;
+      // Trigger a re-render to ensure UI updates
+      this._scheduleUpdate();
+    }
   }
 
   private handleCalculateAllZones(): void {
     if (!this.hass) {
       return;
     }
-    // Fire-and-forget: trigger calculation for all zones in background
-    void calculateAllZones(this.hass);
+    this.isSaving = true;
+    calculateAllZones(this.hass)
+      .catch((error) => {
+        console.error("Failed to calculate all zones:", error);
+      })
+      .finally(() => {
+        this.isSaving = false;
+        this._scheduleUpdate();
+      });
   }
 
   private handleUpdateAllZones(): void {
     if (!this.hass) {
       return;
     }
-    // Fire-and-forget: trigger update for all zones in background
-    void updateAllZones(this.hass);
+    this.isSaving = true;
+    updateAllZones(this.hass)
+      .catch((error) => {
+        console.error("Failed to update all zones:", error);
+      })
+      .finally(() => {
+        this.isSaving = false;
+        this._scheduleUpdate();
+      });
   }
 
   private handleResetAllBuckets(): void {
     if (!this.hass) {
       return;
     }
-    // Fire-and-forget: reset all buckets in background
-    void resetAllBuckets(this.hass);
+    this.isSaving = true;
+    resetAllBuckets(this.hass)
+      .catch((error) => {
+        console.error("Failed to reset all buckets:", error);
+      })
+      .finally(() => {
+        this.isSaving = false;
+        this._scheduleUpdate();
+      });
   }
 
   private handleClearAllWeatherdata(): void {
     if (!this.hass) {
       return;
     }
-    // Fire-and-forget: clear all weather data in background
-    void clearAllWeatherdata(this.hass);
+    this.isSaving = true;
+    clearAllWeatherdata(this.hass)
+      .catch((error) => {
+        console.error("Failed to clear all weather data:", error);
+      })
+      .finally(() => {
+        this.isSaving = false;
+        this._scheduleUpdate();
+      });
   }
 
   private handleAddZone(): void {
+    if (!this.nameInput.value.trim()) {
+      return; // Don't add empty zones
+    }
+
     const newZone: SmartIrrigationZone = {
       //id: this.zones.length + 1, //new zone will have ID that is equal to current zone length + 1
-      name: this.nameInput.value,
-      size: parseFloat(this.sizeInput.value),
-      throughput: parseFloat(this.throughputInput.value),
+      name: this.nameInput.value.trim(),
+      size: parseFloat(this.sizeInput.value) || 0,
+      throughput: parseFloat(this.throughputInput.value) || 0,
       state: SmartIrrigationZoneState.Automatic,
       duration: 0,
       bucket: 0,
@@ -177,10 +251,29 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       current_drainage: 0,
     };
 
+    // Optimistically update the UI
     this.zones = [...this.zones, newZone];
+    this.isSaving = true;
 
-    // Fire-and-forget: save zone to HA
-    void this.saveToHA(newZone);
+    // Save zone with proper error handling
+    this.saveToHA(newZone)
+      .then(() => {
+        // Clear the input fields on successful save
+        this.nameInput.value = "";
+        this.sizeInput.value = "";
+        this.throughputInput.value = "";
+        // Refresh data to get the server-assigned ID
+        return this._fetchData();
+      })
+      .catch((error) => {
+        console.error("Failed to add zone:", error);
+        // Revert optimistic update on error
+        this.zones = this.zones.slice(0, -1);
+      })
+      .finally(() => {
+        this.isSaving = false;
+        this._scheduleUpdate();
+      });
   }
 
   private handleEditZone(
@@ -190,11 +283,36 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    this.zones = Object.values(this.zones).map((zone, i) =>
-      i === index ? updatedZone : zone,
-    );
-    // Fire-and-forget: save updated zone to HA
-    void this.saveToHA(updatedZone);
+
+    // Use direct array assignment for better performance
+    this.zones[index] = updatedZone;
+
+    // Invalidate cache for this zone
+    if (updatedZone.id) {
+      this.zoneCache.delete(updatedZone.id.toString());
+    }
+
+    // Use global debounce to reduce timer overhead
+    if (this.globalDebounceTimer) {
+      clearTimeout(this.globalDebounceTimer);
+    }
+
+    // Debounce saving to avoid excessive API calls during rapid editing
+    this.globalDebounceTimer = window.setTimeout(() => {
+      this.isSaving = true;
+      this.saveToHA(updatedZone)
+        .catch((error) => {
+          console.error("Failed to save zone:", error);
+        })
+        .finally(() => {
+          this.isSaving = false;
+          this._scheduleUpdate();
+        });
+      this.globalDebounceTimer = null;
+    }, 500);
+
+    // Trigger minimal re-render
+    this._scheduleUpdate();
   }
 
   private handleRemoveZone(ev: Event, index: number): void {
@@ -213,12 +331,35 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!zone || zoneid == undefined) {
       return;
     }
+
+    // Store original for potential rollback
+    const originalZones = [...this.zones];
+
+    // Optimistically update UI
     this.zones = this.zones.filter((_, i) => i !== index);
-    if (!this.hass) {
-      return;
-    }
-    // Fire-and-forget: delete zone from HA
-    void deleteZone(this.hass, zoneid.toString());
+
+    // Clear cache for this zone
+    this.zoneCache.delete(zoneid.toString());
+
+    this.isSaving = true;
+
+    // Delete zone from HA with proper error handling
+    deleteZone(this.hass, zoneid.toString())
+      .catch((error) => {
+        console.error("Failed to delete zone:", error);
+        // Revert the local change if deletion failed
+        this.zones = originalZones;
+        this._fetchData().catch((fetchError) => {
+          console.error(
+            "Failed to refresh data after delete error:",
+            fetchError,
+          );
+        });
+      })
+      .finally(() => {
+        this.isSaving = false;
+        this._scheduleUpdate();
+      });
   }
 
   private handleCalculateZone(index: number): void {
@@ -246,12 +387,12 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     void updateZone(this.hass, zone.id.toString());
   }
 
-  private saveToHA(zone: SmartIrrigationZone): void {
+  private async saveToHA(zone: SmartIrrigationZone): Promise<void> {
     if (!this.hass) {
-      return;
+      throw new Error("Home Assistant connection not available");
     }
-    // Fire-and-forget: save zone to HA backend
-    void saveZone(this.hass, zone);
+    // Save zone to HA backend with proper error handling
+    await saveZone(this.hass, zone);
   }
 
   private renderTheOptions(thelist: object, selected?: number): TemplateResult {
@@ -726,79 +867,150 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   }
 
   render(): TemplateResult {
-    if (!this.hass || !this.config) {
+    if (!this.hass) {
       return html``;
-    } else {
+    }
+
+    if (this.isLoading) {
       return html`
         <ha-card header="${localize("panels.zones.title", this.hass.language)}">
           <div class="card-content">
-            ${localize("panels.zones.description", this.hass.language)}
+            ${localize("common.loading", this.hass.language)}...
           </div>
-        </ha-card>
-          <ha-card header="${localize(
-            "panels.zones.cards.add-zone.header",
-            this.hass.language,
-          )}">
-            <div class="card-content">
-              <div class="zoneline"><label for="nameInput">${localize(
-                "panels.zones.labels.name",
-                this.hass.language,
-              )}:</label>
-              <input id="nameInput" type="text"/>
-              </div>
-              <div class="zoneline">
-              <label for="sizeInput">${localize(
-                "panels.zones.labels.size",
-                this.hass.language,
-              )} (${output_unit(this.config, ZONE_SIZE)}):</label>
-              <input class="shortinput" id="sizeInput" type="number"/>
-              </div>
-              <div class="zoneline">
-              <label for="throughputInput">${localize(
-                "panels.zones.labels.throughput",
-                this.hass.language,
-              )} (${output_unit(this.config, ZONE_THROUGHPUT)}):</label>
-              <input id="throughputInput" class="shortinput" type="number"/>
-              </div>
-              <div class="zoneline">
-              <button @click="${this.handleAddZone}">${localize(
-                "panels.zones.cards.add-zone.actions.add",
-                this.hass.language,
-              )}</button>
-              </div>
-            </div>
-            </ha-card>
-            <ha-card header="${localize(
-              "panels.zones.cards.zone-actions.header",
-              this.hass.language,
-            )}">
-            <div class="card-content">
-                <button @click="${this.handleUpdateAllZones}">${localize(
-                  "panels.zones.cards.zone-actions.actions.update-all",
-                  this.hass.language,
-                )}</button>
-                <button @click="${this.handleCalculateAllZones}">${localize(
-                  "panels.zones.cards.zone-actions.actions.calculate-all",
-                  this.hass.language,
-                )}</button>
-                <button @click="${this.handleResetAllBuckets}">${localize(
-                  "panels.zones.cards.zone-actions.actions.reset-all-buckets",
-                  this.hass.language,
-                )}</button>
-      <button @click="${this.handleClearAllWeatherdata}">${localize(
-        "panels.zones.cards.zone-actions.actions.clear-all-weatherdata",
-        this.hass.language,
-      )}</button>
-            </div>
-          </ha-card>
-
-          ${Object.entries(this.zones).map(([key, value]) =>
-            this.renderZone(value, parseInt(key)),
-          )}
         </ha-card>
       `;
     }
+
+    if (!this.config) {
+      return html`
+        <ha-card header="${localize("panels.zones.title", this.hass.language)}">
+          <div class="card-content">Configuration not available.</div>
+        </ha-card>
+      `;
+    }
+
+    return html`
+      <ha-card header="${localize("panels.zones.title", this.hass.language)}">
+        <div class="card-content">
+          ${localize("panels.zones.description", this.hass.language)}
+          ${this.isSaving
+            ? html`<div class="saving-indicator">
+                ${localize("common.saving", this.hass.language)}...
+              </div>`
+            : ""}
+        </div>
+      </ha-card>
+      <ha-card
+        header="${localize(
+          "panels.zones.cards.add-zone.header",
+          this.hass.language,
+        )}"
+      >
+        <div class="card-content">
+          <div class="zoneline">
+            <label for="nameInput"
+              >${localize(
+                "panels.zones.labels.name",
+                this.hass.language,
+              )}:</label
+            >
+            <input id="nameInput" type="text" ?disabled="${this.isSaving}" />
+          </div>
+          <div class="zoneline">
+            <input
+              class="shortinput"
+              id="sizeInput"
+              type="number"
+              ?disabled="${this.isSaving}"
+            />
+            (${output_unit(this.config, ZONE_SIZE)})
+          </div>
+          <div class="zoneline">
+            <label for="throughputInput"
+              >${localize("panels.zones.labels.throughput", this.hass.language)}
+              (${output_unit(this.config, ZONE_THROUGHPUT)}):</label
+            >
+            <input
+              id="throughputInput"
+              class="shortinput"
+              type="number"
+              ?disabled="${this.isSaving}"
+            />
+          </div>
+          <div class="zoneline">
+            <button @click="${this.handleAddZone}" ?disabled="${this.isSaving}">
+              ${localize(
+                "panels.zones.cards.add-zone.actions.add",
+                this.hass.language,
+              )}
+            </button>
+          </div>
+        </div>
+      </ha-card>
+      <ha-card
+        header="${localize(
+          "panels.zones.cards.zone-actions.header",
+          this.hass.language,
+        )}"
+      >
+        <div class="card-content">
+          <button
+            @click="${this.handleUpdateAllZones}"
+            ?disabled="${this.isSaving}"
+          >
+            ${localize(
+              "panels.zones.cards.zone-actions.actions.update-all",
+              this.hass.language,
+            )}
+          </button>
+          <button
+            @click="${this.handleCalculateAllZones}"
+            ?disabled="${this.isSaving}"
+          >
+            ${localize(
+              "panels.zones.cards.zone-actions.actions.calculate-all",
+              this.hass.language,
+            )}
+          </button>
+          <button
+            @click="${this.handleResetAllBuckets}"
+            ?disabled="${this.isSaving}"
+          >
+            ${localize(
+              "panels.zones.cards.zone-actions.actions.reset-all-buckets",
+              this.hass.language,
+            )}
+          </button>
+          <button
+            @click="${this.handleClearAllWeatherdata}"
+            ?disabled="${this.isSaving}"
+          >
+            ${localize(
+              "panels.zones.cards.zone-actions.actions.clear-all-weatherdata",
+              this.hass.language,
+            )}
+          </button>
+        </div>
+      </ha-card>
+
+      ${Object.entries(this.zones).map(([key, value]) =>
+        this.renderZone(value, parseInt(key)),
+      )}
+    `;
   }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    // Clean up global debounce timer
+    if (this.globalDebounceTimer) {
+      clearTimeout(this.globalDebounceTimer);
+      this.globalDebounceTimer = null;
+    }
+
+    // Clear the zone cache
+    this.zoneCache.clear();
+  }
+
   /*
   ${Object.entries(this.zones).map(([key, value]) =>
             this.renderZone(value, value["id"])
@@ -821,6 +1033,12 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       .zoneline {
         margin-left: 20px;
         margin-top: 5px;
+      }
+      .saving-indicator {
+        color: var(--primary-color);
+        font-style: italic;
+        margin-top: 8px;
+        font-size: 0.9em;
       }
     `;
   }

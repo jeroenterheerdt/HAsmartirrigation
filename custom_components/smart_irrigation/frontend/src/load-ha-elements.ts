@@ -1,29 +1,88 @@
-export const loadHaForm = async () => {
+// Cache to track loading state and avoid duplicate loads
+let isLoading = false;
+let loadPromise: Promise<void> | null = null;
+
+export const loadHaForm = async (): Promise<void> => {
+  // Return cached promise if already loading
+  if (isLoading && loadPromise) {
+    return loadPromise;
+  }
+
+  // Quick check if already loaded
   if (
     customElements.get("ha-checkbox") &&
     customElements.get("ha-slider") &&
     customElements.get("ha-panel-config")
-  )
-    return;
+  ) {
+    return Promise.resolve();
+  }
 
-  await customElements.whenDefined("partial-panel-resolver");
-  const ppr = document.createElement("partial-panel-resolver") as any;
-  ppr.hass = {
-    panels: [
-      {
-        url_path: "tmp",
-        component_name: "config",
-      },
-    ],
-  };
-  ppr._updateRoutes();
-  await ppr.routerOptions.routes.tmp.load();
+  // Set loading state and cache the promise
+  isLoading = true;
+  loadPromise = loadHaFormInternal();
 
-  await customElements.whenDefined("ha-panel-config");
-
-  const cpr = document.createElement("ha-panel-config") as any;
-  await cpr.routerOptions.routes.automation.load();
+  try {
+    await loadPromise;
+  } finally {
+    isLoading = false;
+    loadPromise = null;
+  }
 };
+
+// Internal function that does the actual loading work
+async function loadHaFormInternal(): Promise<void> {
+  try {
+    // Use requestIdleCallback to defer heavy operations when browser is idle
+    await new Promise<void>((resolve) => {
+      if ("requestIdleCallback" in window) {
+        requestIdleCallback(() => resolve());
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        setTimeout(() => resolve(), 0);
+      }
+    });
+
+    // Wait for partial-panel-resolver to be defined
+    await customElements.whenDefined("partial-panel-resolver");
+
+    // Batch DOM operations to reduce reflows
+    const fragment = document.createDocumentFragment();
+    const ppr = document.createElement("partial-panel-resolver") as any;
+    fragment.appendChild(ppr);
+
+    // Configure the resolver
+    ppr.hass = {
+      panels: [
+        {
+          url_path: "tmp",
+          component_name: "config",
+        },
+      ],
+    };
+
+    // Use a microtask to allow other operations to proceed
+    await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
+
+    ppr._updateRoutes();
+    await ppr.routerOptions.routes.tmp.load();
+
+    await customElements.whenDefined("ha-panel-config");
+
+    // Another microtask to prevent blocking
+    await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
+
+    const cpr = document.createElement("ha-panel-config") as any;
+    fragment.appendChild(cpr);
+
+    await cpr.routerOptions.routes.automation.load();
+
+    // Clean up the fragment (elements were just used for loading, not for DOM)
+    fragment.textContent = "";
+  } catch (error) {
+    console.error("Failed to load HA form elements:", error);
+    // Don't throw - allow the application to continue functioning
+  }
+}
 
 export const loadHaYamlEditor = async () => {
   if (customElements.get("ha-yaml-editor")) return;

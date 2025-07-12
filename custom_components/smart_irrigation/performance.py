@@ -1,0 +1,74 @@
+"""Performance monitoring utilities for Smart Irrigation."""
+
+from collections.abc import Callable
+from functools import wraps
+import logging
+import time
+from typing import Any
+
+_LOGGER = logging.getLogger(__name__)
+
+
+def async_timer(func_name: str | None = None):
+    """Time async functions and log if they take too long."""
+
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        async def wrapper(*args, **kwargs) -> Any:
+            name = func_name or f"{func.__module__}.{func.__name__}"
+            start_time = time.perf_counter()
+
+            try:
+                return await func(*args, **kwargs)
+            finally:
+                end_time = time.perf_counter()
+                duration = end_time - start_time
+
+                if duration > 0.1:  # Log if function takes more than 100ms
+                    _LOGGER.warning(
+                        "Function %s took %.3f seconds (threshold: 0.1s)",
+                        name,
+                        duration,
+                    )
+                elif duration > 0.05:  # Debug log for 50ms+
+                    _LOGGER.debug("Function %s took %.3f seconds", name, duration)
+
+        return wrapper
+
+    return decorator
+
+
+class AsyncPerformanceMonitor:
+    """Monitor performance of async operations."""
+
+    def __init__(self, name: str, threshold: float = 0.1) -> None:
+        """Initialize the performance monitor.
+
+        Args:
+            name: Name for logging
+            threshold: Time threshold in seconds for warnings
+
+        """
+        self.name = name
+        self.threshold = threshold
+        self.start_time = None
+
+    async def __aenter__(self):
+        """Start timing."""
+        self.start_time = time.perf_counter()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """End timing and log if necessary."""
+        if self.start_time is not None:
+            duration = time.perf_counter() - self.start_time
+
+            if duration > self.threshold:
+                _LOGGER.warning(
+                    "Operation %s took %.3f seconds (threshold: %.3fs)",
+                    self.name,
+                    duration,
+                    self.threshold,
+                )
+            elif duration > self.threshold / 2:
+                _LOGGER.debug("Operation %s took %.3f seconds", self.name, duration)

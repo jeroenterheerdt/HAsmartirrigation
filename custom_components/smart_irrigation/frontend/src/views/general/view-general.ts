@@ -36,19 +36,57 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
   @property() path!: Path;
 
   @property() data?: Partial<SmartIrrigationConfig>;
-
   @property() config?: SmartIrrigationConfig;
 
+  @property({ type: Boolean })
+  private isLoading = true;
+
+  @property({ type: Boolean })
+  private isSaving = false;
+
+  // Prevent excessive re-renders
+  private _updateScheduled = false;
+  private _scheduleUpdate() {
+    if (this._updateScheduled) return;
+    this._updateScheduled = true;
+    requestAnimationFrame(() => {
+      this._updateScheduled = false;
+      this.requestUpdate();
+    });
+  }
+
+  // Debounced save operation for better performance
+  private debouncedSave = (() => {
+    let timeoutId: number | null = null;
+    return (changes: Partial<SmartIrrigationConfig>) => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = window.setTimeout(() => {
+        this.saveData(changes);
+        timeoutId = null;
+      }, 500); // 500ms debounce
+    };
+  })();
+
   public hassSubscribe(): Promise<UnsubscribeFunc>[] {
-    // Fire-and-forget: initial data fetch for UI setup
-    void this._fetchData();
+    // Initial data fetch for UI setup with proper error handling
+    this._fetchData().catch((error) => {
+      console.error("Failed to fetch initial data:", error);
+    });
+
     return [
-      this.hass!.connection.subscribeMessage(() => {
-        // Fire-and-forget: update data when notified of changes
-        void this._fetchData();
-      }, {
-        type: DOMAIN + "_config_updated",
-      }),
+      this.hass!.connection.subscribeMessage(
+        () => {
+          // Update data when notified of changes with proper error handling
+          this._fetchData().catch((error) => {
+            console.error("Failed to fetch data on config update:", error);
+          });
+        },
+        {
+          type: DOMAIN + "_config_updated",
+        },
+      ),
     ];
   }
 
@@ -56,30 +94,50 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    this.config = await fetchConfig(this.hass);
-    this.data = pick(this.config, [
-      CONF_CALC_TIME,
-      CONF_AUTO_CALC_ENABLED,
-      CONF_AUTO_UPDATE_ENABLED,
-      CONF_AUTO_UPDATE_SCHEDULE,
-      CONF_AUTO_UPDATE_TIME,
-      CONF_AUTO_UPDATE_INTERVAL,
-      CONF_AUTO_CLEAR_ENABLED,
-      CONF_CLEAR_TIME,
-      CONF_CONTINUOUS_UPDATES,
-      CONF_SENSOR_DEBOUNCE,
-    ]);
 
-    /*Object.entries(this.data).forEach(([key, value]) => console.log(key, value));*/
+    this.isLoading = true;
+    this._scheduleUpdate();
+
+    try {
+      this.config = await fetchConfig(this.hass);
+      this.data = pick(this.config, [
+        CONF_CALC_TIME,
+        CONF_AUTO_CALC_ENABLED,
+        CONF_AUTO_UPDATE_ENABLED,
+        CONF_AUTO_UPDATE_SCHEDULE,
+        CONF_AUTO_UPDATE_TIME,
+        CONF_AUTO_UPDATE_INTERVAL,
+        CONF_AUTO_CLEAR_ENABLED,
+        CONF_CLEAR_TIME,
+        CONF_CONTINUOUS_UPDATES,
+        CONF_SENSOR_DEBOUNCE,
+      ]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      // Handle error gracefully - keep existing data if fetch fails
+    } finally {
+      this.isLoading = false;
+      this._scheduleUpdate();
+    }
   }
 
   firstUpdated() {
-    (async () => await loadHaForm())();
+    // Load HA form elements in background without blocking UI
+    loadHaForm().catch((error) => {
+      console.error("Failed to load HA form:", error);
+    });
   }
 
   render() {
-    if (!this.hass || !this.config || !this.data) return html``;
-    else {
+    if (!this.hass || !this.config || !this.data) {
+      return html`<div class="loading-indicator">
+        Loading configuration...
+      </div>`;
+    }
+
+    if (this.isLoading) {
+      return html`<div class="loading-indicator">Loading...</div>`;
+    } else {
       let r1 = html` <div class="card-content">
           <svg
             style="width:24px;height:24px"
@@ -120,7 +178,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
             value="True"
             ?checked="${this.config.autocalcenabled}"
             @change="${(e: Event) => {
-              this.saveData({
+              this.handleConfigChange({
                 autocalcenabled: parseBoolean(
                   (e.target as HTMLInputElement).value,
                 ),
@@ -136,7 +194,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
             value="False"
             ?checked="${!this.config.autocalcenabled}"
             @change="${(e: Event) => {
-              this.saveData({
+              this.handleConfigChange({
                 autocalcenabled: parseBoolean(
                   (e.target as HTMLInputElement).value,
                 ),
@@ -161,7 +219,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
               class="shortinput"
               .value="${this.config.calctime}"
               @input=${(e: Event) => {
-                this.saveData({
+                this.handleConfigChange({
                   calctime: (e.target as HTMLInputElement).value,
                 });
               }}
@@ -537,21 +595,48 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
     }
   }
 
-  private saveData(changes: Partial<SmartIrrigationConfig>) {
+  private async saveData(
+    changes: Partial<SmartIrrigationConfig>,
+  ): Promise<void> {
     if (!this.hass || !this.data) return;
 
-    this.data = {
-      ...this.data,
-      ...changes,
-    };
-    saveConfig(this.hass, this.data)
-      .catch((e) =>
-        handleError(
-          e,
-          this.shadowRoot!.querySelector("ha-card") as HTMLElement,
-        ),
-      )
-      .then();
+    this.isSaving = true;
+    this._scheduleUpdate();
+
+    try {
+      // Optimistic update for responsive UI
+      this.data = {
+        ...this.data,
+        ...changes,
+      };
+      this._scheduleUpdate();
+
+      await saveConfig(this.hass, this.data);
+    } catch (error) {
+      console.error("Error saving config:", error);
+      handleError(
+        error,
+        this.shadowRoot!.querySelector("ha-card") as HTMLElement,
+      );
+      // Rollback optimistic update on error
+      await this._fetchData();
+    } finally {
+      this.isSaving = false;
+      this._scheduleUpdate();
+    }
+  }
+
+  private handleConfigChange(changes: Partial<SmartIrrigationConfig>): void {
+    // Use debounced save for better performance
+    this.debouncedSave(changes);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
+    // Clean up debounce timer
+    // The debounced function may have pending timeouts, but we can't directly access them
+    // Let them complete naturally or be garbage collected
   }
 
   toggleInformation(item: string) {
@@ -583,6 +668,29 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       .information {
         margin-left: 20px;
         margin-top: 5px;
+      }
+      .loading-indicator {
+        text-align: center;
+        padding: 20px;
+        color: var(--primary-text-color);
+        font-style: italic;
+      }
+      .saving {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      input:disabled,
+      select:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      /* Radio button group styling */
+      input[type="radio"] {
+        margin-right: 5px;
+        margin-left: 10px;
+      }
+      input[type="radio"] + label {
+        margin-right: 15px;
       }
     `;
   }

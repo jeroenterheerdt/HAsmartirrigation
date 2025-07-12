@@ -7,15 +7,17 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor.const import SensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.dispatcher import (async_dispatcher_connect,
-                                              async_dispatcher_send)
+from homeassistant.helpers.dispatcher import (
+    async_dispatcher_connect,
+    async_dispatcher_send,
+)
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util import slugify
 
 from . import const
-from .helpers import convert_timestamp
+from .performance import async_timer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -139,11 +141,37 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         self._number_of_data_points = number_of_data_points
         self._delta = delta
         self._drainage_rate = drainage_rate
-        self._current_drainage = current_drainage
+        self._current_drainage = current_drainage        # Cache formatted timestamps for performance
+        self._last_updated_formatted = self._format_timestamp(self._last_updated)
+        self._last_calculated_formatted = self._format_timestamp(self._last_calculated)
+        
         async_dispatcher_connect(
             hass, const.DOMAIN + "_config_updated", self.async_update_sensor_entity
         )
 
+    def _format_timestamp(self, val):
+        """Format timestamp for display - cached for performance."""
+        if val is None:
+            return None
+        
+        outputformat = "%Y-%m-%d %H:%M:%S"
+        
+        # Optimize timestamp formatting to avoid string parsing
+        if isinstance(val, str):
+            try:
+                # Try direct parsing without calling convert_timestamp
+                from datetime import datetime
+                return datetime.fromisoformat(val).strftime(outputformat)
+            except (ValueError, TypeError):
+                return val
+        elif hasattr(val, "strftime"):
+            try:
+                return val.strftime(outputformat)
+            except (ValueError, TypeError):
+                return str(val)
+        return str(val)
+
+    @async_timer("async_update_sensor_entity")
     @callback
     def async_update_sensor_entity(self, id=None):
         """Update each zone as Sensor entity."""
@@ -164,15 +192,39 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             self._delta = zone["delta"]
             self._drainage_rate = zone["drainage_rate"]
             self._current_drainage = zone["current_drainage"]
-            self.async_schedule_update_ha_state()
+
+            # Update cached formatted timestamps for performance
+            self._last_updated_formatted = self._format_timestamp(self._last_updated)
+            self._last_calculated_formatted = self._format_timestamp(
+                self._last_calculated
+            )
+
+            # Ensure state change notification is properly sent
+            self.async_schedule_update_ha_state(force_refresh=True)
 
     @property
     def device_info(self) -> dict:
         """Return info for device registry."""
+        # Use a safe approach to get coordinator ID without blocking
+        coordinator_id = "smart_irrigation"  # Default fallback
+
+        # Only access hass.data if we're certain it's available and won't block
+        if (
+            hasattr(self, 'hass')
+            and self.hass is not None
+            and hasattr(self.hass, 'data')
+            and const.DOMAIN in self.hass.data
+        ):
+            try:
+                coordinator = self.hass.data[const.DOMAIN].get("coordinator")
+                if coordinator and hasattr(coordinator, 'id'):
+                    coordinator_id = coordinator.id
+            except (KeyError, AttributeError, RuntimeError):
+                # Fall back to default if anything goes wrong
+                pass
+
         return {
-            "identifiers": {
-                (const.DOMAIN, self.hass.data[const.DOMAIN]["coordinator"].id)
-            },
+            "identifiers": {(const.DOMAIN, coordinator_id)},
             "name": const.NAME,
             "model": const.NAME,
             "sw_version": const.VERSION,
@@ -228,12 +280,12 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
     @property
     def extra_state_attributes(self):
         """Return the data of the entity."""
-        _LOGGER.debug(
-            "[extra_state_attributes] bucket: %s, et_value: %s, current_drainage: %s",
-            self._bucket,
-            self._delta,
-            self._current_drainage,
-        )
+        # Ensure cached timestamps are available
+        if not hasattr(self, '_last_updated_formatted') or self._last_updated_formatted is None:
+            self._last_updated_formatted = self._format_timestamp(self._last_updated)
+        if not hasattr(self, '_last_calculated_formatted') or self._last_calculated_formatted is None:
+            self._last_calculated_formatted = self._format_timestamp(self._last_calculated)
+            
         return {
             "id": self._id,
             "size": self._size,
@@ -242,8 +294,8 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             "current_drainage": self._current_drainage,
             "state": self._state,
             "bucket": self._bucket,
-            "last_updated": convert_timestamp(self._last_updated),
-            "last_calculated": convert_timestamp(self._last_calculated),
+            "last_updated": self._last_updated_formatted,
+            "last_calculated": self._last_calculated_formatted,
             "number_of_data_points": self._number_of_data_points,
             "et_value": self._delta,
             # asyncio.run_coroutine_threadsafe(
@@ -275,19 +327,14 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         _LOGGER.debug("%s is added to hass", self.entity_id)
         await super().async_added_to_hass()
 
-        await self.async_get_last_state()
+        # Restore previous state if available
+        last_state = await self.async_get_last_state()
+        if last_state is not None:
+            # Entity was previously known, restore some state if needed
+            _LOGGER.debug("Restored state for %s: %s", self.entity_id, last_state.state)
 
-        # restore previous state
-        # if state:
-        # restore attributes
-        # if "arm_mode" in state.attributes:
-        #    self._arm_mode = state.attributes["arm_mode"]
-        # if "changed_by" in state.attributes:
-        #    self._changed_by = state.attributes["changed_by"]
-        # if "open_sensors" in state.attributes:
-        #    self.open_sensors = state.attributes["open_sensors"]
-        # if "bypassed_sensors" in state.attributes:
-        #    self._bypassed_sensors = state.attributes["bypassed_sensors"]
+        # Force initial state update to ensure UI shows current data
+        self.async_schedule_update_ha_state(force_refresh=True)
 
     async def async_will_remove_from_hass(self):
         """Handle removal of the entity from Home Assistant."""
