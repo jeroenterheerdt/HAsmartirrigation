@@ -113,7 +113,7 @@ class PyETO(SmartIrrigationCalculationModule):
         Args:
             weather_data: Dictionary containing current weather data.
             forecast_data: List of dictionaries containing forecasted weather data for upcoming days.
-            hour_multiplier: multiplier of the current time range related to the day period
+            hour_multiplier: fraction of a full 24-hour day that the current calculation period covers.
 
         Returns:
             The mean evapotranspiration delta as a float.
@@ -142,7 +142,8 @@ class PyETO(SmartIrrigationCalculationModule):
         """Calculate the evapotranspiration delta for a single day's weather data.
 
         Args:
-            weather_data: Dictionary containing weather data for the day.
+            weather_data: Dictionary containing weather data for the day..
+            hour_multiplier: fraction of a full 24-hour day that the current calculation period covers.
 
         Returns:
             The evapotranspiration delta as a float.
