@@ -1099,20 +1099,40 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         diff = None
         if not continuous_updates:
-            first_retrieved_at = min(formatted_retrieved_ats)
-            last_retrieved_at = max(formatted_retrieved_ats)
-            diff = last_retrieved_at - first_retrieved_at
-            _LOGGER.debug(
-                "[apply_aggregates_to_mapping_data]: first_retrieved_at: %s, last_retrieved_at: %s",
-                first_retrieved_at,
-                last_retrieved_at,
-            )
+            last_calc_val = zone.get(const.ZONE_LAST_CALCULATED)
+            # try to calculate difference between last calculation an previous calculation
+            if last_calc_val:
+                if isinstance(last_calc_val, str):
+                    try:
+                        last_calculated_dt = datetime.datetime.fromisoformat(last_calc_val)
+                    except ValueError:
+                        last_calculated_dt = datetime.datetime.strptime(last_calc_val, "%Y-%m-%dT%H:%M:%S")
+                else:
+                    last_calculated_dt = last_calc_val
+
+                last_retrieved_at = max(formatted_retrieved_ats)
+                diff = last_retrieved_at - last_calculated_dt
+                _LOGGER.debug(
+                    "[_handle_retrieved_at]: last_calculated_dt: %s, last_retrieved_at: %s",
+                    last_calculated_dt,
+                    last_retrieved_at,
+                )
+            else:
+                # Fallback for first startup without a previous calculation
+                first_retrieved_at = min(formatted_retrieved_ats)
+                last_retrieved_at = max(formatted_retrieved_ats)
+                diff = last_retrieved_at - first_retrieved_at
+                _LOGGER.debug(
+                    "[_handle_retrieved_at]: first_retrieved_at: %s, last_retrieved_at: %s",
+                    first_retrieved_at,
+                    last_retrieved_at,
+                )
         else:
             # for continuous updates, use interval from last calculation to now
             val = zone[const.ZONE_LAST_CALCULATED]
             if not val:
                 _LOGGER.debug(
-                    "[apply_aggregates_to_mapping_data]: zone has never been calculated, skipping"
+                    "[_handle_retrieved_at]: zone has never been calculated, skipping"
                 )
                 return
             if isinstance(val, datetime.datetime):
@@ -1123,7 +1143,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 last_zone_calc = datetime.datetime.strptime(val, date_format_string)
             diff = datetime.datetime.now() - last_zone_calc
             _LOGGER.debug(
-                "[apply_aggregates_to_mapping_data]: zone last calculated: %s",
+                "[_handle_retrieved_at]: zone last calculated: %s",
                 last_zone_calc,
             )
 
@@ -1132,7 +1152,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         hour_multiplier = diff_in_hours / 24
         resultdata[const.MAPPING_DATA_MULTIPLIER] = hour_multiplier
         _LOGGER.debug(
-            "[apply_aggregates_to_mapping_data]: diff: %s diff_in_seconds: %s, diff_in_hours: %s, hour_multiplier: %s",
+            "[_handle_retrieved_at]: diff: %s diff_in_seconds: %s, diff_in_hours: %s, hour_multiplier: %s",
             diff,
             diff.total_seconds(),
             diff_in_hours,
