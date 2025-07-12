@@ -37,7 +37,7 @@ async def async_register_panel(hass: HomeAssistant):
     )
 
 
-def async_unregister_panel(hass: HomeAssistant):
+def remove_panel(hass: HomeAssistant):
     """Unregister the custom panel for the Smart Irrigation integration."""
     frontend.async_remove_panel(hass, DOMAIN)
     _LOGGER.debug("Removing panel")

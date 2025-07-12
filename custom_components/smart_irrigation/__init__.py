@@ -46,7 +46,7 @@ from .helpers import (
     relative_to_absolute_pressure,
 )
 from .localize import localize
-from .panel import async_register_panel, async_unregister_panel
+from .panel import async_register_panel, remove_panel
 from .store import async_get_registry
 from .weathermodules.KNMIClient import KNMIClient
 from .weathermodules.OWMClient import OWMClient
@@ -216,7 +216,7 @@ async def async_unload_entry(hass: HomeAssistant, entry):
     if not unload_ok:
         return False
 
-    async_unregister_panel(hass)
+    remove_panel(hass)
     coordinator = hass.data[const.DOMAIN]["coordinator"]
     await coordinator.async_unload()
     return True
@@ -224,7 +224,7 @@ async def async_unload_entry(hass: HomeAssistant, entry):
 
 async def async_remove_entry(hass: HomeAssistant, entry):
     """Remove Smart Irrigation config entry."""
-    async_unregister_panel(hass)
+    remove_panel(hass)
     if const.DOMAIN in hass.data:
         if "coordinator" in hass.data[const.DOMAIN]:
             coordinator = hass.data[const.DOMAIN]["coordinator"]
