@@ -689,6 +689,7 @@ async def async_get_registry(hass: HomeAssistant) -> SmartIrrigationStorage:
             await registry.async_load()
             return registry
 
+        # Create task to load registry asynchronously - will be awaited below
         task = hass.data[DATA_REGISTRY] = hass.async_create_task(_load_reg())
 
     data = await task

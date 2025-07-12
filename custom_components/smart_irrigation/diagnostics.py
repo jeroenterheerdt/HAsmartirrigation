@@ -24,7 +24,7 @@ async def async_get_config_entry_diagnostics(
         store = coordinator.store
         if store is not None:
             data["store"] = {
-                "config": store.async_get_config(),
+                "config": await store.async_get_config(),
                 "mappings": store.get_mappings(),
                 "modules": store.get_modules(),
                 "zones": store.get_zones(),

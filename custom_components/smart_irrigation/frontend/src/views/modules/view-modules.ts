@@ -45,9 +45,13 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
   }
 
   public hassSubscribe(): Promise<UnsubscribeFunc>[] {
-    this._fetchData();
+    // Fire-and-forget: initial data fetch for UI setup
+    void this._fetchData();
     return [
-      this.hass!.connection.subscribeMessage(() => this._fetchData(), {
+      this.hass!.connection.subscribeMessage(() => {
+        // Fire-and-forget: update data when notified of changes
+        void this._fetchData();
+      }, {
         type: DOMAIN + "_config_updated",
       }),
     ];

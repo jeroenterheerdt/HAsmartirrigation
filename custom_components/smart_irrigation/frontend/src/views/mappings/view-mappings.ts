@@ -77,9 +77,13 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   }
 
   public hassSubscribe(): Promise<UnsubscribeFunc>[] {
-    this._fetchData();
+    // Fire-and-forget: initial data fetch for UI setup
+    void this._fetchData();
     return [
-      this.hass!.connection.subscribeMessage(() => this._fetchData(), {
+      this.hass!.connection.subscribeMessage(() => {
+        // Fire-and-forget: update data when notified of changes
+        void this._fetchData();
+      }, {
         type: DOMAIN + "_config_updated",
       }),
     ];
@@ -121,9 +125,10 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     };
     this.mappings = [...this.mappings, newMapping];
 
-    this.saveToHA(newMapping);
+    // Fire-and-forget: save mapping and refresh data
+    void this.saveToHA(newMapping);
     //get latest version from HA
-    this._fetchData();
+    void this._fetchData();
   }
 
   private handleRemoveMapping(ev: Event, index: number): void {
