@@ -95,16 +95,18 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
     if (!this.hass || moduleid == undefined) {
       return;
     }
-    deleteModule(this.hass, moduleid.toString());
+    // Fire-and-forget: delete module from HA
+    void deleteModule(this.hass, moduleid.toString());
   }
 
   private saveToHA(module: SmartIrrigationModule): void {
     if (!this.hass) {
       return;
     }
-    saveModule(this.hass, module);
+    // Fire-and-forget: save module to HA backend
+    void saveModule(this.hass, module);
     //get latest version from HA
-    this._fetchData();
+    void this._fetchData();
   }
   private renderModule(
     module: SmartIrrigationModule,
