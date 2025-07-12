@@ -127,28 +127,32 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    calculateAllZones(this.hass);
+    // Fire-and-forget: trigger calculation for all zones in background
+    void calculateAllZones(this.hass);
   }
 
   private handleUpdateAllZones(): void {
     if (!this.hass) {
       return;
     }
-    updateAllZones(this.hass);
+    // Fire-and-forget: trigger update for all zones in background
+    void updateAllZones(this.hass);
   }
 
   private handleResetAllBuckets(): void {
     if (!this.hass) {
       return;
     }
-    resetAllBuckets(this.hass);
+    // Fire-and-forget: reset all buckets in background
+    void resetAllBuckets(this.hass);
   }
 
   private handleClearAllWeatherdata(): void {
     if (!this.hass) {
       return;
     }
-    clearAllWeatherdata(this.hass);
+    // Fire-and-forget: clear all weather data in background
+    void clearAllWeatherdata(this.hass);
   }
 
   private handleAddZone(): void {
@@ -226,7 +230,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       return;
     }
     //call the calculate method of the module for the zone
-    calculateZone(this.hass, zone.id.toString());
+    // Fire-and-forget: trigger zone calculation in background
+    void calculateZone(this.hass, zone.id.toString());
   }
 
   private handleUpdateZone(index: number): void {
@@ -237,7 +242,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    updateZone(this.hass, zone.id.toString());
+    // Fire-and-forget: trigger zone update in background
+    void updateZone(this.hass, zone.id.toString());
   }
 
   private saveToHA(zone: SmartIrrigationZone): void {

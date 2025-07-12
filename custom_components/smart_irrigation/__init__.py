@@ -1349,7 +1349,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         # update start_event
         _LOGGER.debug("calling register start event from async_calculate_all")
-        self.register_start_event()
+        await self.register_start_event()
 
     async def async_calculate_zone(self, zone_id, continuous_updates=False):
         """Calculate irrigation values for a specific zone.
