@@ -466,8 +466,7 @@ class SmartIrrigationStorage:
         """Return the current configuration as a dictionary asynchronously."""
         return attr.asdict(self.config)
 
-    @callback
-    def async_update_config(self, changes: dict):
+    async def async_update_config(self, changes: dict):
         """Update existing config."""
 
         old = self.config
@@ -509,8 +508,7 @@ class SmartIrrigationStorage:
         self.async_schedule_save()
         return attr.asdict(new_zone)
 
-    @callback
-    def async_delete_zone(self, zone_id: int) -> None:
+    async def async_delete_zone(self, zone_id: int) -> None:
         """Delete ZoneEntry."""
         zone_id = int(zone_id)
         if zone_id in self.zones:
@@ -519,8 +517,7 @@ class SmartIrrigationStorage:
             return True
         return False
 
-    @callback
-    def async_update_zone(self, zone_id: int, changes: dict) -> ZoneEntry:
+    async def async_update_zone(self, zone_id: int, changes: dict) -> ZoneEntry:
         """Update existing zone."""
         zone_id = int(zone_id)
         old = self.zones[zone_id]
@@ -587,8 +584,7 @@ class SmartIrrigationStorage:
         self.async_schedule_save()
         return attr.asdict(new_module)
 
-    @callback
-    def async_delete_module(self, module_id: int) -> None:
+    async def async_delete_module(self, module_id: int) -> None:
         """Delete ModuleEntry."""
         if int(module_id) in self.modules:
             del self.modules[int(module_id)]
@@ -596,8 +592,7 @@ class SmartIrrigationStorage:
             return True
         return False
 
-    @callback
-    def async_update_module(self, module_id: int, changes: dict) -> ModuleEntry:
+    async def async_update_module(self, module_id: int, changes: dict) -> ModuleEntry:
         """Update existing module."""
         module_id = int(module_id)
         old = self.modules[module_id]
@@ -633,8 +628,7 @@ class SmartIrrigationStorage:
         self.async_schedule_save()
         return attr.asdict(new_mapping)
 
-    @callback
-    def async_delete_mapping(self, mapping_id: str) -> None:
+    async def async_delete_mapping(self, mapping_id: str) -> None:
         """Delete MappingEntry."""
         mapping_id = int(mapping_id)
         if mapping_id in self.mappings:
@@ -643,8 +637,7 @@ class SmartIrrigationStorage:
             return True
         return False
 
-    @callback
-    def async_update_mapping(self, mapping_id: int, changes: dict) -> MappingEntry:
+    async def async_update_mapping(self, mapping_id: int, changes: dict) -> MappingEntry:
         """Update existing mapping."""
         mapping_id = int(mapping_id)
         old = self.mappings[mapping_id]
@@ -689,6 +682,7 @@ async def async_get_registry(hass: HomeAssistant) -> SmartIrrigationStorage:
             await registry.async_load()
             return registry
 
+        # Create task to load registry asynchronously - will be awaited below
         task = hass.data[DATA_REGISTRY] = hass.async_create_task(_load_reg())
 
     data = await task

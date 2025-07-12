@@ -77,9 +77,13 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   }
 
   public hassSubscribe(): Promise<UnsubscribeFunc>[] {
-    this._fetchData();
+    // Fire-and-forget: initial data fetch for UI setup
+    void this._fetchData();
     return [
-      this.hass!.connection.subscribeMessage(() => this._fetchData(), {
+      this.hass!.connection.subscribeMessage(() => {
+        // Fire-and-forget: update data when notified of changes
+        void this._fetchData();
+      }, {
         type: DOMAIN + "_config_updated",
       }),
     ];
@@ -121,9 +125,10 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     };
     this.mappings = [...this.mappings, newMapping];
 
-    this.saveToHA(newMapping);
+    // Fire-and-forget: save mapping and refresh data
+    void this.saveToHA(newMapping);
     //get latest version from HA
-    this._fetchData();
+    void this._fetchData();
   }
 
   private handleRemoveMapping(ev: Event, index: number): void {
@@ -136,7 +141,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    deleteMapping(this.hass, mappingid.toString());
+    // Fire-and-forget: delete mapping from HA
+    void deleteMapping(this.hass, mappingid.toString());
   }
 
   private handleEditMapping(
@@ -147,7 +153,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       i === index ? updatedMapping : mapping,
     );
     console.log(updatedMapping);
-    this.saveToHA(updatedMapping);
+    // Fire-and-forget: save updated mapping to HA
+    void this.saveToHA(updatedMapping);
   }
   private saveToHA(mapping: SmartIrrigationMapping): void {
     if (!this.hass) {
@@ -187,7 +194,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       }
     }
     if (allsensorsvalid) {
-      saveMapping(this.hass, mapping);
+      // Fire-and-forget: save mapping to HA backend
+      void saveMapping(this.hass, mapping);
     }
   }
   private renderMapping(

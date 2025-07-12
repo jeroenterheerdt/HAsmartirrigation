@@ -151,7 +151,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data[const.DOMAIN]["zones"] = {}
 
     # make sure we capture the use_owm state
-    store.async_update_config(
+    await store.async_update_config(
         {const.CONF_USE_WEATHER_SERVICE: coordinator.use_weather_service}
     )
 
@@ -302,10 +302,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         the_config[const.CONF_USE_WEATHER_SERVICE] = self.use_weather_service
         the_config[const.CONF_WEATHER_SERVICE] = self.weather_service
         if the_config[const.CONF_AUTO_UPDATE_ENABLED]:
+            # Fire-and-forget: schedule auto update timer setup in background
             hass.loop.create_task(self.set_up_auto_update_time(the_config))
         if the_config[const.CONF_AUTO_CALC_ENABLED]:
+            # Fire-and-forget: schedule auto calc timer setup in background
             hass.loop.create_task(self.set_up_auto_calc_time(the_config))
         if the_config[const.CONF_AUTO_CLEAR_ENABLED]:
+            # Fire-and-forget: schedule auto clear timer setup in background
             hass.loop.create_task(self.set_up_auto_clear_time(the_config))
         if the_config[const.START_EVENT_FIRED_TODAY]:
             self._start_event_fired_today = True
@@ -319,6 +322,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         # set up sunrise tracking
         _LOGGER.debug("calling register start event from init")
+        # Fire-and-forget: register start event tracking in background
         asyncio.create_task(self.register_start_event())
 
         # set up midnight tracking
@@ -343,7 +347,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         await self.set_up_auto_update_time(data)
         # handle auto clear changes
         await self.set_up_auto_clear_time(data)
-        self.store.async_update_config(data)
+        await self.store.async_update_config(data)
         async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated")
 
     async def set_up_auto_update_time(self, data):  # noqa: D102
@@ -386,7 +390,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         elif self._track_auto_update_time_unsub:
             self._track_auto_update_time_unsub()
             self._track_auto_update_time_unsub = None
-            self.store.async_update_config(data)
+            await self.store.async_update_config(data)
 
     async def update_subscriptions(self, config=None):
         """Update sensor subscriptions for Smart Irrigation coordinator."""
@@ -559,7 +563,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                         const.MAPPING_DATA_LAST_UPDATED: timestamp,
                         const.MAPPING_DATA_LAST_ENTRY: data_last_entry,
                     }
-                    self.store.async_update_mapping(
+                    await self.store.async_update_mapping(
                         mapping.get(const.MAPPING_ID), changes
                     )
                     _LOGGER.debug(
@@ -746,7 +750,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             )
             changes = {}
             changes = self.clear_weatherdata_for_mapping(mapping)
-            self.store.async_update_mapping(mapping_id, changes=changes)
+            await self.store.async_update_mapping(mapping_id, changes=changes)
 
     def clear_weatherdata_for_mapping(self, mapping):
         """Clear weather data for a given mapping and reset last updated timestamp.
@@ -798,7 +802,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if self._track_auto_calc_time_unsub:
                 self._track_auto_calc_time_unsub()
                 self._track_auto_calc_time_unsub = None
-            self.store.async_update_config(data)
+            await self.store.async_update_config(data)
 
     async def set_up_auto_clear_time(self, data):
         """Set up the automatic clear time for Smart Irrigation based on configuration data."""
@@ -828,11 +832,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     data[const.CONF_CLEAR_TIME],
                 )
                 raise ValueError("Time is not a valid time")
-        self.store.async_update_config(data)
+        await self.store.async_update_config(data)
 
     async def track_update_time(self, *args):
         """Track and schedule periodic updates for Smart Irrigation based on configuration."""
         # perform update once
+        # Fire-and-forget: trigger immediate update in background
         self.hass.async_create_task(self._async_update_all())
         # use async_track_time_interval
         data = await self.store.async_get_config()
@@ -965,7 +970,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "data": mapping_data,
                     const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now(),
                 }
-                self.store.async_update_mapping(mapping_id, changes)
+                await self.store.async_update_mapping(mapping_id, changes)
                 # store last updated and number of data points in the zone here.
                 changes_to_zone = {
                     const.ZONE_LAST_UPDATED: changes[const.MAPPING_DATA_LAST_UPDATED],
@@ -973,7 +978,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 }
                 zones_to_loop = await self._get_zones_that_use_this_mapping(mapping_id)
                 for z in zones_to_loop:
-                    self.store.async_update_zone(z, changes_to_zone)
+                    await self.store.async_update_zone(z, changes_to_zone)
                     async_dispatcher_send(
                         self.hass,
                         const.DOMAIN + "_config_updated",
@@ -1262,7 +1267,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         for mapping in mappings:
             changes = {}
             changes = self.clear_weatherdata_for_mapping(mapping)
-            self.store.async_update_mapping(mapping.get(const.MAPPING_ID), changes)
+            await self.store.async_update_mapping(mapping.get(const.MAPPING_ID), changes)
 
     async def _async_calculate_all(self, delete_weather_data=True, *args):
         _LOGGER.info("Calculating all automatic zones")
@@ -1320,7 +1325,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 changes = {}
                 changes[const.MAPPING_DATA] = []
                 if mapping_id is not None:
-                    self.store.async_update_mapping(mapping_id, changes=changes)
+                    await self.store.async_update_mapping(mapping_id, changes=changes)
 
         # update start_event
         _LOGGER.debug("calling register start event from async_calculate_all")
@@ -1371,7 +1376,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 if continuous_updates:
                     data[const.ZONE_LAST_UPDATED] = datetime.datetime.now()
 
-                self.store.async_update_zone(zone.get(const.ZONE_ID), data)
+                await self.store.async_update_zone(zone.get(const.ZONE_ID), data)
                 async_dispatcher_send(
                     self.hass,
                     const.DOMAIN + "_config_updated",
@@ -1787,17 +1792,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             zone = self.store.get_module(module_id)
             if not zone:
                 return
-            self.store.async_delete_module(module_id)
+            await self.store.async_delete_module(module_id)
         elif module_id is not None and self.store.get_module(module_id):
             # modify a module
-            self.store.async_update_module(module_id, data)
+            await self.store.async_update_module(module_id, data)
             async_dispatcher_send(
                 self.hass, const.DOMAIN + "_config_updated", module_id
             )
         else:
             # create a module
-            asyncio.create_task(self.store.async_create_module(data))
-            asyncio.create_task(self.store.async_get_config())
+            await self.store.async_create_module(data)
+            await self.store.async_get_config()
 
     async def async_update_mapping_config(
         self, mapping_id: int | None = None, data: dict | None = None
@@ -1823,17 +1828,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             res = self.store.get_mapping(mapping_id)
             if not res:
                 return
-            self.store.async_delete_mapping(mapping_id)
+            await self.store.async_delete_mapping(mapping_id)
         elif mapping_id is not None and self.store.get_mapping(mapping_id):
             # modify a mapping
-            self.store.async_update_mapping(mapping_id, data)
+            await self.store.async_update_mapping(mapping_id, data)
             async_dispatcher_send(
                 self.hass, const.DOMAIN + "_config_updated", mapping_id
             )
         else:
             # create a mapping
-            self.store.async_create_mapping(data)
-            self.store.async_get_config()
+            await self.store.async_create_mapping(data)
+            await self.store.async_get_config()
 
         # update the list of sensors to follow - then unsubscribe / subscribe
         await self.update_subscriptions()
@@ -1976,7 +1981,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             zone = self.store.get_zone(zone_id)
             if not zone:
                 return
-            self.store.async_delete_zone(zone_id)
+            await self.store.async_delete_zone(zone_id)
             await self.async_remove_entity(zone_id)
 
         elif const.ATTR_CALCULATE in data:
@@ -2004,7 +2009,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             await self.handle_clear_weatherdata(None)
         elif zone_id is not None and self.store.get_zone(zone_id):
             # modify a zone
-            entry = self.store.async_update_zone(zone_id, data)
+            entry = await self.store.async_update_zone(zone_id, data)
             async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
             await self.update_subscriptions()
             # make sure to update the HA entity here by listening to this in sensor.py.
@@ -2083,9 +2088,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self.hass.bus.fire(event_to_fire, {})
             _LOGGER.info("Fired start event: %s", event_to_fire)
             self._start_event_fired_today = True
-            # save config
-            self.store.async_update_config(
-                {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
+            # save config asynchronously - fire-and-forget since this is a callback
+            self.hass.async_create_task(
+                self.store.async_update_config(
+                    {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
+                )
             )
         else:
             _LOGGER.info("Did not fire start event, it was already fired today")
@@ -2095,9 +2102,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         if self._start_event_fired_today:
             _LOGGER.info("Resetting start event fired today tracker")
             self._start_event_fired_today = False
-            # save config
-            self.store.async_update_config(
-                {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
+            # save config asynchronously - fire-and-forget since this is a callback
+            self.hass.async_create_task(
+                self.store.async_update_config(
+                    {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
+                )
             )
 
     async def async_get_all_modules(self):
@@ -2309,7 +2318,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 raise SmartIrrigationError("No valid parameter provided")
 
             if count > 0:
-                self.store.async_update_zone(zone_id, zone_data)
+                await self.store.async_update_zone(zone_id, zone_data)
                 async_dispatcher_send(
                     self.hass,
                     const.DOMAIN + "_config_updated",
