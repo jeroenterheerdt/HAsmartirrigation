@@ -750,7 +750,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             )
             changes = {}
             changes = self.clear_weatherdata_for_mapping(mapping)
-            self.store.async_update_mapping(mapping_id, changes=changes)
+            await self.store.async_update_mapping(mapping_id, changes=changes)
 
     def clear_weatherdata_for_mapping(self, mapping):
         """Clear weather data for a given mapping and reset last updated timestamp.
@@ -970,7 +970,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "data": mapping_data,
                     const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now(),
                 }
-                self.store.async_update_mapping(mapping_id, changes)
+                await self.store.async_update_mapping(mapping_id, changes)
                 # store last updated and number of data points in the zone here.
                 changes_to_zone = {
                     const.ZONE_LAST_UPDATED: changes[const.MAPPING_DATA_LAST_UPDATED],
@@ -978,7 +978,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 }
                 zones_to_loop = await self._get_zones_that_use_this_mapping(mapping_id)
                 for z in zones_to_loop:
-                    self.store.async_update_zone(z, changes_to_zone)
+                    await self.store.async_update_zone(z, changes_to_zone)
                     async_dispatcher_send(
                         self.hass,
                         const.DOMAIN + "_config_updated",
@@ -1267,7 +1267,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         for mapping in mappings:
             changes = {}
             changes = self.clear_weatherdata_for_mapping(mapping)
-            self.store.async_update_mapping(mapping.get(const.MAPPING_ID), changes)
+            await self.store.async_update_mapping(mapping.get(const.MAPPING_ID), changes)
 
     async def _async_calculate_all(self, delete_weather_data=True, *args):
         _LOGGER.info("Calculating all automatic zones")
@@ -1325,7 +1325,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 changes = {}
                 changes[const.MAPPING_DATA] = []
                 if mapping_id is not None:
-                    self.store.async_update_mapping(mapping_id, changes=changes)
+                    await self.store.async_update_mapping(mapping_id, changes=changes)
 
         # update start_event
         _LOGGER.debug("calling register start event from async_calculate_all")
@@ -1376,7 +1376,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 if continuous_updates:
                     data[const.ZONE_LAST_UPDATED] = datetime.datetime.now()
 
-                self.store.async_update_zone(zone.get(const.ZONE_ID), data)
+                await self.store.async_update_zone(zone.get(const.ZONE_ID), data)
                 async_dispatcher_send(
                     self.hass,
                     const.DOMAIN + "_config_updated",
@@ -2009,7 +2009,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             await self.handle_clear_weatherdata(None)
         elif zone_id is not None and self.store.get_zone(zone_id):
             # modify a zone
-            entry = self.store.async_update_zone(zone_id, data)
+            entry = await self.store.async_update_zone(zone_id, data)
             async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
             await self.update_subscriptions()
             # make sure to update the HA entity here by listening to this in sensor.py.
@@ -2088,9 +2088,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self.hass.bus.fire(event_to_fire, {})
             _LOGGER.info("Fired start event: %s", event_to_fire)
             self._start_event_fired_today = True
-            # save config
-            self.store.async_update_config(
-                {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
+            # save config asynchronously - fire-and-forget since this is a callback
+            self.hass.async_create_task(
+                self.store.async_update_config(
+                    {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
+                )
             )
         else:
             _LOGGER.info("Did not fire start event, it was already fired today")
@@ -2100,9 +2102,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         if self._start_event_fired_today:
             _LOGGER.info("Resetting start event fired today tracker")
             self._start_event_fired_today = False
-            # save config
-            self.store.async_update_config(
-                {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
+            # save config asynchronously - fire-and-forget since this is a callback
+            self.hass.async_create_task(
+                self.store.async_update_config(
+                    {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
+                )
             )
 
     async def async_get_all_modules(self):
@@ -2314,7 +2318,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 raise SmartIrrigationError("No valid parameter provided")
 
             if count > 0:
-                self.store.async_update_zone(zone_id, zone_data)
+                await self.store.async_update_zone(zone_id, zone_data)
                 async_dispatcher_send(
                     self.hass,
                     const.DOMAIN + "_config_updated",

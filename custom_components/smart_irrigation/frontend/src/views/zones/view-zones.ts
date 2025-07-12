@@ -175,7 +175,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
     this.zones = [...this.zones, newZone];
 
-    this.saveToHA(newZone);
+    // Fire-and-forget: save zone to HA
+    void this.saveToHA(newZone);
   }
 
   private handleEditZone(
@@ -188,7 +189,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     this.zones = Object.values(this.zones).map((zone, i) =>
       i === index ? updatedZone : zone,
     );
-    this.saveToHA(updatedZone);
+    // Fire-and-forget: save updated zone to HA
+    void this.saveToHA(updatedZone);
   }
 
   private handleRemoveZone(ev: Event, index: number): void {
@@ -211,7 +213,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    deleteZone(this.hass, zoneid.toString());
+    // Fire-and-forget: delete zone from HA
+    void deleteZone(this.hass, zoneid.toString());
   }
 
   private handleCalculateZone(index: number): void {
@@ -241,7 +244,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    saveZone(this.hass, zone);
+    // Fire-and-forget: save zone to HA backend
+    void saveZone(this.hass, zone);
   }
 
   private renderTheOptions(thelist: object, selected?: number): TemplateResult {

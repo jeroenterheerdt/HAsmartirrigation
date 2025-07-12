@@ -141,7 +141,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     if (!this.hass) {
       return;
     }
-    deleteMapping(this.hass, mappingid.toString());
+    // Fire-and-forget: delete mapping from HA
+    void deleteMapping(this.hass, mappingid.toString());
   }
 
   private handleEditMapping(
@@ -152,7 +153,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       i === index ? updatedMapping : mapping,
     );
     console.log(updatedMapping);
-    this.saveToHA(updatedMapping);
+    // Fire-and-forget: save updated mapping to HA
+    void this.saveToHA(updatedMapping);
   }
   private saveToHA(mapping: SmartIrrigationMapping): void {
     if (!this.hass) {
@@ -192,7 +194,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       }
     }
     if (allsensorsvalid) {
-      saveMapping(this.hass, mapping);
+      // Fire-and-forget: save mapping to HA backend
+      void saveMapping(this.hass, mapping);
     }
   }
   private renderMapping(
