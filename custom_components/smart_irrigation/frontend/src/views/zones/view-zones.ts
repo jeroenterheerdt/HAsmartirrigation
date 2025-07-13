@@ -26,6 +26,7 @@ import {
   updateAllZones,
   resetAllBuckets,
   clearAllWeatherdata,
+  fetchWateringCalendar,
 } from "../../data/websockets";
 import { SubscribeMixin } from "../../subscribe-mixin";
 
@@ -69,6 +70,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   private modules: SmartIrrigationModule[] = [];
   @property({ type: Array })
   private mappings: SmartIrrigationMapping[] = [];
+
+  @property({ type: Map })
+  private wateringCalendars = new Map<number, any[]>();
 
   @property({ type: Boolean })
   private isLoading = true;
@@ -154,6 +158,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       this.zones = zones;
       this.modules = modules;
       this.mappings = mappings;
+
+      // Fetch watering calendars for each zone
+      this._fetchWateringCalendars();
 
       // Clear the cache when new data is loaded
       this.zoneCache.clear();
@@ -399,6 +406,66 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (this.hass) {
       alert(`${localize("panels.zones.actions.view-weather-info-message", this.hass.language)} mapping ID: ${zone.mapping}\n\n${localize("panels.zones.actions.view-weather-info-todo", this.hass.language)}`);
     }
+  }
+
+  private async _fetchWateringCalendars(): Promise<void> {
+    if (!this.hass) {
+      return;
+    }
+
+    // Fetch watering calendar for each zone
+    for (const zone of this.zones) {
+      if (zone.id !== undefined) {
+        try {
+          const calendar = await fetchWateringCalendar(this.hass, zone.id.toString());
+          this.wateringCalendars.set(zone.id, calendar);
+        } catch (error) {
+          console.error(`Failed to fetch watering calendar for zone ${zone.id}:`, error);
+        }
+      }
+    }
+    this._scheduleUpdate();
+  }
+
+  private renderWateringCalendar(zone: SmartIrrigationZone): TemplateResult {
+    if (!this.hass || !zone.id) {
+      return html``;
+    }
+
+    const calendar = this.wateringCalendars.get(zone.id) || [];
+    
+    return html`
+      <div class="watering-calendar">
+        <h4>Watering Calendar (12-Month Estimates)</h4>
+        ${calendar.length === 0 
+          ? html`
+            <div class="calendar-note">
+              No watering calendar data available for this zone
+            </div>
+          `
+          : html`
+            <div class="calendar-table">
+              <div class="calendar-header">
+                <span>Month</span>
+                <span>ET (mm)</span>
+                <span>Precipitation (mm)</span>
+                <span>Watering (mm)</span>
+                <span>Avg Temp (°C)</span>
+              </div>
+              ${calendar.map(entry => html`
+                <div class="calendar-row">
+                  <span>${entry.month || "-"}</span>
+                  <span>${entry.evapotranspiration ? entry.evapotranspiration.toFixed(1) : "-"}</span>
+                  <span>${entry.precipitation ? entry.precipitation.toFixed(1) : "-"}</span>
+                  <span>${entry.watering_volume ? entry.watering_volume.toFixed(1) : "-"}</span>
+                  <span>${entry.temperature ? entry.temperature.toFixed(1) : "-"}</span>
+                </div>
+              `)}
+            </div>
+          `
+        }
+      </div>
+    `;
   }
 
   private async saveToHA(zone: SmartIrrigationZone): Promise<void> {
@@ -872,6 +939,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 >
               </div>
             </div>
+            ${this.renderWateringCalendar(zone)}
           </div>
         </ha-card>
       `;
@@ -1068,6 +1136,57 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         font-style: italic;
         margin-top: 8px;
         font-size: 0.9em;
+      }
+      
+      .watering-calendar {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--divider-color);
+      }
+      
+      .watering-calendar h4 {
+        margin: 0 0 12px 0;
+        font-size: 1em;
+        font-weight: 500;
+        color: var(--primary-text-color);
+      }
+      
+      .calendar-table {
+        display: grid;
+        grid-template-columns: 1fr 0.8fr 1fr 0.8fr 0.8fr;
+        gap: 8px;
+        font-size: 0.85em;
+      }
+      
+      .calendar-header {
+        display: contents;
+        font-weight: 500;
+        color: var(--primary-text-color);
+      }
+      
+      .calendar-header span {
+        padding: 4px;
+        background: var(--card-background-color);
+        border-bottom: 2px solid var(--primary-color);
+      }
+      
+      .calendar-row {
+        display: contents;
+        color: var(--secondary-text-color);
+      }
+      
+      .calendar-row span {
+        padding: 4px;
+        border-bottom: 1px solid var(--divider-color);
+      }
+      
+      .calendar-note {
+        padding: 8px;
+        background: var(--secondary-background-color);
+        color: var(--secondary-text-color);
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-style: italic;
       }
     `;
   }
