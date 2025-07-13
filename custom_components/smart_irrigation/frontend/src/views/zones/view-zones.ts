@@ -72,7 +72,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   private mappings: SmartIrrigationMapping[] = [];
 
   @property({ type: Map })
-  private wateringCalendars = new Map<number, any[]>();
+  private wateringCalendars = new Map<number, any>();
 
   @property({ type: Boolean })
   private isLoading = true;
@@ -432,15 +432,20 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       return html``;
     }
 
-    const calendar = this.wateringCalendars.get(zone.id) || [];
+    const calendarData = this.wateringCalendars.get(zone.id);
+    const zoneCalendar = calendarData && zone.id in calendarData ? calendarData[zone.id] : null;
+    const monthlyEstimates = zoneCalendar?.monthly_estimates || [];
     
     return html`
       <div class="watering-calendar">
         <h4>Watering Calendar (12-Month Estimates)</h4>
-        ${calendar.length === 0 
+        ${monthlyEstimates.length === 0 
           ? html`
             <div class="calendar-note">
-              No watering calendar data available for this zone
+              ${zoneCalendar?.error ? 
+                `Error generating calendar: ${zoneCalendar.error}` :
+                "No watering calendar data available for this zone"
+              }
             </div>
           `
           : html`
@@ -449,19 +454,24 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 <span>Month</span>
                 <span>ET (mm)</span>
                 <span>Precipitation (mm)</span>
-                <span>Watering (mm)</span>
+                <span>Watering (L)</span>
                 <span>Avg Temp (°C)</span>
               </div>
-              ${calendar.map(entry => html`
+              ${monthlyEstimates.map(estimate => html`
                 <div class="calendar-row">
-                  <span>${entry.month || "-"}</span>
-                  <span>${entry.evapotranspiration ? entry.evapotranspiration.toFixed(1) : "-"}</span>
-                  <span>${entry.precipitation ? entry.precipitation.toFixed(1) : "-"}</span>
-                  <span>${entry.watering_volume ? entry.watering_volume.toFixed(1) : "-"}</span>
-                  <span>${entry.temperature ? entry.temperature.toFixed(1) : "-"}</span>
+                  <span>${estimate.month_name || `Month ${estimate.month}` || "-"}</span>
+                  <span>${estimate.estimated_et_mm ? estimate.estimated_et_mm.toFixed(1) : "-"}</span>
+                  <span>${estimate.average_precipitation_mm ? estimate.average_precipitation_mm.toFixed(1) : "-"}</span>
+                  <span>${estimate.estimated_watering_volume_liters ? estimate.estimated_watering_volume_liters.toFixed(0) : "-"}</span>
+                  <span>${estimate.average_temperature_c ? estimate.average_temperature_c.toFixed(1) : "-"}</span>
                 </div>
               `)}
             </div>
+            ${zoneCalendar?.calculation_method ? html`
+              <div class="calendar-info">
+                Method: ${zoneCalendar.calculation_method}
+              </div>
+            ` : ''}
           `
         }
       </div>
@@ -1187,6 +1197,15 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         border-radius: 4px;
         font-size: 0.9em;
         font-style: italic;
+      }
+      
+      .calendar-info {
+        margin-top: 8px;
+        padding: 4px 8px;
+        background: var(--info-color, var(--primary-color));
+        color: white;
+        border-radius: 4px;
+        font-size: 0.8em;
       }
     `;
   }

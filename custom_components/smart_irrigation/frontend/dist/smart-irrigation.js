@@ -7586,13 +7586,15 @@
     }
     renderWateringCalendar(e) {
       if (!this.hass || !e.id) return Y``;
-      const t = this.wateringCalendars.get(e.id) || [];
+      const t = this.wateringCalendars.get(e.id),
+        a = t && e.id in t ? t[e.id] : null,
+        i = (null == a ? void 0 : a.monthly_estimates) || [];
       return Y`
       <div class="watering-calendar">
         <h4>Watering Calendar (12-Month Estimates)</h4>
-        ${0 === t.length ? Y`
+        ${0 === i.length ? Y`
             <div class="calendar-note">
-              No watering calendar data available for this zone
+              ${(null == a ? void 0 : a.error) ? `Error generating calendar: ${a.error}` : "No watering calendar data available for this zone"}
             </div>
           ` : Y`
             <div class="calendar-table">
@@ -7600,19 +7602,24 @@
                 <span>Month</span>
                 <span>ET (mm)</span>
                 <span>Precipitation (mm)</span>
-                <span>Watering (mm)</span>
+                <span>Watering (L)</span>
                 <span>Avg Temp (°C)</span>
               </div>
-              ${t.map(e => Y`
+              ${i.map(e => Y`
                 <div class="calendar-row">
-                  <span>${e.month || "-"}</span>
-                  <span>${e.evapotranspiration ? e.evapotranspiration.toFixed(1) : "-"}</span>
-                  <span>${e.precipitation ? e.precipitation.toFixed(1) : "-"}</span>
-                  <span>${e.watering_volume ? e.watering_volume.toFixed(1) : "-"}</span>
-                  <span>${e.temperature ? e.temperature.toFixed(1) : "-"}</span>
+                  <span>${e.month_name || `Month ${e.month}` || "-"}</span>
+                  <span>${e.estimated_et_mm ? e.estimated_et_mm.toFixed(1) : "-"}</span>
+                  <span>${e.average_precipitation_mm ? e.average_precipitation_mm.toFixed(1) : "-"}</span>
+                  <span>${e.estimated_watering_volume_liters ? e.estimated_watering_volume_liters.toFixed(0) : "-"}</span>
+                  <span>${e.average_temperature_c ? e.average_temperature_c.toFixed(1) : "-"}</span>
                 </div>
               `)}
             </div>
+            ${(null == a ? void 0 : a.calculation_method) ? Y`
+              <div class="calendar-info">
+                Method: ${a.calculation_method}
+              </div>
+            ` : ""}
           `}
       </div>
     `;
@@ -8105,6 +8112,15 @@
         border-radius: 4px;
         font-size: 0.9em;
         font-style: italic;
+      }
+      
+      .calendar-info {
+        margin-top: 8px;
+        padding: 4px 8px;
+        background: var(--info-color, var(--primary-color));
+        color: white;
+        border-radius: 4px;
+        font-size: 0.8em;
       }
     `;
     }
