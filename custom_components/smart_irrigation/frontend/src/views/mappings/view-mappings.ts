@@ -10,6 +10,7 @@ import {
   fetchMappings,
   saveMapping,
   fetchZones,
+  fetchMappingWeatherRecords,
 } from "../../data/websockets";
 import { SubscribeMixin } from "../../subscribe-mixin";
 
@@ -17,6 +18,7 @@ import {
   SmartIrrigationConfig,
   SmartIrrigationZone,
   SmartIrrigationMapping,
+  WeatherRecord,
 } from "../../types";
 import { commonStyle } from "../../styles";
 import { localize } from "../../../localize/localize";
@@ -56,6 +58,7 @@ import {
 } from "../../const";
 import { getOptionsForMappingType, handleError } from "../../helpers";
 import { mdiConsoleNetworkOutline, mdiDelete } from "@mdi/js";
+import moment from "moment";
 
 @customElement("smart-irrigation-view-mappings")
 class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
@@ -66,6 +69,9 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   private zones: SmartIrrigationZone[] = [];
   @property({ type: Array })
   private mappings: SmartIrrigationMapping[] = [];
+
+  @property({ type: Map })
+  private weatherRecords = new Map<number, WeatherRecord[]>();
 
   @property({ type: Boolean })
   private isLoading = true;
@@ -162,6 +168,9 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       this.zones = zones;
       this.mappings = mappings;
 
+      // Fetch weather records for each mapping
+      this._fetchWeatherRecords();
+
       // Clear the cache when new data is loaded
       this.mappingCache.clear();
     } catch (error) {
@@ -179,6 +188,68 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       // Trigger a re-render to ensure UI updates
       this._scheduleUpdate();
     }
+  }
+
+  private async _fetchWeatherRecords(): Promise<void> {
+    if (!this.hass) {
+      return;
+    }
+
+    // Fetch weather records for each mapping
+    for (const mapping of this.mappings) {
+      if (mapping.id !== undefined) {
+        try {
+          const records = await fetchMappingWeatherRecords(this.hass, mapping.id.toString(), 10);
+          this.weatherRecords.set(mapping.id, records);
+        } catch (error) {
+          console.error(`Failed to fetch weather records for mapping ${mapping.id}:`, error);
+        }
+      }
+    }
+    this._scheduleUpdate();
+  }
+
+  private renderWeatherRecords(mapping: SmartIrrigationMapping): TemplateResult {
+    if (!this.hass || !mapping.id) {
+      return html``;
+    }
+
+    const records = this.weatherRecords.get(mapping.id) || [];
+    
+    return html`
+      <div class="weather-records">
+        <h4>${localize("panels.mappings.weather-records.title", this.hass.language)}</h4>
+        ${records.length === 0 
+          ? html`
+            <div class="weather-note">
+              ${localize("panels.mappings.weather-records.no-data", this.hass.language)}
+              <br>
+              ${localize("panels.mappings.weather-records.backend-todo", this.hass.language)}
+            </div>
+          `
+          : html`
+            <div class="weather-table">
+              <div class="weather-header">
+                <span>${localize("panels.mappings.weather-records.timestamp", this.hass.language)}</span>
+                <span>${localize("panels.mappings.weather-records.temperature", this.hass.language)}</span>
+                <span>${localize("panels.mappings.weather-records.humidity", this.hass.language)}</span>
+                <span>${localize("panels.mappings.weather-records.precipitation", this.hass.language)}</span>
+                <span>${localize("panels.mappings.weather-records.retrieval-time", this.hass.language)}</span>
+              </div>
+              ${records.slice(0, 10).map(record => html`
+                <div class="weather-row">
+                  <span>${moment(record.timestamp).format("MM-DD HH:mm")}</span>
+                  <span>${record.temperature ? record.temperature.toFixed(1) + "°C" : "-"}</span>
+                  <span>${record.humidity ? record.humidity.toFixed(1) + "%" : "-"}</span>
+                  <span>${record.precipitation ? record.precipitation.toFixed(1) + "mm" : "-"}</span>
+                  <span>${record.retrieval_time ? moment(record.retrieval_time).format("MM-DD HH:mm") : "-"}</span>
+                </div>
+              `)}
+            </div>
+          `
+        }
+      </div>
+    `;
   }
 
   private handleAddMapping(): void {
@@ -1295,6 +1366,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                 })}"
             />
             ${this.renderMappingSettings(mapping, index)}
+            ${this.renderWeatherRecords(mapping)}
             ${numberofzonesusingthismapping
               ? html`${localize(
                   "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
@@ -1399,6 +1471,57 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       }
       .load-more button:hover {
         background: var(--primary-color-dark, var(--primary-color));
+      }
+      
+      .weather-records {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--divider-color);
+      }
+      
+      .weather-records h4 {
+        margin: 0 0 12px 0;
+        font-size: 1em;
+        font-weight: 500;
+        color: var(--primary-text-color);
+      }
+      
+      .weather-table {
+        display: grid;
+        grid-template-columns: 1fr 0.8fr 0.8fr 0.8fr 1fr;
+        gap: 8px;
+        font-size: 0.85em;
+      }
+      
+      .weather-header {
+        display: contents;
+        font-weight: 500;
+        color: var(--primary-text-color);
+      }
+      
+      .weather-header span {
+        padding: 4px;
+        background: var(--card-background-color);
+        border-bottom: 2px solid var(--primary-color);
+      }
+      
+      .weather-row {
+        display: contents;
+        color: var(--secondary-text-color);
+      }
+      
+      .weather-row span {
+        padding: 4px;
+        border-bottom: 1px solid var(--divider-color);
+      }
+      
+      .weather-note {
+        padding: 8px;
+        background: var(--warning-color);
+        color: var(--text-primary-color);
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-style: italic;
       }
     `;
   }

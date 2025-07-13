@@ -11,6 +11,7 @@ import {
   mdiCalculator,
   mdiUpdate,
   mdiPailRemove,
+  mdiCloudOutline,
 } from "@mdi/js";
 import {
   deleteZone,
@@ -387,6 +388,19 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     void updateZone(this.hass, zone.id.toString());
   }
 
+  private handleViewWeatherInfo(index: number): void {
+    const zone = Object.values(this.zones).at(index);
+    if (!zone || zone.mapping == undefined) {
+      return;
+    }
+    
+    // Navigate to mappings page and show weather info for this mapping
+    // Using a simple alert for now as navigation to specific mapping is complex
+    if (this.hass) {
+      alert(`${localize("panels.zones.actions.view-weather-info-message", this.hass.language)} mapping ID: ${zone.mapping}\n\n${localize("panels.zones.actions.view-weather-info-todo", this.hass.language)}`);
+    }
+  }
+
   private async saveToHA(zone: SmartIrrigationZone): Promise<void> {
     if (!this.hass) {
       throw new Error("Home Assistant connection not available");
@@ -482,6 +496,20 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
           </title>
           <path fill="#404040" d="${mdiPailRemove}" />
         </svg>`;
+
+      let weather_info_svg_to_show;
+      if (zone.mapping != undefined) {
+        weather_info_svg_to_show = html` <svg
+          style="width:24px;height:24px"
+          viewBox="0 0 24 24"
+          @click="${() => this.handleViewWeatherInfo(index)}"
+        >
+          <title>
+            ${localize("panels.zones.actions.view-weather-info", this.hass.language)}
+          </title>
+          <path fill="#404040" d="${mdiCloudOutline}" />
+        </svg>`;
+      }
 
       //get mapping last updated and datapoints
       let the_mapping;
@@ -824,6 +852,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
             <div class="zoneline">
               ${update_svg_to_show} ${calculation_svg_to_show}
               ${explanation_svg_to_show} ${reset_bucket_svg_to_show}
+              ${weather_info_svg_to_show}
               <svg
                 style="width:24px;height:24px"
                 viewBox="0 0 24 24"
