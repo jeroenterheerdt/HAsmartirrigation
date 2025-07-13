@@ -146,41 +146,20 @@ export const deleteMapping = (
   });
 };
 
-// TODO: Backend API needed - Implement irrigation info endpoint
-export const fetchIrrigationInfo = (hass: HomeAssistant): Promise<any> => {
-  // Stub implementation - returns mock data
-  // Backend should implement: GET /api/smart_irrigation/info
-  return Promise.resolve({
-    next_irrigation_start: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-    next_irrigation_duration: 1800, // 30 minutes
-    next_irrigation_zones: ["Zone 1", "Zone 3"],
-    irrigation_reason: "Soil moisture levels below threshold",
-    sunrise_time: new Date(Date.now() + 6 * 60 * 60 * 1000), // 6 hours from now
-    total_irrigation_duration: 3600, // 1 hour total
-    irrigation_explanation:
-      "Based on weather forecast and soil moisture sensors, irrigation is scheduled to maintain optimal growing conditions.",
+// Backend API for irrigation info
+export const fetchIrrigationInfo = (hass: HomeAssistant): Promise<any> =>
+  hass.callWS({
+    type: DOMAIN + "/info",
   });
-};
 
-// TODO: Backend API needed - Implement weather records endpoint for mapping
+// Backend API for weather records for a mapping
 export const fetchMappingWeatherRecords = (
   hass: HomeAssistant,
   mapping_id: string,
   limit: number = 10,
-): Promise<any[]> => {
-  // Stub implementation - returns mock weather data
-  // Backend should implement: GET /api/smart_irrigation/mappings/{mapping_id}/weather?limit={limit}
-  const records: any[] = [];
-  for (let i = 0; i < limit; i++) {
-    records.push({
-      timestamp: new Date(Date.now() - i * 60 * 60 * 1000), // Each hour back
-      temperature: 20 + Math.random() * 10,
-      humidity: 60 + Math.random() * 20,
-      precipitation: Math.random() * 5,
-      pressure: 1013 + Math.random() * 10,
-      wind_speed: Math.random() * 15,
-      retrieval_time: new Date(Date.now() - i * 60 * 60 * 1000 + 5 * 60 * 1000), // 5 min after data time
-    });
-  }
-  return Promise.resolve(records);
-};
+): Promise<any[]> =>
+  hass.callWS({
+    type: DOMAIN + "/weather_records",
+    mapping_id: mapping_id,
+    limit: limit,
+  });

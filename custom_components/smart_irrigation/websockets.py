@@ -256,6 +256,73 @@ async def websocket_get_mappings(hass: HomeAssistant, connection, msg):
     connection.send_result(msg["id"], mappings)
 
 
+@async_response
+async def websocket_get_irrigation_info(hass: HomeAssistant, connection, msg):
+    """Publish irrigation information."""
+    coordinator = hass.data[const.DOMAIN]["coordinator"]
+    _LOGGER.debug("websocket_get_irrigation_info called")
+    
+    # TODO: Implement actual irrigation logic
+    # For now, return mock data structure matching frontend expectations
+    import datetime
+    
+    # Calculate next irrigation time (example: tomorrow at 6 AM)
+    now = datetime.datetime.now()
+    next_irrigation = now.replace(hour=6, minute=0, second=0, microsecond=0)
+    if next_irrigation <= now:
+        next_irrigation += datetime.timedelta(days=1)
+    
+    # Calculate sunrise time (example: 5:30 AM)
+    sunrise = now.replace(hour=5, minute=30, second=0, microsecond=0)
+    if sunrise <= now:
+        sunrise += datetime.timedelta(days=1)
+    
+    irrigation_info = {
+        "next_irrigation_start": next_irrigation.isoformat(),
+        "next_irrigation_duration": 1800,  # 30 minutes
+        "next_irrigation_zones": ["Zone 1", "Zone 3"],
+        "irrigation_reason": "Soil moisture levels below threshold",
+        "sunrise_time": sunrise.isoformat(),
+        "total_irrigation_duration": 3600,  # 1 hour total
+        "irrigation_explanation": "Based on weather forecast and soil moisture sensors, irrigation is scheduled to maintain optimal growing conditions."
+    }
+    
+    connection.send_result(msg["id"], irrigation_info)
+
+
+@async_response
+async def websocket_get_weather_records(hass: HomeAssistant, connection, msg):
+    """Publish weather records for a mapping."""
+    coordinator = hass.data[const.DOMAIN]["coordinator"]
+    mapping_id = msg.get("mapping_id")
+    limit = msg.get("limit", 10)
+    
+    _LOGGER.debug("websocket_get_weather_records called for mapping %s with limit %s", mapping_id, limit)
+    
+    # TODO: Implement actual weather data retrieval from storage
+    # For now, return mock data structure matching frontend expectations
+    import datetime
+    import random
+    
+    records = []
+    for i in range(limit):
+        record_time = datetime.datetime.now() - datetime.timedelta(hours=i)
+        retrieval_time = record_time + datetime.timedelta(minutes=5)
+        
+        record = {
+            "timestamp": record_time.isoformat(),
+            "temperature": round(20 + random.random() * 10, 1),
+            "humidity": round(60 + random.random() * 20, 1),
+            "precipitation": round(random.random() * 5, 1),
+            "pressure": round(1013 + random.random() * 10, 1),
+            "wind_speed": round(random.random() * 15, 1),
+            "retrieval_time": retrieval_time.isoformat()
+        }
+        records.append(record)
+    
+    connection.send_result(msg["id"], records)
+
+
 async def async_register_websockets(hass: HomeAssistant):
     """Register Smart Irrigation HTTP views and websocket commands."""
     hass.http.register_view(SmartIrrigationConfigView)
@@ -304,5 +371,25 @@ async def async_register_websockets(hass: HomeAssistant):
         websocket_get_mappings,
         websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
             {vol.Required("type"): const.DOMAIN + "/mappings"}
+        ),
+    )
+    async_register_command(
+        hass,
+        const.DOMAIN + "/info",
+        websocket_get_irrigation_info,
+        websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
+            {vol.Required("type"): const.DOMAIN + "/info"}
+        ),
+    )
+    async_register_command(
+        hass,
+        const.DOMAIN + "/weather_records",
+        websocket_get_weather_records,
+        websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
+            {
+                vol.Required("type"): const.DOMAIN + "/weather_records",
+                vol.Required("mapping_id"): vol.Coerce(str),
+                vol.Optional("limit", default=10): vol.Coerce(int)
+            }
         ),
     )
