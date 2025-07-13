@@ -230,7 +230,7 @@
         "humidity": "Humidity", 
         "precipitation": "Precip",
         "retrieval-time": "Retrieved",
-        "no-data": "No weather data available for this mapping"
+        "no-data": "No weather data available for this sensor group"
       }
     },
     "modules": {
@@ -270,7 +270,8 @@
         "reset-bucket": "Reset bucket",
         "view-weather-info": "View weather info",
         "view-weather-info-message": "Weather info available for",
-        "view-weather-info-todo": "TODO: Implement navigation to mapping details"
+        "view-weather-info-todo": "TODO: Implement navigation to sensor group details",
+        "view-watering-calendar": "View watering calendar"
       },
       "cards": {
         "add-zone": {

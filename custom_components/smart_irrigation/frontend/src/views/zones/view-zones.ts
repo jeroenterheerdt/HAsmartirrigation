@@ -12,6 +12,7 @@ import {
   mdiUpdate,
   mdiPailRemove,
   mdiCloudOutline,
+  mdiCalendar,
 } from "@mdi/js";
 import {
   deleteZone,
@@ -422,6 +423,24 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     }
   }
 
+  private handleViewWateringCalendar(index: number): void {
+    const zone = Object.values(this.zones).at(index);
+    if (!zone || zone.id == undefined) {
+      return;
+    }
+    
+    // Toggle watering calendar display
+    const calendarSection = this.shadowRoot?.querySelector(`#calendar-section-${zone.id}`);
+    if (calendarSection) {
+      const isHidden = calendarSection.hasAttribute('hidden');
+      if (isHidden) {
+        calendarSection.removeAttribute('hidden');
+      } else {
+        calendarSection.setAttribute('hidden', '');
+      }
+    }
+  }
+
   private async _fetchWeatherRecords(): Promise<void> {
     if (!this.hass) {
       return;
@@ -661,6 +680,18 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
           <path fill="#404040" d="${mdiCloudOutline}" />
         </svg>`;
       }
+
+      // Calendar icon for watering calendar
+      const calendar_svg_to_show = html` <svg
+        style="width:24px;height:24px"
+        viewBox="0 0 24 24"
+        @click="${() => this.handleViewWateringCalendar(index)}"
+      >
+        <title>
+          ${localize("panels.zones.actions.view-watering-calendar", this.hass.language)}
+        </title>
+        <path fill="#404040" d="${mdiCalendar}" />
+      </svg>`;
 
       //get mapping last updated and datapoints
       let the_mapping;
@@ -1003,7 +1034,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
             <div class="zoneline">
               ${update_svg_to_show} ${calculation_svg_to_show}
               ${explanation_svg_to_show} ${reset_bucket_svg_to_show}
-              ${weather_info_svg_to_show}
+              ${weather_info_svg_to_show} ${calendar_svg_to_show}
               <svg
                 style="width:24px;height:24px"
                 viewBox="0 0 24 24"
@@ -1023,7 +1054,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 >
               </div>
             </div>
-            ${this.renderWateringCalendar(zone)}
+            <div id="calendar-section-${zone.id}" hidden>
+              ${this.renderWateringCalendar(zone)}
+            </div>
             <div id="weather-section-${zone.id}" hidden>
               ${this.renderWeatherRecords(zone)}
             </div>
