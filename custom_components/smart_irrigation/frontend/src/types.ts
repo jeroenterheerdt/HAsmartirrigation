@@ -139,11 +139,33 @@ export class SmartIrrigationMapping {
   name: string;
   mappings: object;
   data_last_updated?: Date;
+  data?: any[];
 
   constructor(i: number, n: string, m: object) {
     this.id = i;
     this.name = n;
     this.mappings = m;
     this.data_last_updated = undefined;
+    this.data = undefined;
   }
+}
+
+export interface SmartIrrigationInfo {
+  next_irrigation_start?: Date;
+  next_irrigation_duration?: number;
+  next_irrigation_zones?: string[];
+  irrigation_reason?: string;
+  sunrise_time?: Date;
+  total_irrigation_duration?: number;
+  irrigation_explanation?: string;
+}
+
+export interface WeatherRecord {
+  timestamp: Date;
+  temperature?: number;
+  humidity?: number;
+  precipitation?: number;
+  pressure?: number;
+  wind_speed?: number;
+  retrieval_time?: Date;
 }

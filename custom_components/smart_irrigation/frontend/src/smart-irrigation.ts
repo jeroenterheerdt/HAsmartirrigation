@@ -7,6 +7,7 @@ import "./views/general/view-general.ts";
 import "./views/zones/view-zones.ts";
 import "./views/modules/view-modules.ts";
 import "./views/mappings/view-mappings.ts";
+import "./views/info/view-info.ts";
 
 import { commonStyle } from "./styles";
 import { VERSION, PLATFORM } from "./const";
@@ -94,6 +95,9 @@ export class SmartIrrigationPanel extends LitElement {
           >
             ${localize("panels.mappings.title", this.hass.language)}
           </sl-tab>
+          <sl-tab slot="nav" panel="info" .active=${path.page === "info"}>
+            ${localize("panels.info.title", this.hass.language)}
+          </sl-tab>
           <sl-tab slot="nav" panel="help" .active=${path.page === "help"}>
             ${localize("panels.help.title", this.hass.language)}
           </sl-tab>
@@ -137,6 +141,14 @@ export class SmartIrrigationPanel extends LitElement {
             .narrow=${this.narrow}
             .path=${path}
           ></smart-irrigation-view-mappings>
+        `;
+      case "info":
+        return html`
+          <smart-irrigation-view-info
+            .hass=${this.hass}
+            .narrow=${this.narrow}
+            .path=${path}
+          ></smart-irrigation-view-info>
         `;
       case "help":
         return html`<ha-card

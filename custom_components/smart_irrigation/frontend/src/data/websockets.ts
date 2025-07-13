@@ -145,3 +145,21 @@ export const deleteMapping = (
     remove: true,
   });
 };
+
+// Backend API for irrigation info
+export const fetchIrrigationInfo = (hass: HomeAssistant): Promise<any> =>
+  hass.callWS({
+    type: DOMAIN + "/info",
+  });
+
+// Backend API for weather records for a mapping
+export const fetchMappingWeatherRecords = (
+  hass: HomeAssistant,
+  mapping_id: string,
+  limit: number = 10,
+): Promise<any[]> =>
+  hass.callWS({
+    type: DOMAIN + "/weather_records",
+    mapping_id: mapping_id,
+    limit: limit,
+  });

@@ -1,5 +1,7 @@
 {
   "common": {
+    "loading": "Loading",
+    "saving": "Saving",
     "actions": {
       "delete": "Delete"
     },
@@ -8,6 +10,9 @@
       "no": "No",
       "select": "Select",
       "yes": "Yes"
+    },
+    "units": {
+      "seconds": "seconds"
     },
     "attributes": {
       "size": "size",
@@ -129,6 +134,33 @@
         }
       }
     },
+    "info": {
+      "title": "Info",
+      "description": "View information about next irrigation and system status.",
+      "cards": {
+        "next-irrigation": {
+          "title": "Next Irrigation",
+          "labels": {
+            "next-start": "Next start",
+            "duration": "Duration",
+            "zones": "Zones"
+          },
+          "no-data": "No data available",
+          "backend-todo": "TODO: Backend API needed for irrigation info"
+        },
+        "irrigation-reason": {
+          "title": "Irrigation Reason",
+          "labels": {
+            "reason": "Reason",
+            "sunrise": "Sunrise",
+            "total-duration": "Total duration",
+            "explanation": "Explanation"
+          },
+          "no-data": "No data available",
+          "backend-todo": "TODO: Backend API needed for irrigation reason"
+        }
+      }
+    },
     "mappings": {
       "cards": {
         "add-mapping": {
@@ -190,7 +222,17 @@
         "mapping-name": "Name"
       },
       "no_items": "There are no sensor group defined yet.",
-      "title": "Sensor Groups"
+      "title": "Sensor Groups",
+      "weather-records": {
+        "title": "Weather Records (Last 10)",
+        "timestamp": "Time",
+        "temperature": "Temp",
+        "humidity": "Humidity", 
+        "precipitation": "Precip",
+        "retrieval-time": "Retrieved",
+        "no-data": "No weather data available",
+        "backend-todo": "TODO: Backend API needed for weather records"
+      }
     },
     "modules": {
       "cards": {
@@ -226,7 +268,10 @@
         "calculate": "Calculate",
         "information": "Information",
         "update": "Update",
-        "reset-bucket": "Reset bucket"
+        "reset-bucket": "Reset bucket",
+        "view-weather-info": "View weather info",
+        "view-weather-info-message": "Weather info available for",
+        "view-weather-info-todo": "TODO: Implement navigation to mapping details"
       },
       "cards": {
         "add-zone": {
