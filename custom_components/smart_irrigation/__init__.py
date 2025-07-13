@@ -2359,6 +2359,47 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         """Clear all collected weatherdata."""
         await self._async_clear_all_weatherdata()
 
+    async def handle_generate_watering_calendar(self, call):
+        """Generate watering calendar service handler."""
+        zone_id = call.data.get("zone_id")
+        
+        if zone_id is not None:
+            zone_id = int(zone_id)
+        
+        _LOGGER.info("Generate watering calendar service called for zone %s", zone_id)
+        
+        try:
+            calendar_data = await self.async_generate_watering_calendar(zone_id)
+            
+            # Store the result in hass.data for retrieval by automation
+            if "watering_calendars" not in self.hass.data[const.DOMAIN]:
+                self.hass.data[const.DOMAIN]["watering_calendars"] = {}
+            
+            self.hass.data[const.DOMAIN]["watering_calendars"]["last_generated"] = calendar_data
+            
+            # Fire an event with the calendar data
+            self.hass.bus.fire(
+                f"{const.DOMAIN}_watering_calendar_generated",
+                {
+                    "zone_id": zone_id,
+                    "calendar_data": calendar_data,
+                    "generated_at": datetime.datetime.now().isoformat()
+                }
+            )
+            
+            _LOGGER.info("Watering calendar generated successfully for %s zones", len(calendar_data))
+            
+        except Exception as e:
+            _LOGGER.error("Failed to generate watering calendar: %s", e)
+            self.hass.bus.fire(
+                f"{const.DOMAIN}_watering_calendar_error",
+                {
+                    "zone_id": zone_id,
+                    "error": str(e),
+                    "generated_at": datetime.datetime.now().isoformat()
+                }
+            )
+
     async def async_generate_watering_calendar(self, zone_id: int | None = None):
         """Generate a 12-month watering calendar for a zone or all zones.
         
@@ -2700,4 +2741,10 @@ def register_services(hass: HomeAssistant):
 
     hass.services.async_register(
         const.DOMAIN, const.SERVICE_SET_ZONE, coordinator.handle_set_zone
+    )
+
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_GENERATE_WATERING_CALENDAR,
+        coordinator.handle_generate_watering_calendar,
     )
