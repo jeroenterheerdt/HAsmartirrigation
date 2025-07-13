@@ -163,3 +163,13 @@ export const fetchMappingWeatherRecords = (
     mapping_id: mapping_id,
     limit: limit,
   });
+
+// Backend API for watering calendar for a zone
+export const fetchWateringCalendar = (
+  hass: HomeAssistant,
+  zone_id?: string,
+): Promise<any[]> =>
+  hass.callWS({
+    type: DOMAIN + "/watering_calendar",
+    zone_id: zone_id,
+  });

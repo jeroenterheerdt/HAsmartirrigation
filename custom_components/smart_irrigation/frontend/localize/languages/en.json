@@ -230,8 +230,7 @@
         "humidity": "Humidity", 
         "precipitation": "Precip",
         "retrieval-time": "Retrieved",
-        "no-data": "No weather data available",
-        "backend-todo": "TODO: Backend API needed for weather records"
+        "no-data": "No weather data available for this mapping"
       }
     },
     "modules": {

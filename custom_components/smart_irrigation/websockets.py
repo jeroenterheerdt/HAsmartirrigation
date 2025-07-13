@@ -439,37 +439,41 @@ async def websocket_get_weather_records(hass: HomeAssistant, connection, msg):
             }
             
             # Only include records that have at least some weather data
-            if any(value is not None for key, value in record.items() 
+            if any(value is not None for key, value in record.items()
                    if key not in ["timestamp", "retrieval_time"]):
                 records.append(record)
-        
-        _LOGGER.debug("Retrieved %d weather records for mapping %s", len(records), mapping_id)
-        
+
+        _LOGGER.debug("Retrieved %d weather records for mapping %s",
+                      len(records), mapping_id)
+
     except Exception as e:
-        _LOGGER.error("Error retrieving weather records for mapping %s: %s", mapping_id, e)
+        _LOGGER.error("Error retrieving weather records for mapping %s: %s",
+                      mapping_id, e)
         records = []
-    
     connection.send_result(msg["id"], records)
 
 
 @async_response
-async def websocket_get_watering_calendar(hass: HomeAssistant, connection, msg):
+async def websocket_get_watering_calendar(hass: HomeAssistant, connection,
+                                          msg):
     """Get 12-month watering calendar for zone(s)."""
     coordinator = hass.data[const.DOMAIN]["coordinator"]
     zone_id = msg.get("zone_id")
-    
-    _LOGGER.debug("websocket_get_watering_calendar called for zone %s", zone_id)
-    
+
+    _LOGGER.debug("websocket_get_watering_calendar called for zone %s",
+                  zone_id)
     try:
         # Convert zone_id to int if provided
         if zone_id is not None:
             zone_id = int(zone_id)
         
-        calendar_data = await coordinator.async_generate_watering_calendar(zone_id)
+        calendar_data = await coordinator.async_generate_watering_calendar(
+            zone_id)
         connection.send_result(msg["id"], calendar_data)
-        
+
     except Exception as e:
-        _LOGGER.error("Error generating watering calendar for zone %s: %s", zone_id, e)
+        _LOGGER.error("Error generating watering calendar for zone %s: %s",
+                      zone_id, e)
         connection.send_error(msg["id"], "calendar_generation_failed", str(e))
 
 
@@ -488,17 +492,19 @@ class SmartIrrigationWateringCalendarView(HomeAssistantView):
         zone_id = request.query.get("zone_id")
         
         _LOGGER.debug("HTTP watering calendar request for zone %s", zone_id)
-        
+
         try:
             # Convert zone_id to int if provided
             if zone_id is not None:
                 zone_id = int(zone_id)
-            
-            calendar_data = await coordinator.async_generate_watering_calendar(zone_id)
+
+            calendar_data = await coordinator.async_generate_watering_calendar(
+                zone_id)
             return self.json(calendar_data)
-            
+
         except Exception as e:
-            _LOGGER.error("Error generating watering calendar for zone %s: %s", zone_id, e)
+            _LOGGER.error("Error generating watering calendar for zone %s: %s",
+                          zone_id, e)
             return self.json({"error": str(e)}, status_code=500)
 
 

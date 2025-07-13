@@ -223,8 +223,6 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           ? html`
             <div class="weather-note">
               ${localize("panels.mappings.weather-records.no-data", this.hass.language)}
-              <br>
-              ${localize("panels.mappings.weather-records.backend-todo", this.hass.language)}
             </div>
           `
           : html`
