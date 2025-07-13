@@ -1419,7 +1419,7 @@
           humidity: "Humidity",
           precipitation: "Precip",
           "retrieval-time": "Retrieved",
-          "no-data": "No weather data available for this mapping"
+          "no-data": "No weather data available for this sensor group"
         }
       },
       modules: {
@@ -1459,7 +1459,8 @@
           "reset-bucket": "Reset bucket",
           "view-weather-info": "View weather info",
           "view-weather-info-message": "Weather info available for",
-          "view-weather-info-todo": "TODO: Implement navigation to mapping details"
+          "view-weather-info-todo": "TODO: Implement navigation to sensor group details",
+          "view-watering-calendar": "View watering calendar"
         },
         cards: {
           "add-zone": {
@@ -7574,6 +7575,15 @@
         i.hasAttribute("hidden") ? i.removeAttribute("hidden") : i.setAttribute("hidden", "");
       }
     }
+    handleViewWateringCalendar(e) {
+      var t;
+      const a = Object.values(this.zones).at(e);
+      if (!a || null == a.id) return;
+      const i = null === (t = this.shadowRoot) || void 0 === t ? void 0 : t.querySelector(`#calendar-section-${a.id}`);
+      if (i) {
+        i.hasAttribute("hidden") ? i.removeAttribute("hidden") : i.setAttribute("hidden", "");
+      }
+    }
     async _fetchWeatherRecords() {
       if (this.hass) {
         for (const e of this.zones) if (void 0 !== e.id && void 0 !== e.mapping) try {
@@ -7735,8 +7745,8 @@
           </title>
           <path fill="#404040" d="${"M12.5 9.36L4.27 14.11C3.79 14.39 3.18 14.23 2.9 13.75C2.62 13.27 2.79 12.66 3.27 12.38L11.5 7.63C11.97 7.35 12.58 7.5 12.86 8C13.14 8.47 12.97 9.09 12.5 9.36M13 19C13 15.82 15.47 13.23 18.6 13L20 6H21V4H3V6H4L4.76 9.79L10.71 6.36C11.09 6.13 11.53 6 12 6C13.38 6 14.5 7.12 14.5 8.5C14.5 9.44 14 10.26 13.21 10.69L5.79 14.97L7 21H13.35C13.13 20.37 13 19.7 13 19M21.12 15.46L19 17.59L16.88 15.46L15.47 16.88L17.59 19L15.47 21.12L16.88 22.54L19 20.41L21.12 22.54L22.54 21.12L20.41 19L22.54 16.88L21.12 15.46Z"}" />
         </svg>`;
-        let r, o;
-        return null != e.mapping && (r = Y` <svg
+        let r;
+        null != e.mapping && (r = Y` <svg
           style="width:24px;height:24px"
           viewBox="0 0 24 24"
           @click="${() => this.handleViewWeatherInfo(t)}"
@@ -7745,7 +7755,19 @@
             ${Xi("panels.zones.actions.view-weather-info", this.hass.language)}
           </title>
           <path fill="#404040" d="${"M6.5 20Q4.22 20 2.61 18.43 1 16.85 1 14.58 1 12.63 2.17 11.1 3.35 9.57 5.25 9.15 5.88 6.85 7.75 5.43 9.63 4 12 4 14.93 4 16.96 6.04 19 8.07 19 11 20.73 11.2 21.86 12.5 23 13.78 23 15.5 23 17.38 21.69 18.69 20.38 20 18.5 20M6.5 18H18.5Q19.55 18 20.27 17.27 21 16.55 21 15.5 21 14.45 20.27 13.73 19.55 13 18.5 13H17V11Q17 8.93 15.54 7.46 14.08 6 12 6 9.93 6 8.46 7.46 7 8.93 7 11H6.5Q5.05 11 4.03 12.03 3 13.05 3 14.5 3 15.95 4.03 17 5.05 18 6.5 18M12 12Z"}" />
-        </svg>`), null != e.mapping && (o = this.mappings.filter(t => t.id === e.mapping)[0], null != o && null != o.data_last_updated && (e.last_updated = o.data_last_updated, null != o.data && (e.number_of_data_points = o.data.length))), Y`
+        </svg>`);
+        const o = Y` <svg
+        style="width:24px;height:24px"
+        viewBox="0 0 24 24"
+        @click="${() => this.handleViewWateringCalendar(t)}"
+      >
+        <title>
+          ${Xi("panels.zones.actions.view-watering-calendar", this.hass.language)}
+        </title>
+        <path fill="#404040" d="${"M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z"}" />
+      </svg>`;
+        let l;
+        return null != e.mapping && (l = this.mappings.filter(t => t.id === e.mapping)[0], null != l && null != l.data_last_updated && (e.last_updated = l.data_last_updated, null != l.data && (e.number_of_data_points = l.data.length))), Y`
         <ha-card header="${e.name}">
           <div class="card-content">
             <label for="last_calculated${t}"
@@ -7961,7 +7983,7 @@
             <div class="zoneline">
               ${n} ${i}
               ${a} ${s}
-              ${r}
+              ${r} ${o}
               <svg
                 style="width:24px;height:24px"
                 viewBox="0 0 24 24"
@@ -7981,7 +8003,9 @@
                 >
               </div>
             </div>
-            ${this.renderWateringCalendar(e)}
+            <div id="calendar-section-${e.id}" hidden>
+              ${this.renderWateringCalendar(e)}
+            </div>
             <div id="weather-section-${e.id}" hidden>
               ${this.renderWeatherRecords(e)}
             </div>
@@ -9742,7 +9766,7 @@
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${Xi("title", this.hass.language)}</div>
-          <div class="version">${"v2025.7.0-beta3"}</div>
+          <div class="version">${"v2025.7.0-beta4"}</div>
         </div>
 
         <sl-tab-group
