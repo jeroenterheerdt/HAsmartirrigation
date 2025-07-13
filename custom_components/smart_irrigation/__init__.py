@@ -1541,7 +1541,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 # if maximum_bucket is not set, ignore this relationship and just
                 # drain at a constant rate.
                 drainage = drainage_rate * hour_multiplier * 24
-                if maximum_bucket is not None:
+                if maximum_bucket is not None and maximum_bucket > 0:
                     # gamma is set by uniformity of soil particle size,
                     # but 2 is a reasonable approximation.
                     gamma = 2
@@ -1621,7 +1621,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 "module.calculation.explanation.current-drainage-is",
                 self.hass.config.language,
             )
-            if maximum_bucket is None:
+            if maximum_bucket is None or maximum_bucket <= 0:
                 explanation += f" [{drainage_rate_loc}] * {hours_loc} = {drainage_rate:.1f} * {24 * hour_multiplier:.2f} = {drainage:.2f}"
             else:
                 explanation += f" [{drainage_rate_loc}] * [{hours_loc}] * (min([{old_bucket_loc}] + [{delta_loc}], [{max_bucket_loc}]) / [{max_bucket_loc}])^4 = {drainage_rate:.1f} * {24 * hour_multiplier:.2f} * ({bucket_plus_delta_capped:.2f} / {maximum_bucket:.1f})^4 = {drainage:.2f}"
@@ -1630,7 +1630,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self.hass.config.language,
         )
 
-        if maximum_bucket is not None:
+        if maximum_bucket is not None and maximum_bucket > 0:
             explanation += f" min([{old_bucket_loc}] + [{delta_loc}], {max_bucket_loc}) - [{drainage_loc}] = min({data[const.ZONE_OLD_BUCKET]:.2f}{data[const.ZONE_DELTA]:+.2f}, {maximum_bucket:.1f}) - {drainage:.2f} = {newbucket:.2f}.<br/>"
         else:
             explanation += f" [{old_bucket_loc}] + [{delta_loc}] - [{drainage_loc}] = {data[const.ZONE_OLD_BUCKET]:.2f} + {data[const.ZONE_DELTA]:.2f} - {drainage:.2f} = {newbucket:.2f}.<br/>"
