@@ -5,7 +5,57 @@ This document outlines the backend API endpoints required to support the new fro
 
 ## Required API Endpoints
 
-### 1. Irrigation Information Endpoint
+### 1. Watering Calendar Endpoint
+
+**Endpoint:** `GET /api/smart_irrigation/watering_calendar`
+
+**Description:** Returns 12-month watering estimates for irrigation zones based on representative climate data and evapotranspiration calculations.
+
+**Query Parameters:**
+- `zone_id` (optional): Specific zone ID to get calendar for. If omitted, returns data for all zones.
+
+**Response Format:**
+```json
+{
+  "zone_id": {
+    "zone_name": "Front Lawn",
+    "zone_id": 1,
+    "monthly_estimates": [
+      {
+        "month": 1,
+        "month_name": "January",
+        "estimated_et_mm": 45.2,
+        "estimated_watering_volume_liters": 1250.5,
+        "average_temperature_c": 8.5,
+        "average_precipitation_mm": 85.0,
+        "calculation_notes": "Based on typical January climate patterns"
+      }
+      // ... 11 more months
+    ],
+    "generated_at": "2024-01-15T10:30:00",
+    "calculation_method": "FAO-56 Penman-Monteith method using PyETO"
+  }
+}
+```
+
+**WebSocket Command:**
+```json
+{
+  "type": "smart_irrigation/watering_calendar",
+  "zone_id": "1"  // optional
+}
+```
+
+**Features:**
+- Uses representative monthly climate data based on location latitude/longitude
+- Applies configured evapotranspiration calculation methods (PyETO, Thornthwaite, etc.)
+- Accounts for zone-specific parameters (size, multiplier, etc.)
+- Gracefully handles zones with missing or incomplete configuration
+- Provides seasonal estimates for irrigation planning
+
+**Implementation Status:** ✅ Implemented - Addresses issue #579
+
+### 2. Irrigation Information Endpoint
 
 **Endpoint:** `GET /api/smart_irrigation/info`
 

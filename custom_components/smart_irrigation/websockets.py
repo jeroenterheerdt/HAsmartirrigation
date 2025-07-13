@@ -452,6 +452,56 @@ async def websocket_get_weather_records(hass: HomeAssistant, connection, msg):
     connection.send_result(msg["id"], records)
 
 
+@async_response
+async def websocket_get_watering_calendar(hass: HomeAssistant, connection, msg):
+    """Get 12-month watering calendar for zone(s)."""
+    coordinator = hass.data[const.DOMAIN]["coordinator"]
+    zone_id = msg.get("zone_id")
+    
+    _LOGGER.debug("websocket_get_watering_calendar called for zone %s", zone_id)
+    
+    try:
+        # Convert zone_id to int if provided
+        if zone_id is not None:
+            zone_id = int(zone_id)
+        
+        calendar_data = await coordinator.async_generate_watering_calendar(zone_id)
+        connection.send_result(msg["id"], calendar_data)
+        
+    except Exception as e:
+        _LOGGER.error("Error generating watering calendar for zone %s: %s", zone_id, e)
+        connection.send_error(msg["id"], "calendar_generation_failed", str(e))
+
+
+class SmartIrrigationWateringCalendarView(HomeAssistantView):
+    """View to handle watering calendar requests via HTTP API."""
+
+    url = "/api/" + const.DOMAIN + "/watering_calendar"
+    name = "api:" + const.DOMAIN + ":watering_calendar"
+
+    async def get(self, request):
+        """Handle watering calendar request."""
+        hass = request.app["hass"]
+        coordinator = hass.data[const.DOMAIN]["coordinator"]
+        
+        # Get zone_id from query parameters
+        zone_id = request.query.get("zone_id")
+        
+        _LOGGER.debug("HTTP watering calendar request for zone %s", zone_id)
+        
+        try:
+            # Convert zone_id to int if provided
+            if zone_id is not None:
+                zone_id = int(zone_id)
+            
+            calendar_data = await coordinator.async_generate_watering_calendar(zone_id)
+            return self.json(calendar_data)
+            
+        except Exception as e:
+            _LOGGER.error("Error generating watering calendar for zone %s: %s", zone_id, e)
+            return self.json({"error": str(e)}, status_code=500)
+
+
 async def async_register_websockets(hass: HomeAssistant):
     """Register Smart Irrigation HTTP views and websocket commands."""
     hass.http.register_view(SmartIrrigationConfigView)
@@ -459,6 +509,7 @@ async def async_register_websockets(hass: HomeAssistant):
     hass.http.register_view(SmartIrrigationModuleView)
     hass.http.register_view(SmartIrrigationAllModuleView)
     hass.http.register_view(SmartIrrigationMappingView)
+    hass.http.register_view(SmartIrrigationWateringCalendarView)
 
     async_register_command(hass, handle_subscribe_updates)
 
@@ -519,6 +570,17 @@ async def async_register_websockets(hass: HomeAssistant):
                 vol.Required("type"): const.DOMAIN + "/weather_records",
                 vol.Required("mapping_id"): vol.Coerce(str),
                 vol.Optional("limit", default=10): vol.Coerce(int)
+            }
+        ),
+    )
+    async_register_command(
+        hass,
+        const.DOMAIN + "/watering_calendar",
+        websocket_get_watering_calendar,
+        websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
+            {
+                vol.Required("type"): const.DOMAIN + "/watering_calendar",
+                vol.Optional("zone_id"): vol.Coerce(str)
             }
         ),
     )

@@ -29,6 +29,36 @@ If it rains or snows less than the amount of moisture lost, then irrigation is r
 The integration can take into account weather forecasts for the coming days and also keeps track of the total moisture lost or added ('bucket')
 Multiple zones are supported with each zone having it own configuration and set up.
 
+## New Feature: 12-Month Watering Calendar
+
+Smart Irrigation now includes a monthly watering calendar feature that generates yearly watering estimates for each irrigation zone. This feature uses representative climate data and your configured evapotranspiration calculation methods to provide planning insights.
+
+### API Usage
+
+**REST API:**
+```
+GET /api/smart_irrigation/watering_calendar
+GET /api/smart_irrigation/watering_calendar?zone_id=1
+```
+
+**WebSocket API:**
+```json
+{
+  "type": "smart_irrigation/watering_calendar",
+  "zone_id": "1"  // optional, omit for all zones
+}
+```
+
+### Features
+
+- **Climate-Based Estimates**: Uses representative monthly climate data based on geographic location
+- **Multiple Calculation Methods**: Supports PyETO (FAO-56), Thornthwaite, Static, and Passthrough methods  
+- **Zone-Specific Calculations**: Accounts for zone size, multiplier, and other configuration parameters
+- **Graceful Error Handling**: Continues processing other zones even if individual calculations fail
+- **Seasonal Variation**: Automatically adjusts estimates based on latitude and seasonal patterns
+
+*This feature addresses issue #579 and provides valuable planning information for irrigation scheduling.*
+
 ## Development
 
 For contributors and developers:
