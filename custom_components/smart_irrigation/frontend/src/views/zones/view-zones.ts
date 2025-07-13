@@ -27,6 +27,7 @@ import {
   resetAllBuckets,
   clearAllWeatherdata,
   fetchWateringCalendar,
+  fetchMappingWeatherRecords,
 } from "../../data/websockets";
 import { SubscribeMixin } from "../../subscribe-mixin";
 
@@ -36,6 +37,7 @@ import {
   SmartIrrigationZoneState,
   SmartIrrigationModule,
   SmartIrrigationMapping,
+  WeatherRecord,
 } from "../../types";
 import { output_unit } from "../../helpers";
 import { commonStyle } from "../../styles";
@@ -73,6 +75,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
   @property({ type: Map })
   private wateringCalendars = new Map<number, any>();
+
+  @property({ type: Map })
+  private weatherRecords = new Map<number, WeatherRecord[]>();
 
   @property({ type: Boolean })
   private isLoading = true;
@@ -161,6 +166,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
       // Fetch watering calendars for each zone
       this._fetchWateringCalendars();
+
+      // Fetch weather records for each zone that has a mapping
+      this._fetchWeatherRecords();
 
       // Clear the cache when new data is loaded
       this.zoneCache.clear();
@@ -401,11 +409,36 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       return;
     }
     
-    // Navigate to mappings page and show weather info for this mapping
-    // Using a simple alert for now as navigation to specific mapping is complex
-    if (this.hass) {
-      alert(`${localize("panels.zones.actions.view-weather-info-message", this.hass.language)} mapping ID: ${zone.mapping}\n\n${localize("panels.zones.actions.view-weather-info-todo", this.hass.language)}`);
+    // Toggle weather data display by updating the zone's weather visibility state
+    // For now, we'll use a simple approach to show the weather data
+    const weatherSection = this.shadowRoot?.querySelector(`#weather-section-${zone.id}`);
+    if (weatherSection) {
+      const isHidden = weatherSection.hasAttribute('hidden');
+      if (isHidden) {
+        weatherSection.removeAttribute('hidden');
+      } else {
+        weatherSection.setAttribute('hidden', '');
+      }
     }
+  }
+
+  private async _fetchWeatherRecords(): Promise<void> {
+    if (!this.hass) {
+      return;
+    }
+
+    // Fetch weather records for each zone that has a mapping
+    for (const zone of this.zones) {
+      if (zone.id !== undefined && zone.mapping !== undefined) {
+        try {
+          const records = await fetchMappingWeatherRecords(this.hass, zone.mapping.toString(), 10);
+          this.weatherRecords.set(zone.id, records);
+        } catch (error) {
+          console.error(`Failed to fetch weather records for zone ${zone.id} (mapping ${zone.mapping}):`, error);
+        }
+      }
+    }
+    this._scheduleUpdate();
   }
 
   private async _fetchWateringCalendars(): Promise<void> {
@@ -425,6 +458,47 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       }
     }
     this._scheduleUpdate();
+  }
+
+  private renderWeatherRecords(zone: SmartIrrigationZone): TemplateResult {
+    if (!this.hass || !zone.id) {
+      return html``;
+    }
+
+    const records = this.weatherRecords.get(zone.id) || [];
+    
+    return html`
+      <div class="weather-records">
+        <h4>${localize("panels.mappings.weather-records.title", this.hass.language)}</h4>
+        ${records.length === 0 
+          ? html`
+            <div class="weather-note">
+              ${localize("panels.mappings.weather-records.no-data", this.hass.language)}
+            </div>
+          `
+          : html`
+            <div class="weather-table">
+              <div class="weather-header">
+                <span>${localize("panels.mappings.weather-records.timestamp", this.hass.language)}</span>
+                <span>${localize("panels.mappings.weather-records.temperature", this.hass.language)}</span>
+                <span>${localize("panels.mappings.weather-records.humidity", this.hass.language)}</span>
+                <span>${localize("panels.mappings.weather-records.precipitation", this.hass.language)}</span>
+                <span>${localize("panels.mappings.weather-records.retrieval-time", this.hass.language)}</span>
+              </div>
+              ${records.slice(0, 10).map(record => html`
+                <div class="weather-row">
+                  <span>${moment(record.timestamp).format("MM-DD HH:mm")}</span>
+                  <span>${record.temperature ? record.temperature.toFixed(1) + "°C" : "-"}</span>
+                  <span>${record.humidity ? record.humidity.toFixed(1) + "%" : "-"}</span>
+                  <span>${record.precipitation ? record.precipitation.toFixed(1) + "mm" : "-"}</span>
+                  <span>${record.retrieval_time ? moment(record.retrieval_time).format("MM-DD HH:mm") : "-"}</span>
+                </div>
+              `)}
+            </div>
+          `
+        }
+      </div>
+    `;
   }
 
   private renderWateringCalendar(zone: SmartIrrigationZone): TemplateResult {
@@ -950,6 +1024,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
               </div>
             </div>
             ${this.renderWateringCalendar(zone)}
+            <div id="weather-section-${zone.id}" hidden>
+              ${this.renderWeatherRecords(zone)}
+            </div>
           </div>
         </ha-card>
       `;
@@ -1206,6 +1283,57 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         color: white;
         border-radius: 4px;
         font-size: 0.8em;
+      }
+
+      .weather-records {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--divider-color);
+      }
+      
+      .weather-records h4 {
+        margin: 0 0 12px 0;
+        font-size: 1em;
+        font-weight: 500;
+        color: var(--primary-text-color);
+      }
+      
+      .weather-table {
+        display: grid;
+        grid-template-columns: 1fr 0.8fr 0.8fr 0.8fr 1fr;
+        gap: 8px;
+        font-size: 0.85em;
+      }
+      
+      .weather-header {
+        display: contents;
+        font-weight: 500;
+        color: var(--primary-text-color);
+      }
+      
+      .weather-header span {
+        padding: 4px;
+        background: var(--card-background-color);
+        border-bottom: 2px solid var(--primary-color);
+      }
+      
+      .weather-row {
+        display: contents;
+        color: var(--secondary-text-color);
+      }
+      
+      .weather-row span {
+        padding: 4px;
+        border-bottom: 1px solid var(--divider-color);
+      }
+      
+      .weather-note {
+        padding: 8px;
+        background: var(--secondary-background-color);
+        color: var(--secondary-text-color);
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-style: italic;
       }
     `;
   }

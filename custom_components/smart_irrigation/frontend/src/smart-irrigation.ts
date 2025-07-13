@@ -79,6 +79,9 @@ export class SmartIrrigationPanel extends LitElement {
           .selected=${path.page}
           @sl-tab-show=${this.handlePageSelected}
         >
+          <sl-tab slot="nav" panel="info" .active=${path.page === "info"}>
+            ${localize("panels.info.title", this.hass.language)}
+          </sl-tab>
           <sl-tab slot="nav" panel="general" .active=${path.page === "general"}>
             ${localize("panels.general.title", this.hass.language)}
           </sl-tab>
@@ -95,9 +98,6 @@ export class SmartIrrigationPanel extends LitElement {
           >
             ${localize("panels.mappings.title", this.hass.language)}
           </sl-tab>
-          <sl-tab slot="nav" panel="info" .active=${path.page === "info"}>
-            ${localize("panels.info.title", this.hass.language)}
-          </sl-tab>
           <sl-tab slot="nav" panel="help" .active=${path.page === "help"}>
             ${localize("panels.help.title", this.hass.language)}
           </sl-tab>
@@ -110,6 +110,14 @@ export class SmartIrrigationPanel extends LitElement {
   getView(path: Path) {
     const page = path.page;
     switch (page) {
+      case "info":
+        return html`
+          <smart-irrigation-view-info
+            .hass=${this.hass}
+            .narrow=${this.narrow}
+            .path=${path}
+          ></smart-irrigation-view-info>
+        `;
       case "general":
         return html`
           <smart-irrigation-view-general
@@ -141,14 +149,6 @@ export class SmartIrrigationPanel extends LitElement {
             .narrow=${this.narrow}
             .path=${path}
           ></smart-irrigation-view-mappings>
-        `;
-      case "info":
-        return html`
-          <smart-irrigation-view-info
-            .hass=${this.hass}
-            .narrow=${this.narrow}
-            .path=${path}
-          ></smart-irrigation-view-info>
         `;
       case "help":
         return html`<ha-card
