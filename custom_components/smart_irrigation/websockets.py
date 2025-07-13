@@ -262,30 +262,110 @@ async def websocket_get_irrigation_info(hass: HomeAssistant, connection, msg):
     coordinator = hass.data[const.DOMAIN]["coordinator"]
     _LOGGER.debug("websocket_get_irrigation_info called")
     
-    # TODO: Implement actual irrigation logic
-    # For now, return mock data structure matching frontend expectations
-    import datetime
-    
-    # Calculate next irrigation time (example: tomorrow at 6 AM)
-    now = datetime.datetime.now()
-    next_irrigation = now.replace(hour=6, minute=0, second=0, microsecond=0)
-    if next_irrigation <= now:
-        next_irrigation += datetime.timedelta(days=1)
-    
-    # Calculate sunrise time (example: 5:30 AM)
-    sunrise = now.replace(hour=5, minute=30, second=0, microsecond=0)
-    if sunrise <= now:
-        sunrise += datetime.timedelta(days=1)
-    
-    irrigation_info = {
-        "next_irrigation_start": next_irrigation.isoformat(),
-        "next_irrigation_duration": 1800,  # 30 minutes
-        "next_irrigation_zones": ["Zone 1", "Zone 3"],
-        "irrigation_reason": "Soil moisture levels below threshold",
-        "sunrise_time": sunrise.isoformat(),
-        "total_irrigation_duration": 3600,  # 1 hour total
-        "irrigation_explanation": "Based on weather forecast and soil moisture sensors, irrigation is scheduled to maintain optimal growing conditions."
-    }
+    try:
+        # Get all zones from the store
+        zones = await coordinator.store.async_get_zones()
+        
+        # Calculate total duration and get enabled zones that need irrigation
+        total_duration = await coordinator.get_total_duration_all_enabled_zones()
+        enabled_zones = []
+        irrigation_zones = []
+        
+        for zone in zones:
+            zone_state = zone.get(const.ZONE_STATE)
+            zone_duration = zone.get(const.ZONE_DURATION, 0)
+            
+            if zone_state in [const.ZONE_STATE_AUTOMATIC, const.ZONE_STATE_MANUAL]:
+                enabled_zones.append(zone)
+                # Zone needs irrigation if duration > 0 (bucket was negative)
+                if zone_duration > 0:
+                    irrigation_zones.append(zone.get(const.ZONE_NAME, f"Zone {zone.get(const.ZONE_ID)}"))
+        
+        # Get sunrise time from Home Assistant
+        sun_entity = hass.states.get("sun.sun")
+        sunrise_time = None
+        next_irrigation_start = None
+        
+        if sun_entity and sun_entity.attributes:
+            next_rising = sun_entity.attributes.get("next_rising")
+            if next_rising:
+                try:
+                    # Parse the sunrise time
+                    if isinstance(next_rising, str):
+                        sunrise_time = datetime.datetime.fromisoformat(next_rising.replace('Z', '+00:00'))
+                    else:
+                        sunrise_time = next_rising
+                    
+                    # Calculate irrigation start time (total_duration seconds before sunrise)
+                    if total_duration > 0:
+                        next_irrigation_start = sunrise_time - datetime.timedelta(seconds=total_duration)
+                    else:
+                        next_irrigation_start = sunrise_time
+                        
+                except (ValueError, TypeError) as e:
+                    _LOGGER.warning("Failed to parse sunrise time: %s", e)
+        
+        # Fallback if sun entity is not available
+        if not sunrise_time or not next_irrigation_start:
+            now = datetime.datetime.now()
+            # Default to 6 AM tomorrow
+            sunrise_time = now.replace(hour=6, minute=0, second=0, microsecond=0)
+            if sunrise_time <= now:
+                sunrise_time += datetime.timedelta(days=1)
+            
+            if total_duration > 0:
+                next_irrigation_start = sunrise_time - datetime.timedelta(seconds=total_duration)
+            else:
+                next_irrigation_start = sunrise_time
+        
+        # Collect irrigation reasons from zones
+        reasons = []
+        explanations = []
+        
+        for zone in enabled_zones:
+            if zone.get(const.ZONE_DURATION, 0) > 0:
+                zone_explanation = zone.get(const.ZONE_EXPLANATION, "")
+                if zone_explanation:
+                    explanations.append(f"Zone {zone.get(const.ZONE_NAME, zone.get(const.ZONE_ID))}: {zone_explanation}")
+                
+                # Simple reason based on bucket value
+                bucket = zone.get(const.ZONE_BUCKET, 0)
+                if bucket < 0:
+                    reasons.append(f"Soil moisture deficit in {zone.get(const.ZONE_NAME, f'Zone {zone.get(const.ZONE_ID)}')}")
+        
+        # Default reason if no specific reasons found
+        irrigation_reason = "; ".join(reasons) if reasons else "Scheduled irrigation maintenance"
+        irrigation_explanation = "<br/>".join(explanations) if explanations else "Irrigation scheduled based on soil moisture calculations and weather data."
+        
+        irrigation_info = {
+            "next_irrigation_start": next_irrigation_start.isoformat() if next_irrigation_start else None,
+            "next_irrigation_duration": int(total_duration),
+            "next_irrigation_zones": irrigation_zones,
+            "irrigation_reason": irrigation_reason,
+            "sunrise_time": sunrise_time.isoformat() if sunrise_time else None,
+            "total_irrigation_duration": int(total_duration),
+            "irrigation_explanation": irrigation_explanation
+        }
+        
+        _LOGGER.debug("Irrigation info calculated: %s", irrigation_info)
+        
+    except Exception as e:
+        _LOGGER.error("Error calculating irrigation info: %s", e)
+        # Return fallback data on error
+        now = datetime.datetime.now()
+        sunrise_time = now.replace(hour=6, minute=0, second=0, microsecond=0)
+        if sunrise_time <= now:
+            sunrise_time += datetime.timedelta(days=1)
+        
+        irrigation_info = {
+            "next_irrigation_start": sunrise_time.isoformat(),
+            "next_irrigation_duration": 0,
+            "next_irrigation_zones": [],
+            "irrigation_reason": "Error calculating irrigation schedule",
+            "sunrise_time": sunrise_time.isoformat(),
+            "total_irrigation_duration": 0,
+            "irrigation_explanation": "Unable to calculate irrigation schedule. Please check system configuration."
+        }
     
     connection.send_result(msg["id"], irrigation_info)
 
@@ -299,26 +379,75 @@ async def websocket_get_weather_records(hass: HomeAssistant, connection, msg):
     
     _LOGGER.debug("websocket_get_weather_records called for mapping %s with limit %s", mapping_id, limit)
     
-    # TODO: Implement actual weather data retrieval from storage
-    # For now, return mock data structure matching frontend expectations
-    import datetime
-    import random
-    
-    records = []
-    for i in range(limit):
-        record_time = datetime.datetime.now() - datetime.timedelta(hours=i)
-        retrieval_time = record_time + datetime.timedelta(minutes=5)
+    try:
+        # Get the mapping from the store
+        mapping = coordinator.store.get_mapping(int(mapping_id))
         
-        record = {
-            "timestamp": record_time.isoformat(),
-            "temperature": round(20 + random.random() * 10, 1),
-            "humidity": round(60 + random.random() * 20, 1),
-            "precipitation": round(random.random() * 5, 1),
-            "pressure": round(1013 + random.random() * 10, 1),
-            "wind_speed": round(random.random() * 15, 1),
-            "retrieval_time": retrieval_time.isoformat()
-        }
-        records.append(record)
+        if not mapping:
+            _LOGGER.warning("Mapping with ID %s not found", mapping_id)
+            connection.send_result(msg["id"], [])
+            return
+        
+        # Get weather data from the mapping
+        mapping_data = mapping.get(const.MAPPING_DATA, [])
+        
+        if not mapping_data or not isinstance(mapping_data, list):
+            _LOGGER.debug("No weather data found for mapping %s", mapping_id)
+            connection.send_result(msg["id"], [])
+            return
+        
+        # Process and format the weather records
+        records = []
+        
+        # Sort by timestamp (most recent first) and limit
+        sorted_data = sorted(mapping_data, key=lambda x: x.get(const.RETRIEVED_AT, datetime.datetime.min), reverse=True)
+        limited_data = sorted_data[:limit]
+        
+        for data_point in limited_data:
+            if not isinstance(data_point, dict):
+                continue
+                
+            retrieval_time = data_point.get(const.RETRIEVED_AT)
+            
+            # Format timestamp
+            timestamp_str = None
+            retrieval_time_str = None
+            
+            if retrieval_time:
+                if isinstance(retrieval_time, datetime.datetime):
+                    timestamp_str = retrieval_time.isoformat()
+                    retrieval_time_str = retrieval_time.isoformat()
+                elif isinstance(retrieval_time, str):
+                    timestamp_str = retrieval_time
+                    retrieval_time_str = retrieval_time
+            
+            # Extract weather values
+            record = {
+                "timestamp": timestamp_str,
+                "temperature": data_point.get(const.MAPPING_TEMPERATURE),
+                "humidity": data_point.get(const.MAPPING_HUMIDITY),
+                "precipitation": data_point.get(const.MAPPING_PRECIPITATION),
+                "pressure": data_point.get(const.MAPPING_PRESSURE),
+                "wind_speed": data_point.get(const.MAPPING_WINDSPEED),
+                "solar_radiation": data_point.get(const.MAPPING_SOLRAD),
+                "dewpoint": data_point.get(const.MAPPING_DEWPOINT),
+                "evapotranspiration": data_point.get(const.MAPPING_EVAPOTRANSPIRATION),
+                "max_temperature": data_point.get(const.MAPPING_MAX_TEMP),
+                "min_temperature": data_point.get(const.MAPPING_MIN_TEMP),
+                "current_precipitation": data_point.get(const.MAPPING_CURRENT_PRECIPITATION),
+                "retrieval_time": retrieval_time_str
+            }
+            
+            # Only include records that have at least some weather data
+            if any(value is not None for key, value in record.items() 
+                   if key not in ["timestamp", "retrieval_time"]):
+                records.append(record)
+        
+        _LOGGER.debug("Retrieved %d weather records for mapping %s", len(records), mapping_id)
+        
+    except Exception as e:
+        _LOGGER.error("Error retrieving weather records for mapping %s: %s", mapping_id, e)
+        records = []
     
     connection.send_result(msg["id"], records)
 
