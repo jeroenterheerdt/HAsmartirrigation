@@ -445,30 +445,35 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
           ${this.isLoading
             ? html`<div class="loading-indicator">Loading...</div>`
             : html`
-                <label for="moduleInput"
-                  >${localize(
-                    "common.labels.module",
-                    this.hass.language,
-                  )}:</label
-                >
-                <select id="moduleInput" ?disabled="${this.isSaving}">
-                  ${Object.entries(this.allmodules).map(
-                    ([key, value]) =>
-                      html`<option value="${value.id}">${value.name}</option>`,
-                  )}
-                </select>
-                <button
-                  @click="${this.handleAddModule}"
-                  ?disabled="${this.isSaving}"
-                  class="${this.isSaving ? "saving" : ""}"
-                >
-                  ${this.isSaving
-                    ? "Adding..."
-                    : localize(
-                        "panels.modules.cards.add-module.actions.add",
-                        this.hass.language,
-                      )}
-                </button>
+                <div class="zoneline">
+                  <label for="moduleInput"
+                    >${localize(
+                      "common.labels.module",
+                      this.hass.language,
+                    )}:</label
+                  >
+                  <select id="moduleInput" ?disabled="${this.isSaving}">
+                    ${Object.entries(this.allmodules).map(
+                      ([key, value]) =>
+                        html`<option value="${value.id}">${value.name}</option>`,
+                    )}
+                  </select>
+                </div>
+                <div class="zoneline">
+                  <span></span>
+                  <button
+                    @click="${this.handleAddModule}"
+                    ?disabled="${this.isSaving}"
+                    class="${this.isSaving ? "saving" : ""}"
+                  >
+                    ${this.isSaving
+                      ? "Adding..."
+                      : localize(
+                          "panels.modules.cards.add-module.actions.add",
+                          this.hass.language,
+                        )}
+                  </button>
+                </div>
               `}
         </div>
       </ha-card>
@@ -532,6 +537,33 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
       select:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+      }
+      .zoneline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .zoneline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .zoneline input,
+      .zoneline select {
+        justify-self: end;
+      }
+      .saving-indicator {
+        color: var(--primary-color);
+        font-style: italic;
+        margin-top: 8px;
+        font-size: 0.9em;
       }
     `;
   }

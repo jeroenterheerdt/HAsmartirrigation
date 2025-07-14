@@ -165,65 +165,71 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
           </label>
         </div>
         <div class="card-content">
-          <label for="autocalcenabled"
-            >${localize(
-              "panels.general.cards.automatic-duration-calculation.labels.auto-calc-enabled",
-              this.hass.language,
-            )}:</label
-          >
-          <input
-            type="radio"
-            id="autocalcon"
-            name="autocalcenabled"
-            value="True"
-            ?checked="${this.config.autocalcenabled}"
-            @change="${(e: Event) => {
-              this.handleConfigChange({
-                autocalcenabled: parseBoolean(
-                  (e.target as HTMLInputElement).value,
-                ),
-              });
-            }}"
-          /><label for="autocalcon"
-            >${localize("common.labels.yes", this.hass.language)}</label
-          >
-          <input
-            type="radio"
-            id="autocalcoff"
-            name="autocalcenabled"
-            value="False"
-            ?checked="${!this.config.autocalcenabled}"
-            @change="${(e: Event) => {
-              this.handleConfigChange({
-                autocalcenabled: parseBoolean(
-                  (e.target as HTMLInputElement).value,
-                ),
-              });
-            }}"
-          /><label for="autocalcoff"
-            >${localize("common.labels.no", this.hass.language)}</label
-          >
+          <div class="zoneline">
+            <label for="autocalcenabled"
+              >${localize(
+                "panels.general.cards.automatic-duration-calculation.labels.auto-calc-enabled",
+                this.hass.language,
+              )}:</label
+            >
+            <div>
+              <input
+                type="radio"
+                id="autocalcon"
+                name="autocalcenabled"
+                value="True"
+                ?checked="${this.config.autocalcenabled}"
+                @change="${(e: Event) => {
+                  this.handleConfigChange({
+                    autocalcenabled: parseBoolean(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  });
+                }}"
+              /><label for="autocalcon"
+                >${localize("common.labels.yes", this.hass.language)}</label
+              >
+              <input
+                type="radio"
+                id="autocalcoff"
+                name="autocalcenabled"
+                value="False"
+                ?checked="${!this.config.autocalcenabled}"
+                @change="${(e: Event) => {
+                  this.handleConfigChange({
+                    autocalcenabled: parseBoolean(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  });
+                }}"
+              /><label for="autocalcoff"
+                >${localize("common.labels.no", this.hass.language)}</label
+              >
+            </div>
+          </div>
         </div>`;
       if (this.data.autocalcenabled) {
         r1 = html`${r1}
           <div class="card-content">
-            <label for="calctime"
-              >${localize(
-                "panels.general.cards.automatic-duration-calculation.labels.auto-calc-time",
-                this.hass.language,
-              )}</label
-            >:
-            <input
-              id="calctime"
-              type="text"
-              class="shortinput"
-              .value="${this.config.calctime}"
-              @input=${(e: Event) => {
-                this.handleConfigChange({
-                  calctime: (e.target as HTMLInputElement).value,
-                });
-              }}
-            />
+            <div class="zoneline">
+              <label for="calctime"
+                >${localize(
+                  "panels.general.cards.automatic-duration-calculation.labels.auto-calc-time",
+                  this.hass.language,
+                )}:</label
+              >
+              <input
+                id="calctime"
+                type="text"
+                class="shortinput"
+                .value="${this.config.calctime}"
+                @input=${(e: Event) => {
+                  this.handleConfigChange({
+                    calctime: (e.target as HTMLInputElement).value,
+                  });
+                }}
+              />
+            </div>
           </div>`;
       }
       r1 = html`<ha-card
@@ -260,44 +266,48 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
           </label>
         </div>
         <div class="card-content">
-          <label for="autoupdateenabled"
-            >${localize(
-              "panels.general.cards.automatic-update.labels.auto-update-enabled",
-              this.hass.language,
-            )}:</label
-          >
-          <input
-            type="radio"
-            id="autoupdateon"
-            name="autoupdateenabled"
-            value="True"
-            ?checked="${this.config.autoupdateenabled}"
-            @change="${(e: Event) => {
-              this.saveData({
-                autoupdateenabled: parseBoolean(
-                  (e.target as HTMLInputElement).value,
-                ),
-              });
-            }}"
-          /><label for="autoupdateon"
-            >${localize("common.labels.yes", this.hass.language)}</label
-          >
-          <input
-            type="radio"
-            id="autoupdateoff"
-            name="autoupdateenabled"
-            value="False"
-            ?checked="${!this.config.autoupdateenabled}"
-            @change="${(e: Event) => {
-              this.saveData({
-                autoupdateenabled: parseBoolean(
-                  (e.target as HTMLInputElement).value,
-                ),
-              });
-            }}"
-          /><label for="autoupdateoff"
-            >${localize("common.labels.no", this.hass.language)}</label
-          >
+          <div class="zoneline">
+            <label for="autoupdateenabled"
+              >${localize(
+                "panels.general.cards.automatic-update.labels.auto-update-enabled",
+                this.hass.language,
+              )}:</label
+            >
+            <div>
+              <input
+                type="radio"
+                id="autoupdateon"
+                name="autoupdateenabled"
+                value="True"
+                ?checked="${this.config.autoupdateenabled}"
+                @change="${(e: Event) => {
+                  this.saveData({
+                    autoupdateenabled: parseBoolean(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  });
+                }}"
+              /><label for="autoupdateon"
+                >${localize("common.labels.yes", this.hass.language)}</label
+              >
+              <input
+                type="radio"
+                id="autoupdateoff"
+                name="autoupdateenabled"
+                value="False"
+                ?checked="${!this.config.autoupdateenabled}"
+                @change="${(e: Event) => {
+                  this.saveData({
+                    autoupdateenabled: parseBoolean(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  });
+                }}"
+              /><label for="autoupdateoff"
+                >${localize("common.labels.no", this.hass.language)}</label
+              >
+            </div>
+          </div>
         </div>`;
       if (this.data.autoupdateenabled) {
         r2 = html`${r2}
@@ -683,6 +693,33 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       select:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+      }
+      .zoneline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .zoneline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .zoneline input,
+      .zoneline select {
+        justify-self: end;
+      }
+      .saving-indicator {
+        color: var(--primary-color);
+        font-style: italic;
+        margin-top: 8px;
+        font-size: 0.9em;
       }
       /* Radio button group styling */
       input[type="radio"] {

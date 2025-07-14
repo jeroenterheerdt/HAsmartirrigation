@@ -325,8 +325,8 @@
     ReactiveElement: k
   }), (null !== (p = m.reactiveElementVersions) && void 0 !== p ? p : m.reactiveElementVersions = []).push("1.6.3");
   const S = window,
-    E = S.trustedTypes,
-    x = E ? E.createPolicy("lit-html", {
+    x = S.trustedTypes,
+    E = x ? x.createPolicy("lit-html", {
       createHTML: e => e
     }) : void 0,
     M = "$lit$",
@@ -356,7 +356,7 @@
     W = D.createTreeWalker(D, 129, null, !1);
   function Z(e, t) {
     if (!Array.isArray(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
-    return void 0 !== x ? x.createHTML(t) : t;
+    return void 0 !== E ? E.createHTML(t) : t;
   }
   const q = (e, t) => {
     const a = e.length - 1,
@@ -420,7 +420,7 @@
             const e = i.textContent.split(A),
               t = e.length - 1;
             if (t > 0) {
-              i.textContent = E ? E.emptyScript : "";
+              i.textContent = x ? x.emptyScript : "";
               for (let a = 0; a < t; a++) i.append(e[a], O()), W.nextNode(), o.push({
                 type: 2,
                 index: ++n
@@ -592,7 +592,7 @@
       this.element[this.name] = e === V ? void 0 : e;
     }
   }
-  const ae = E ? E.emptyScript : "";
+  const ae = x ? x.emptyScript : "";
   class ie extends ee {
     constructor() {
       super(...arguments), this.type = 4;
@@ -835,8 +835,8 @@
   const ke = "smart_irrigation",
     $e = "minutes",
     Se = "hours",
-    Ee = "days",
-    xe = "imperial",
+    xe = "days",
+    Ee = "imperial",
     Me = "metric",
     Ae = "Dewpoint",
     Te = "Evapotranspiration",
@@ -1188,7 +1188,7 @@
       title: kt,
       default: $t
     }),
-    Et = {
+    xt = {
       loading: "Loading",
       saving: "Saving",
       actions: {
@@ -1213,7 +1213,7 @@
         number_of_data_points: "number of data points"
       }
     },
-    xt = {
+    Et = {
       "default-zone": "Default zone",
       "default-mapping": "Default sensor group"
     },
@@ -1508,8 +1508,8 @@
     },
     zt = "Smart Irrigation",
     Dt = {
-      common: Et,
-      defaults: xt,
+      common: xt,
+      defaults: Et,
       module: Mt,
       calcmodules: At,
       panels: Tt,
@@ -1517,8 +1517,8 @@
     },
     Ot = Object.freeze({
       __proto__: null,
-      common: Et,
-      defaults: xt,
+      common: xt,
+      defaults: Et,
       module: Mt,
       calcmodules: At,
       panels: Tt,
@@ -3096,7 +3096,7 @@
       panels: ka,
       title: $a
     },
-    Ea = Object.freeze({
+    xa = Object.freeze({
       __proto__: null,
       common: ba,
       defaults: ya,
@@ -3106,7 +3106,7 @@
       title: $a,
       default: Sa
     });
-  function xa(e, t) {
+  function Ea(e, t) {
     var a = t && t.cache ? t.cache : Na,
       i = t && t.serializer ? t.serializer : Da;
     return (t && t.strategy ? t.strategy : za)(e, {
@@ -3806,7 +3806,7 @@
       }
       return i;
     },
-    Ei = fi ? Object.fromEntries : function (e) {
+    xi = fi ? Object.fromEntries : function (e) {
       for (var t = {}, a = 0, i = e; a < i.length; a++) {
         var n = i[a],
           s = n[0],
@@ -3815,7 +3815,7 @@
       }
       return t;
     },
-    xi = vi ? function (e, t) {
+    Ei = vi ? function (e, t) {
       return e.codePointAt(t);
     } : function (e, t) {
       var a = e.length;
@@ -3846,7 +3846,7 @@
     };
   } else ki = function (e, t) {
     for (var a = [];;) {
-      var i = xi(e, t);
+      var i = Ei(e, t);
       if (void 0 === i || Pi(i) || Ni(i)) break;
       a.push(i), t += i >= 65536 ? 2 : 1;
     }
@@ -4124,7 +4124,7 @@
               val: {
                 type: Ca.select,
                 value: a,
-                options: Ei(_.val),
+                options: xi(_.val),
                 location: w
               },
               err: null
@@ -4132,7 +4132,7 @@
               val: {
                 type: Ca.plural,
                 value: a,
-                options: Ei(_.val),
+                options: xi(_.val),
                 offset: v,
                 pluralType: "plural" === o ? "cardinal" : "ordinal",
                 location: w
@@ -4257,7 +4257,7 @@
       }, e.prototype.char = function () {
         var e = this.position.offset;
         if (e >= this.message.length) throw Error("out of bound");
-        var t = xi(this.message, e);
+        var t = Ei(this.message, e);
         if (void 0 === t) throw Error("Offset ".concat(e, " is at invalid UTF-16 code unit boundary"));
         return t;
       }, e.prototype.error = function (e, t) {
@@ -4516,21 +4516,21 @@
           dateTime: {},
           pluralRules: {}
         }), {
-          getNumberFormat: xa(function () {
+          getNumberFormat: Ea(function () {
             for (var e, t = [], a = 0; a < arguments.length; a++) t[a] = arguments[a];
             return new ((e = Intl.NumberFormat).bind.apply(e, s([void 0], t, !1)))();
           }, {
             cache: Wi(o.number),
             strategy: La.variadic
           }),
-          getDateTimeFormat: xa(function () {
+          getDateTimeFormat: Ea(function () {
             for (var e, t = [], a = 0; a < arguments.length; a++) t[a] = arguments[a];
             return new ((e = Intl.DateTimeFormat).bind.apply(e, s([void 0], t, !1)))();
           }, {
             cache: Wi(o.dateTime),
             strategy: La.variadic
           }),
-          getPluralRules: xa(function () {
+          getPluralRules: Ea(function () {
             for (var e, t = [], a = 0; a < arguments.length; a++) t[a] = arguments[a];
             return new ((e = Intl.PluralRules).bind.apply(e, s([void 0], t, !1)))();
           }, {
@@ -4619,7 +4619,7 @@
     it: aa,
     nl: da,
     no: va,
-    sk: Ea
+    sk: xa
   };
   function Xi(e, t, ...a) {
     const i = t.replace(/['"]+/g, "");
@@ -4965,54 +4965,60 @@
           </label>
         </div>
         <div class="card-content">
-          <label for="autocalcenabled"
-            >${Xi("panels.general.cards.automatic-duration-calculation.labels.auto-calc-enabled", this.hass.language)}:</label
-          >
-          <input
-            type="radio"
-            id="autocalcon"
-            name="autocalcenabled"
-            value="True"
-            ?checked="${this.config.autocalcenabled}"
-            @change="${e => {
+          <div class="zoneline">
+            <label for="autocalcenabled"
+              >${Xi("panels.general.cards.automatic-duration-calculation.labels.auto-calc-enabled", this.hass.language)}:</label
+            >
+            <div>
+              <input
+                type="radio"
+                id="autocalcon"
+                name="autocalcenabled"
+                value="True"
+                ?checked="${this.config.autocalcenabled}"
+                @change="${e => {
           this.handleConfigChange({
             autocalcenabled: an(e.target.value)
           });
         }}"
-          /><label for="autocalcon"
-            >${Xi("common.labels.yes", this.hass.language)}</label
-          >
-          <input
-            type="radio"
-            id="autocalcoff"
-            name="autocalcenabled"
-            value="False"
-            ?checked="${!this.config.autocalcenabled}"
-            @change="${e => {
+              /><label for="autocalcon"
+                >${Xi("common.labels.yes", this.hass.language)}</label
+              >
+              <input
+                type="radio"
+                id="autocalcoff"
+                name="autocalcenabled"
+                value="False"
+                ?checked="${!this.config.autocalcenabled}"
+                @change="${e => {
           this.handleConfigChange({
             autocalcenabled: an(e.target.value)
           });
         }}"
-          /><label for="autocalcoff"
-            >${Xi("common.labels.no", this.hass.language)}</label
-          >
+              /><label for="autocalcoff"
+                >${Xi("common.labels.no", this.hass.language)}</label
+              >
+            </div>
+          </div>
         </div>`;
         this.data.autocalcenabled && (e = Y`${e}
           <div class="card-content">
-            <label for="calctime"
-              >${Xi("panels.general.cards.automatic-duration-calculation.labels.auto-calc-time", this.hass.language)}</label
-            >:
-            <input
-              id="calctime"
-              type="text"
-              class="shortinput"
-              .value="${this.config.calctime}"
-              @input=${e => {
+            <div class="zoneline">
+              <label for="calctime"
+                >${Xi("panels.general.cards.automatic-duration-calculation.labels.auto-calc-time", this.hass.language)}:</label
+              >
+              <input
+                id="calctime"
+                type="text"
+                class="shortinput"
+                .value="${this.config.calctime}"
+                @input=${e => {
           this.handleConfigChange({
             calctime: e.target.value
           });
         }}
-            />
+              />
+            </div>
           </div>`), e = Y`<ha-card
         header="${Xi("panels.general.cards.automatic-duration-calculation.header", this.hass.language)}"
       >
@@ -5038,37 +5044,41 @@
           </label>
         </div>
         <div class="card-content">
-          <label for="autoupdateenabled"
-            >${Xi("panels.general.cards.automatic-update.labels.auto-update-enabled", this.hass.language)}:</label
-          >
-          <input
-            type="radio"
-            id="autoupdateon"
-            name="autoupdateenabled"
-            value="True"
-            ?checked="${this.config.autoupdateenabled}"
-            @change="${e => {
+          <div class="zoneline">
+            <label for="autoupdateenabled"
+              >${Xi("panels.general.cards.automatic-update.labels.auto-update-enabled", this.hass.language)}:</label
+            >
+            <div>
+              <input
+                type="radio"
+                id="autoupdateon"
+                name="autoupdateenabled"
+                value="True"
+                ?checked="${this.config.autoupdateenabled}"
+                @change="${e => {
           this.saveData({
             autoupdateenabled: an(e.target.value)
           });
         }}"
-          /><label for="autoupdateon"
-            >${Xi("common.labels.yes", this.hass.language)}</label
-          >
-          <input
-            type="radio"
-            id="autoupdateoff"
-            name="autoupdateenabled"
-            value="False"
-            ?checked="${!this.config.autoupdateenabled}"
-            @change="${e => {
+              /><label for="autoupdateon"
+                >${Xi("common.labels.yes", this.hass.language)}</label
+              >
+              <input
+                type="radio"
+                id="autoupdateoff"
+                name="autoupdateenabled"
+                value="False"
+                ?checked="${!this.config.autoupdateenabled}"
+                @change="${e => {
           this.saveData({
             autoupdateenabled: an(e.target.value)
           });
         }}"
-          /><label for="autoupdateoff"
-            >${Xi("common.labels.no", this.hass.language)}</label
-          >
+              /><label for="autoupdateoff"
+                >${Xi("common.labels.no", this.hass.language)}</label
+              >
+            </div>
+          </div>
         </div>`;
         this.data.autoupdateenabled && (t = Y`${t}
           <div class="card-content">
@@ -5108,8 +5118,8 @@
                 ${Xi("panels.general.cards.automatic-update.options.hours", this.hass.language)}
               </option>
               <option
-                value="${Ee}"
-                ?selected="${this.data.autoupdateschedule === Ee}"
+                value="${xe}"
+                ?selected="${this.data.autoupdateschedule === xe}"
               >
                 ${Xi("panels.general.cards.automatic-update.options.days", this.hass.language)}
               </option>
@@ -5336,6 +5346,33 @@
         opacity: 0.6;
         cursor: not-allowed;
       }
+      .zoneline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .zoneline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .zoneline input,
+      .zoneline select {
+        justify-self: end;
+      }
+      .saving-indicator {
+        color: var(--primary-color);
+        font-style: italic;
+        margin-top: 8px;
+        font-size: 0.9em;
+      }
       /* Radio button group styling */
       input[type="radio"] {
         margin-right: 5px;
@@ -5473,7 +5510,7 @@
         function S(e) {
           !1 === i.suppressDeprecationWarnings && "undefined" != typeof console && console.warn && console.warn("Deprecation warning: " + e);
         }
-        function E(e, t) {
+        function x(e, t) {
           var a = !0;
           return p(function () {
             if (null != i.deprecationHandler && i.deprecationHandler(null, e), a) {
@@ -5494,7 +5531,7 @@
             return t.apply(this, arguments);
           }, t);
         }
-        var x,
+        var E,
           M = {};
         function A(e, t) {
           null != i.deprecationHandler && i.deprecationHandler(e, t), M[e] || (S(t), M[e] = !0);
@@ -5517,7 +5554,7 @@
         function O(e) {
           null != e && this.set(e);
         }
-        i.suppressDeprecationWarnings = !1, i.deprecationHandler = null, x = Object.keys ? Object.keys : function (e) {
+        i.suppressDeprecationWarnings = !1, i.deprecationHandler = null, E = Object.keys ? Object.keys : function (e) {
           var t,
             a = [];
           for (t in e) o(e, t) && a.push(t);
@@ -5738,8 +5775,8 @@
           ke = /[+-]?\d+(\.\d{1,3})?/,
           $e = /[0-9]{0,256}['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFF07\uFF10-\uFFEF]{1,256}|[\u0600-\u06FF\/]{1,256}(\s*?[\u0600-\u06FF]{1,256}){1,2}/i,
           Se = /^[1-9]\d?/,
-          Ee = /^([1-9]\d|\d)/;
-        function xe(e, t, a) {
+          xe = /^([1-9]\d|\d)/;
+        function Ee(e, t, a) {
           re[e] = T(t) ? t : function (e, i) {
             return e && a ? a : t;
           };
@@ -5801,7 +5838,7 @@
           return e <= 9999 ? P(e, 4) : "+" + e;
         }), B(0, ["YY", 2], 0, function () {
           return this.year() % 100;
-        }), B(0, ["YYYY", 4], 0, "year"), B(0, ["YYYYY", 5], 0, "year"), B(0, ["YYYYYY", 6, !0], 0, "year"), xe("Y", ye), xe("YY", he, le), xe("YYYY", fe, de), xe("YYYYY", ve, ce), xe("YYYYYY", ve, ce), He(["YYYYY", "YYYYYY"], Le), He("YYYY", function (e, t) {
+        }), B(0, ["YYYY", 4], 0, "year"), B(0, ["YYYYY", 5], 0, "year"), B(0, ["YYYYYY", 6, !0], 0, "year"), Ee("Y", ye), Ee("YY", he, le), Ee("YYYY", fe, de), Ee("YYYYY", ve, ce), Ee("YYYYYY", ve, ce), He(["YYYYY", "YYYYYY"], Le), He("YYYY", function (e, t) {
           t[Le] = 2 === e.length ? i.parseTwoDigitYear(e) : De(e);
         }), He("YY", function (e, t) {
           t[Le] = i.parseTwoDigitYear(e);
@@ -5897,9 +5934,9 @@
           return this.localeData().monthsShort(this, e);
         }), B("MMMM", 0, 0, function (e) {
           return this.localeData().months(this, e);
-        }), xe("M", he, Se), xe("MM", he, le), xe("MMM", function (e, t) {
+        }), Ee("M", he, Se), Ee("MM", he, le), Ee("MMM", function (e, t) {
           return t.monthsShortRegex(e);
-        }), xe("MMMM", function (e, t) {
+        }), Ee("MMMM", function (e, t) {
           return t.monthsRegex(e);
         }), He(["M", "MM"], function (e, t) {
           t[je] = De(e) - 1;
@@ -6007,14 +6044,14 @@
         function St(e) {
           return kt(e, this._week.dow, this._week.doy).week;
         }
-        B("w", ["ww", 2], "wo", "week"), B("W", ["WW", 2], "Wo", "isoWeek"), xe("w", he, Se), xe("ww", he, le), xe("W", he, Se), xe("WW", he, le), Ce(["w", "ww", "W", "WW"], function (e, t, a, i) {
+        B("w", ["ww", 2], "wo", "week"), B("W", ["WW", 2], "Wo", "isoWeek"), Ee("w", he, Se), Ee("ww", he, le), Ee("W", he, Se), Ee("WW", he, le), Ce(["w", "ww", "W", "WW"], function (e, t, a, i) {
           t[i.substr(0, 1)] = De(e);
         });
-        var Et = {
+        var xt = {
           dow: 0,
           doy: 6
         };
-        function xt() {
+        function Et() {
           return this._week.dow;
         }
         function Mt() {
@@ -6043,11 +6080,11 @@
           return this.localeData().weekdaysShort(this, e);
         }), B("dddd", 0, 0, function (e) {
           return this.localeData().weekdays(this, e);
-        }), B("e", 0, 0, "weekday"), B("E", 0, 0, "isoWeekday"), xe("d", he), xe("e", he), xe("E", he), xe("dd", function (e, t) {
+        }), B("e", 0, 0, "weekday"), B("E", 0, 0, "isoWeekday"), Ee("d", he), Ee("e", he), Ee("E", he), Ee("dd", function (e, t) {
           return t.weekdaysMinRegex(e);
-        }), xe("ddd", function (e, t) {
+        }), Ee("ddd", function (e, t) {
           return t.weekdaysShortRegex(e);
-        }), xe("dddd", function (e, t) {
+        }), Ee("dddd", function (e, t) {
           return t.weekdaysRegex(e);
         }), Ce(["dd", "ddd", "dddd"], function (e, t, a, i) {
           var n = a._locale.weekdaysParse(e, i, a._strict);
@@ -6157,7 +6194,7 @@
           return "" + this.hours() + P(this.minutes(), 2);
         }), B("Hmmss", 0, 0, function () {
           return "" + this.hours() + P(this.minutes(), 2) + P(this.seconds(), 2);
-        }), Qt("a", !0), Qt("A", !1), xe("a", ea), xe("A", ea), xe("H", he, Ee), xe("h", he, Se), xe("k", he, Se), xe("HH", he, le), xe("hh", he, le), xe("kk", he, le), xe("hmm", pe), xe("hmmss", me), xe("Hmm", pe), xe("Hmmss", me), He(["H", "HH"], Be), He(["k", "kk"], function (e, t, a) {
+        }), Qt("a", !0), Qt("A", !1), Ee("a", ea), Ee("A", ea), Ee("H", he, xe), Ee("h", he, Se), Ee("k", he, Se), Ee("HH", he, le), Ee("hh", he, le), Ee("kk", he, le), Ee("hmm", pe), Ee("hmmss", me), Ee("Hmm", pe), Ee("Hmmss", me), He(["H", "HH"], Be), He(["k", "kk"], function (e, t, a) {
           var i = De(e);
           t[Be] = 24 === i ? 0 : i;
         }), He(["a", "A"], function (e, t, a) {
@@ -6194,7 +6231,7 @@
             relativeTime: J,
             months: it,
             monthsShort: nt,
-            week: Et,
+            week: xt,
             weekdays: Ht,
             weekdaysMin: Pt,
             weekdaysShort: Ct,
@@ -6274,7 +6311,7 @@
           return ca(e);
         }
         function ba() {
-          return x(oa);
+          return E(oa);
         }
         function ya(e) {
           var t,
@@ -6286,8 +6323,8 @@
           ka = /Z|[+-]\d\d(?::?\d\d)?/,
           $a = [["YYYYYY-MM-DD", /[+-]\d{6}-\d\d-\d\d/], ["YYYY-MM-DD", /\d{4}-\d\d-\d\d/], ["GGGG-[W]WW-E", /\d{4}-W\d\d-\d/], ["GGGG-[W]WW", /\d{4}-W\d\d/, !1], ["YYYY-DDD", /\d{4}-\d{3}/], ["YYYY-MM", /\d{4}-\d\d/, !1], ["YYYYYYMMDD", /[+-]\d{10}/], ["YYYYMMDD", /\d{8}/], ["GGGG[W]WWE", /\d{4}W\d{3}/], ["GGGG[W]WW", /\d{4}W\d{2}/, !1], ["YYYYDDD", /\d{7}/], ["YYYYMM", /\d{6}/, !1], ["YYYY", /\d{4}/, !1]],
           Sa = [["HH:mm:ss.SSSS", /\d\d:\d\d:\d\d\.\d+/], ["HH:mm:ss,SSSS", /\d\d:\d\d:\d\d,\d+/], ["HH:mm:ss", /\d\d:\d\d:\d\d/], ["HH:mm", /\d\d:\d\d/], ["HHmmss.SSSS", /\d\d\d\d\d\d\.\d+/], ["HHmmss,SSSS", /\d\d\d\d\d\d,\d+/], ["HHmmss", /\d\d\d\d\d\d/], ["HHmm", /\d\d\d\d/], ["HH", /\d\d/]],
-          Ea = /^\/?Date\((-?\d+)/i,
-          xa = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|([+-]\d{4}))$/,
+          xa = /^\/?Date\((-?\d+)/i,
+          Ea = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|([+-]\d{4}))$/,
           Ma = {
             UT: 0,
             GMT: 0,
@@ -6355,14 +6392,14 @@
         }
         function Ca(e) {
           var t,
-            a = xa.exec(Da(e._i));
+            a = Ea.exec(Da(e._i));
           if (a) {
             if (t = Ta(a[4], a[3], a[2], a[5], a[6], a[7]), !Oa(a[1], t, e)) return;
             e._a = t, e._tzm = Ha(a[8], a[9], a[10]), e._d = yt.apply(null, e._a), e._d.setUTCMinutes(e._d.getUTCMinutes() - e._tzm), f(e).rfc2822 = !0;
           } else e._isValid = !1;
         }
         function Pa(e) {
-          var t = Ea.exec(e._i);
+          var t = xa.exec(e._i);
           null === t ? (Aa(e), !1 === e._isValid && (delete e._isValid, Ca(e), !1 === e._isValid && (delete e._isValid, e._strict ? e._isValid = !1 : i.createFromInputFallback(e)))) : e._d = new Date(+t[1]);
         }
         function Na(e, t, a) {
@@ -6458,14 +6495,14 @@
         function Za(e, t, a, i) {
           return Wa(e, t, a, i, !1);
         }
-        i.createFromInputFallback = E("value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are discouraged. Please refer to http://momentjs.com/guides/#/warnings/js-date/ for more info.", function (e) {
+        i.createFromInputFallback = x("value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are discouraged. Please refer to http://momentjs.com/guides/#/warnings/js-date/ for more info.", function (e) {
           e._d = new Date(e._i + (e._useUTC ? " UTC" : ""));
         }), i.ISO_8601 = function () {}, i.RFC_2822 = function () {};
-        var qa = E("moment().min is deprecated, use moment.max instead. http://momentjs.com/guides/#/warnings/min-max/", function () {
+        var qa = x("moment().min is deprecated, use moment.max instead. http://momentjs.com/guides/#/warnings/min-max/", function () {
             var e = Za.apply(null, arguments);
             return this.isValid() && e.isValid() ? e < this ? this : e : b();
           }),
-          Ka = E("moment().max is deprecated, use moment.min instead. http://momentjs.com/guides/#/warnings/min-max/", function () {
+          Ka = x("moment().max is deprecated, use moment.min instead. http://momentjs.com/guides/#/warnings/min-max/", function () {
             var e = Za.apply(null, arguments);
             return this.isValid() && e.isValid() ? e > this ? this : e : b();
           });
@@ -6537,7 +6574,7 @@
             return e < 0 && (e = -e, a = "-"), a + P(~~(e / 60), 2) + t + P(~~e % 60, 2);
           });
         }
-        ui("Z", ":"), ui("ZZ", ""), xe("Z", we), xe("ZZ", we), He(["Z", "ZZ"], function (e, t, a) {
+        ui("Z", ":"), ui("ZZ", ""), Ee("Z", we), Ee("ZZ", we), He(["Z", "ZZ"], function (e, t, a) {
           a._useUTC = !0, a._tzm = ci(we, e);
         });
         var di = /([\+\-]|\d\d)/gi;
@@ -6604,8 +6641,8 @@
           return !!this.isValid() && this._isUTC && 0 === this._offset;
         }
         i.updateOffset = function () {};
-        var Ei = /^(-|\+)?(?:(\d*)[. ])?(\d+):(\d+)(?::(\d+)(\.\d*)?)?$/,
-          xi = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;
+        var xi = /^(-|\+)?(?:(\d*)[. ])?(\d+):(\d+)(?::(\d+)(\.\d*)?)?$/,
+          Ei = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;
         function Mi(e, t) {
           var a,
             i,
@@ -6616,14 +6653,14 @@
             ms: e._milliseconds,
             d: e._days,
             M: e._months
-          } : d(e) || !isNaN(+e) ? (s = {}, t ? s[t] = +e : s.milliseconds = +e) : (r = Ei.exec(e)) ? (a = "-" === r[1] ? -1 : 1, s = {
+          } : d(e) || !isNaN(+e) ? (s = {}, t ? s[t] = +e : s.milliseconds = +e) : (r = xi.exec(e)) ? (a = "-" === r[1] ? -1 : 1, s = {
             y: 0,
             d: De(r[Ie]) * a,
             h: De(r[Be]) * a,
             m: De(r[Re]) * a,
             s: De(r[Ue]) * a,
             ms: De(oi(1e3 * r[Ye])) * a
-          }) : (r = xi.exec(e)) ? (a = "-" === r[1] ? -1 : 1, s = {
+          }) : (r = Ei.exec(e)) ? (a = "-" === r[1] ? -1 : 1, s = {
             y: Ai(r[2], a),
             M: Ai(r[3], a),
             w: Ai(r[4], a),
@@ -6821,7 +6858,7 @@
           return void 0 === e ? this._locale._abbr : (null != (t = va(e)) && (this._locale = t), this);
         }
         i.defaultFormat = "YYYY-MM-DDTHH:mm:ssZ", i.defaultFormatUtc = "YYYY-MM-DDTHH:mm:ss[Z]";
-        var on = E("moment().lang() is deprecated. Instead, use moment().localeData() to get the language configuration. Use moment().locale() to change languages.", function (e) {
+        var on = x("moment().lang() is deprecated. Instead, use moment().localeData() to get the language configuration. Use moment().locale() to change languages.", function (e) {
           return void 0 === e ? this.localeData() : this.locale(e);
         });
         function ln() {
@@ -6936,10 +6973,10 @@
         function Sn() {
           return this.isValid() ? this.toISOString() : null;
         }
-        function En() {
+        function xn() {
           return v(this);
         }
-        function xn() {
+        function En() {
           return p({}, f(this));
         }
         function Mn() {
@@ -7104,23 +7141,23 @@
         function Qn(e) {
           return null == e ? Math.ceil((this.month() + 1) / 3) : this.month(3 * (e - 1) + this.month() % 3);
         }
-        B("N", 0, 0, "eraAbbr"), B("NN", 0, 0, "eraAbbr"), B("NNN", 0, 0, "eraAbbr"), B("NNNN", 0, 0, "eraName"), B("NNNNN", 0, 0, "eraNarrow"), B("y", ["y", 1], "yo", "eraYear"), B("y", ["yy", 2], 0, "eraYear"), B("y", ["yyy", 3], 0, "eraYear"), B("y", ["yyyy", 4], 0, "eraYear"), xe("N", In), xe("NN", In), xe("NNN", In), xe("NNNN", Bn), xe("NNNNN", Rn), He(["N", "NN", "NNN", "NNNN", "NNNNN"], function (e, t, a, i) {
+        B("N", 0, 0, "eraAbbr"), B("NN", 0, 0, "eraAbbr"), B("NNN", 0, 0, "eraAbbr"), B("NNNN", 0, 0, "eraName"), B("NNNNN", 0, 0, "eraNarrow"), B("y", ["y", 1], "yo", "eraYear"), B("y", ["yy", 2], 0, "eraYear"), B("y", ["yyy", 3], 0, "eraYear"), B("y", ["yyyy", 4], 0, "eraYear"), Ee("N", In), Ee("NN", In), Ee("NNN", In), Ee("NNNN", Bn), Ee("NNNNN", Rn), He(["N", "NN", "NNN", "NNNN", "NNNNN"], function (e, t, a, i) {
           var n = a._locale.erasParse(e, i, a._strict);
           n ? f(a).era = n : f(a).invalidEra = e;
-        }), xe("y", be), xe("yy", be), xe("yyy", be), xe("yyyy", be), xe("yo", Un), He(["y", "yy", "yyy", "yyyy"], Le), He(["yo"], function (e, t, a, i) {
+        }), Ee("y", be), Ee("yy", be), Ee("yyy", be), Ee("yyyy", be), Ee("yo", Un), He(["y", "yy", "yyy", "yyyy"], Le), He(["yo"], function (e, t, a, i) {
           var n;
           a._locale._eraYearOrdinalRegex && (n = e.match(a._locale._eraYearOrdinalRegex)), a._locale.eraYearOrdinalParse ? t[Le] = a._locale.eraYearOrdinalParse(e, n) : t[Le] = parseInt(e, 10);
         }), B(0, ["gg", 2], 0, function () {
           return this.weekYear() % 100;
         }), B(0, ["GG", 2], 0, function () {
           return this.isoWeekYear() % 100;
-        }), Fn("gggg", "weekYear"), Fn("ggggg", "weekYear"), Fn("GGGG", "isoWeekYear"), Fn("GGGGG", "isoWeekYear"), xe("G", ye), xe("g", ye), xe("GG", he, le), xe("gg", he, le), xe("GGGG", fe, de), xe("gggg", fe, de), xe("GGGGG", ve, ce), xe("ggggg", ve, ce), Ce(["gggg", "ggggg", "GGGG", "GGGGG"], function (e, t, a, i) {
+        }), Fn("gggg", "weekYear"), Fn("ggggg", "weekYear"), Fn("GGGG", "isoWeekYear"), Fn("GGGGG", "isoWeekYear"), Ee("G", ye), Ee("g", ye), Ee("GG", he, le), Ee("gg", he, le), Ee("GGGG", fe, de), Ee("gggg", fe, de), Ee("GGGGG", ve, ce), Ee("ggggg", ve, ce), Ce(["gggg", "ggggg", "GGGG", "GGGGG"], function (e, t, a, i) {
           t[i.substr(0, 2)] = De(e);
         }), Ce(["gg", "GG"], function (e, t, a, n) {
           t[n] = i.parseTwoDigitYear(e);
-        }), B("Q", 0, "Qo", "quarter"), xe("Q", oe), He("Q", function (e, t) {
+        }), B("Q", 0, "Qo", "quarter"), Ee("Q", oe), He("Q", function (e, t) {
           t[je] = 3 * (De(e) - 1);
-        }), B("D", ["DD", 2], "Do", "date"), xe("D", he, Se), xe("DD", he, le), xe("Do", function (e, t) {
+        }), B("D", ["DD", 2], "Do", "date"), Ee("D", he, Se), Ee("DD", he, le), Ee("Do", function (e, t) {
           return e ? t._dayOfMonthOrdinalParse || t._ordinalParse : t._dayOfMonthOrdinalParseLenient;
         }), He(["D", "DD"], Ie), He("Do", function (e, t) {
           t[Ie] = De(e.match(he)[0]);
@@ -7130,11 +7167,11 @@
           var t = Math.round((this.clone().startOf("day") - this.clone().startOf("year")) / 864e5) + 1;
           return null == e ? t : this.add(e - t, "d");
         }
-        B("DDD", ["DDDD", 3], "DDDo", "dayOfYear"), xe("DDD", ge), xe("DDDD", ue), He(["DDD", "DDDD"], function (e, t, a) {
+        B("DDD", ["DDDD", 3], "DDDo", "dayOfYear"), Ee("DDD", ge), Ee("DDDD", ue), He(["DDD", "DDDD"], function (e, t, a) {
           a._dayOfYear = De(e);
-        }), B("m", ["mm", 2], 0, "minute"), xe("m", he, Ee), xe("mm", he, le), He(["m", "mm"], Re);
+        }), B("m", ["mm", 2], 0, "minute"), Ee("m", he, xe), Ee("mm", he, le), He(["m", "mm"], Re);
         var as = Ke("Minutes", !1);
-        B("s", ["ss", 2], 0, "second"), xe("s", he, Ee), xe("ss", he, le), He(["s", "ss"], Ue);
+        B("s", ["ss", 2], 0, "second"), Ee("s", he, xe), Ee("ss", he, le), He(["s", "ss"], Ue);
         var is,
           ns,
           ss = Ke("Seconds", !1);
@@ -7154,7 +7191,7 @@
           return 1e5 * this.millisecond();
         }), B(0, ["SSSSSSSSS", 9], 0, function () {
           return 1e6 * this.millisecond();
-        }), xe("S", ge, oe), xe("SS", ge, le), xe("SSS", ge, ue), is = "SSSS"; is.length <= 9; is += "S") xe(is, be);
+        }), Ee("S", ge, oe), Ee("SS", ge, le), Ee("SSS", ge, ue), is = "SSSS"; is.length <= 9; is += "S") Ee(is, be);
         function rs(e, t) {
           t[Ye] = De(1e3 * ("0." + e));
         }
@@ -7176,9 +7213,9 @@
         function hs(e) {
           return e;
         }
-        us.add = Hi, us.calendar = Ri, us.clone = Ui, us.diff = qi, us.endOf = bn, us.format = en, us.from = tn, us.fromNow = an, us.to = nn, us.toNow = sn, us.get = Qe, us.invalidAt = Mn, us.isAfter = Yi, us.isBefore = Fi, us.isBetween = Vi, us.isSame = Gi, us.isSameOrAfter = Wi, us.isSameOrBefore = Zi, us.isValid = En, us.lang = on, us.locale = rn, us.localeData = ln, us.max = Ka, us.min = qa, us.parsingFlags = xn, us.set = et, us.startOf = vn, us.subtract = Ci, us.toArray = kn, us.toObject = $n, us.toDate = wn, us.toISOString = Ji, us.inspect = Qi, "undefined" != typeof Symbol && null != Symbol.for && (us[Symbol.for("nodejs.util.inspect.custom")] = function () {
+        us.add = Hi, us.calendar = Ri, us.clone = Ui, us.diff = qi, us.endOf = bn, us.format = en, us.from = tn, us.fromNow = an, us.to = nn, us.toNow = sn, us.get = Qe, us.invalidAt = Mn, us.isAfter = Yi, us.isBefore = Fi, us.isBetween = Vi, us.isSame = Gi, us.isSameOrAfter = Wi, us.isSameOrBefore = Zi, us.isValid = xn, us.lang = on, us.locale = rn, us.localeData = ln, us.max = Ka, us.min = qa, us.parsingFlags = En, us.set = et, us.startOf = vn, us.subtract = Ci, us.toArray = kn, us.toObject = $n, us.toDate = wn, us.toISOString = Ji, us.inspect = Qi, "undefined" != typeof Symbol && null != Symbol.for && (us[Symbol.for("nodejs.util.inspect.custom")] = function () {
           return "Moment<" + this.format() + ">";
-        }), us.toJSON = Sn, us.toString = Xi, us.unix = _n, us.valueOf = yn, us.creationData = An, us.eraName = On, us.eraNarrow = Hn, us.eraAbbr = Cn, us.eraYear = Pn, us.year = Ze, us.isLeapYear = qe, us.weekYear = Vn, us.isoWeekYear = Gn, us.quarter = us.quarters = Qn, us.month = pt, us.daysInMonth = mt, us.week = us.weeks = At, us.isoWeek = us.isoWeeks = Tt, us.weeksInYear = qn, us.weeksInWeekYear = Kn, us.isoWeeksInYear = Wn, us.isoWeeksInISOWeekYear = Zn, us.date = es, us.day = us.days = Ft, us.weekday = Vt, us.isoWeekday = Gt, us.dayOfYear = ts, us.hour = us.hours = ia, us.minute = us.minutes = as, us.second = us.seconds = ss, us.millisecond = us.milliseconds = ns, us.utcOffset = mi, us.utc = fi, us.local = vi, us.parseZone = bi, us.hasAlignedHourOffset = yi, us.isDST = _i, us.isLocal = ki, us.isUtcOffset = $i, us.isUtc = Si, us.isUTC = Si, us.zoneAbbr = os, us.zoneName = ls, us.dates = E("dates accessor is deprecated. Use date instead.", es), us.months = E("months accessor is deprecated. Use month instead", pt), us.years = E("years accessor is deprecated. Use year instead", Ze), us.zone = E("moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/", gi), us.isDSTShifted = E("isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information", wi);
+        }), us.toJSON = Sn, us.toString = Xi, us.unix = _n, us.valueOf = yn, us.creationData = An, us.eraName = On, us.eraNarrow = Hn, us.eraAbbr = Cn, us.eraYear = Pn, us.year = Ze, us.isLeapYear = qe, us.weekYear = Vn, us.isoWeekYear = Gn, us.quarter = us.quarters = Qn, us.month = pt, us.daysInMonth = mt, us.week = us.weeks = At, us.isoWeek = us.isoWeeks = Tt, us.weeksInYear = qn, us.weeksInWeekYear = Kn, us.isoWeeksInYear = Wn, us.isoWeeksInISOWeekYear = Zn, us.date = es, us.day = us.days = Ft, us.weekday = Vt, us.isoWeekday = Gt, us.dayOfYear = ts, us.hour = us.hours = ia, us.minute = us.minutes = as, us.second = us.seconds = ss, us.millisecond = us.milliseconds = ns, us.utcOffset = mi, us.utc = fi, us.local = vi, us.parseZone = bi, us.hasAlignedHourOffset = yi, us.isDST = _i, us.isLocal = ki, us.isUtcOffset = $i, us.isUtc = Si, us.isUTC = Si, us.zoneAbbr = os, us.zoneName = ls, us.dates = x("dates accessor is deprecated. Use date instead.", es), us.months = x("months accessor is deprecated. Use month instead", pt), us.years = x("years accessor is deprecated. Use year instead", Ze), us.zone = x("moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/", gi), us.isDSTShifted = x("isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information", wi);
         var ps = O.prototype;
         function ms(e, t, a, i) {
           var n = va(),
@@ -7217,7 +7254,7 @@
         function ws(e, t, a) {
           return fs(e, t, a, "weekdaysMin");
         }
-        ps.calendar = C, ps.longDateFormat = G, ps.invalidDate = Z, ps.ordinal = X, ps.preparse = hs, ps.postformat = hs, ps.relativeTime = Q, ps.pastFuture = ee, ps.set = z, ps.eras = Tn, ps.erasParse = zn, ps.erasConvertYear = Dn, ps.erasAbbrRegex = Ln, ps.erasNameRegex = Nn, ps.erasNarrowRegex = jn, ps.months = lt, ps.monthsShort = ut, ps.monthsParse = ct, ps.monthsRegex = ft, ps.monthsShortRegex = gt, ps.week = St, ps.firstDayOfYear = Mt, ps.firstDayOfWeek = xt, ps.weekdays = It, ps.weekdaysMin = Rt, ps.weekdaysShort = Bt, ps.weekdaysParse = Yt, ps.weekdaysRegex = Wt, ps.weekdaysShortRegex = Zt, ps.weekdaysMinRegex = qt, ps.isPM = ta, ps.meridiem = na, ma("en", {
+        ps.calendar = C, ps.longDateFormat = G, ps.invalidDate = Z, ps.ordinal = X, ps.preparse = hs, ps.postformat = hs, ps.relativeTime = Q, ps.pastFuture = ee, ps.set = z, ps.eras = Tn, ps.erasParse = zn, ps.erasConvertYear = Dn, ps.erasAbbrRegex = Ln, ps.erasNameRegex = Nn, ps.erasNarrowRegex = jn, ps.months = lt, ps.monthsShort = ut, ps.monthsParse = ct, ps.monthsRegex = ft, ps.monthsShortRegex = gt, ps.week = St, ps.firstDayOfYear = Mt, ps.firstDayOfWeek = Et, ps.weekdays = It, ps.weekdaysMin = Rt, ps.weekdaysShort = Bt, ps.weekdaysParse = Yt, ps.weekdaysRegex = Wt, ps.weekdaysShortRegex = Zt, ps.weekdaysMinRegex = qt, ps.isPM = ta, ps.meridiem = na, ma("en", {
           eras: [{
             since: "0001-01-01",
             until: 1 / 0,
@@ -7238,7 +7275,7 @@
             var t = e % 10;
             return e + (1 === De(e % 100 / 10) ? "th" : 1 === t ? "st" : 2 === t ? "nd" : 3 === t ? "rd" : "th");
           }
-        }), i.lang = E("moment.lang is deprecated. Use moment.locale instead.", ma), i.langData = E("moment.langData is deprecated. Use moment.localeData instead.", va);
+        }), i.lang = x("moment.lang is deprecated. Use moment.locale instead.", ma), i.langData = x("moment.langData is deprecated. Use moment.localeData instead.", va);
         var ks = Math.abs;
         function $s() {
           var e = this._data;
@@ -7248,10 +7285,10 @@
           var n = Mi(t, a);
           return e._milliseconds += i * n._milliseconds, e._days += i * n._days, e._months += i * n._months, e._bubble();
         }
-        function Es(e, t) {
+        function xs(e, t) {
           return Ss(this, e, t, 1);
         }
-        function xs(e, t) {
+        function Es(e, t) {
           return Ss(this, e, t, -1);
         }
         function Ms(e) {
@@ -7400,7 +7437,7 @@
           return c ? (e = ze(l / 60), t = ze(e / 60), l %= 60, e %= 60, a = ze(d / 12), d %= 12, i = l ? l.toFixed(3).replace(/\.?0+$/, "") : "", n = c < 0 ? "-" : "", s = lr(this._months) !== lr(c) ? "-" : "", r = lr(this._days) !== lr(c) ? "-" : "", o = lr(this._milliseconds) !== lr(c) ? "-" : "", n + "P" + (a ? s + a + "Y" : "") + (d ? s + d + "M" : "") + (u ? r + u + "D" : "") + (t || e || l ? "T" : "") + (t ? o + t + "H" : "") + (e ? o + e + "M" : "") + (l ? o + i + "S" : "")) : "P0D";
         }
         var dr = si.prototype;
-        return dr.isValid = ii, dr.abs = $s, dr.add = Es, dr.subtract = xs, dr.as = Ds, dr.asMilliseconds = Hs, dr.asSeconds = Cs, dr.asMinutes = Ps, dr.asHours = Ns, dr.asDays = Ls, dr.asWeeks = js, dr.asMonths = Is, dr.asQuarters = Bs, dr.asYears = Rs, dr.valueOf = Us, dr._bubble = As, dr.clone = Ys, dr.get = Fs, dr.milliseconds = Gs, dr.seconds = Ws, dr.minutes = Zs, dr.hours = qs, dr.days = Ks, dr.weeks = Qs, dr.months = Xs, dr.years = Js, dr.humanize = rr, dr.toISOString = ur, dr.toString = ur, dr.toJSON = ur, dr.locale = rn, dr.localeData = ln, dr.toIsoString = E("toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)", ur), dr.lang = on, B("X", 0, 0, "unix"), B("x", 0, 0, "valueOf"), xe("x", ye), xe("X", ke), He("X", function (e, t, a) {
+        return dr.isValid = ii, dr.abs = $s, dr.add = xs, dr.subtract = Es, dr.as = Ds, dr.asMilliseconds = Hs, dr.asSeconds = Cs, dr.asMinutes = Ps, dr.asHours = Ns, dr.asDays = Ls, dr.asWeeks = js, dr.asMonths = Is, dr.asQuarters = Bs, dr.asYears = Rs, dr.valueOf = Us, dr._bubble = As, dr.clone = Ys, dr.get = Fs, dr.milliseconds = Gs, dr.seconds = Ws, dr.minutes = Zs, dr.hours = qs, dr.days = Ks, dr.weeks = Qs, dr.months = Xs, dr.years = Js, dr.humanize = rr, dr.toISOString = ur, dr.toString = ur, dr.toJSON = ur, dr.locale = rn, dr.localeData = ln, dr.toIsoString = x("toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)", ur), dr.lang = on, B("X", 0, 0, "unix"), B("x", 0, 0, "valueOf"), Ee("x", ye), Ee("X", ke), He("X", function (e, t, a) {
           a._d = new Date(1e3 * parseFloat(e));
         }), He("x", function (e, t, a) {
           a._d = new Date(De(e));
@@ -7922,7 +7959,8 @@
           [ut]: parseFloat(a.target.value)
         }))}"
               />
-              <br />
+            </div>
+            <div class="zoneline">
               <label for="lead_time${t}"
                 >${Xi("panels.zones.labels.lead-time", this.hass.language)}
                 (s):</label
@@ -7936,6 +7974,8 @@
           [ot]: parseInt(a.target.value, 10)
         }))}"
               />
+            </div>
+            <div class="zoneline">
               <label for="maximum-duration${t}"
                 >${Xi("panels.zones.labels.maximum-duration", this.hass.language)}
                 (s):</label
@@ -8045,13 +8085,16 @@
             <input id="nameInput" type="text" ?disabled="${this.isSaving}" />
           </div>
           <div class="zoneline">
+            <label for="sizeInput"
+              >${Xi("panels.zones.labels.size", this.hass.language)}
+              (${sn(this.config, Qe)}):</label
+            >
             <input
               class="shortinput"
               id="sizeInput"
               type="number"
               ?disabled="${this.isSaving}"
             />
-            (${sn(this.config, Qe)})
           </div>
           <div class="zoneline">
             <label for="throughputInput"
@@ -8518,19 +8561,24 @@
       >
         <div class="card-content">
           ${this.isLoading ? Y`<div class="loading-indicator">Loading...</div>` : Y`
-                <label for="moduleInput"
-                  >${Xi("common.labels.module", this.hass.language)}:</label
-                >
-                <select id="moduleInput" ?disabled="${this.isSaving}">
-                  ${Object.entries(this.allmodules).map(([e, t]) => Y`<option value="${t.id}">${t.name}</option>`)}
-                </select>
-                <button
-                  @click="${this.handleAddModule}"
-                  ?disabled="${this.isSaving}"
-                  class="${this.isSaving ? "saving" : ""}"
-                >
-                  ${this.isSaving ? "Adding..." : Xi("panels.modules.cards.add-module.actions.add", this.hass.language)}
-                </button>
+                <div class="zoneline">
+                  <label for="moduleInput"
+                    >${Xi("common.labels.module", this.hass.language)}:</label
+                  >
+                  <select id="moduleInput" ?disabled="${this.isSaving}">
+                    ${Object.entries(this.allmodules).map(([e, t]) => Y`<option value="${t.id}">${t.name}</option>`)}
+                  </select>
+                </div>
+                <div class="zoneline">
+                  <span></span>
+                  <button
+                    @click="${this.handleAddModule}"
+                    ?disabled="${this.isSaving}"
+                    class="${this.isSaving ? "saving" : ""}"
+                  >
+                    ${this.isSaving ? "Adding..." : Xi("panels.modules.cards.add-module.actions.add", this.hass.language)}
+                  </button>
+                </div>
               `}
         </div>
       </ha-card>
@@ -8574,6 +8622,33 @@
       select:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+      }
+      .zoneline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .zoneline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .zoneline input,
+      .zoneline select {
+        justify-self: end;
+      }
+      .saving-indicator {
+        color: var(--primary-color);
+        font-style: italic;
+        margin-top: 8px;
+        font-size: 0.9em;
       }
     `;
     }
@@ -9213,7 +9288,7 @@
               system: Me
             }, {
               unit: "°F",
-              system: xe
+              system: Ee
             }];
           case De:
           case Te:
@@ -9222,7 +9297,7 @@
               system: Me
             }, {
               unit: "in",
-              system: xe
+              system: Ee
             }];
           case Oe:
             return [{
@@ -9230,12 +9305,12 @@
               system: Me
             }, {
               unit: Xe,
-              system: xe
+              system: Ee
             }];
           case ze:
             return [{
               unit: "%",
-              system: [Me, xe]
+              system: [Me, Ee]
             }];
           case He:
             return [{
@@ -9246,10 +9321,10 @@
               system: Me
             }, {
               unit: "psi",
-              system: xe
+              system: Ee
             }, {
               unit: "inch Hg",
-              system: xe
+              system: Ee
             }];
           case Ne:
             return [{
@@ -9260,7 +9335,7 @@
               system: Me
             }, {
               unit: "mile/h",
-              system: xe
+              system: Ee
             }];
           case Ce:
             return [{
@@ -9271,10 +9346,10 @@
               system: Me
             }, {
               unit: "W/sq ft",
-              system: xe
+              system: Ee
             }, {
               unit: "MJ/day/sq ft",
-              system: xe
+              system: Ee
             }];
           default:
             return [];
@@ -9513,6 +9588,27 @@
         border-radius: 4px;
         font-size: 0.9em;
         font-style: italic;
+      }
+      .zoneline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .zoneline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .zoneline input,
+      .zoneline select {
+        justify-self: end;
       }
     `;
     }
@@ -9807,7 +9903,7 @@
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${Xi("title", this.hass.language)}</div>
-          <div class="version">${"v2025.7.0-beta5"}</div>
+          <div class="version">${"v2025.7.0-beta6"}</div>
         </div>
 
         <sl-tab-group

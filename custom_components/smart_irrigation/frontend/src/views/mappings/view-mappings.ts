@@ -1521,6 +1521,27 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         font-size: 0.9em;
         font-style: italic;
       }
+      .zoneline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .zoneline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .zoneline input,
+      .zoneline select {
+        justify-self: end;
+      }
     `;
   }
 
