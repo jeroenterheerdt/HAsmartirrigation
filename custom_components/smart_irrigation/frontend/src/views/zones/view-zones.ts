@@ -942,7 +942,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                     ),
                   })}"
               />
-              <br />
+            </div>
+            <div class="zoneline">
               <label for="lead_time${index}"
                 >${localize(
                   "panels.zones.labels.lead-time",
@@ -964,6 +965,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                     ),
                   })}"
               />
+            </div>
+            <div class="zoneline">
               <label for="maximum-duration${index}"
                 >${localize(
                   "panels.zones.labels.maximum-duration",
@@ -1132,13 +1135,16 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
             <input id="nameInput" type="text" ?disabled="${this.isSaving}" />
           </div>
           <div class="zoneline">
+            <label for="sizeInput"
+              >${localize("panels.zones.labels.size", this.hass.language)}
+              (${output_unit(this.config, ZONE_SIZE)}):</label
+            >
             <input
               class="shortinput"
               id="sizeInput"
               type="number"
               ?disabled="${this.isSaving}"
             />
-            (${output_unit(this.config, ZONE_SIZE)})
           </div>
           <div class="zoneline">
             <label for="throughputInput"

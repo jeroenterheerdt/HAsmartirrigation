@@ -7922,7 +7922,8 @@
           [ut]: parseFloat(a.target.value)
         }))}"
               />
-              <br />
+            </div>
+            <div class="zoneline">
               <label for="lead_time${t}"
                 >${Xi("panels.zones.labels.lead-time", this.hass.language)}
                 (s):</label
@@ -7936,6 +7937,8 @@
           [ot]: parseInt(a.target.value, 10)
         }))}"
               />
+            </div>
+            <div class="zoneline">
               <label for="maximum-duration${t}"
                 >${Xi("panels.zones.labels.maximum-duration", this.hass.language)}
                 (s):</label
@@ -8045,13 +8048,16 @@
             <input id="nameInput" type="text" ?disabled="${this.isSaving}" />
           </div>
           <div class="zoneline">
+            <label for="sizeInput"
+              >${Xi("panels.zones.labels.size", this.hass.language)}
+              (${sn(this.config, Qe)}):</label
+            >
             <input
               class="shortinput"
               id="sizeInput"
               type="number"
               ?disabled="${this.isSaving}"
             />
-            (${sn(this.config, Qe)})
           </div>
           <div class="zoneline">
             <label for="throughputInput"
