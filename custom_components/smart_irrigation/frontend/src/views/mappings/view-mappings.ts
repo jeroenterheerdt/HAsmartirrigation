@@ -1280,26 +1280,31 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         )}"
       >
         <div class="card-content">
-          <label for="mappingNameInput"
-            >${localize(
-              "panels.mappings.labels.mapping-name",
-              this.hass.language,
-            )}:</label
-          >
-          <input
-            id="mappingNameInput"
-            type="text"
-            ?disabled="${this.isSaving}"
-          />
-          <button
-            @click="${this.handleAddMapping}"
-            ?disabled="${this.isSaving}"
-          >
-            ${localize(
-              "panels.mappings.cards.add-mapping.actions.add",
-              this.hass.language,
-            )}
-          </button>
+          <div class="zoneline">
+            <label for="mappingNameInput"
+              >${localize(
+                "panels.mappings.labels.mapping-name",
+                this.hass.language,
+              )}:</label
+            >
+            <input
+              id="mappingNameInput"
+              type="text"
+              ?disabled="${this.isSaving}"
+            />
+          </div>
+          <div class="zoneline">
+            <span></span>
+            <button
+              @click="${this.handleAddMapping}"
+              ?disabled="${this.isSaving}"
+            >
+              ${localize(
+                "panels.mappings.cards.add-mapping.actions.add",
+                this.hass.language,
+              )}
+            </button>
+          </div>
         </div>
       </ha-card>
 
@@ -1429,7 +1434,24 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         font-weight: bold;
       }
       .mappingline {
-        margin-top: 25px;
+        margin-top: 16px;
+        padding: 8px;
+        border: 1px solid var(--divider-color);
+        border-radius: 4px;
+      }
+      .mappingsettingline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      .mappingsettingline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
       }
       .strikethrough {
         text-decoration: line-through;

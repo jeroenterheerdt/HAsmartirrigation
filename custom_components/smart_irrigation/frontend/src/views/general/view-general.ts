@@ -312,87 +312,96 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       if (this.data.autoupdateenabled) {
         r2 = html`${r2}
           <div class="card-content">
-            <label for="autoupdateinterval"
-              >${localize(
-                "panels.general.cards.automatic-update.labels.auto-update-interval",
-                this.hass.language,
-              )}:</label
-            >
-            <input
-              name="autoupdateinterval"
-              class="shortinput"
-              type="number"
-              value="${this.data.autoupdateinterval}"
-              @input="${(e: Event) => {
-                this.saveData({
-                  autoupdateinterval: parseInt(
-                    (e.target as HTMLInputElement).value,
-                  ),
-                });
-              }}"
-            />
-            <select
-              type="text"
-              id="autoupdateschedule"
-              @change="${(e: Event) => {
-                this.saveData({
-                  autoupdateschedule: (e.target as HTMLInputElement).value,
-                });
-              }}"
-            >
-              <option
-                value="${AUTO_UPDATE_SCHEDULE_MINUTELY}"
-                ?selected="${this.data.autoupdateschedule ===
-                AUTO_UPDATE_SCHEDULE_MINUTELY}"
-              >
-                ${localize(
-                  "panels.general.cards.automatic-update.options.minutes",
+            <div class="zoneline">
+              <label for="autoupdateinterval"
+                >${localize(
+                  "panels.general.cards.automatic-update.labels.auto-update-interval",
                   this.hass.language,
-                )}
-              </option>
-              <option
-                value="${AUTO_UPDATE_SCHEDULE_HOURLY}"
-                ?selected="${this.data.autoupdateschedule ===
-                AUTO_UPDATE_SCHEDULE_HOURLY}"
+                )}:</label
               >
-                ${localize(
-                  "panels.general.cards.automatic-update.options.hours",
-                  this.hass.language,
-                )}
-              </option>
-              <option
-                value="${AUTO_UPDATE_SCHEDULE_DAILY}"
-                ?selected="${this.data.autoupdateschedule ===
-                AUTO_UPDATE_SCHEDULE_DAILY}"
-              >
-                ${localize(
-                  "panels.general.cards.automatic-update.options.days",
-                  this.hass.language,
-                )}
-              </option>
-            </select>
-          </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input
+                  name="autoupdateinterval"
+                  class="shortinput"
+                  type="number"
+                  value="${this.data.autoupdateinterval}"
+                  @input="${(e: Event) => {
+                    this.saveData({
+                      autoupdateinterval: parseInt(
+                        (e.target as HTMLInputElement).value,
+                      ),
+                    });
+                  }}"
+                />
+                <select
+                  type="text"
+                  id="autoupdateschedule"
+                  @change="${(e: Event) => {
+                    this.saveData({
+                      autoupdateschedule: (e.target as HTMLInputElement).value,
+                    });
+                  }}"
+                >
+                  <option
+                    value="${AUTO_UPDATE_SCHEDULE_MINUTELY}"
+                    ?selected="${this.data.autoupdateschedule ===
+                    AUTO_UPDATE_SCHEDULE_MINUTELY}"
+                  >
+                    ${localize(
+                      "panels.general.cards.automatic-update.options.minutes",
+                      this.hass.language,
+                    )}
+                  </option>
+                  <option
+                    value="${AUTO_UPDATE_SCHEDULE_HOURLY}"
+                    ?selected="${this.data.autoupdateschedule ===
+                    AUTO_UPDATE_SCHEDULE_HOURLY}"
+                  >
+                    ${localize(
+                      "panels.general.cards.automatic-update.options.hours",
+                      this.hass.language,
+                    )}
+                  </option>
+                  <option
+                    value="${AUTO_UPDATE_SCHEDULE_DAILY}"
+                    ?selected="${this.data.autoupdateschedule ===
+                    AUTO_UPDATE_SCHEDULE_DAILY}"
+                  >
+                    ${localize(
+                      "panels.general.cards.automatic-update.options.days",
+                      this.hass.language,
+                    )}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>`;
+      }
+      if (this.data.autoupdateenabled) {
+        r2 = html`${r2}
           <div class="card-content">
-            <label for="updatedelay"
-              >${localize(
-                "panels.general.cards.automatic-update.labels.auto-update-delay",
-                this.hass.language,
-              )}
-              (s):</label
-            >
-            <input
-              id="updatedelay"
-              type="text"
-              class="shortinput"
-              .value="${this.config.autoupdatedelay}"
-              @input=${(e: Event) => {
-                this.saveData({
-                  autoupdatedelay: parseInt(
-                    (e.target as HTMLInputElement).value,
-                  ),
-                });
-              }}
-            />
+            <div class="zoneline">
+              <label for="updatedelay"
+                >${localize(
+                  "panels.general.cards.automatic-update.labels.auto-update-delay",
+                  this.hass.language,
+                )}
+                (s):</label
+              >
+              <input
+                id="updatedelay"
+                type="text"
+                class="shortinput"
+                .value="${this.config.autoupdatedelay}"
+                @input=${(e: Event) => {
+                  this.saveData({
+                    autoupdatedelay: parseInt(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  });
+                }}
+              />
+            </div>
           </div>`;
       }
 
@@ -470,23 +479,25 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       if (this.data.autoclearenabled) {
         r3 = html`${r3}
           <div class="card-content">
-            <label for="calctime"
-              >${localize(
-                "panels.general.cards.automatic-clear.labels.automatic-clear-time",
-                this.hass.language,
-              )}</label
-            >:
-            <input
-              id="cleardatatime"
-              type="text"
-              class="shortinput"
-              .value="${this.config.cleardatatime}"
-              @input=${(e: Event) => {
-                this.saveData({
-                  cleardatatime: (e.target as HTMLInputElement).value,
-                });
-              }}
-            />
+            <div class="zoneline">
+              <label for="calctime"
+                >${localize(
+                  "panels.general.cards.automatic-clear.labels.automatic-clear-time",
+                  this.hass.language,
+                )}:</label
+              >
+              <input
+                id="cleardatatime"
+                type="text"
+                class="shortinput"
+                .value="${this.config.cleardatatime}"
+                @input=${(e: Event) => {
+                  this.saveData({
+                    cleardatatime: (e.target as HTMLInputElement).value,
+                  });
+                }}
+              />
+            </div>
           </div>`;
       }
       r3 = html`<ha-card header="${localize(
@@ -563,26 +574,28 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       if (this.data.continuousupdates) {
         r4 = html`${r4}
           <div class="card-content">
-            <label for="sensor_debounce"
-              >${localize(
-                "panels.general.cards.continuousupdates.labels.sensor_debounce",
-                this.hass.language,
-              )}
-              (ms):</label
-            >
-            <input
-              id="sensor_debounce"
-              type="text"
-              class="shortinput"
-              .value="${this.config.sensor_debounce}"
-              @input=${(e: Event) => {
-                this.saveData({
-                  sensor_debounce: parseInt(
-                    (e.target as HTMLInputElement).value,
-                  ),
-                });
-              }}
-            />
+            <div class="zoneline">
+              <label for="sensor_debounce"
+                >${localize(
+                  "panels.general.cards.continuousupdates.labels.sensor_debounce",
+                  this.hass.language,
+                )}
+                (ms):</label
+              >
+              <input
+                id="sensor_debounce"
+                type="text"
+                class="shortinput"
+                .value="${this.config.sensor_debounce}"
+                @input=${(e: Event) => {
+                  this.saveData({
+                    sensor_debounce: parseInt(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  });
+                }}
+              />
+            </div>
           </div>`;
       }
       r4 = html`<ha-card
