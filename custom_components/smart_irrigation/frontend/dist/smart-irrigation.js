@@ -7770,22 +7770,20 @@
         return null != e.mapping && (l = this.mappings.filter(t => t.id === e.mapping)[0], null != l && null != l.data_last_updated && (e.last_updated = l.data_last_updated, null != l.data && (e.number_of_data_points = l.data.length))), Y`
         <ha-card header="${e.name}">
           <div class="card-content">
-            <label for="last_calculated${t}"
-              >${Xi("panels.zones.labels.last_calculated", this.hass.language)}:
-              ${e.last_calculated ? vn(e.last_calculated).format("YYYY-MM-DD HH:mm:ss") : "-"}</label
-            >
-          </div>
-          <div class="card-content">
-            <label for="last_updated${t}"
-              >${Xi("panels.zones.labels.data-last-updated", this.hass.language)}:
-              ${e.last_updated ? vn(e.last_updated).format("YYYY-MM-DD HH:mm:ss") : "-"}</label
-            >
-          </div>
-          <div class="card-content">
-            <label for="last_updated${t}"
-              >${Xi("panels.zones.labels.data-number-of-data-points", this.hass.language)}:
-              ${e.number_of_data_points}</label
-            >
+            <div class="zone-info-table">
+              <div class="zone-info-row">
+                <span class="zone-info-label">${Xi("panels.zones.labels.last_calculated", this.hass.language)}:</span>
+                <span class="zone-info-value">${e.last_calculated ? vn(e.last_calculated).format("YYYY-MM-DD HH:mm:ss") : "-"}</span>
+              </div>
+              <div class="zone-info-row">
+                <span class="zone-info-label">${Xi("panels.zones.labels.data-last-updated", this.hass.language)}:</span>
+                <span class="zone-info-value">${e.last_updated ? vn(e.last_updated).format("YYYY-MM-DD HH:mm:ss") : "-"}</span>
+              </div>
+              <div class="zone-info-row">
+                <span class="zone-info-label">${Xi("panels.zones.labels.data-number-of-data-points", this.hass.language)}:</span>
+                <span class="zone-info-value">${e.number_of_data_points}</span>
+              </div>
+            </div>
           </div>
           <div class="card-content">
             <label for="name${t}"
@@ -8105,7 +8103,7 @@
         </div>
       </ha-card>
 
-      ${Object.entries(this.zones).map(([e, t]) => this.renderZone(t, parseInt(e)))}
+      ${this.zones.map((e, t) => this.renderZone(e, t))}
     ` : Y`
         <ha-card header="${Xi("panels.zones.title", this.hass.language)}">
           <div class="card-content">Configuration not available.</div>
@@ -8129,8 +8127,25 @@
         width: 50px;
       }
       .zoneline {
-        margin-left: 20px;
-        margin-top: 5px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .zoneline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .zoneline input,
+      .zoneline select {
+        justify-self: end;
       }
       .saving-indicator {
         color: var(--primary-color);
@@ -8248,6 +8263,32 @@
         border-radius: 4px;
         font-size: 0.9em;
         font-style: italic;
+      }
+
+      .zone-info-table {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 4px;
+        margin-bottom: 16px;
+      }
+      
+      .zone-info-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .zone-info-label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .zone-info-value {
+        color: var(--secondary-text-color);
+        text-align: right;
       }
     `;
     }

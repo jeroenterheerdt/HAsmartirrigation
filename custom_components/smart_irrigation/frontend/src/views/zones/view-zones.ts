@@ -711,39 +711,37 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       return html`
         <ha-card header="${zone.name}">
           <div class="card-content">
-            <label for="last_calculated${index}"
-              >${localize(
-                "panels.zones.labels.last_calculated",
-                this.hass.language,
-              )}:
-              ${
-                zone.last_calculated
-                  ? moment(zone.last_calculated).format("YYYY-MM-DD HH:mm:ss")
-                  : "-"
-              }</label
-            >
-          </div>
-          <div class="card-content">
-            <label for="last_updated${index}"
-              >${localize(
-                "panels.zones.labels.data-last-updated",
-                this.hass.language,
-              )}:
-              ${
-                zone.last_updated
-                  ? moment(zone.last_updated).format("YYYY-MM-DD HH:mm:ss")
-                  : "-"
-              }</label
-            >
-          </div>
-          <div class="card-content">
-            <label for="last_updated${index}"
-              >${localize(
-                "panels.zones.labels.data-number-of-data-points",
-                this.hass.language,
-              )}:
-              ${zone.number_of_data_points}</label
-            >
+            <div class="zone-info-table">
+              <div class="zone-info-row">
+                <span class="zone-info-label">${localize(
+                  "panels.zones.labels.last_calculated",
+                  this.hass.language,
+                )}:</span>
+                <span class="zone-info-value">${
+                  zone.last_calculated
+                    ? moment(zone.last_calculated).format("YYYY-MM-DD HH:mm:ss")
+                    : "-"
+                }</span>
+              </div>
+              <div class="zone-info-row">
+                <span class="zone-info-label">${localize(
+                  "panels.zones.labels.data-last-updated",
+                  this.hass.language,
+                )}:</span>
+                <span class="zone-info-value">${
+                  zone.last_updated
+                    ? moment(zone.last_updated).format("YYYY-MM-DD HH:mm:ss")
+                    : "-"
+                }</span>
+              </div>
+              <div class="zone-info-row">
+                <span class="zone-info-label">${localize(
+                  "panels.zones.labels.data-number-of-data-points",
+                  this.hass.language,
+                )}:</span>
+                <span class="zone-info-value">${zone.number_of_data_points}</span>
+              </div>
+            </div>
           </div>
           <div class="card-content">
             <label for="name${index}"
@@ -1210,8 +1208,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         </div>
       </ha-card>
 
-      ${Object.entries(this.zones).map(([key, value]) =>
-        this.renderZone(value, parseInt(key)),
+      ${this.zones.map((zone, index) =>
+        this.renderZone(zone, index),
       )}
     `;
   }
@@ -1248,8 +1246,25 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         width: 50px;
       }
       .zoneline {
-        margin-left: 20px;
-        margin-top: 5px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .zoneline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .zoneline input,
+      .zoneline select {
+        justify-self: end;
       }
       .saving-indicator {
         color: var(--primary-color);
@@ -1367,6 +1382,32 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         border-radius: 4px;
         font-size: 0.9em;
         font-style: italic;
+      }
+
+      .zone-info-table {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 4px;
+        margin-bottom: 16px;
+      }
+      
+      .zone-info-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .zone-info-label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .zone-info-value {
+        color: var(--secondary-text-color);
+        text-align: right;
       }
     `;
   }
