@@ -5082,65 +5082,71 @@
         </div>`;
         this.data.autoupdateenabled && (t = Y`${t}
           <div class="card-content">
-            <label for="autoupdateinterval"
-              >${Xi("panels.general.cards.automatic-update.labels.auto-update-interval", this.hass.language)}:</label
-            >
-            <input
-              name="autoupdateinterval"
-              class="shortinput"
-              type="number"
-              value="${this.data.autoupdateinterval}"
-              @input="${e => {
+            <div class="zoneline">
+              <label for="autoupdateinterval"
+                >${Xi("panels.general.cards.automatic-update.labels.auto-update-interval", this.hass.language)}:</label
+              >
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input
+                  name="autoupdateinterval"
+                  class="shortinput"
+                  type="number"
+                  value="${this.data.autoupdateinterval}"
+                  @input="${e => {
           this.saveData({
             autoupdateinterval: parseInt(e.target.value)
           });
         }}"
-            />
-            <select
-              type="text"
-              id="autoupdateschedule"
-              @change="${e => {
+                />
+                <select
+                  type="text"
+                  id="autoupdateschedule"
+                  @change="${e => {
           this.saveData({
             autoupdateschedule: e.target.value
           });
         }}"
-            >
-              <option
-                value="${$e}"
-                ?selected="${this.data.autoupdateschedule === $e}"
-              >
-                ${Xi("panels.general.cards.automatic-update.options.minutes", this.hass.language)}
-              </option>
-              <option
-                value="${Se}"
-                ?selected="${this.data.autoupdateschedule === Se}"
-              >
-                ${Xi("panels.general.cards.automatic-update.options.hours", this.hass.language)}
-              </option>
-              <option
-                value="${xe}"
-                ?selected="${this.data.autoupdateschedule === xe}"
-              >
-                ${Xi("panels.general.cards.automatic-update.options.days", this.hass.language)}
-              </option>
-            </select>
-          </div>
+                >
+                  <option
+                    value="${$e}"
+                    ?selected="${this.data.autoupdateschedule === $e}"
+                  >
+                    ${Xi("panels.general.cards.automatic-update.options.minutes", this.hass.language)}
+                  </option>
+                  <option
+                    value="${Se}"
+                    ?selected="${this.data.autoupdateschedule === Se}"
+                  >
+                    ${Xi("panels.general.cards.automatic-update.options.hours", this.hass.language)}
+                  </option>
+                  <option
+                    value="${xe}"
+                    ?selected="${this.data.autoupdateschedule === xe}"
+                  >
+                    ${Xi("panels.general.cards.automatic-update.options.days", this.hass.language)}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>`), this.data.autoupdateenabled && (t = Y`${t}
           <div class="card-content">
-            <label for="updatedelay"
-              >${Xi("panels.general.cards.automatic-update.labels.auto-update-delay", this.hass.language)}
-              (s):</label
-            >
-            <input
-              id="updatedelay"
-              type="text"
-              class="shortinput"
-              .value="${this.config.autoupdatedelay}"
-              @input=${e => {
+            <div class="zoneline">
+              <label for="updatedelay"
+                >${Xi("panels.general.cards.automatic-update.labels.auto-update-delay", this.hass.language)}
+                (s):</label
+              >
+              <input
+                id="updatedelay"
+                type="text"
+                class="shortinput"
+                .value="${this.config.autoupdatedelay}"
+                @input=${e => {
           this.saveData({
             autoupdatedelay: parseInt(e.target.value)
           });
         }}
-            />
+              />
+            </div>
           </div>`), t = Y`<ha-card header="${Xi("panels.general.cards.automatic-update.header", this.hass.language)}",
       this.hass.language)}">${t}</ha-card>`;
         let a = Y` <div class="card-content">
@@ -5197,20 +5203,22 @@
         </div>`;
         this.data.autoclearenabled && (a = Y`${a}
           <div class="card-content">
-            <label for="calctime"
-              >${Xi("panels.general.cards.automatic-clear.labels.automatic-clear-time", this.hass.language)}</label
-            >:
-            <input
-              id="cleardatatime"
-              type="text"
-              class="shortinput"
-              .value="${this.config.cleardatatime}"
-              @input=${e => {
+            <div class="zoneline">
+              <label for="calctime"
+                >${Xi("panels.general.cards.automatic-clear.labels.automatic-clear-time", this.hass.language)}:</label
+              >
+              <input
+                id="cleardatatime"
+                type="text"
+                class="shortinput"
+                .value="${this.config.cleardatatime}"
+                @input=${e => {
           this.saveData({
             cleardatatime: e.target.value
           });
         }}
-            />
+              />
+            </div>
           </div>`), a = Y`<ha-card header="${Xi("panels.general.cards.automatic-clear.header", this.hass.language)}" >${a}</div></ha-card>`;
         let i = Y`<div class="card-content">
           <svg
@@ -5266,21 +5274,23 @@
         </div>`;
         this.data.continuousupdates && (i = Y`${i}
           <div class="card-content">
-            <label for="sensor_debounce"
-              >${Xi("panels.general.cards.continuousupdates.labels.sensor_debounce", this.hass.language)}
-              (ms):</label
-            >
-            <input
-              id="sensor_debounce"
-              type="text"
-              class="shortinput"
-              .value="${this.config.sensor_debounce}"
-              @input=${e => {
+            <div class="zoneline">
+              <label for="sensor_debounce"
+                >${Xi("panels.general.cards.continuousupdates.labels.sensor_debounce", this.hass.language)}
+                (ms):</label
+              >
+              <input
+                id="sensor_debounce"
+                type="text"
+                class="shortinput"
+                .value="${this.config.sensor_debounce}"
+                @input=${e => {
           this.saveData({
             sensor_debounce: parseInt(e.target.value)
           });
         }}
-            />
+              />
+            </div>
           </div>`), i = Y`<ha-card
         header="${Xi("panels.general.cards.continuousupdates.header", this.hass.language)}"
         >${i}</ha-card
@@ -8540,7 +8550,7 @@
               </option>`)}
         </select>`;
       }
-      return i.required && (o = Y`${o} *`), o = Y`<div class="schemaline">${o}</div>`, o;
+      return i.required && (o = Y`${o}`), o = Y`<div class="schemaline">${o}</div>`, o;
     }
     handleEditConfig(e, t) {
       this.modules = Object.values(this.modules).map((a, i) => i === e ? t : a), this.moduleCache.clear(), this._scheduleUpdate(), this.debouncedSave(t);
@@ -8649,6 +8659,27 @@
         font-style: italic;
         margin-top: 8px;
         font-size: 0.9em;
+      }
+      .schemaline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .schemaline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .schemaline input,
+      .schemaline select {
+        justify-self: end;
       }
     `;
     }
@@ -9401,20 +9432,25 @@
         header="${Xi("panels.mappings.cards.add-mapping.header", this.hass.language)}"
       >
         <div class="card-content">
-          <label for="mappingNameInput"
-            >${Xi("panels.mappings.labels.mapping-name", this.hass.language)}:</label
-          >
-          <input
-            id="mappingNameInput"
-            type="text"
-            ?disabled="${this.isSaving}"
-          />
-          <button
-            @click="${this.handleAddMapping}"
-            ?disabled="${this.isSaving}"
-          >
-            ${Xi("panels.mappings.cards.add-mapping.actions.add", this.hass.language)}
-          </button>
+          <div class="zoneline">
+            <label for="mappingNameInput"
+              >${Xi("panels.mappings.labels.mapping-name", this.hass.language)}:</label
+            >
+            <input
+              id="mappingNameInput"
+              type="text"
+              ?disabled="${this.isSaving}"
+            />
+          </div>
+          <div class="zoneline">
+            <span></span>
+            <button
+              @click="${this.handleAddMapping}"
+              ?disabled="${this.isSaving}"
+            >
+              ${Xi("panels.mappings.cards.add-mapping.actions.add", this.hass.language)}
+            </button>
+          </div>
         </div>
       </ha-card>
 
@@ -9497,7 +9533,24 @@
         font-weight: bold;
       }
       .mappingline {
-        margin-top: 25px;
+        margin-top: 16px;
+        padding: 8px;
+        border: 1px solid var(--divider-color);
+        border-radius: 4px;
+      }
+      .mappingsettingline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      .mappingsettingline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
       }
       .strikethrough {
         text-decoration: line-through;
@@ -9787,10 +9840,14 @@
       return c`
       ${on}
       .info-item {
-        margin-bottom: 12px;
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
         align-items: center;
-        gap: 8px;
+        margin-bottom: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
       }
       
       .info-item label {
@@ -9802,10 +9859,12 @@
       .info-item .value {
         color: var(--secondary-text-color);
         font-family: monospace;
+        text-align: right;
+        justify-self: end;
       }
       
       .info-item.explanation {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         align-items: flex-start;
       }
       

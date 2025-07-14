@@ -250,10 +250,14 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
     return css`
       ${commonStyle}
       .info-item {
-        margin-bottom: 12px;
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
         align-items: center;
-        gap: 8px;
+        margin-bottom: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
       }
       
       .info-item label {
@@ -265,10 +269,12 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
       .info-item .value {
         color: var(--secondary-text-color);
         font-family: monospace;
+        text-align: right;
+        justify-self: end;
       }
       
       .info-item.explanation {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         align-items: flex-start;
       }
       

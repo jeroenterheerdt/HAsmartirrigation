@@ -396,7 +396,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
     }
 
     if (schemaline["required"]) {
-      r = html`${r} *`;
+      r = html`${r}`;
     }
     r = html`<div class="schemaline">${r}</div>`;
     return r;
@@ -564,6 +564,27 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
         font-style: italic;
         margin-top: 8px;
         font-size: 0.9em;
+      }
+      .schemaline {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        margin-left: 0;
+        margin-top: 8px;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--divider-color);
+        font-size: 0.9em;
+      }
+      
+      .schemaline label {
+        color: var(--primary-text-color);
+        font-weight: 500;
+      }
+      
+      .schemaline input,
+      .schemaline select {
+        justify-self: end;
       }
     `;
   }
