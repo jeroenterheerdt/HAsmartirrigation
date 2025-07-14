@@ -437,44 +437,48 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
           </label>
         </div>
         <div class="card-content">
-          <label for="autoclearenabled"
-            >${localize(
-              "panels.general.cards.automatic-clear.labels.automatic-clear-enabled",
-              this.hass.language,
-            )}:</label
-          >
-          <input
-            type="radio"
-            id="autoclearon"
-            name="autoclearenabled"
-            value="True"
-            ?checked="${this.config.autoclearenabled}"
-            @change="${(e: Event) => {
-              this.saveData({
-                autoclearenabled: parseBoolean(
-                  (e.target as HTMLInputElement).value,
-                ),
-              });
-            }}"
-          /><label for="autoclearon"
-            >${localize("common.labels.yes", this.hass.language)}</label
-          >
-          <input
-            type="radio"
-            id="autoclearoff"
-            name="autoclearenabled"
-            value="False"
-            ?checked="${!this.config.autoclearenabled}"
-            @change="${(e: Event) => {
-              this.saveData({
-                autoclearenabled: parseBoolean(
-                  (e.target as HTMLInputElement).value,
-                ),
-              });
-            }}"
-          /><label for="autoclearoff"
-            >${localize("common.labels.no", this.hass.language)}</label
-          >
+          <div class="zoneline">
+            <label for="autoclearenabled"
+              >${localize(
+                "panels.general.cards.automatic-clear.labels.automatic-clear-enabled",
+                this.hass.language,
+              )}:</label
+            >
+            <div>
+              <input
+                type="radio"
+                id="autoclearon"
+                name="autoclearenabled"
+                value="True"
+                ?checked="${this.config.autoclearenabled}"
+                @change="${(e: Event) => {
+                  this.saveData({
+                    autoclearenabled: parseBoolean(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  });
+                }}"
+              /><label for="autoclearon"
+                >${localize("common.labels.yes", this.hass.language)}</label
+              >
+              <input
+                type="radio"
+                id="autoclearoff"
+                name="autoclearenabled"
+                value="False"
+                ?checked="${!this.config.autoclearenabled}"
+                @change="${(e: Event) => {
+                  this.saveData({
+                    autoclearenabled: parseBoolean(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  });
+                }}"
+              /><label for="autoclearoff"
+                >${localize("common.labels.no", this.hass.language)}</label
+              >
+            </div>
+          </div>
         </div>`;
       if (this.data.autoclearenabled) {
         r3 = html`${r3}
@@ -503,7 +507,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       r3 = html`<ha-card header="${localize(
         "panels.general.cards.automatic-clear.header",
         this.hass.language,
-      )}" >${r3}</div></ha-card>`;
+      )}" >${r3}</ha-card>`;
 
       let r4 = html`<div class="card-content">
           <svg
@@ -532,44 +536,48 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
           </label>
         </div>
         <div class="card-content">
-          <label for="continuousupdates"
-            >${localize(
-              "panels.general.cards.continuousupdates.labels.continuousupdates",
-              this.hass.language,
-            )}:</label
-          >
-          <input
-            type="radio"
-            id="continuousupdateson"
-            name="continuousupdates"
-            value="True"
-            ?checked="${this.config.continuousupdates}"
-            @change="${(e: Event) => {
-              this.saveData({
-                continuousupdates: parseBoolean(
-                  (e.target as HTMLInputElement).value,
-                ),
-              });
-            }}"
-          /><label for="continuousupdateson"
-            >${localize("common.labels.yes", this.hass.language)}</label
-          >
-          <input
-            type="radio"
-            id="continuousupdatesoff"
-            name="continuousupdates"
-            value="False"
-            ?checked="${!this.config.continuousupdates}"
-            @change="${(e: Event) => {
-              this.saveData({
-                continuousupdates: parseBoolean(
-                  (e.target as HTMLInputElement).value,
-                ),
-              });
-            }}"
-          /><label for="continuousupdatesoff"
-            >${localize("common.labels.no", this.hass.language)}</label
-          >
+          <div class="zoneline">
+            <label for="continuousupdates"
+              >${localize(
+                "panels.general.cards.continuousupdates.labels.continuousupdates",
+                this.hass.language,
+              )}:</label
+            >
+            <div>
+              <input
+                type="radio"
+                id="continuousupdateson"
+                name="continuousupdates"
+                value="True"
+                ?checked="${this.config.continuousupdates}"
+                @change="${(e: Event) => {
+                  this.saveData({
+                    continuousupdates: parseBoolean(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  });
+                }}"
+              /><label for="continuousupdateson"
+                >${localize("common.labels.yes", this.hass.language)}</label
+              >
+              <input
+                type="radio"
+                id="continuousupdatesoff"
+                name="continuousupdates"
+                value="False"
+                ?checked="${!this.config.continuousupdates}"
+                @change="${(e: Event) => {
+                  this.saveData({
+                    continuousupdates: parseBoolean(
+                      (e.target as HTMLInputElement).value,
+                    ),
+                  });
+                }}"
+              /><label for="continuousupdatesoff"
+                >${localize("common.labels.no", this.hass.language)}</label
+              >
+            </div>
+          </div>
         </div>`;
       if (this.data.continuousupdates) {
         r4 = html`${r4}
