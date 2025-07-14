@@ -9807,7 +9807,7 @@
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${Xi("title", this.hass.language)}</div>
-          <div class="version">${"v2025.7.0-beta4"}</div>
+          <div class="version">${"v2025.7.0-beta5"}</div>
         </div>
 
         <sl-tab-group
