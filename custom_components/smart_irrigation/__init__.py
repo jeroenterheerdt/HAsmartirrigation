@@ -283,6 +283,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     longitude=self.hass.config.as_dict().get(CONF_LONGITUDE),
                     elevation=self.hass.config.as_dict().get(CONF_ELEVATION),
                 )
+        
+        # Initialize latitude and elevation for calendar generation and other features
+        # Try to get from Home Assistant config first, then entry data, then options, then defaults
+        self._latitude = self._get_config_value(CONF_LATITUDE, 45.0)
+        self._elevation = self._get_config_value(CONF_ELEVATION, 0)
+        
+        # Log a warning if using default values for user awareness
+        if self._latitude == 45.0 and hass.config.as_dict().get(CONF_LATITUDE) is None:
+            _LOGGER.warning("Latitude not configured in Home Assistant, using default latitude of 45.0 for watering calendar calculations")
+        if self._elevation == 0 and hass.config.as_dict().get(CONF_ELEVATION) is None:
+            _LOGGER.warning("Elevation not configured in Home Assistant, using default elevation of 0m for watering calendar calculations")
+        
         self._subscriptions = []
 
         self._subscriptions.append(
@@ -332,6 +344,32 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         )
 
         super().__init__(hass, _LOGGER, name=const.DOMAIN)
+
+    def _get_config_value(self, key: str, default_value):
+        """Get configuration value from Home Assistant config, entry data, or options with fallback to default.
+        
+        Args:
+            key: Configuration key to look up (e.g., CONF_LATITUDE, CONF_ELEVATION)
+            default_value: Default value to use if not found anywhere
+            
+        Returns:
+            The configuration value or default_value if not found
+        """
+        # Try Home Assistant config first (most reliable)
+        value = self.hass.config.as_dict().get(key)
+        if value is not None:
+            return value
+            
+        # Try config entry data
+        if hasattr(self.entry, 'data') and key in self.entry.data:
+            return self.entry.data[key]
+            
+        # Try config entry options
+        if hasattr(self.entry, 'options') and key in self.entry.options:
+            return self.entry.options[key]
+            
+        # Fall back to default
+        return default_value
 
     async def setup_SmartIrrigation_entities(self):  # noqa: D102
         zones = await self.store.async_get_zones()

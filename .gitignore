@@ -381,3 +381,7 @@ Thumbs.db
 # Environment files (keep .env in repo but ignore local variants)
 .env.local
 .env.*.local
+
+# Temporary test files
+test_latitude_*.py
+test_calendar_fix.py

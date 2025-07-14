@@ -98,13 +98,14 @@ def coordinator(mock_hass, mock_store):
     """Create a SmartIrrigationCoordinator instance for testing."""
     entry = MagicMock()
     entry.unique_id = "test_entry"
+    entry.data = {}
+    entry.options = {}
     
     # Create coordinator with mocked dependencies
     coord = SmartIrrigationCoordinator(mock_hass, None, entry, mock_store)
     coord.store = mock_store
     coord.use_weather_service = False
-    coord._latitude = 45.0
-    coord._elevation = 100
+    # Note: _latitude and _elevation should now be automatically initialized from mock_hass.config
     
     return coord
 
