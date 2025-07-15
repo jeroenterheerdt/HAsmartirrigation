@@ -8483,7 +8483,9 @@
             >
             ${e.schema ? Object.entries(e.schema).map(([e]) => this.renderConfig(t, e)) : null}
           </div>
-          ${i ? Y` ${Xi("panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it", this.hass.language)}` : Y` <svg
+          ${i ? Y`<div class="weather-note">
+                ${Xi("panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it", this.hass.language)}
+              </div>` : Y` <svg
                 style="width:24px;height:24px"
                 viewBox="0 0 24 24"
                 id="deleteZone${t}"
@@ -8689,6 +8691,15 @@
       .schemaline select {
         justify-self: end;
       }
+
+      .weather-note {
+        padding: 8px;
+        background: var(--secondary-background-color);
+        color: var(--secondary-text-color);
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-style: italic;
+      }
     `;
     }
   };
@@ -8886,7 +8897,11 @@
         }))}"
             />
             ${Object.entries(e.mappings).map(([e]) => this.renderMappingSetting(t, e))}
-            ${i ? Y`${Xi("panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it", this.hass.language)}` : Y` <svg
+            ${i ? Y`
+                <div class="weather-note">
+                  ${Xi("panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it", this.hass.language)}
+                </div>
+              ` : Y` <svg
                   style="width:24px;height:24px"
                   viewBox="0 0 24 24"
                   id="deleteZone${e.id}"
@@ -9499,7 +9514,11 @@
             />
             ${this.renderMappingSettings(e, t)}
             ${this.renderWeatherRecords(e)}
-            ${a ? Y`${Xi("panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it", this.hass.language)}` : Y` <svg
+            ${a ? Y`
+                <div class="weather-note">
+                  ${Xi("panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it", this.hass.language)}
+                </div>
+              ` : Y` <svg
                   style="width:24px;height:24px"
                   viewBox="0 0 24 24"
                   id="deleteZone${e.id}"
