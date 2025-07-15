@@ -41,7 +41,7 @@ import {
   WeatherRecord,
 } from "../../types";
 import { output_unit } from "../../helpers";
-import { commonStyle } from "../../styles";
+import { globalStyle } from "../../styles/global-style";
 import { localize } from "../../../localize/localize";
 import {
   DOMAIN,
@@ -405,39 +405,77 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   }
 
   private handleViewWeatherInfo(index: number): void {
-    const zone = Object.values(this.zones).at(index);
+    console.log(`handleViewWeatherInfo: Received index=${index}`);
+    
+    const zonesValues = Object.values(this.zones);
+    console.log(`handleViewWeatherInfo: Object.values(this.zones)=`, zonesValues);
+    
+    const zone = zonesValues.at(index);
+    console.log(`handleViewWeatherInfo: Picked zone=`, zone);
+    
     if (!zone || zone.mapping == undefined) {
+      console.log(`handleViewWeatherInfo: Early return - zone not found or no mapping`);
       return;
     }
     
     // Toggle weather data display by updating the zone's weather visibility state
     // For now, we'll use a simple approach to show the weather data
-    const weatherSection = this.shadowRoot?.querySelector(`#weather-section-${zone.id}`);
+    const selector = `#weather-section-${zone.id}`;
+    console.log(`handleViewWeatherInfo: Using selector="${selector}"`);
+    
+    const weatherSection = this.shadowRoot?.querySelector(selector);
+    const elementFound = !!weatherSection;
+    console.log(`handleViewWeatherInfo: Element found=${elementFound}`);
+    
     if (weatherSection) {
-      const isHidden = weatherSection.hasAttribute('hidden');
-      if (isHidden) {
+      const isHiddenBefore = weatherSection.hasAttribute('hidden');
+      console.log(`handleViewWeatherInfo: Hidden state before toggle=${isHiddenBefore}`);
+      
+      if (isHiddenBefore) {
         weatherSection.removeAttribute('hidden');
       } else {
         weatherSection.setAttribute('hidden', '');
       }
+      
+      const isHiddenAfter = weatherSection.hasAttribute('hidden');
+      console.log(`handleViewWeatherInfo: Hidden state after toggle=${isHiddenAfter}`);
     }
   }
 
   private handleViewWateringCalendar(index: number): void {
-    const zone = Object.values(this.zones).at(index);
+    console.log(`handleViewWateringCalendar: Received index=${index}`);
+    
+    const zonesValues = Object.values(this.zones);
+    console.log(`handleViewWateringCalendar: Object.values(this.zones)=`, zonesValues);
+    
+    const zone = zonesValues.at(index);
+    console.log(`handleViewWateringCalendar: Picked zone=`, zone);
+    
     if (!zone || zone.id == undefined) {
+      console.log(`handleViewWateringCalendar: Early return - zone not found or no ID`);
       return;
     }
     
     // Toggle watering calendar display
-    const calendarSection = this.shadowRoot?.querySelector(`#calendar-section-${zone.id}`);
+    const selector = `#calendar-section-${zone.id}`;
+    console.log(`handleViewWateringCalendar: Using selector="${selector}"`);
+    
+    const calendarSection = this.shadowRoot?.querySelector(selector);
+    const elementFound = !!calendarSection;
+    console.log(`handleViewWateringCalendar: Element found=${elementFound}`);
+    
     if (calendarSection) {
-      const isHidden = calendarSection.hasAttribute('hidden');
-      if (isHidden) {
+      const isHiddenBefore = calendarSection.hasAttribute('hidden');
+      console.log(`handleViewWateringCalendar: Hidden state before toggle=${isHiddenBefore}`);
+      
+      if (isHiddenBefore) {
         calendarSection.removeAttribute('hidden');
       } else {
         calendarSection.setAttribute('hidden', '');
       }
+      
+      const isHiddenAfter = calendarSection.hasAttribute('hidden');
+      console.log(`handleViewWateringCalendar: Hidden state after toggle=${isHiddenAfter}`);
     }
   }
 
@@ -1241,181 +1279,8 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
   static get styles(): CSSResultGroup {
     return css`
-      ${commonStyle}
-      .zone {
-        margin-top: 25px;
-        margin-bottom: 25px;
-      }
-      .hidden {
-        display: none;
-      }
-      .shortinput {
-        width: 50px;
-      }
-      .zoneline {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 12px;
-        align-items: center;
-        margin-left: 0;
-        margin-top: 8px;
-        padding: 6px 8px;
-        border-bottom: 1px solid var(--divider-color);
-        font-size: 0.9em;
-      }
-      
-      .zoneline label {
-        color: var(--primary-text-color);
-        font-weight: 500;
-      }
-      
-      .zoneline input,
-      .zoneline select {
-        justify-self: end;
-      }
-      .saving-indicator {
-        color: var(--primary-color);
-        font-style: italic;
-        margin-top: 8px;
-        font-size: 0.9em;
-      }
-      
-      .watering-calendar {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid var(--divider-color);
-      }
-      
-      .watering-calendar h4 {
-        margin: 0 0 12px 0;
-        font-size: 1em;
-        font-weight: 500;
-        color: var(--primary-text-color);
-      }
-      
-      .calendar-table {
-        display: grid;
-        grid-template-columns: 1fr 0.8fr 1fr 0.8fr 0.8fr;
-        gap: 8px;
-        font-size: 0.85em;
-      }
-      
-      .calendar-header {
-        display: contents;
-        font-weight: 500;
-        color: var(--primary-text-color);
-      }
-      
-      .calendar-header span {
-        padding: 4px;
-        background: var(--card-background-color);
-        border-bottom: 2px solid var(--primary-color);
-      }
-      
-      .calendar-row {
-        display: contents;
-        color: var(--secondary-text-color);
-      }
-      
-      .calendar-row span {
-        padding: 4px;
-        border-bottom: 1px solid var(--divider-color);
-      }
-      
-      .calendar-note {
-        padding: 8px;
-        background: var(--secondary-background-color);
-        color: var(--secondary-text-color);
-        border-radius: 4px;
-        font-size: 0.9em;
-        font-style: italic;
-      }
-      
-      .calendar-info {
-        margin-top: 8px;
-        padding: 4px 8px;
-        background: var(--info-color, var(--primary-color));
-        color: white;
-        border-radius: 4px;
-        font-size: 0.8em;
-      }
-
-      .weather-records {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid var(--divider-color);
-      }
-      
-      .weather-records h4 {
-        margin: 0 0 12px 0;
-        font-size: 1em;
-        font-weight: 500;
-        color: var(--primary-text-color);
-      }
-      
-      .weather-table {
-        display: grid;
-        grid-template-columns: 1fr 0.8fr 0.8fr 0.8fr 1fr;
-        gap: 8px;
-        font-size: 0.85em;
-      }
-      
-      .weather-header {
-        display: contents;
-        font-weight: 500;
-        color: var(--primary-text-color);
-      }
-      
-      .weather-header span {
-        padding: 4px;
-        background: var(--card-background-color);
-        border-bottom: 2px solid var(--primary-color);
-      }
-      
-      .weather-row {
-        display: contents;
-        color: var(--secondary-text-color);
-      }
-      
-      .weather-row span {
-        padding: 4px;
-        border-bottom: 1px solid var(--divider-color);
-      }
-      
-      .weather-note {
-        padding: 8px;
-        background: var(--secondary-background-color);
-        color: var(--secondary-text-color);
-        border-radius: 4px;
-        font-size: 0.9em;
-        font-style: italic;
-      }
-
-      .zone-info-table {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 4px;
-        margin-bottom: 16px;
-      }
-      
-      .zone-info-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        padding: 6px 8px;
-        border-bottom: 1px solid var(--divider-color);
-        font-size: 0.9em;
-      }
-      
-      .zone-info-label {
-        color: var(--primary-text-color);
-        font-weight: 500;
-      }
-      
-      .zone-info-value {
-        color: var(--secondary-text-color);
-        text-align: right;
-      }
+      ${globalStyle}
+      /* View-specific styles only - most common styles are now in globalStyle */
     `;
   }
 }

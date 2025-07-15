@@ -20,7 +20,7 @@ import {
   SmartIrrigationMapping,
   WeatherRecord,
 } from "../../types";
-import { commonStyle } from "../../styles";
+import { globalStyle } from "../../styles/global-style";
 import { localize } from "../../../localize/localize";
 import {
   DOMAIN,
@@ -466,14 +466,12 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
               this.renderMappingSetting(index, value),
             )}
             ${numberofzonesusingthismapping
-              ? html`
-                <div class="weather-note">
+              ? html`<div class="weather-note">
                   ${localize(
                     "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
                     this.hass.language,
                   )}
-                </div>
-              `
+                </div>`
               : html` <svg
                   style="width:24px;height:24px"
                   viewBox="0 0 24 24"
@@ -1375,14 +1373,12 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
             ${this.renderMappingSettings(mapping, index)}
             ${this.renderWeatherRecords(mapping)}
             ${numberofzonesusingthismapping
-              ? html`
-                <div class="weather-note">
+              ? html`<div class="weather-note">
                   ${localize(
                     "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
                     this.hass.language,
                   )}
-                </div>
-              `
+                </div>`
               : html` <svg
                   style="width:24px;height:24px"
                   viewBox="0 0 24 24"
@@ -1427,151 +1423,10 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
 
   static get styles(): CSSResultGroup {
     return css`
-      ${commonStyle}
-      .mapping {
-        margin-top: 25px;
-        margin-bottom: 25px;
-      }
-      .hidden {
-        display: none;
-      }
-      .shortinput {
-        width: 50px;
-      }
-      .mappingsettingname {
-        font-weight: bold;
-      }
-      .mappingline {
-        margin-top: 16px;
-        padding: 8px;
-        border: 1px solid var(--divider-color);
-        border-radius: 4px;
-      }
-      .mappingsettingline {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 12px;
-        align-items: center;
-        margin-top: 8px;
-        padding: 6px 8px;
-        border-bottom: 1px solid var(--divider-color);
-        font-size: 0.9em;
-      }
-      .mappingsettingline label {
-        color: var(--primary-text-color);
-        font-weight: 500;
-      }
-      .strikethrough {
-        text-decoration: line-through;
-      }
-      .saving-indicator {
-        color: var(--primary-color);
-        font-style: italic;
-        margin-top: 8px;
-        font-size: 0.9em;
-      }
-      .radio-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin: 8px 0;
-      }
-      .radio-group label {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        cursor: pointer;
-      }
-      .radio-group input[type="radio"] {
-        margin: 0;
-      }
-      .load-more {
-        text-align: center;
-        padding: 16px;
-      }
-      .load-more button {
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      .load-more button:hover {
-        background: var(--primary-color-dark, var(--primary-color));
-      }
-      
-      .weather-records {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid var(--divider-color);
-      }
-      
-      .weather-records h4 {
-        margin: 0 0 12px 0;
-        font-size: 1em;
-        font-weight: 500;
-        color: var(--primary-text-color);
-      }
-      
-      .weather-table {
-        display: grid;
-        grid-template-columns: 1fr 0.8fr 0.8fr 0.8fr 1fr;
-        gap: 8px;
-        font-size: 0.85em;
-      }
-      
-      .weather-header {
-        display: contents;
-        font-weight: 500;
-        color: var(--primary-text-color);
-      }
-      
-      .weather-header span {
-        padding: 4px;
-        background: var(--card-background-color);
-        border-bottom: 2px solid var(--primary-color);
-      }
-      
-      .weather-row {
-        display: contents;
-        color: var(--secondary-text-color);
-      }
-      
-      .weather-row span {
-        padding: 4px;
-        border-bottom: 1px solid var(--divider-color);
-      }
-      
-      .weather-note {
-        padding: 8px;
-        background: var(--warning-color);
-        color: var(--text-primary-color);
-        border-radius: 4px;
-        font-size: 0.9em;
-        font-style: italic;
-      }
-      .zoneline {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 12px;
-        align-items: center;
-        margin-left: 0;
-        margin-top: 8px;
-        padding: 6px 8px;
-        border-bottom: 1px solid var(--divider-color);
-        font-size: 0.9em;
-      }
-      
-      .zoneline label {
-        color: var(--primary-text-color);
-        font-weight: 500;
-      }
-      
-      .zoneline input,
-      .zoneline select {
-        justify-self: end;
-      }
+      ${globalStyle}
+      /* View-specific styles only - most common styles are now in globalStyle */
+
+
     `;
   }
 
