@@ -466,10 +466,12 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
               this.renderMappingSetting(index, value),
             )}
             ${numberofzonesusingthismapping
-              ? html`${localize(
-                  "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
-                  this.hass.language,
-                )}`
+              ? html`<div class="weather-note">
+                  ${localize(
+                    "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
+                    this.hass.language,
+                  )}
+                </div>`
               : html` <svg
                   style="width:24px;height:24px"
                   viewBox="0 0 24 24"
@@ -1371,10 +1373,12 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
             ${this.renderMappingSettings(mapping, index)}
             ${this.renderWeatherRecords(mapping)}
             ${numberofzonesusingthismapping
-              ? html`${localize(
-                  "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
-                  this.hass.language,
-                )}`
+              ? html`<div class="weather-note">
+                  ${localize(
+                    "panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it",
+                    this.hass.language,
+                  )}
+                </div>`
               : html` <svg
                   style="width:24px;height:24px"
                   viewBox="0 0 24 24"
