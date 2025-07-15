@@ -268,10 +268,12 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
               : null}
           </div>
           ${numberofzonesusingthismodule
-            ? html` ${localize(
+            ? html`<div class="weather-note">
+                ${localize(
                 "panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it",
                 this.hass.language,
-              )}`
+              )}
+              </div>`
             : html` <svg
                 style="width:24px;height:24px"
                 viewBox="0 0 24 24"
