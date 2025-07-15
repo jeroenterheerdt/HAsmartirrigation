@@ -436,6 +436,78 @@ export const globalStyle = css`
     width: 100%;
     box-sizing: border-box;
   }
+
+  /* Action button containers for zones page */
+  .action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+    padding: 12px 8px;
+    border-top: 1px solid var(--divider-color);
+  }
+
+  .action-buttons-left,
+  .action-buttons-right {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Labeled action button - generic class for all pages */
+  .action-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .action-button:hover {
+    background-color: var(--secondary-background-color);
+  }
+
+  /* For zones page - left column has label on right of icon */
+  .action-button-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    flex-direction: row;
+  }
+
+  /* For zones page - right column has label on left of icon */
+  .action-button-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    flex-direction: row-reverse;
+    text-align: right;
+  }
+
+  .action-button-left:hover,
+  .action-button-right:hover {
+    background-color: var(--secondary-background-color);
+  }
+
+  .action-button svg {
+    flex-shrink: 0;
+  }
+
+  .action-button-label {
+    font-size: 0.85em;
+    color: var(--primary-text-color);
+    white-space: nowrap;
+  }
 `;
 
 export const dialogStyle = css`

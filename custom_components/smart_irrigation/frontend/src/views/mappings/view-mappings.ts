@@ -472,17 +472,15 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                     this.hass.language,
                   )}
                 </div>`
-              : html` <svg
-                  style="width:24px;height:24px"
-                  viewBox="0 0 24 24"
-                  id="deleteZone${mapping.id}"
-                  @click="${(e: Event) => this.handleRemoveMapping(e, index)}"
-                >
-                  <title>
+              : html`
+                <div class="action-button" @click="${(e: Event) => this.handleRemoveMapping(e, index)}">
+                  <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                    <path fill="#404040" d="${mdiDelete}" />
+                  </svg>
+                  <span class="action-button-label">
                     ${localize("common.actions.delete", this.hass.language)}
-                  </title>
-                  <path fill="#404040" d="${mdiDelete}" />
-                </svg>`}
+                  </span>
+                </div>`}
           </div>
         </div>
       </ha-card>
@@ -1379,17 +1377,15 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                     this.hass.language,
                   )}
                 </div>`
-              : html` <svg
-                  style="width:24px;height:24px"
-                  viewBox="0 0 24 24"
-                  id="deleteZone${mapping.id}"
-                  @click="${(e: Event) => this.handleRemoveMapping(e, index)}"
-                >
-                  <title>
+              : html`
+                <div class="action-button" @click="${(e: Event) => this.handleRemoveMapping(e, index)}">
+                  <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                    <path fill="#404040" d="${mdiDelete}" />
+                  </svg>
+                  <span class="action-button-label">
                     ${localize("common.actions.delete", this.hass.language)}
-                  </title>
-                  <path fill="#404040" d="${mdiDelete}" />
-                </svg>`}
+                  </span>
+                </div>`}
           </div>
         </div>
       </ha-card>

@@ -664,72 +664,92 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
           <path fill="#404040" d="${mdiInformationOutline}" />
         </svg>`;
       }
-      let calculation_svg_to_show;
+      // Create labeled action buttons for zones page
+      let calculation_button_to_show;
       if (zone.state === SmartIrrigationZoneState.Automatic) {
-        calculation_svg_to_show = html` <svg
-          style="width:24px;height:24px"
-          viewBox="0 0 24 24"
-          @click="${() => this.handleCalculateZone(index)}"
-        >
-          <title>
-            ${localize("panels.zones.actions.calculate", this.hass.language)}
-          </title>
-          <path fill="#404040" d="${mdiCalculator}" />
-        </svg>`;
+        calculation_button_to_show = html`
+          <div class="action-button-left" @click="${() => this.handleCalculateZone(index)}">
+            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+              <path fill="#404040" d="${mdiCalculator}" />
+            </svg>
+            <span class="action-button-label">
+              ${localize("panels.zones.actions.calculate", this.hass.language)}
+            </span>
+          </div>`;
       }
-      let update_svg_to_show;
+      
+      let update_button_to_show;
       if (zone.state === SmartIrrigationZoneState.Automatic) {
-        update_svg_to_show = html` <svg
-          style="width:24px;height:24px"
-          viewBox="0 0 24 24"
-          @click="${() => this.handleUpdateZone(index)}"
-        >
-          <title>
-            ${localize("panels.zones.actions.update", this.hass.language)}
-          </title>
-          <path fill="#404040" d="${mdiUpdate}" />
-        </svg>`;
+        update_button_to_show = html`
+          <div class="action-button-left" @click="${() => this.handleUpdateZone(index)}">
+            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+              <path fill="#404040" d="${mdiUpdate}" />
+            </svg>
+            <span class="action-button-label">
+              ${localize("panels.zones.actions.update", this.hass.language)}
+            </span>
+          </div>`;
       }
-      const reset_bucket_svg_to_show = html` <svg
-          style="width:24px;height:24px"
-          viewBox="0 0 24 24"
-          @click="${() =>
-            this.handleEditZone(index, {
-              ...zone,
-              [ZONE_BUCKET]: 0.0,
-            })}"}"
-        >
-          <title>
+      
+      const reset_bucket_button_to_show = html`
+        <div class="action-button-right" @click="${() =>
+          this.handleEditZone(index, {
+            ...zone,
+            [ZONE_BUCKET]: 0.0,
+          })}">
+          <span class="action-button-label">
             ${localize("panels.zones.actions.reset-bucket", this.hass.language)}
-          </title>
-          <path fill="#404040" d="${mdiPailRemove}" />
-        </svg>`;
+          </span>
+          <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="#404040" d="${mdiPailRemove}" />
+          </svg>
+        </div>`;
 
-      let weather_info_svg_to_show;
+      let weather_info_button_to_show;
       if (zone.mapping != undefined) {
-        weather_info_svg_to_show = html` <svg
-          style="width:24px;height:24px"
-          viewBox="0 0 24 24"
-          @click="${() => this.handleViewWeatherInfo(index)}"
-        >
-          <title>
-            ${localize("panels.zones.actions.view-weather-info", this.hass.language)}
-          </title>
-          <path fill="#404040" d="${mdiCloudOutline}" />
-        </svg>`;
+        weather_info_button_to_show = html`
+          <div class="action-button-right" @click="${() => this.handleViewWeatherInfo(index)}">
+            <span class="action-button-label">
+              ${localize("panels.zones.actions.view-weather-info", this.hass.language)}
+            </span>
+            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+              <path fill="#404040" d="${mdiCloudOutline}" />
+            </svg>
+          </div>`;
       }
 
-      // Calendar icon for watering calendar
-      const calendar_svg_to_show = html` <svg
-        style="width:24px;height:24px"
-        viewBox="0 0 24 24"
-        @click="${() => this.handleViewWateringCalendar(index)}"
-      >
-        <title>
-          ${localize("panels.zones.actions.view-watering-calendar", this.hass.language)}
-        </title>
-        <path fill="#404040" d="${mdiCalendar}" />
-      </svg>`;
+      // Calendar button for watering calendar
+      const calendar_button_to_show = html`
+        <div class="action-button-right" @click="${() => this.handleViewWateringCalendar(index)}">
+          <span class="action-button-label">
+            ${localize("panels.zones.actions.view-watering-calendar", this.hass.language)}
+          </span>
+          <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="#404040" d="${mdiCalendar}" />
+          </svg>
+        </div>`;
+
+      const information_button_to_show = zone.explanation != null && zone.explanation.length > 0 
+        ? html`
+          <div class="action-button-left" @click="${() => this.toggleExplanation(index)}">
+            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+              <path fill="#404040" d="${mdiInformationOutline}" />
+            </svg>
+            <span class="action-button-label">
+              ${localize("panels.zones.actions.information", this.hass.language)}
+            </span>
+          </div>`
+        : html``;
+
+      const delete_button_to_show = html`
+        <div class="action-button-right" @click="${(e: Event) => this.handleRemoveZone(e, index)}">
+          <span class="action-button-label">
+            ${localize("common.actions.delete", this.hass.language)}
+          </span>
+          <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="#404040" d="${mdiDelete}" />
+          </svg>
+        </div>`;
 
       //get mapping last updated and datapoints
       let the_mapping;
@@ -1070,21 +1090,18 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                   })}"
               />
             </div>
-            <div class="zoneline">
-              ${update_svg_to_show} ${calculation_svg_to_show}
-              ${explanation_svg_to_show} ${reset_bucket_svg_to_show}
-              ${weather_info_svg_to_show} ${calendar_svg_to_show}
-              <svg
-                style="width:24px;height:24px"
-                viewBox="0 0 24 24"
-                id="deleteZone${index}"
-                @click="${(e: Event) => this.handleRemoveZone(e, index)}"
-              >
-                <title>
-                  ${localize("common.actions.delete", this.hass.language)}
-                </title>
-                <path fill="#404040" d="${mdiDelete}" />
-              </svg>
+            <div class="action-buttons">
+              <div class="action-buttons-left">
+                ${update_button_to_show}
+                ${calculation_button_to_show}
+                ${information_button_to_show}
+              </div>
+              <div class="action-buttons-right">
+                ${reset_bucket_button_to_show}
+                ${weather_info_button_to_show}
+                ${calendar_button_to_show}
+                ${delete_button_to_show}
+              </div>
             </div>
             <div class="zoneline">
               <div>
