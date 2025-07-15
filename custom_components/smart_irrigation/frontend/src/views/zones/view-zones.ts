@@ -1159,6 +1159,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
             />
           </div>
           <div class="zoneline">
+            <span></span>
             <button @click="${this.handleAddZone}" ?disabled="${this.isSaving}">
               ${localize(
                 "panels.zones.cards.add-zone.actions.add",

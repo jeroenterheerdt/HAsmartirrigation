@@ -452,7 +452,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                 value="True"
                 ?checked="${this.config.autoclearenabled}"
                 @change="${(e: Event) => {
-                  this.saveData({
+                  this.handleConfigChange({
                     autoclearenabled: parseBoolean(
                       (e.target as HTMLInputElement).value,
                     ),
@@ -468,7 +468,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                 value="False"
                 ?checked="${!this.config.autoclearenabled}"
                 @change="${(e: Event) => {
-                  this.saveData({
+                  this.handleConfigChange({
                     autoclearenabled: parseBoolean(
                       (e.target as HTMLInputElement).value,
                     ),
@@ -496,7 +496,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                 class="shortinput"
                 .value="${this.config.cleardatatime}"
                 @input=${(e: Event) => {
-                  this.saveData({
+                  this.handleConfigChange({
                     cleardatatime: (e.target as HTMLInputElement).value,
                   });
                 }}
@@ -551,7 +551,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                 value="True"
                 ?checked="${this.config.continuousupdates}"
                 @change="${(e: Event) => {
-                  this.saveData({
+                  this.handleConfigChange({
                     continuousupdates: parseBoolean(
                       (e.target as HTMLInputElement).value,
                     ),
@@ -567,7 +567,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                 value="False"
                 ?checked="${!this.config.continuousupdates}"
                 @change="${(e: Event) => {
-                  this.saveData({
+                  this.handleConfigChange({
                     continuousupdates: parseBoolean(
                       (e.target as HTMLInputElement).value,
                     ),
@@ -596,7 +596,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                 class="shortinput"
                 .value="${this.config.sensor_debounce}"
                 @input=${(e: Event) => {
-                  this.saveData({
+                  this.handleConfigChange({
                     sensor_debounce: parseInt(
                       (e.target as HTMLInputElement).value,
                     ),
