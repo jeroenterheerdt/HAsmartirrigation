@@ -8483,7 +8483,9 @@
             >
             ${e.schema ? Object.entries(e.schema).map(([e]) => this.renderConfig(t, e)) : null}
           </div>
-          ${i ? Y` ${Xi("panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it", this.hass.language)}` : Y` <svg
+          ${i ? Y`<div class="weather-note">
+                ${Xi("panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it", this.hass.language)}
+              </div>` : Y` <svg
                 style="width:24px;height:24px"
                 viewBox="0 0 24 24"
                 id="deleteZone${t}"
@@ -8688,6 +8690,15 @@
       .schemaline input,
       .schemaline select {
         justify-self: end;
+      }
+
+      .weather-note {
+        padding: 8px;
+        background: var(--secondary-background-color);
+        color: var(--secondary-text-color);
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-style: italic;
       }
     `;
     }
