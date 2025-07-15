@@ -588,6 +588,15 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
       .schemaline select {
         justify-self: end;
       }
+
+      .weather-note {
+        padding: 8px;
+        background: var(--secondary-background-color);
+        color: var(--secondary-text-color);
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-style: italic;
+      }
     `;
   }
 }
