@@ -9,7 +9,7 @@ import { localize } from "../../../localize/localize";
 import { pick, handleError, parseBoolean } from "../../helpers";
 import { loadHaForm } from "../../load-ha-elements";
 import { SmartIrrigationConfig } from "../../types";
-import { commonStyle } from "../../styles";
+import { globalStyle } from "../../styles/global-style";
 import { Path } from "../../common/navigation";
 import {
   AUTO_UPDATE_SCHEDULE_DAILY,
@@ -689,67 +689,8 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
   }
   static get styles(): CSSResultGroup {
     return css`
-      ${commonStyle}
-      .hidden {
-        display: none;
-      }
-      .shortinput {
-        width: 50px;
-      }
-      .information {
-        margin-left: 20px;
-        margin-top: 5px;
-      }
-      .loading-indicator {
-        text-align: center;
-        padding: 20px;
-        color: var(--primary-text-color);
-        font-style: italic;
-      }
-      .saving {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      input:disabled,
-      select:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      .zoneline {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 12px;
-        align-items: center;
-        margin-left: 0;
-        margin-top: 8px;
-        padding: 6px 8px;
-        border-bottom: 1px solid var(--divider-color);
-        font-size: 0.9em;
-      }
-      
-      .zoneline label {
-        color: var(--primary-text-color);
-        font-weight: 500;
-      }
-      
-      .zoneline input,
-      .zoneline select {
-        justify-self: end;
-      }
-      .saving-indicator {
-        color: var(--primary-color);
-        font-style: italic;
-        margin-top: 8px;
-        font-size: 0.9em;
-      }
-      /* Radio button group styling */
-      input[type="radio"] {
-        margin-right: 5px;
-        margin-left: 10px;
-      }
-      input[type="radio"] + label {
-        margin-right: 15px;
-      }
+      ${globalStyle}
+      /* View-specific styles only - most common styles are now in globalStyle */
     `;
   }
 }

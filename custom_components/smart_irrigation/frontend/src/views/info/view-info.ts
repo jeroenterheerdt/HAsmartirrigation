@@ -13,7 +13,7 @@ import {
   SmartIrrigationConfig,
   SmartIrrigationInfo,
 } from "../../types";
-import { commonStyle } from "../../styles";
+import { globalStyle } from "../../styles/global-style";
 import { localize } from "../../../localize/localize";
 import { DOMAIN } from "../../const";
 import moment from "moment";
@@ -248,58 +248,8 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
 
   static get styles(): CSSResultGroup {
     return css`
-      ${commonStyle}
-      .info-item {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        align-items: center;
-        margin-bottom: 8px;
-        padding: 6px 8px;
-        border-bottom: 1px solid var(--divider-color);
-        font-size: 0.9em;
-      }
-      
-      .info-item label {
-        font-weight: 500;
-        min-width: 120px;
-        color: var(--primary-text-color);
-      }
-      
-      .info-item .value {
-        color: var(--secondary-text-color);
-        font-family: monospace;
-        text-align: right;
-        justify-self: end;
-      }
-      
-      .info-item.explanation {
-        grid-template-columns: 1fr;
-        align-items: flex-start;
-      }
-      
-      .explanation-text {
-        background: var(--card-background-color);
-        border: 1px solid var(--divider-color);
-        border-radius: 4px;
-        padding: 8px;
-        font-size: 0.9em;
-        line-height: 1.4;
-        white-space: pre-wrap;
-        margin-top: 4px;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      
-      .info-note {
-        margin-top: 16px;
-        padding: 8px;
-        background: var(--warning-color);
-        color: var(--text-primary-color);
-        border-radius: 4px;
-        font-size: 0.9em;
-        font-style: italic;
-      }
+      ${globalStyle}
+      /* View-specific styles only - most common styles are now in globalStyle */
     `;
   }
 }

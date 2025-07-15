@@ -19,7 +19,7 @@ import {
   SmartIrrigationZone,
   SmartIrrigationModule,
 } from "../../types";
-import { commonStyle } from "../../styles";
+import { globalStyle } from "../../styles/global-style";
 import { localize } from "../../../localize/localize";
 import { DOMAIN } from "../../const";
 import { prettyPrint, getPart } from "../../helpers";
@@ -508,95 +508,8 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
 
   static get styles(): CSSResultGroup {
     return css`
-      ${commonStyle}
-      .zone {
-        margin-top: 25px;
-        margin-bottom: 25px;
-      }
-      .hidden {
-        display: none;
-      }
-      .shortinput {
-        width: 50px;
-      }
-      .subheader {
-        font-weight: bold;
-      }
-      .loading-indicator {
-        text-align: center;
-        padding: 20px;
-        color: var(--primary-text-color);
-        font-style: italic;
-      }
-      .saving {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      select:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-      .zoneline {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 12px;
-        align-items: center;
-        margin-left: 0;
-        margin-top: 8px;
-        padding: 6px 8px;
-        border-bottom: 1px solid var(--divider-color);
-        font-size: 0.9em;
-      }
-      
-      .zoneline label {
-        color: var(--primary-text-color);
-        font-weight: 500;
-      }
-      
-      .zoneline input,
-      .zoneline select {
-        justify-self: end;
-      }
-      .saving-indicator {
-        color: var(--primary-color);
-        font-style: italic;
-        margin-top: 8px;
-        font-size: 0.9em;
-      }
-      .schemaline {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 12px;
-        align-items: center;
-        margin-left: 0;
-        margin-top: 8px;
-        padding: 6px 8px;
-        border-bottom: 1px solid var(--divider-color);
-        font-size: 0.9em;
-      }
-      
-      .schemaline label {
-        color: var(--primary-text-color);
-        font-weight: 500;
-      }
-      
-      .schemaline input,
-      .schemaline select {
-        justify-self: end;
-      }
-
-      .weather-note {
-        padding: 8px;
-        background: var(--secondary-background-color);
-        color: var(--secondary-text-color);
-        border-radius: 4px;
-        font-size: 0.9em;
-        font-style: italic;
-      }
+      ${globalStyle}
+      /* View-specific styles only - most common styles are now in globalStyle */
     `;
   }
 }
