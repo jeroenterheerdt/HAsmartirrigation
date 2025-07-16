@@ -344,7 +344,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     //const dialog = new ConfirmationDialog();
     //dialog.showDialog("{'message':'Test!'}");
     const zoneid = this.zones[index].id;
-    const zone = Object.values(this.zones).at(index);
+    const zone = this.zones[index];
     if (!zone || zoneid == undefined) {
       return;
     }
@@ -380,7 +380,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   }
 
   private handleCalculateZone(index: number): void {
-    const zone = Object.values(this.zones).at(index);
+    const zone = this.zones[index];
     if (!zone || zone.id == undefined) {
       return;
     }
@@ -393,7 +393,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   }
 
   private handleUpdateZone(index: number): void {
-    const zone = Object.values(this.zones).at(index);
+    const zone = this.zones[index];
     if (!zone || zone.id == undefined) {
       return;
     }
@@ -405,77 +405,44 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   }
 
   private handleViewWeatherInfo(index: number): void {
-    console.log(`handleViewWeatherInfo: Received index=${index}`);
-    
-    const zonesValues = Object.values(this.zones);
-    console.log(`handleViewWeatherInfo: Object.values(this.zones)=`, zonesValues);
-    
-    const zone = zonesValues.at(index);
-    console.log(`handleViewWeatherInfo: Picked zone=`, zone);
+    // Use direct array access instead of Object.values() to ensure correct zone mapping
+    const zone = this.zones[index];
     
     if (!zone || zone.mapping == undefined) {
-      console.log(`handleViewWeatherInfo: Early return - zone not found or no mapping`);
       return;
     }
     
     // Toggle weather data display by updating the zone's weather visibility state
-    // For now, we'll use a simple approach to show the weather data
     const selector = `#weather-section-${zone.id}`;
-    console.log(`handleViewWeatherInfo: Using selector="${selector}"`);
-    
     const weatherSection = this.shadowRoot?.querySelector(selector);
-    const elementFound = !!weatherSection;
-    console.log(`handleViewWeatherInfo: Element found=${elementFound}`);
     
     if (weatherSection) {
-      const isHiddenBefore = weatherSection.hasAttribute('hidden');
-      console.log(`handleViewWeatherInfo: Hidden state before toggle=${isHiddenBefore}`);
-      
-      if (isHiddenBefore) {
+      if (weatherSection.hasAttribute('hidden')) {
         weatherSection.removeAttribute('hidden');
       } else {
         weatherSection.setAttribute('hidden', '');
       }
-      
-      const isHiddenAfter = weatherSection.hasAttribute('hidden');
-      console.log(`handleViewWeatherInfo: Hidden state after toggle=${isHiddenAfter}`);
     }
   }
 
   private handleViewWateringCalendar(index: number): void {
-    console.log(`handleViewWateringCalendar: Received index=${index}`);
-    
-    const zonesValues = Object.values(this.zones);
-    console.log(`handleViewWateringCalendar: Object.values(this.zones)=`, zonesValues);
-    
-    const zone = zonesValues.at(index);
-    console.log(`handleViewWateringCalendar: Picked zone=`, zone);
+    // Use direct array access instead of Object.values() to ensure correct zone mapping
+    const zone = this.zones[index];
     
     if (!zone || zone.id == undefined) {
-      console.log(`handleViewWateringCalendar: Early return - zone not found or no ID`);
       return;
     }
     
     // Toggle watering calendar display
     const selector = `#calendar-section-${zone.id}`;
-    console.log(`handleViewWateringCalendar: Using selector="${selector}"`);
-    
     const calendarSection = this.shadowRoot?.querySelector(selector);
-    const elementFound = !!calendarSection;
-    console.log(`handleViewWateringCalendar: Element found=${elementFound}`);
     
     if (calendarSection) {
-      const isHiddenBefore = calendarSection.hasAttribute('hidden');
-      console.log(`handleViewWateringCalendar: Hidden state before toggle=${isHiddenBefore}`);
-      
-      if (isHiddenBefore) {
+      if (calendarSection.hasAttribute('hidden')) {
         calendarSection.removeAttribute('hidden');
       } else {
         calendarSection.setAttribute('hidden', '');
       }
-      
-      const isHiddenAfter = calendarSection.hasAttribute('hidden');
-      console.log(`handleViewWateringCalendar: Hidden state after toggle=${isHiddenAfter}`);
     }
   }
 

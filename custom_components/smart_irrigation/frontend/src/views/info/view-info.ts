@@ -6,16 +6,19 @@ import { UnsubscribeFunc } from "home-assistant-js-websocket";
 import {
   fetchConfig,
   fetchIrrigationInfo,
+  fetchZones,
 } from "../../data/websockets";
 import { SubscribeMixin } from "../../subscribe-mixin";
 
 import {
   SmartIrrigationConfig,
   SmartIrrigationInfo,
+  SmartIrrigationZone,
 } from "../../types";
+import { output_unit } from "../../helpers";
 import { globalStyle } from "../../styles/global-style";
 import { localize } from "../../../localize/localize";
-import { DOMAIN } from "../../const";
+import { DOMAIN, ZONE_BUCKET } from "../../const";
 import moment from "moment";
 
 @customElement("smart-irrigation-view-info")
@@ -25,6 +28,9 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
 
   @property({ type: Object })
   private info?: SmartIrrigationInfo;
+
+  @property({ type: Array })
+  private zones: SmartIrrigationZone[] = [];
 
   @property({ type: Boolean })
   private isLoading = true;
@@ -75,14 +81,16 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
     try {
       this.isLoading = true;
 
-      // Fetch config and irrigation info concurrently
-      const [config, info] = await Promise.all([
+      // Fetch config, irrigation info, and zones concurrently
+      const [config, info, zones] = await Promise.all([
         fetchConfig(this.hass),
         fetchIrrigationInfo(this.hass),
+        fetchZones(this.hass),
       ]);
 
       this.config = config;
       this.info = info;
+      this.zones = zones;
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -122,8 +130,42 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
         </div>
       </ha-card>
       
+      ${this.renderZoneBucketsCard()}
       ${this.renderNextIrrigationCard()}
       ${this.renderIrrigationReasonCard()}
+    `;
+  }
+
+  private renderZoneBucketsCard(): TemplateResult {
+    if (!this.hass) {
+      return html``;
+    }
+
+    if (!this.zones || this.zones.length === 0) {
+      return html`
+        <ha-card header="Zone Bucket Values">
+          <div class="card-content">
+            <div class="info-item">
+              <span class="value">No zones configured</span>
+            </div>
+          </div>
+        </ha-card>
+      `;
+    }
+
+    const bucketUnit = this.config ? output_unit(this.config, ZONE_BUCKET) : "mm";
+
+    return html`
+      <ha-card header="Zone Bucket Values">
+        <div class="card-content">
+          ${this.zones.map(zone => html`
+            <div class="info-item">
+              <label>${zone.name}:</label>
+              <span class="value">${Number(zone.bucket).toFixed(1)} ${bucketUnit}</span>
+            </div>
+          `)}
+        </div>
+      </ha-card>
     `;
   }
 
