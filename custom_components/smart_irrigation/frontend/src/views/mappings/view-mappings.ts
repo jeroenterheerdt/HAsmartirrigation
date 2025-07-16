@@ -203,6 +203,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           this.weatherRecords.set(mapping.id, records);
         } catch (error) {
           console.error(`Failed to fetch weather records for mapping ${mapping.id}:`, error);
+          // Set empty array on error to ensure the UI doesn't break
+          this.weatherRecords.set(mapping.id, []);
         }
       }
     }
@@ -234,15 +236,43 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                 <span>${localize("panels.mappings.weather-records.precipitation", this.hass.language)}</span>
                 <span>${localize("panels.mappings.weather-records.retrieval-time", this.hass.language)}</span>
               </div>
-              ${records.slice(0, 10).map(record => html`
-                <div class="weather-row">
-                  <span>${moment(record.timestamp).format("MM-DD HH:mm")}</span>
-                  <span>${record.temperature ? record.temperature.toFixed(1) + "°C" : "-"}</span>
-                  <span>${record.humidity ? record.humidity.toFixed(1) + "%" : "-"}</span>
-                  <span>${record.precipitation ? record.precipitation.toFixed(1) + "mm" : "-"}</span>
-                  <span>${record.retrieval_time ? moment(record.retrieval_time).format("MM-DD HH:mm") : "-"}</span>
-                </div>
-              `)}
+              ${records.slice(0, 10).map(record => {
+                // Safely format timestamps with error handling
+                let timestampFormatted = "-";
+                let retrievalTimeFormatted = "-";
+                
+                try {
+                  if (record.timestamp && record.timestamp !== null) {
+                    const timestampMoment = moment(record.timestamp);
+                    if (timestampMoment.isValid()) {
+                      timestampFormatted = timestampMoment.format("MM-DD HH:mm");
+                    }
+                  }
+                } catch (error) {
+                  console.warn("Error formatting timestamp:", record.timestamp, error);
+                }
+                
+                try {
+                  if (record.retrieval_time && record.retrieval_time !== null) {
+                    const retrievalMoment = moment(record.retrieval_time);
+                    if (retrievalMoment.isValid()) {
+                      retrievalTimeFormatted = retrievalMoment.format("MM-DD HH:mm");
+                    }
+                  }
+                } catch (error) {
+                  console.warn("Error formatting retrieval_time:", record.retrieval_time, error);
+                }
+                
+                return html`
+                  <div class="weather-row">
+                    <span>${timestampFormatted}</span>
+                    <span>${record.temperature !== null && record.temperature !== undefined ? record.temperature.toFixed(1) + "°C" : "-"}</span>
+                    <span>${record.humidity !== null && record.humidity !== undefined ? record.humidity.toFixed(1) + "%" : "-"}</span>
+                    <span>${record.precipitation !== null && record.precipitation !== undefined ? record.precipitation.toFixed(1) + "mm" : "-"}</span>
+                    <span>${retrievalTimeFormatted}</span>
+                  </div>
+                `;
+              })}
             </div>
           `
         }
