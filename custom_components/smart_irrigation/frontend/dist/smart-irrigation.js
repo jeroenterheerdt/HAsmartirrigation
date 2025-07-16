@@ -5215,8 +5215,8 @@
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
-    flex-direction: row-reverse;
     text-align: right;
+    justify-content: flex-end;
   }
 
   .action-button-left:hover,
