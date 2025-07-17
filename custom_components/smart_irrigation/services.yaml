@@ -42,7 +42,6 @@ reset_bucket:
     entity:
       domain: sensor
 reset_all_buckets:
-clear_all_weather_data:
 set_all_multipliers:
   fields:
     new_multiplier_value:

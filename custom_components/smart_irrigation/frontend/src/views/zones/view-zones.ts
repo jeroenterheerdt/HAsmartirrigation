@@ -405,43 +405,49 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   }
 
   private handleViewWeatherInfo(index: number): void {
+    console.log("handleViewWeatherInfo called for index:", index);
     // Use direct array access instead of Object.values() to ensure correct zone mapping
     const zone = this.zones[index];
-    
+    console.log("Zone data:", zone);
     if (!zone || zone.mapping == undefined) {
       return;
     }
-    
+
     // Toggle weather data display by updating the zone's weather visibility state
     const selector = `#weather-section-${zone.id}`;
+    console.log("Selector for weather section:", selector);
     const weatherSection = this.shadowRoot?.querySelector(selector);
-    
+    console.log("Weather section element:", weatherSection);
+
     if (weatherSection) {
-      if (weatherSection.hasAttribute('hidden')) {
-        weatherSection.removeAttribute('hidden');
+      if (weatherSection.hasAttribute("hidden")) {
+        weatherSection.removeAttribute("hidden");
       } else {
-        weatherSection.setAttribute('hidden', '');
+        weatherSection.setAttribute("hidden", "");
       }
     }
   }
 
   private handleViewWateringCalendar(index: number): void {
     // Use direct array access instead of Object.values() to ensure correct zone mapping
+    console.log("handleViewWateringCalendar called for index:", index);
     const zone = this.zones[index];
-    
+    console.log("Zone data:", zone);
     if (!zone || zone.id == undefined) {
       return;
     }
-    
+
     // Toggle watering calendar display
     const selector = `#calendar-section-${zone.id}`;
+    console.log("Selector for calendar section:", selector);
     const calendarSection = this.shadowRoot?.querySelector(selector);
-    
+    console.log("Calendar section element:", calendarSection);
+
     if (calendarSection) {
-      if (calendarSection.hasAttribute('hidden')) {
-        calendarSection.removeAttribute('hidden');
+      if (calendarSection.hasAttribute("hidden")) {
+        calendarSection.removeAttribute("hidden");
       } else {
-        calendarSection.setAttribute('hidden', '');
+        calendarSection.setAttribute("hidden", "");
       }
     }
   }
@@ -453,12 +459,21 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
     // Fetch weather records for each zone that has a mapping
     for (const zone of this.zones) {
+      console.log("zone id", zone.id);
+      console.log("zone mapping", zone.mapping);
       if (zone.id !== undefined && zone.mapping !== undefined) {
         try {
-          const records = await fetchMappingWeatherRecords(this.hass, zone.mapping.toString(), 10);
+          const records = await fetchMappingWeatherRecords(
+            this.hass,
+            zone.mapping.toString(),
+            10,
+          );
           this.weatherRecords.set(zone.id, records);
         } catch (error) {
-          console.error(`Failed to fetch weather records for zone ${zone.id} (mapping ${zone.mapping}):`, error);
+          console.error(
+            `Failed to fetch weather records for zone ${zone.id} (mapping ${zone.mapping}):`,
+            error,
+          );
         }
       }
     }
@@ -474,10 +489,16 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     for (const zone of this.zones) {
       if (zone.id !== undefined) {
         try {
-          const calendar = await fetchWateringCalendar(this.hass, zone.id.toString());
+          const calendar = await fetchWateringCalendar(
+            this.hass,
+            zone.id.toString(),
+          );
           this.wateringCalendars.set(zone.id, calendar);
         } catch (error) {
-          console.error(`Failed to fetch watering calendar for zone ${zone.id}:`, error);
+          console.error(
+            `Failed to fetch watering calendar for zone ${zone.id}:`,
+            error,
+          );
         }
       }
     }
@@ -490,37 +511,89 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     }
 
     const records = this.weatherRecords.get(zone.id) || [];
-    
+
     return html`
       <div class="weather-records">
-        <h4>${localize("panels.mappings.weather-records.title", this.hass.language)}</h4>
-        ${records.length === 0 
+        <h4>
+          ${localize(
+            "panels.mappings.weather-records.title",
+            this.hass.language,
+          )}
+        </h4>
+        ${records.length === 0
           ? html`
-            <div class="weather-note">
-              ${localize("panels.mappings.weather-records.no-data", this.hass.language)}
-            </div>
-          `
-          : html`
-            <div class="weather-table">
-              <div class="weather-header">
-                <span>${localize("panels.mappings.weather-records.timestamp", this.hass.language)}</span>
-                <span>${localize("panels.mappings.weather-records.temperature", this.hass.language)}</span>
-                <span>${localize("panels.mappings.weather-records.humidity", this.hass.language)}</span>
-                <span>${localize("panels.mappings.weather-records.precipitation", this.hass.language)}</span>
-                <span>${localize("panels.mappings.weather-records.retrieval-time", this.hass.language)}</span>
+              <div class="weather-note">
+                ${localize(
+                  "panels.mappings.weather-records.no-data",
+                  this.hass.language,
+                )}
               </div>
-              ${records.slice(0, 10).map(record => html`
-                <div class="weather-row">
-                  <span>${moment(record.timestamp).format("MM-DD HH:mm")}</span>
-                  <span>${record.temperature ? record.temperature.toFixed(1) + "°C" : "-"}</span>
-                  <span>${record.humidity ? record.humidity.toFixed(1) + "%" : "-"}</span>
-                  <span>${record.precipitation ? record.precipitation.toFixed(1) + "mm" : "-"}</span>
-                  <span>${record.retrieval_time ? moment(record.retrieval_time).format("MM-DD HH:mm") : "-"}</span>
+            `
+          : html`
+              <div class="weather-table">
+                <div class="weather-header">
+                  <span
+                    >${localize(
+                      "panels.mappings.weather-records.timestamp",
+                      this.hass.language,
+                    )}</span
+                  >
+                  <span
+                    >${localize(
+                      "panels.mappings.weather-records.temperature",
+                      this.hass.language,
+                    )}</span
+                  >
+                  <span
+                    >${localize(
+                      "panels.mappings.weather-records.humidity",
+                      this.hass.language,
+                    )}</span
+                  >
+                  <span
+                    >${localize(
+                      "panels.mappings.weather-records.precipitation",
+                      this.hass.language,
+                    )}</span
+                  >
+                  <span
+                    >${localize(
+                      "panels.mappings.weather-records.retrieval-time",
+                      this.hass.language,
+                    )}</span
+                  >
                 </div>
-              `)}
-            </div>
-          `
-        }
+                ${records.slice(0, 10).map(
+                  (record) => html`
+                    <div class="weather-row">
+                      <span
+                        >${moment(record.timestamp).format("MM-DD HH:mm")}</span
+                      >
+                      <span
+                        >${record.temperature
+                          ? record.temperature.toFixed(1) + "°C"
+                          : "-"}</span
+                      >
+                      <span
+                        >${record.humidity
+                          ? record.humidity.toFixed(1) + "%"
+                          : "-"}</span
+                      >
+                      <span
+                        >${record.precipitation
+                          ? record.precipitation.toFixed(1) + "mm"
+                          : "-"}</span
+                      >
+                      <span
+                        >${record.retrieval_time
+                          ? moment(record.retrieval_time).format("MM-DD HH:mm")
+                          : "-"}</span
+                      >
+                    </div>
+                  `,
+                )}
+              </div>
+            `}
       </div>
     `;
   }
@@ -531,47 +604,70 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     }
 
     const calendarData = this.wateringCalendars.get(zone.id);
-    const zoneCalendar = calendarData && zone.id in calendarData ? calendarData[zone.id] : null;
+    const zoneCalendar =
+      calendarData && zone.id in calendarData ? calendarData[zone.id] : null;
     const monthlyEstimates = zoneCalendar?.monthly_estimates || [];
-    
+
     return html`
       <div class="watering-calendar">
         <h4>Watering Calendar (12-Month Estimates)</h4>
-        ${monthlyEstimates.length === 0 
+        ${monthlyEstimates.length === 0
           ? html`
-            <div class="calendar-note">
-              ${zoneCalendar?.error ? 
-                `Error generating calendar: ${zoneCalendar.error}` :
-                "No watering calendar data available for this zone"
-              }
-            </div>
-          `
+              <div class="calendar-note">
+                ${zoneCalendar?.error
+                  ? `Error generating calendar: ${zoneCalendar.error}`
+                  : "No watering calendar data available for this zone"}
+              </div>
+            `
           : html`
-            <div class="calendar-table">
-              <div class="calendar-header">
-                <span>Month</span>
-                <span>ET (mm)</span>
-                <span>Precipitation (mm)</span>
-                <span>Watering (L)</span>
-                <span>Avg Temp (°C)</span>
-              </div>
-              ${monthlyEstimates.map(estimate => html`
-                <div class="calendar-row">
-                  <span>${estimate.month_name || `Month ${estimate.month}` || "-"}</span>
-                  <span>${estimate.estimated_et_mm ? estimate.estimated_et_mm.toFixed(1) : "-"}</span>
-                  <span>${estimate.average_precipitation_mm ? estimate.average_precipitation_mm.toFixed(1) : "-"}</span>
-                  <span>${estimate.estimated_watering_volume_liters ? estimate.estimated_watering_volume_liters.toFixed(0) : "-"}</span>
-                  <span>${estimate.average_temperature_c ? estimate.average_temperature_c.toFixed(1) : "-"}</span>
+              <div class="calendar-table">
+                <div class="calendar-header">
+                  <span>Month</span>
+                  <span>ET (mm)</span>
+                  <span>Precipitation (mm)</span>
+                  <span>Watering (L)</span>
+                  <span>Avg Temp (°C)</span>
                 </div>
-              `)}
-            </div>
-            ${zoneCalendar?.calculation_method ? html`
-              <div class="calendar-info">
-                Method: ${zoneCalendar.calculation_method}
+                ${monthlyEstimates.map(
+                  (estimate) => html`
+                    <div class="calendar-row">
+                      <span
+                        >${estimate.month_name ||
+                        `Month ${estimate.month}` ||
+                        "-"}</span
+                      >
+                      <span
+                        >${estimate.estimated_et_mm
+                          ? estimate.estimated_et_mm.toFixed(1)
+                          : "-"}</span
+                      >
+                      <span
+                        >${estimate.average_precipitation_mm
+                          ? estimate.average_precipitation_mm.toFixed(1)
+                          : "-"}</span
+                      >
+                      <span
+                        >${estimate.estimated_watering_volume_liters
+                          ? estimate.estimated_watering_volume_liters.toFixed(0)
+                          : "-"}</span
+                      >
+                      <span
+                        >${estimate.average_temperature_c
+                          ? estimate.average_temperature_c.toFixed(1)
+                          : "-"}</span
+                      >
+                    </div>
+                  `,
+                )}
               </div>
-            ` : ''}
-          `
-        }
+              ${zoneCalendar?.calculation_method
+                ? html`
+                    <div class="calendar-info">
+                      Method: ${zoneCalendar.calculation_method}
+                    </div>
+                  `
+                : ""}
+            `}
       </div>
     `;
   }
@@ -634,89 +730,113 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       // Create labeled action buttons for zones page
       let calculation_button_to_show;
       if (zone.state === SmartIrrigationZoneState.Automatic) {
-        calculation_button_to_show = html`
-          <div class="action-button-left" @click="${() => this.handleCalculateZone(index)}">
-            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-              <path fill="#404040" d="${mdiCalculator}" />
-            </svg>
-            <span class="action-button-label">
-              ${localize("panels.zones.actions.calculate", this.hass.language)}
-            </span>
-          </div>`;
+        calculation_button_to_show = html` <div
+          class="action-button-left"
+          @click="${() => this.handleCalculateZone(index)}"
+        >
+          <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="#404040" d="${mdiCalculator}" />
+          </svg>
+          <span class="action-button-label">
+            ${localize("panels.zones.actions.calculate", this.hass.language)}
+          </span>
+        </div>`;
       }
-      
+
       let update_button_to_show;
       if (zone.state === SmartIrrigationZoneState.Automatic) {
-        update_button_to_show = html`
-          <div class="action-button-left" @click="${() => this.handleUpdateZone(index)}">
-            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-              <path fill="#404040" d="${mdiUpdate}" />
-            </svg>
-            <span class="action-button-label">
-              ${localize("panels.zones.actions.update", this.hass.language)}
-            </span>
-          </div>`;
+        update_button_to_show = html` <div
+          class="action-button-left"
+          @click="${() => this.handleUpdateZone(index)}"
+        >
+          <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="#404040" d="${mdiUpdate}" />
+          </svg>
+          <span class="action-button-label">
+            ${localize("panels.zones.actions.update", this.hass.language)}
+          </span>
+        </div>`;
       }
-      
-      const reset_bucket_button_to_show = html`
-        <div class="action-button-right" @click="${() =>
+
+      const reset_bucket_button_to_show = html` <div
+        class="action-button-right"
+        @click="${() =>
           this.handleEditZone(index, {
             ...zone,
             [ZONE_BUCKET]: 0.0,
-          })}">
-          <span class="action-button-label">
-            ${localize("panels.zones.actions.reset-bucket", this.hass.language)}
-          </span>
-          <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-            <path fill="#404040" d="${mdiPailRemove}" />
-          </svg>
-        </div>`;
+          })}"
+      >
+        <span class="action-button-label">
+          ${localize("panels.zones.actions.reset-bucket", this.hass.language)}
+        </span>
+        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+          <path fill="#404040" d="${mdiPailRemove}" />
+        </svg>
+      </div>`;
 
       let weather_info_button_to_show;
       if (zone.mapping != undefined) {
-        weather_info_button_to_show = html`
-          <div class="action-button-right" @click="${() => this.handleViewWeatherInfo(index)}">
-            <span class="action-button-label">
-              ${localize("panels.zones.actions.view-weather-info", this.hass.language)}
-            </span>
-            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-              <path fill="#404040" d="${mdiCloudOutline}" />
-            </svg>
-          </div>`;
+        weather_info_button_to_show = html` <div
+          class="action-button-right"
+          @click="${() => this.handleViewWeatherInfo(index)}"
+        >
+          <span class="action-button-label">
+            ${localize(
+              "panels.zones.actions.view-weather-info",
+              this.hass.language,
+            )}
+          </span>
+          <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="#404040" d="${mdiCloudOutline}" />
+          </svg>
+        </div>`;
       }
 
       // Calendar button for watering calendar
-      const calendar_button_to_show = html`
-        <div class="action-button-right" @click="${() => this.handleViewWateringCalendar(index)}">
-          <span class="action-button-label">
-            ${localize("panels.zones.actions.view-watering-calendar", this.hass.language)}
-          </span>
-          <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-            <path fill="#404040" d="${mdiCalendar}" />
-          </svg>
-        </div>`;
+      const calendar_button_to_show = html` <div
+        class="action-button-right"
+        @click="${() => this.handleViewWateringCalendar(index)}"
+      >
+        <span class="action-button-label">
+          ${localize(
+            "panels.zones.actions.view-watering-calendar",
+            this.hass.language,
+          )}
+        </span>
+        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+          <path fill="#404040" d="${mdiCalendar}" />
+        </svg>
+      </div>`;
 
-      const information_button_to_show = zone.explanation != null && zone.explanation.length > 0 
-        ? html`
-          <div class="action-button-left" @click="${() => this.toggleExplanation(index)}">
-            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-              <path fill="#404040" d="${mdiInformationOutline}" />
-            </svg>
-            <span class="action-button-label">
-              ${localize("panels.zones.actions.information", this.hass.language)}
-            </span>
-          </div>`
-        : html``;
+      const information_button_to_show =
+        zone.explanation != null && zone.explanation.length > 0
+          ? html` <div
+              class="action-button-left"
+              @click="${() => this.toggleExplanation(index)}"
+            >
+              <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                <path fill="#404040" d="${mdiInformationOutline}" />
+              </svg>
+              <span class="action-button-label">
+                ${localize(
+                  "panels.zones.actions.information",
+                  this.hass.language,
+                )}
+              </span>
+            </div>`
+          : html``;
 
-      const delete_button_to_show = html`
-        <div class="action-button-right" @click="${(e: Event) => this.handleRemoveZone(e, index)}">
-          <span class="action-button-label">
-            ${localize("common.actions.delete", this.hass.language)}
-          </span>
-          <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-            <path fill="#404040" d="${mdiDelete}" />
-          </svg>
-        </div>`;
+      const delete_button_to_show = html` <div
+        class="action-button-right"
+        @click="${(e: Event) => this.handleRemoveZone(e, index)}"
+      >
+        <span class="action-button-label">
+          ${localize("common.actions.delete", this.hass.language)}
+        </span>
+        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+          <path fill="#404040" d="${mdiDelete}" />
+        </svg>
+      </div>`;
 
       //get mapping last updated and datapoints
       let the_mapping;
@@ -1237,9 +1357,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         </div>
       </ha-card>
 
-      ${this.zones.map((zone, index) =>
-        this.renderZone(zone, index),
-      )}
+      ${this.zones.map((zone, index) => this.renderZone(zone, index))}
     `;
   }
 
@@ -1263,8 +1381,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
   static get styles(): CSSResultGroup {
     return css`
-      ${globalStyle}
-      /* View-specific styles only - most common styles are now in globalStyle */
+      ${globalStyle}/* View-specific styles only - most common styles are now in globalStyle */
     `;
   }
 }
