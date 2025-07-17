@@ -4,6 +4,7 @@ import datetime
 import logging
 
 import voluptuous as vol
+from dateutil import parser as dateutil_parser
 from homeassistant.components import websocket_api
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.components.http.data_validator import RequestDataValidator
@@ -17,6 +18,26 @@ from homeassistant.helpers.dispatcher import (async_dispatcher_connect,
 from . import const
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _safe_parse_datetime(value):
+    """Safely parse a datetime value, returning datetime.min as fallback."""
+    if isinstance(value, datetime.datetime):
+        # Convert timezone-aware datetime to naive UTC for consistent comparison
+        if value.tzinfo is not None:
+            return value.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = dateutil_parser.isoparse(value)
+            # Convert timezone-aware datetime to naive UTC for consistent comparison
+            if parsed.tzinfo is not None:
+                return parsed.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+            return parsed
+        except (ValueError, TypeError):
+            _LOGGER.warning("Failed to parse datetime string: %s", value)
+            return datetime.datetime.min
+    return datetime.datetime.min
 
 
 @decorators.websocket_command(
@@ -400,7 +421,7 @@ async def websocket_get_weather_records(hass: HomeAssistant, connection, msg):
         records = []
         
         # Sort by timestamp (most recent first) and limit
-        sorted_data = sorted(mapping_data, key=lambda x: x.get(const.RETRIEVED_AT, datetime.datetime.min), reverse=True)
+        sorted_data = sorted(mapping_data, key=lambda x: _safe_parse_datetime(x.get(const.RETRIEVED_AT)), reverse=True)
         limited_data = sorted_data[:limit]
         
         for data_point in limited_data:
