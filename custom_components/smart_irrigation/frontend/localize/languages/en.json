@@ -22,6 +22,15 @@
       "last_updated": "last updated",
       "last_calculated": "last calculated",
       "number_of_data_points": "number of data points"
+    },
+    "loading-messages": {
+      "configuration": "Loading configuration...",
+      "modules": "Loading modules...",
+      "general": "Loading..."
+    },
+    "saving-messages": {
+      "adding": "Adding...",
+      "saving": "Saving..."
     }
   },
   "defaults": {
@@ -76,32 +85,34 @@
       "cards": {
         "automatic-duration-calculation": {
           "header": "Automatic duration calculation",
-          "description": "Calculation takes collected weatherdata up to that point and updates the bucket for each automatic zone. Then, the duration is adjusted based on the new bucket value and the collected weatherdata is removed.",
+          "description": "Calculation takes collected weather data up to that point and updates the bucket for each automatic zone. Then, the duration is adjusted based on the new bucket value and the collected weather data is removed.",
           "labels": {
-            "auto-calc-enabled": "Automatically calculate zone durations",
-            "auto-calc-time": "Calculate at"
+            "auto-calc-enabled": "Automatically calculate irrigation durations",
+            "calc-time": "Calculate at"
           }
         },
         "automatic-update": {
           "errors": {
-            "warning-update-time-on-or-after-calc-time": "Warning: weatherdata update time on or after calculation time"
+            "warning-update-time-on-or-after-calc-time": "Warning: weather data update time on or after calculation time"
           },
           "header": "Automatic weather data update",
           "description": "Collect and store weather data automatically. Weather data is required to calculate zone buckets and durations.",
           "labels": {
             "auto-update-enabled": "Automatically update weather data",
-            "auto-update-delay": "Update delay",
-            "auto-update-interval": "Update sensor data every"
+            "auto-update-schedule": "Update schedule",
+            "auto-update-time": "Update at",
+            "auto-update-interval": "Update sensor data every",
+            "auto-update-delay": "Update delay"
           },
           "options": {
-            "days": "days",
+            "minutes": "minutes",
             "hours": "hours",
-            "minutes": "minutes"
+            "days": "days"
           }
         },
         "automatic-clear": {
           "header": "Automatic weather data pruning",
-          "description": "Automatically remove collected weatherdata at a configured time. Use this to make sure that there is no left over weatherdata from previous days. Don't remove the weatherdata before you calculate and only use this option if you expect the automatic update to collect weatherdata after you calculated for the day. Ideally, you want to prune as late in the day as possible.",
+          "description": "Automatically remove collected weather data at a configured time. Use this to make sure that there is no left over weather data from previous days. Don't remove the weather data before you calculate and only use this option if you expect the automatic update to collect weather data after you calculated for the day. Ideally, you want to prune as late in the day as possible.",
           "labels": {
             "automatic-clear-enabled": "Automatically clear collected weather data",
             "automatic-clear-time": "Clear weather data at"
@@ -137,7 +148,16 @@
     "info": {
       "title": "Info",
       "description": "View information about next irrigation and system status.",
+      "configuration-not-available": "Configuration not available.",
       "cards": {
+        "zone-bucket-values": {
+          "title": "Zone Bucket Values & Duration",
+          "labels": {
+            "bucket": "Bucket",
+            "duration": "Duration"
+          },
+          "no-zones": "No zones configured"
+        },
         "next-irrigation": {
           "title": "Next Irrigation",
           "labels": {
@@ -145,8 +165,7 @@
             "duration": "Duration",
             "zones": "Zones"
           },
-          "no-data": "No data available",
-          "backend-todo": "TODO: Backend API needed for irrigation info"
+          "no-data": "No data available"
         },
         "irrigation-reason": {
           "title": "Irrigation Reason",
@@ -156,8 +175,7 @@
             "total-duration": "Total duration",
             "explanation": "Explanation"
           },
-          "no-data": "No data available",
-          "backend-todo": "TODO: Backend API needed for irrigation reason"
+          "no-data": "No data available"
         }
       }
     },
@@ -227,7 +245,7 @@
         "title": "Weather Records (Last 10)",
         "timestamp": "Time",
         "temperature": "Temp",
-        "humidity": "Humidity", 
+        "humidity": "Humidity",
         "precipitation": "Precip",
         "retrieval-time": "Retrieved",
         "no-data": "No weather data available for this sensor group"
@@ -268,9 +286,8 @@
         "information": "Information",
         "update": "Update",
         "reset-bucket": "Reset bucket",
-        "view-weather-info": "View weather info",
-        "view-weather-info-message": "Weather info available for",
-        "view-weather-info-todo": "TODO: Implement navigation to sensor group details",
+        "view-weather-info": "View weather data",
+        "view-weather-info-message": "Weather data available for",
         "view-watering-calendar": "View watering calendar"
       },
       "cards": {
@@ -285,7 +302,7 @@
             "calculate-all": "Calculate all zones",
             "update-all": "Update all zones",
             "reset-all-buckets": "Reset all buckets",
-            "clear-all-weatherdata": "Clear all weatherdata"
+            "clear-all-weatherdata": "Clear all weather data"
           },
           "header": "Actions on all zones"
         }

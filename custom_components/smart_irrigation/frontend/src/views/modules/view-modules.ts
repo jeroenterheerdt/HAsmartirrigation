@@ -443,7 +443,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
       >
         <div class="card-content">
           ${this.isLoading
-            ? html`<div class="loading-indicator">Loading...</div>`
+            ? html`<div class="loading-indicator">${localize("common.loading-messages.general", this.hass.language)}</div>`
             : html`
                 <div class="zoneline">
                   <label for="moduleInput"
@@ -467,7 +467,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
                     class="${this.isSaving ? "saving" : ""}"
                   >
                     ${this.isSaving
-                      ? "Adding..."
+                      ? localize("common.saving-messages.adding", this.hass.language)
                       : localize(
                           "panels.modules.cards.add-module.actions.add",
                           this.hass.language,
@@ -479,7 +479,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
       </ha-card>
 
       ${this.isLoading
-        ? html`<div class="loading-indicator">Loading modules...</div>`
+        ? html`<div class="loading-indicator">${localize("common.loading-messages.modules", this.hass.language)}</div>`
         : Object.entries(this.modules).map(([key, value]) =>
             this.renderModule(value, parseInt(key)),
           )}

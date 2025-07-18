@@ -131,12 +131,17 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
   render() {
     if (!this.hass || !this.config || !this.data) {
       return html`<div class="loading-indicator">
-        Loading configuration...
+        ${localize(
+          "common.loading-messages.configuration",
+          this.hass?.language ?? "en",
+        )}
       </div>`;
     }
 
     if (this.isLoading) {
-      return html`<div class="loading-indicator">Loading...</div>`;
+      return html`<div class="loading-indicator">
+        ${localize("common.loading-messages.general", this.hass.language)}
+      </div>`;
     } else {
       let r1 = html` <div class="card-content">
           <svg
@@ -214,7 +219,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
             <div class="zoneline">
               <label for="calctime"
                 >${localize(
-                  "panels.general.cards.automatic-duration-calculation.labels.auto-calc-time",
+                  "panels.general.cards.automatic-duration-calculation.labels.calc-time",
                   this.hass.language,
                 )}:</label
               >
@@ -504,10 +509,13 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
             </div>
           </div>`;
       }
-      r3 = html`<ha-card header="${localize(
-        "panels.general.cards.automatic-clear.header",
-        this.hass.language,
-      )}" >${r3}</ha-card>`;
+      r3 = html`<ha-card
+        header="${localize(
+          "panels.general.cards.automatic-clear.header",
+          this.hass.language,
+        )}"
+        >${r3}</ha-card
+      >`;
 
       let r4 = html`<div class="card-content">
           <svg
@@ -689,8 +697,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
   }
   static get styles(): CSSResultGroup {
     return css`
-      ${globalStyle}
-      /* View-specific styles only - most common styles are now in globalStyle */
+      ${globalStyle}/* View-specific styles only - most common styles are now in globalStyle */
     `;
   }
 }

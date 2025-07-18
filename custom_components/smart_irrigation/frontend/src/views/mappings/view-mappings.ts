@@ -1351,29 +1351,21 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
 
     if (this.isLoading) {
       return html`
-        <ha-card
-          header="${localize("panels.mappings.title", this.hass.language)}"
-        >
+        <ha-card header="${localize("panels.mappings.title", this.hass.language)}">
           <div class="card-content">
-            ${localize("common.loading", this.hass.language)}...
+            ${localize("common.loading-messages.general", this.hass.language)}
           </div>
         </ha-card>
       `;
     }
 
     return html`
-      <ha-card
-        header="${localize("panels.mappings.title", this.hass.language)}"
-      >
+      <ha-card header="${localize("panels.mappings.title", this.hass.language)}">
         <div class="card-content">
-          ${localize("panels.mappings.description", this.hass.language)}.
-          ${this.isSaving
-            ? html`<div class="saving-indicator">
-                ${localize("common.saving", this.hass.language)}...
-              </div>`
-            : ""}
+          ${localize("panels.mappings.description", this.hass.language)}
         </div>
       </ha-card>
+
       <ha-card
         header="${localize(
           "panels.mappings.cards.add-mapping.header",
@@ -1388,18 +1380,11 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                 this.hass.language,
               )}:</label
             >
-            <input
-              id="mappingNameInput"
-              type="text"
-              ?disabled="${this.isSaving}"
-            />
+            <input id="mappingNameInput" type="text" />
           </div>
           <div class="zoneline">
             <span></span>
-            <button
-              @click="${this.handleAddMapping}"
-              ?disabled="${this.isSaving}"
-            >
+            <button @click="${this.handleAddMapping}">
               ${localize(
                 "panels.mappings.cards.add-mapping.actions.add",
                 this.hass.language,

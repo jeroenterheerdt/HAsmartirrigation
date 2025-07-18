@@ -405,19 +405,15 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   }
 
   private handleViewWeatherInfo(index: number): void {
-    console.log("handleViewWeatherInfo called for index:", index);
     // Use direct array access instead of Object.values() to ensure correct zone mapping
     const zone = this.zones[index];
-    console.log("Zone data:", zone);
     if (!zone || zone.mapping == undefined) {
       return;
     }
 
     // Toggle weather data display by updating the zone's weather visibility state
     const selector = `#weather-section-${zone.id}`;
-    console.log("Selector for weather section:", selector);
     const weatherSection = this.shadowRoot?.querySelector(selector);
-    console.log("Weather section element:", weatherSection);
 
     if (weatherSection) {
       if (weatherSection.hasAttribute("hidden")) {
@@ -430,18 +426,14 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
   private handleViewWateringCalendar(index: number): void {
     // Use direct array access instead of Object.values() to ensure correct zone mapping
-    console.log("handleViewWateringCalendar called for index:", index);
     const zone = this.zones[index];
-    console.log("Zone data:", zone);
     if (!zone || zone.id == undefined) {
       return;
     }
 
     // Toggle watering calendar display
     const selector = `#calendar-section-${zone.id}`;
-    console.log("Selector for calendar section:", selector);
     const calendarSection = this.shadowRoot?.querySelector(selector);
-    console.log("Calendar section element:", calendarSection);
 
     if (calendarSection) {
       if (calendarSection.hasAttribute("hidden")) {
@@ -459,8 +451,6 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
     // Fetch weather records for each zone that has a mapping
     for (const zone of this.zones) {
-      console.log("zone id", zone.id);
-      console.log("zone mapping", zone.mapping);
       if (zone.id !== undefined && zone.mapping !== undefined) {
         try {
           const records = await fetchMappingWeatherRecords(
@@ -506,7 +496,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   }
 
   private renderWeatherRecords(zone: SmartIrrigationZone): TemplateResult {
-    if (!this.hass || !zone.id) {
+    if (!this.hass || typeof zone.id !== "number") {
       return html``;
     }
 
@@ -599,77 +589,72 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   }
 
   private renderWateringCalendar(zone: SmartIrrigationZone): TemplateResult {
-    if (!this.hass || !zone.id) {
+    if (!this.hass || typeof zone.id !== "number") {
       return html``;
     }
-
     const calendarData = this.wateringCalendars.get(zone.id);
     const zoneCalendar =
       calendarData && zone.id in calendarData ? calendarData[zone.id] : null;
     const monthlyEstimates = zoneCalendar?.monthly_estimates || [];
 
-    return html`
-      <div class="watering-calendar">
-        <h4>Watering Calendar (12-Month Estimates)</h4>
-        ${monthlyEstimates.length === 0
-          ? html`
-              <div class="calendar-note">
-                ${zoneCalendar?.error
-                  ? `Error generating calendar: ${zoneCalendar.error}`
-                  : "No watering calendar data available for this zone"}
+    return html` <div class="watering-calendar">
+      <h4>Watering Calendar (12-Month Estimates)</h4>
+      ${monthlyEstimates.length === 0
+        ? html`
+            <div class="calendar-note">
+              ${zoneCalendar?.error
+                ? `Error generating calendar: ${zoneCalendar.error}`
+                : "No watering calendar data available for this zone"}
+            </div>
+          `
+        : html` <div class="calendar-table">
+              <div class="calendar-header">
+                <span>Month</span>
+                <span>ET (mm)</span>
+                <span>Precipitation (mm)</span>
+                <span>Watering (L)</span>
+                <span>Avg Temp (°C)</span>
               </div>
-            `
-          : html`
-              <div class="calendar-table">
-                <div class="calendar-header">
-                  <span>Month</span>
-                  <span>ET (mm)</span>
-                  <span>Precipitation (mm)</span>
-                  <span>Watering (L)</span>
-                  <span>Avg Temp (°C)</span>
-                </div>
-                ${monthlyEstimates.map(
-                  (estimate) => html`
-                    <div class="calendar-row">
-                      <span
-                        >${estimate.month_name ||
-                        `Month ${estimate.month}` ||
-                        "-"}</span
-                      >
-                      <span
-                        >${estimate.estimated_et_mm
-                          ? estimate.estimated_et_mm.toFixed(1)
-                          : "-"}</span
-                      >
-                      <span
-                        >${estimate.average_precipitation_mm
-                          ? estimate.average_precipitation_mm.toFixed(1)
-                          : "-"}</span
-                      >
-                      <span
-                        >${estimate.estimated_watering_volume_liters
-                          ? estimate.estimated_watering_volume_liters.toFixed(0)
-                          : "-"}</span
-                      >
-                      <span
-                        >${estimate.average_temperature_c
-                          ? estimate.average_temperature_c.toFixed(1)
-                          : "-"}</span
-                      >
-                    </div>
-                  `,
-                )}
-              </div>
-              ${zoneCalendar?.calculation_method
-                ? html`
-                    <div class="calendar-info">
-                      Method: ${zoneCalendar.calculation_method}
-                    </div>
-                  `
-                : ""}
-            `}
-      </div>
-    `;
+              ${monthlyEstimates.map(
+                (estimate) => html`
+                  <div class="calendar-row">
+                    <span
+                      >${estimate.month_name ||
+                      `Month ${estimate.month}` ||
+                      "-"}</span
+                    >
+                    <span
+                      >${estimate.estimated_et_mm
+                        ? estimate.estimated_et_mm.toFixed(1)
+                        : "-"}</span
+                    >
+                    <span
+                      >${estimate.average_precipitation_mm
+                        ? estimate.average_precipitation_mm.toFixed(1)
+                        : "-"}</span
+                    >
+                    <span
+                      >${estimate.estimated_watering_volume_liters
+                        ? estimate.estimated_watering_volume_liters.toFixed(0)
+                        : "-"}</span
+                    >
+                    <span
+                      >${estimate.average_temperature_c
+                        ? estimate.average_temperature_c.toFixed(1)
+                        : "-"}</span
+                    >
+                  </div>
+                `,
+              )}
+            </div>
+            ${zoneCalendar?.calculation_method
+              ? html`
+                  <div class="calendar-info">
+                    Method: ${zoneCalendar.calculation_method}
+                  </div>
+                `
+              : ""}`};
+    </div>`;
   }
 
   private async saveToHA(zone: SmartIrrigationZone): Promise<void> {
@@ -1235,16 +1220,11 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       return html`
         <ha-card header="${localize("panels.zones.title", this.hass.language)}">
           <div class="card-content">
-            ${localize("common.loading", this.hass.language)}...
+            ${localize(
+              "common.loading-messages.general",
+              this.hass.language,
+            )}...
           </div>
-        </ha-card>
-      `;
-    }
-
-    if (!this.config) {
-      return html`
-        <ha-card header="${localize("panels.zones.title", this.hass.language)}">
-          <div class="card-content">Configuration not available.</div>
         </ha-card>
       `;
     }
@@ -1253,13 +1233,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       <ha-card header="${localize("panels.zones.title", this.hass.language)}">
         <div class="card-content">
           ${localize("panels.zones.description", this.hass.language)}
-          ${this.isSaving
-            ? html`<div class="saving-indicator">
-                ${localize("common.saving", this.hass.language)}...
-              </div>`
-            : ""}
         </div>
       </ha-card>
+
       <ha-card
         header="${localize(
           "panels.zones.cards.add-zone.header",
@@ -1274,43 +1250,40 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 this.hass.language,
               )}:</label
             >
-            <input id="nameInput" type="text" ?disabled="${this.isSaving}" />
+            <input id="nameInput" type="text" />
           </div>
           <div class="zoneline">
             <label for="sizeInput"
-              >${localize("panels.zones.labels.size", this.hass.language)}
-              (${output_unit(this.config, ZONE_SIZE)}):</label
+              >${localize(
+                "panels.zones.labels.size",
+                this.hass.language,
+              )}:</label
             >
-            <input
-              class="shortinput"
-              id="sizeInput"
-              type="number"
-              ?disabled="${this.isSaving}"
-            />
+            <input id="sizeInput" type="number" />
           </div>
           <div class="zoneline">
             <label for="throughputInput"
-              >${localize("panels.zones.labels.throughput", this.hass.language)}
-              (${output_unit(this.config, ZONE_THROUGHPUT)}):</label
+              >${localize(
+                "panels.zones.labels.throughput",
+                this.hass.language,
+              )}:</label
             >
-            <input
-              id="throughputInput"
-              class="shortinput"
-              type="number"
-              ?disabled="${this.isSaving}"
-            />
+            <input id="throughputInput" type="number" />
           </div>
           <div class="zoneline">
             <span></span>
             <button @click="${this.handleAddZone}" ?disabled="${this.isSaving}">
-              ${localize(
-                "panels.zones.cards.add-zone.actions.add",
-                this.hass.language,
-              )}
+              ${this.isSaving
+                ? localize("common.saving-messages.adding", this.hass.language)
+                : localize(
+                    "panels.zones.cards.add-zone.actions.add",
+                    this.hass.language,
+                  )}
             </button>
           </div>
         </div>
       </ha-card>
+
       <ha-card
         header="${localize(
           "panels.zones.cards.zone-actions.header",
@@ -1318,46 +1291,50 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         )}"
       >
         <div class="card-content">
-          <button
-            @click="${this.handleUpdateAllZones}"
-            ?disabled="${this.isSaving}"
-          >
-            ${localize(
-              "panels.zones.cards.zone-actions.actions.update-all",
-              this.hass.language,
-            )}
-          </button>
-          <button
-            @click="${this.handleCalculateAllZones}"
-            ?disabled="${this.isSaving}"
-          >
-            ${localize(
-              "panels.zones.cards.zone-actions.actions.calculate-all",
-              this.hass.language,
-            )}
-          </button>
-          <button
-            @click="${this.handleResetAllBuckets}"
-            ?disabled="${this.isSaving}"
-          >
-            ${localize(
-              "panels.zones.cards.zone-actions.actions.reset-all-buckets",
-              this.hass.language,
-            )}
-          </button>
-          <button
-            @click="${this.handleClearAllWeatherdata}"
-            ?disabled="${this.isSaving}"
-          >
-            ${localize(
-              "panels.zones.cards.zone-actions.actions.clear-all-weatherdata",
-              this.hass.language,
-            )}
-          </button>
+          <div class="action-buttons">
+            <button
+              @click="${this.handleCalculateAllZones}"
+              ?disabled="${this.isSaving}"
+            >
+              ${localize(
+                "panels.zones.cards.zone-actions.actions.calculate-all",
+                this.hass.language,
+              )}
+            </button>
+            <button
+              @click="${this.handleUpdateAllZones}"
+              ?disabled="${this.isSaving}"
+            >
+              ${localize(
+                "panels.zones.cards.zone-actions.actions.update-all",
+                this.hass.language,
+              )}
+            </button>
+            <button
+              @click="${this.handleResetAllBuckets}"
+              ?disabled="${this.isSaving}"
+            >
+              ${localize(
+                "panels.zones.cards.zone-actions.actions.reset-all-buckets",
+                this.hass.language,
+              )}
+            </button>
+            <button
+              @click="${this.handleClearAllWeatherdata}"
+              ?disabled="${this.isSaving}"
+            >
+              ${localize(
+                "panels.zones.cards.zone-actions.actions.clear-all-weatherdata",
+                this.hass.language,
+              )}
+            </button>
+          </div>
         </div>
       </ha-card>
 
-      ${this.zones.map((zone, index) => this.renderZone(zone, index))}
+      ${Object.entries(this.zones).map(([key, value]) =>
+        this.renderZone(value, parseInt(key)),
+      )}
     `;
   }
 

@@ -118,7 +118,12 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
     if (!this.config) {
       return html`
         <ha-card header="${localize("panels.info.title", this.hass.language)}">
-          <div class="card-content">Configuration not available.</div>
+          <div class="card-content">
+            ${localize(
+              "panels.info.configuration-not-available",
+              this.hass.language,
+            )}
+          </div>
         </ha-card>
       `;
     }
@@ -129,9 +134,8 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
           ${localize("panels.info.description", this.hass.language)}
         </div>
       </ha-card>
-      
-      ${this.renderZoneBucketsCard()}
-      ${this.renderNextIrrigationCard()}
+
+      ${this.renderZoneBucketsCard()} ${this.renderNextIrrigationCard()}
       ${this.renderIrrigationReasonCard()}
     `;
   }
@@ -143,27 +147,73 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
 
     if (!this.zones || this.zones.length === 0) {
       return html`
-        <ha-card header="Zone Bucket Values">
+        <ha-card
+          header="${localize(
+            "panels.info.cards.zone-bucket-values.title",
+            this.hass.language,
+          )}"
+        >
           <div class="card-content">
             <div class="info-item">
-              <span class="value">No zones configured</span>
+              <span class="value"
+                >${localize(
+                  "panels.info.cards.zone-bucket-values.no-zones",
+                  this.hass.language,
+                )}</span
+              >
             </div>
           </div>
         </ha-card>
       `;
     }
 
-    const bucketUnit = this.config ? output_unit(this.config, ZONE_BUCKET) : "mm";
+    const bucketUnit = this.config
+      ? output_unit(this.config, ZONE_BUCKET)
+      : "mm";
 
     return html`
-      <ha-card header="Zone Bucket Values">
+      <ha-card
+        header="${localize(
+          "panels.info.cards.zone-bucket-values.title",
+          this.hass.language,
+        )}"
+      >
         <div class="card-content">
-          ${this.zones.map(zone => html`
-            <div class="info-item">
-              <label>${zone.name}:</label>
-              <span class="value">${Number(zone.bucket).toFixed(1)} ${bucketUnit}</span>
-            </div>
-          `)}
+          ${this.zones.map(
+            (zone) => html`
+              <div class="info-item zone-info">
+                <div class="zone-header">
+                  <label class="zone-name">${zone.name}:</label>
+                </div>
+                <div class="zone-details">
+                  <div class="zone-bucket">
+                    <span class="label"
+                      >${localize(
+                        "panels.info.cards.zone-bucket-values.labels.bucket",
+                        this.hass?.language ?? "en",
+                      )}:</span
+                    >
+                    <span class="value">
+                      ${Number(zone.bucket).toFixed(1)} ${bucketUnit}
+                    </span>
+                  </div>
+                  <div class="zone-duration">
+                    <span class="label"
+                      >${localize(
+                        "panels.info.cards.zone-bucket-values.labels.duration",
+                        this.hass?.language ?? "en",
+                      )}:</span
+                    >
+                    <span class="value">
+                      ${zone.duration
+                        ? `${Math.round(zone.duration)} ${localize("common.units.seconds", this.hass?.language ?? "en")}`
+                        : `0 ${localize("common.units.seconds", this.hass?.language ?? "en")}`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            `,
+          )}
         </div>
       </ha-card>
     `;
@@ -172,16 +222,32 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
   private renderNextIrrigationCard(): TemplateResult {
     if (!this.hass || !this.info) {
       return html`
-        <ha-card header="${localize("panels.info.cards.next-irrigation.title", this.hass?.language ?? "en")}">
+        <ha-card
+          header="${localize(
+            "panels.info.cards.next-irrigation.title",
+            this.hass?.language ?? "en",
+          )}"
+        >
           <div class="card-content">
             <div class="info-item">
-              <label>${localize("panels.info.cards.next-irrigation.labels.next-start", this.hass?.language ?? "en")}:</label>
+              <label
+                >${localize(
+                  "panels.info.cards.next-irrigation.labels.next-start",
+                  this.hass?.language ?? "en",
+                )}:</label
+              >
               <span class="value">
-                ${localize("panels.info.cards.next-irrigation.no-data", this.hass?.language ?? "en")}
+                ${localize(
+                  "panels.info.cards.next-irrigation.no-data",
+                  this.hass?.language ?? "en",
+                )}
               </span>
             </div>
             <div class="info-note">
-              ${localize("panels.info.cards.next-irrigation.backend-todo", this.hass?.language ?? "en")}
+              ${localize(
+                "panels.info.cards.next-irrigation.backend-todo",
+                this.hass?.language ?? "en",
+              )}
             </div>
           </div>
         </ha-card>
@@ -189,37 +255,67 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
     }
 
     return html`
-      <ha-card header="${localize("panels.info.cards.next-irrigation.title", this.hass.language)}">
+      <ha-card
+        header="${localize(
+          "panels.info.cards.next-irrigation.title",
+          this.hass.language,
+        )}"
+      >
         <div class="card-content">
           <div class="info-item">
-            <label>${localize("panels.info.cards.next-irrigation.labels.next-start", this.hass.language)}:</label>
+            <label
+              >${localize(
+                "panels.info.cards.next-irrigation.labels.next-start",
+                this.hass.language,
+              )}:</label
+            >
             <span class="value">
-              ${this.info.next_irrigation_start 
-                ? moment(this.info.next_irrigation_start).format("YYYY-MM-DD HH:mm:ss")
-                : localize("panels.info.cards.next-irrigation.no-data", this.hass.language)
-              }
+              ${this.info.next_irrigation_start
+                ? moment(this.info.next_irrigation_start).format(
+                    "YYYY-MM-DD HH:mm:ss",
+                  )
+                : localize(
+                    "panels.info.cards.next-irrigation.no-data",
+                    this.hass.language,
+                  )}
             </span>
           </div>
-          
-          ${this.info.next_irrigation_duration 
+
+          ${this.info.next_irrigation_duration
             ? html`
-              <div class="info-item">
-                <label>${localize("panels.info.cards.next-irrigation.labels.duration", this.hass.language)}:</label>
-                <span class="value">${this.info.next_irrigation_duration} ${localize("common.units.seconds", this.hass.language)}</span>
-              </div>
-            `
-            : ""
-          }
-          
-          ${this.info.next_irrigation_zones && this.info.next_irrigation_zones.length > 0
+                <div class="info-item">
+                  <label
+                    >${localize(
+                      "panels.info.cards.next-irrigation.labels.duration",
+                      this.hass.language,
+                    )}:</label
+                  >
+                  <span class="value"
+                    >${this.info.next_irrigation_duration}
+                    ${localize(
+                      "common.units.seconds",
+                      this.hass.language,
+                    )}</span
+                  >
+                </div>
+              `
+            : ""}
+          ${this.info.next_irrigation_zones &&
+          this.info.next_irrigation_zones.length > 0
             ? html`
-              <div class="info-item">
-                <label>${localize("panels.info.cards.next-irrigation.labels.zones", this.hass.language)}:</label>
-                <span class="value">${this.info.next_irrigation_zones.join(", ")}</span>
-              </div>
-            `
-            : ""
-          }
+                <div class="info-item">
+                  <label
+                    >${localize(
+                      "panels.info.cards.next-irrigation.labels.zones",
+                      this.hass.language,
+                    )}:</label
+                  >
+                  <span class="value"
+                    >${this.info.next_irrigation_zones.join(", ")}</span
+                  >
+                </div>
+              `
+            : ""}
         </div>
       </ha-card>
     `;
@@ -228,16 +324,32 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
   private renderIrrigationReasonCard(): TemplateResult {
     if (!this.hass || !this.info) {
       return html`
-        <ha-card header="${localize("panels.info.cards.irrigation-reason.title", this.hass?.language ?? "en")}">
+        <ha-card
+          header="${localize(
+            "panels.info.cards.irrigation-reason.title",
+            this.hass?.language ?? "en",
+          )}"
+        >
           <div class="card-content">
             <div class="info-item">
-              <label>${localize("panels.info.cards.irrigation-reason.labels.reason", this.hass?.language ?? "en")}:</label>
+              <label
+                >${localize(
+                  "panels.info.cards.irrigation-reason.labels.reason",
+                  this.hass?.language ?? "en",
+                )}:</label
+              >
               <span class="value">
-                ${localize("panels.info.cards.irrigation-reason.no-data", this.hass?.language ?? "en")}
+                ${localize(
+                  "panels.info.cards.irrigation-reason.no-data",
+                  this.hass?.language ?? "en",
+                )}
               </span>
             </div>
             <div class="info-note">
-              ${localize("panels.info.cards.irrigation-reason.backend-todo", this.hass?.language ?? "en")}
+              ${localize(
+                "panels.info.cards.irrigation-reason.backend-todo",
+                this.hass?.language ?? "en",
+              )}
             </div>
           </div>
         </ha-card>
@@ -245,44 +357,78 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
     }
 
     return html`
-      <ha-card header="${localize("panels.info.cards.irrigation-reason.title", this.hass.language)}">
+      <ha-card
+        header="${localize(
+          "panels.info.cards.irrigation-reason.title",
+          this.hass.language,
+        )}"
+      >
         <div class="card-content">
           <div class="info-item">
-            <label>${localize("panels.info.cards.irrigation-reason.labels.reason", this.hass.language)}:</label>
+            <label
+              >${localize(
+                "panels.info.cards.irrigation-reason.labels.reason",
+                this.hass.language,
+              )}:</label
+            >
             <span class="value">
-              ${this.info.irrigation_reason || localize("panels.info.cards.irrigation-reason.no-data", this.hass.language)}
+              ${this.info.irrigation_reason ||
+              localize(
+                "panels.info.cards.irrigation-reason.no-data",
+                this.hass.language,
+              )}
             </span>
           </div>
-          
+
           ${this.info.sunrise_time
             ? html`
-              <div class="info-item">
-                <label>${localize("panels.info.cards.irrigation-reason.labels.sunrise", this.hass.language)}:</label>
-                <span class="value">${moment(this.info.sunrise_time).format("HH:mm:ss")}</span>
-              </div>
-            `
-            : ""
-          }
-          
+                <div class="info-item">
+                  <label
+                    >${localize(
+                      "panels.info.cards.irrigation-reason.labels.sunrise",
+                      this.hass.language,
+                    )}:</label
+                  >
+                  <span class="value"
+                    >${moment(this.info.sunrise_time).format("HH:mm:ss")}</span
+                  >
+                </div>
+              `
+            : ""}
           ${this.info.total_irrigation_duration !== undefined
             ? html`
-              <div class="info-item">
-                <label>${localize("panels.info.cards.irrigation-reason.labels.total-duration", this.hass.language)}:</label>
-                <span class="value">${this.info.total_irrigation_duration} ${localize("common.units.seconds", this.hass.language)}</span>
-              </div>
-            `
-            : ""
-          }
-          
+                <div class="info-item">
+                  <label
+                    >${localize(
+                      "panels.info.cards.irrigation-reason.labels.total-duration",
+                      this.hass.language,
+                    )}:</label
+                  >
+                  <span class="value"
+                    >${this.info.total_irrigation_duration}
+                    ${localize(
+                      "common.units.seconds",
+                      this.hass.language,
+                    )}</span
+                  >
+                </div>
+              `
+            : ""}
           ${this.info.irrigation_explanation
             ? html`
-              <div class="info-item explanation">
-                <label>${localize("panels.info.cards.irrigation-reason.labels.explanation", this.hass.language)}:</label>
-                <div class="explanation-text">${this.info.irrigation_explanation}</div>
-              </div>
-            `
-            : ""
-          }
+                <div class="info-item explanation">
+                  <label
+                    >${localize(
+                      "panels.info.cards.irrigation-reason.labels.explanation",
+                      this.hass.language,
+                    )}:</label
+                  >
+                  <div class="explanation-text">
+                    ${this.info.irrigation_explanation}
+                  </div>
+                </div>
+              `
+            : ""}
         </div>
       </ha-card>
     `;
@@ -290,8 +436,65 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
 
   static get styles(): CSSResultGroup {
     return css`
-      ${globalStyle}
-      /* View-specific styles only - most common styles are now in globalStyle */
+      ${globalStyle} /* View-specific styles only - most common styles are now in globalStyle */
+
+      .zone-info {
+        margin-bottom: 16px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--divider-color);
+      }
+
+      .zone-info:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+      }
+
+      .zone-header {
+        margin-bottom: 8px;
+      }
+
+      .zone-name {
+        font-weight: 500;
+        color: var(--primary-text-color);
+      }
+
+      .zone-details {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-left: 12px;
+      }
+
+      .zone-bucket,
+      .zone-duration {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .zone-bucket .label,
+      .zone-duration .label {
+        color: var(--secondary-text-color);
+        font-size: 0.9em;
+      }
+
+      .zone-bucket .value,
+      .zone-duration .value {
+        font-weight: 500;
+        color: var(--primary-text-color);
+      }
+
+      @media (min-width: 768px) {
+        .zone-details {
+          flex-direction: row;
+          gap: 24px;
+        }
+
+        .zone-bucket,
+        .zone-duration {
+          flex: 1;
+        }
+      }
     `;
   }
 }
