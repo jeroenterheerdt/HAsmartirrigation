@@ -1,5 +1,5 @@
-- alias: Smart Irrigation
-  description: 'Start Smart Irrigation based on event and run it only if the `sensor.smart_irrigation_[zone_name]` is >0 and run it for precisely that many seconds'
+alias: Smart Irrigation
+description: 'Start Smart Irrigation based on event and run it only if the `sensor.smart_irrigation_[zone_name]` is >0 and run it for precisely that many seconds'
 trigger:
   - platform: event
     event_type: smart_irrigation_start_irrigation_all_zones
@@ -12,10 +12,11 @@ action:
     data: {}
     entity_id: switch.irrigation_tap1
   - delay:
-      seconds: '{{states("sensor.[zone_name"])}}'
+      seconds: '{{states("sensor.smart_irrigation_[zone_name]")}}'
   - service: switch.turn_off
     data: {}
     entity_id: switch.irrigation_tap1
   - service: smart_irrigation.reset_bucket
     data: {}
     entity_id: sensor.smart_irrigation_[zone_name]
+mode: single
