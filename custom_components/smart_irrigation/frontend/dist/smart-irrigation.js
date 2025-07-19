@@ -330,9 +330,9 @@
       createHTML: e => e
     }) : void 0,
     M = "$lit$",
-    A = `lit$${(Math.random() + "").slice(9)}$`,
-    z = "?" + A,
-    T = `<${z}>`,
+    z = `lit$${(Math.random() + "").slice(9)}$`,
+    A = "?" + z,
+    T = `<${A}>`,
     D = document,
     O = () => D.createComment(""),
     H = e => null === e || "object" != typeof e && "function" != typeof e,
@@ -343,8 +343,8 @@
     j = />/g,
     I = RegExp(`>|${P}(?:([^\\s"'>=/]+)(${P}*=${P}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"),
     B = /'/g,
-    R = /"/g,
-    U = /^(?:script|style|textarea|title)$/i,
+    U = /"/g,
+    R = /^(?:script|style|textarea|title)$/i,
     Y = (e => (t, ...a) => ({
       _$litType$: e,
       strings: t,
@@ -370,9 +370,9 @@
         l,
         u = -1,
         d = 0;
-      for (; d < a.length && (r.lastIndex = d, l = r.exec(a), null !== l);) d = r.lastIndex, r === N ? "!--" === l[1] ? r = L : void 0 !== l[1] ? r = j : void 0 !== l[2] ? (U.test(l[2]) && (n = RegExp("</" + l[2], "g")), r = I) : void 0 !== l[3] && (r = I) : r === I ? ">" === l[0] ? (r = null != n ? n : N, u = -1) : void 0 === l[1] ? u = -2 : (u = r.lastIndex - l[2].length, o = l[1], r = void 0 === l[3] ? I : '"' === l[3] ? R : B) : r === R || r === B ? r = I : r === L || r === j ? r = N : (r = I, n = void 0);
+      for (; d < a.length && (r.lastIndex = d, l = r.exec(a), null !== l);) d = r.lastIndex, r === N ? "!--" === l[1] ? r = L : void 0 !== l[1] ? r = j : void 0 !== l[2] ? (R.test(l[2]) && (n = RegExp("</" + l[2], "g")), r = I) : void 0 !== l[3] && (r = I) : r === I ? ">" === l[0] ? (r = null != n ? n : N, u = -1) : void 0 === l[1] ? u = -2 : (u = r.lastIndex - l[2].length, o = l[1], r = void 0 === l[3] ? I : '"' === l[3] ? U : B) : r === U || r === B ? r = I : r === L || r === j ? r = N : (r = I, n = void 0);
       const c = r === I && e[t + 1].startsWith("/>") ? " " : "";
-      s += r === N ? a + T : u >= 0 ? (i.push(o), a.slice(0, u) + M + a.slice(u) + A + c) : a + A + (-2 === u ? (i.push(void 0), t) : c);
+      s += r === N ? a + T : u >= 0 ? (i.push(o), a.slice(0, u) + M + a.slice(u) + z + c) : a + z + (-2 === u ? (i.push(void 0), t) : c);
     }
     return [Z(e, s + (e[a] || "<?>") + (2 === t ? "</svg>" : "")), i];
   };
@@ -397,10 +397,10 @@
         if (1 === i.nodeType) {
           if (i.hasAttributes()) {
             const e = [];
-            for (const t of i.getAttributeNames()) if (t.endsWith(M) || t.startsWith(A)) {
+            for (const t of i.getAttributeNames()) if (t.endsWith(M) || t.startsWith(z)) {
               const a = u[s++];
               if (e.push(t), void 0 !== a) {
-                const e = i.getAttribute(a.toLowerCase() + M).split(A),
+                const e = i.getAttribute(a.toLowerCase() + M).split(z),
                   t = /([.?@])?(.*)/.exec(a);
                 o.push({
                   type: 1,
@@ -416,8 +416,8 @@
             }
             for (const t of e) i.removeAttribute(t);
           }
-          if (U.test(i.tagName)) {
-            const e = i.textContent.split(A),
+          if (R.test(i.tagName)) {
+            const e = i.textContent.split(z),
               t = e.length - 1;
             if (t > 0) {
               i.textContent = x ? x.emptyScript : "";
@@ -428,15 +428,15 @@
               i.append(e[t], O());
             }
           }
-        } else if (8 === i.nodeType) if (i.data === z) o.push({
+        } else if (8 === i.nodeType) if (i.data === A) o.push({
           type: 2,
           index: n
         });else {
           let e = -1;
-          for (; -1 !== (e = i.data.indexOf(A, e + 1));) o.push({
+          for (; -1 !== (e = i.data.indexOf(z, e + 1));) o.push({
             type: 7,
             index: n
-          }), e += A.length - 1;
+          }), e += z.length - 1;
         }
         n++;
       }
@@ -833,66 +833,69 @@
     }
   };
   const ke = "smart_irrigation",
-    $e = "minutes",
-    Se = "hours",
-    xe = "days",
-    Ee = "imperial",
-    Me = "metric",
-    Ae = "Dewpoint",
-    ze = "Evapotranspiration",
-    Te = "Humidity",
-    De = "Precipitation",
-    Oe = "Current Precipitation",
-    He = "Pressure",
-    Ce = "Solar Radiation",
-    Pe = "Temperature",
-    Ne = "Windspeed",
-    Le = "weather_service",
-    je = "sensor",
-    Ie = "static",
-    Be = "pressure_type",
-    Re = "absolute",
-    Ue = "relative",
-    Ye = "none",
-    Fe = "source",
-    Ve = "sensorentity",
-    Ge = "static_value",
-    We = "unit",
-    Ze = "aggregate",
-    qe = ["average", "first", "last", "maximum", "median", "minimum", "riemannsum", "sum"],
-    Ke = "mm/h",
-    Xe = "in/h",
-    Je = "name",
-    Qe = "size",
-    et = "throughput",
-    tt = "state",
-    at = "duration",
-    it = "module",
-    nt = "bucket",
-    st = "multiplier",
-    rt = "mapping",
-    ot = "lead_time",
-    lt = "maximum_duration",
-    ut = "maximum_bucket",
-    dt = "drainage_rate",
-    ct = e => e.callWS({
+    $e = "sunrise",
+    Se = "sunset",
+    xe = "azimuth",
+    Ee = "minutes",
+    Me = "hours",
+    ze = "days",
+    Ae = "imperial",
+    Te = "metric",
+    De = "Dewpoint",
+    Oe = "Evapotranspiration",
+    He = "Humidity",
+    Ce = "Precipitation",
+    Pe = "Current Precipitation",
+    Ne = "Pressure",
+    Le = "Solar Radiation",
+    je = "Temperature",
+    Ie = "Windspeed",
+    Be = "weather_service",
+    Ue = "sensor",
+    Re = "static",
+    Ye = "pressure_type",
+    Fe = "absolute",
+    Ve = "relative",
+    Ge = "none",
+    We = "source",
+    Ze = "sensorentity",
+    qe = "static_value",
+    Ke = "unit",
+    Xe = "aggregate",
+    Je = ["average", "first", "last", "maximum", "median", "minimum", "riemannsum", "sum"],
+    Qe = "mm/h",
+    et = "in/h",
+    tt = "name",
+    at = "size",
+    it = "throughput",
+    nt = "state",
+    st = "duration",
+    rt = "module",
+    ot = "bucket",
+    lt = "multiplier",
+    ut = "mapping",
+    dt = "lead_time",
+    ct = "maximum_duration",
+    ht = "maximum_bucket",
+    pt = "drainage_rate",
+    mt = e => e.callWS({
       type: ke + "/config"
     }),
-    ht = e => e.callWS({
+    gt = e => e.callWS({
       type: ke + "/zones"
     }),
-    pt = e => e.callWS({
+    ft = e => e.callWS({
       type: ke + "/modules"
     }),
-    mt = e => e.callWS({
+    vt = e => e.callWS({
       type: ke + "/mappings"
     }),
-    gt = (e, t, a = 10) => e.callWS({
+    bt = (e, t, a = 10) => e.callWS({
       type: ke + "/weather_records",
       mapping_id: t,
       limit: a
     }),
-    ft = e => {
+    yt = e => {
       class t extends e {
         connectedCallback() {
           super.connectedCallback(), this.__checkSubscribed();
@@ -920,7 +923,7 @@
         attribute: !1
       })], t.prototype, "hass", void 0), t;
     };
-  var vt = {
+  var _t = {
       actions: {
         delete: "Lösche"
       },
@@ -936,11 +939,11 @@
         state: "Zustand"
       }
     },
-    bt = {
+    wt = {
       "default-zone": "Standard Zone",
       "default-mapping": "Standard Sensorgruppe"
     },
-    yt = {
+    kt = {
       calculation: {
         explanation: {
           "module-returned-evapotranspiration-deficiency": "Beachte: Diese Beschreibung nutzt '.' als Dezimalzeichen und zeigt gerundete Werte. Das Modul berechnete einen Evapotranspirationsmangel von",
@@ -965,7 +968,7 @@
         }
       }
     },
-    _t = {
+    $t = {
       pyeto: {
         description: "Die Berechnung der Verunstungsrate basiert auf der FAO56-Formel aus der PyETO-Bibliothek"
       },
@@ -976,7 +979,7 @@
         description: "Pass Through übernimmt den Evapotranspirationssensor und gibt seinen Wert zurück. Auf diese Weise werden alle Berechnungen der Verdunstung umgangen, außer der Anwendung von Aggregaten wie Summe, Durchschnitt etc)."
       }
     },
-    wt = {
+    St = {
       general: {
         cards: {
           "automatic-duration-calculation": {
@@ -1169,26 +1172,26 @@
         title: "Zonen"
       }
     },
-    kt = "Smart Irrigation",
-    $t = {
-      common: vt,
-      defaults: bt,
-      module: yt,
-      calcmodules: _t,
-      panels: wt,
-      title: kt
+    xt = "Smart Irrigation",
+    Et = {
+      common: _t,
+      defaults: wt,
+      module: kt,
+      calcmodules: $t,
+      panels: St,
+      title: xt
     },
-    St = Object.freeze({
+    Mt = Object.freeze({
       __proto__: null,
-      common: vt,
-      defaults: bt,
-      module: yt,
-      calcmodules: _t,
-      panels: wt,
-      title: kt,
-      default: $t
+      common: _t,
+      defaults: wt,
+      module: kt,
+      calcmodules: $t,
+      panels: St,
+      title: xt,
+      default: Et
     }),
-    xt = {
+    zt = {
       loading: "Loading",
       saving: "Saving",
       actions: {
@@ -1222,11 +1225,11 @@
         saving: "Saving..."
       }
     },
-    Et = {
+    At = {
       "default-zone": "Default zone",
       "default-mapping": "Default sensor group"
     },
-    Mt = {
+    Tt = {
       calculation: {
         explanation: {
           "module-returned-evapotranspiration-deficiency": "Note: this explanation uses '.' as decimal separator, shows rounded and metric values. Module returned Evapotranspiration deficiency of",
@@ -1258,7 +1261,7 @@
         }
       }
     },
-    At = {
+    Dt = {
       pyeto: {
         description: "Calculate duration based on the FAO56 calculation from the PyETO library"
       },
@@ -1269,7 +1272,7 @@
         description: "Passthrough module that returns the value of an Evapotranspiration sensor as delta"
       }
     },
-    zt = {
+    Ot = {
       general: {
         cards: {
           "automatic-duration-calculation": {
@@ -1277,7 +1280,23 @@
             description: "Calculation takes collected weather data up to that point and updates the bucket for each automatic zone. Then, the duration is adjusted based on the new bucket value and the collected weather data is removed.",
             labels: {
               "auto-calc-enabled": "Automatically calculate irrigation durations",
-              "calc-time": "Calculate at"
+              "calc-time": "Calculate at",
+              "legacy-calc-time": "Legacy calculation time (fallback)",
+              "legacy-note": "This is used as fallback if no calculation triggers are configured",
+              "calculation-triggers": "Calculation Triggers",
+              "add-trigger": "Add Trigger",
+              remove: "Remove",
+              trigger: "Trigger",
+              "trigger-type": "Trigger Type",
+              "azimuth-value": "Azimuth (degrees)",
+              "offset-before": "Minutes before",
+              "offset-after": "Minutes after",
+              minutes: "minutes"
+            },
+            options: {
+              sunrise: "Sunrise",
+              sunset: "Sunset",
+              azimuth: "Solar Azimuth"
             }
           },
           "automatic-update": {
@@ -1523,26 +1542,26 @@
         title: "Zones"
       }
     },
-    Tt = "Smart Irrigation",
-    Dt = {
-      common: xt,
-      defaults: Et,
-      module: Mt,
-      calcmodules: At,
-      panels: zt,
-      title: Tt
+    Ht = "Smart Irrigation",
+    Ct = {
+      common: zt,
+      defaults: At,
+      module: Tt,
+      calcmodules: Dt,
+      panels: Ot,
+      title: Ht
     },
-    Ot = Object.freeze({
+    Pt = Object.freeze({
       __proto__: null,
-      common: xt,
-      defaults: Et,
-      module: Mt,
-      calcmodules: At,
-      panels: zt,
-      title: Tt,
-      default: Dt
+      common: zt,
+      defaults: At,
+      module: Tt,
+      calcmodules: Dt,
+      panels: Ot,
+      title: Ht,
+      default: Ct
     }),
-    Ht = {
+    Nt = {
       actions: {
         delete: "Eliminar"
       },
@@ -1558,11 +1577,11 @@
         state: "Estado"
       }
     },
-    Ct = {
+    Lt = {
       "default-zone": "Zona de riego predeterminada",
       "default-mapping": "Grupo de sensores predeterminado"
     },
-    Pt = {
+    jt = {
       calculation: {
         explanation: {
           "module-returned-evapotranspiration-deficiency": "Nota: esta explicación utiliza '.' como separador decimal y muestra valores redondeados. El módulo devuelve una deficiencia de evapotranspiración de",
@@ -1587,7 +1606,7 @@
         }
       }
     },
-    Nt = {
+    It = {
       pyeto: {
         description: "Calcular la duración a partir del cálculo FAO56 de la biblioteca PyETO"
       },
@@ -1598,7 +1617,7 @@
         description: "Módulo de paso que devuelve el valor de un sensor de evapotranspiración como delta"
       }
     },
-    Lt = {
+    Bt = {
       general: {
         cards: {
           "automatic-duration-calculation": {
@@ -1771,26 +1790,26 @@
         title: "Zonas"
       }
     },
-    jt = "Smart Irrigation",
-    It = {
-      common: Ht,
-      defaults: Ct,
-      module: Pt,
-      calcmodules: Nt,
-      panels: Lt,
-      title: jt
-    },
-    Bt = Object.freeze({
-      __proto__: null,
-      common: Ht,
-      defaults: Ct,
-      module: Pt,
-      calcmodules: Nt,
-      panels: Lt,
-      title: jt,
-      default: It
-    }),
+    Ut = "Smart Irrigation",
     Rt = {
+      common: Nt,
+      defaults: Lt,
+      module: jt,
+      calcmodules: It,
+      panels: Bt,
+      title: Ut
+    },
+    Yt = Object.freeze({
+      __proto__: null,
+      common: Nt,
+      defaults: Lt,
+      module: jt,
+      calcmodules: It,
+      panels: Bt,
+      title: Ut,
+      default: Rt
+    }),
+    Ft = {
       actions: {
         delete: "Suppression"
       },
@@ -1806,11 +1825,11 @@
         state: "état"
       }
     },
-    Ut = {
+    Vt = {
       "default-zone": "Zone par défaut",
       "default-mapping": "Groupe de capteurs par défaut"
     },
-    Yt = {
+    Gt = {
       calculation: {
         explanation: {
           "module-returned-evapotranspiration-deficiency": "NB: cette explication utilise '.' comme séparateur décimal, et affiche des valeurs arrondies. Le module a donné un manque d'Évapotranspiration de",
@@ -1835,7 +1854,7 @@
         }
       }
     },
-    Ft = {
+    Wt = {
       pyeto: {
         description: "Le calcul de durée est basée sur le calcul FAO56 de la bibliothèque PyETO"
       },
@@ -1846,7 +1865,7 @@
         description: "Module passerelle qui renvoie la valeur d'un capteur d'Évapotranspiration comme delta"
       }
     },
-    Vt = {
+    Zt = {
       general: {
         cards: {
           "automatic-duration-calculation": {
@@ -2040,26 +2059,26 @@
         title: "Zones"
       }
     },
-    Gt = "Smart Irrigation",
-    Wt = {
-      common: Rt,
-      defaults: Ut,
-      module: Yt,
-      calcmodules: Ft,
-      panels: Vt,
-      title: Gt
+    qt = "Smart Irrigation",
+    Kt = {
+      common: Ft,
+      defaults: Vt,
+      module: Gt,
+      calcmodules: Wt,
+      panels: Zt,
+      title: qt
     },
-    Zt = Object.freeze({
+    Xt = Object.freeze({
       __proto__: null,
-      common: Rt,
-      defaults: Ut,
-      module: Yt,
-      calcmodules: Ft,
-      panels: Vt,
-      title: Gt,
-      default: Wt
+      common: Ft,
+      defaults: Vt,
+      module: Gt,
+      calcmodules: Wt,
+      panels: Zt,
+      title: qt,
+      default: Kt
     }),
-    qt = {
+    Jt = {
       actions: {
         delete: "Cancella"
       },
@@ -2079,11 +2098,11 @@
         number_of_data_points: "numero di punti dati"
       }
     },
-    Kt = {
+    Qt = {
       "default-zone": "Zona predefinita",
       "default-mapping": "Mappatura predefinita"
     },
-    Xt = {
+    ea = {
       calculation: {
         explanation: {
           "module-returned-evapotranspiration-deficiency": "Il modulo ha restituito un deficit di evapotraspirazione del",
@@ -2108,7 +2127,7 @@
         }
       }
     },
-    Jt = {
+    ta = {
       pyeto: {
         description: "Calcola la durata in base al calcolo FAO56 dalla libreria PyETO"
       },
@@ -2119,7 +2138,7 @@
         description: "Modulo passthrough che restituisce il valore di un sensore di Evapotraspirazione sotto forma di delta"
       }
     },
-    Qt = {
+    aa = {
       general: {
         cards: {
           "automatic-duration-calculation": {
@@ -2323,26 +2342,26 @@
         title: "Zone"
       }
     },
-    ea = "Irrigazione Intelligente",
-    ta = {
-      common: qt,
-      defaults: Kt,
-      module: Xt,
-      calcmodules: Jt,
-      panels: Qt,
-      title: ea
+    ia = "Irrigazione Intelligente",
+    na = {
+      common: Jt,
+      defaults: Qt,
+      module: ea,
+      calcmodules: ta,
+      panels: aa,
+      title: ia
     },
-    aa = Object.freeze({
+    sa = Object.freeze({
       __proto__: null,
-      common: qt,
-      defaults: Kt,
-      module: Xt,
-      calcmodules: Jt,
-      panels: Qt,
-      title: ea,
-      default: ta
+      common: Jt,
+      defaults: Qt,
+      module: ea,
+      calcmodules: ta,
+      panels: aa,
+      title: ia,
+      default: na
     }),
-    ia = {
+    ra = {
       actions: {
         delete: "Verwijderen"
       },
@@ -2358,11 +2377,11 @@
         state: "status"
       }
     },
-    na = {
+    oa = {
       "default-zone": "Standaard zone",
       "default-mapping": "Standaard sensorgroep"
     },
-    sa = {
+    la = {
       calculation: {
         explanation: {
           "module-returned-evapotranspiration-deficiency": "NB: in deze uitleg wordt de '.' as decimaalscheidingsteken gebruikt, worden afgeronde en metrische getallen getoond. Module berekende ET waarde van",
@@ -2387,7 +2406,7 @@
         }
       }
     },
-    ra = {
+    ua = {
       pyeto: {
         description: "Bereken duur op basis van de FAU56 formule en de PyETO library"
       },
@@ -2398,7 +2417,7 @@
         description: "Geeft waarde van ET sensor as verandering terug"
       }
     },
-    oa = {
+    da = {
       general: {
         cards: {
           "automatic-duration-calculation": {
@@ -2590,26 +2609,26 @@
         title: "Zones"
       }
     },
-    la = "Smart Irrigation",
-    ua = {
-      common: ia,
-      defaults: na,
-      module: sa,
-      calcmodules: ra,
-      panels: oa,
-      title: la
+    ca = "Smart Irrigation",
+    ha = {
+      common: ra,
+      defaults: oa,
+      module: la,
+      calcmodules: ua,
+      panels: da,
+      title: ca
     },
-    da = Object.freeze({
+    pa = Object.freeze({
       __proto__: null,
-      common: ia,
-      defaults: na,
-      module: sa,
-      calcmodules: ra,
-      panels: oa,
-      title: la,
-      default: ua
+      common: ra,
+      defaults: oa,
+      module: la,
+      calcmodules: ua,
+      panels: da,
+      title: ca,
+      default: ha
     }),
-    ca = {
+    ma = {
       actions: {
         delete: "Slett"
       },
@@ -2625,11 +2644,11 @@
         state: "status"
       }
     },
-    ha = {
+    ga = {
       "default-zone": "Standard sone",
       "default-mapping": "Standard sensorguppe"
     },
-    pa = {
+    fa = {
       calculation: {
         explanation: {
           "module-returned-evapotranspiration-deficiency": "Merk: Denne forklaringen bruker '.' som desimaltegn og viser avrundede verdier. Modulen returnerte evapotranspirasjonsunderskudd på",
@@ -2654,7 +2673,7 @@
         }
       }
     },
-    ma = {
+    va = {
       pyeto: {
         description: "Beregn varigheten basert på FAO56-beregningen fra PyETO-biblioteket"
       },
@@ -2665,7 +2684,7 @@
         description: "En 'Passthrough'-modul som returnerer verdien av en Evapotranspiration-sensor som delta"
       }
     },
-    ga = {
+    ba = {
       general: {
         cards: {
           "automatic-duration-calculation": {
@@ -2839,23 +2858,23 @@
       },
       title: "Smart vanning"
     },
-    fa = {
-      common: ca,
-      defaults: ha,
-      module: pa,
-      calcmodules: ma,
-      panels: ga
+    ya = {
+      common: ma,
+      defaults: ga,
+      module: fa,
+      calcmodules: va,
+      panels: ba
     },
-    va = Object.freeze({
+    _a = Object.freeze({
       __proto__: null,
-      common: ca,
-      defaults: ha,
-      module: pa,
-      calcmodules: ma,
-      panels: ga,
-      default: fa
+      common: ma,
+      defaults: ga,
+      module: fa,
+      calcmodules: va,
+      panels: ba,
+      default: ya
     }),
-    ba = {
+    wa = {
       actions: {
         delete: "Zmazať"
       },
@@ -2872,11 +2891,11 @@
         bucket: "nádoba"
       }
     },
-    ya = {
+    ka = {
       "default-zone": "Predvolená zóna",
       "default-mapping": "Predvolená skupina snímačov"
     },
-    _a = {
+    $a = {
       calculation: {
         explanation: {
           "module-returned-evapotranspiration-deficiency": "Poznámka: toto vysvetlenie používa '.' ako oddeľovač desatinných miest zobrazuje zaokrúhlené a metrické hodnoty. Modul vrátil nedostatok evapotranspirácie",
@@ -2901,7 +2920,7 @@
         }
       }
     },
-    wa = {
+    Sa = {
       pyeto: {
         description: "Vypočítajte trvanie na základe výpočtu FAO56 z knižnice PyETO"
       },
@@ -2912,7 +2931,7 @@
         description: "Priechodný modul, ktorý vracia hodnotu evapotranspiračného senzora ako delta"
       }
     },
-    ka = {
+    xa = {
       general: {
         cards: {
           "automatic-duration-calculation": {
@@ -3104,123 +3123,123 @@
         title: "Zóny"
       }
     },
-    $a = "Inteligentné zavlažovanie",
-    Sa = {
-      common: ba,
-      defaults: ya,
-      module: _a,
-      calcmodules: wa,
-      panels: ka,
-      title: $a
+    Ea = "Inteligentné zavlažovanie",
+    Ma = {
+      common: wa,
+      defaults: ka,
+      module: $a,
+      calcmodules: Sa,
+      panels: xa,
+      title: Ea
     },
-    xa = Object.freeze({
+    za = Object.freeze({
       __proto__: null,
-      common: ba,
-      defaults: ya,
-      module: _a,
-      calcmodules: wa,
-      panels: ka,
-      title: $a,
-      default: Sa
+      common: wa,
+      defaults: ka,
+      module: $a,
+      calcmodules: Sa,
+      panels: xa,
+      title: Ea,
+      default: Ma
     });
-  function Ea(e, t) {
-    var a = t && t.cache ? t.cache : Na,
-      i = t && t.serializer ? t.serializer : Da;
-    return (t && t.strategy ? t.strategy : Ta)(e, {
+  function Aa(e, t) {
+    var a = t && t.cache ? t.cache : Ia,
+      i = t && t.serializer ? t.serializer : Ca;
+    return (t && t.strategy ? t.strategy : Ha)(e, {
       cache: a,
       serializer: i
     });
   }
-  function Ma(e, t, a, i) {
+  function Ta(e, t, a, i) {
     var n,
       s = null == (n = i) || "number" == typeof n || "boolean" == typeof n ? i : a(i),
       r = t.get(s);
     return void 0 === r && (r = e.call(this, i), t.set(s, r)), r;
   }
-  function Aa(e, t, a) {
+  function Da(e, t, a) {
     var i = Array.prototype.slice.call(arguments, 3),
       n = a(i),
       s = t.get(n);
     return void 0 === s && (s = e.apply(this, i), t.set(n, s)), s;
   }
-  function za(e, t, a, i, n) {
+  function Oa(e, t, a, i, n) {
     return a.bind(t, e, i, n);
   }
-  function Ta(e, t) {
-    return za(e, this, 1 === e.length ? Ma : Aa, t.cache.create(), t.serializer);
+  function Ha(e, t) {
+    return Oa(e, this, 1 === e.length ? Ta : Da, t.cache.create(), t.serializer);
   }
-  var Da = function () {
+  var Ca = function () {
     return JSON.stringify(arguments);
   };
-  function Oa() {
+  function Pa() {
     this.cache = Object.create(null);
   }
-  Oa.prototype.get = function (e) {
+  Pa.prototype.get = function (e) {
     return this.cache[e];
-  }, Oa.prototype.set = function (e, t) {
+  }, Pa.prototype.set = function (e, t) {
     this.cache[e] = t;
   };
-  var Ha,
-    Ca,
-    Pa,
-    Na = {
+  var Na,
+    La,
+    ja,
+    Ia = {
       create: function () {
-        return new Oa();
+        return new Pa();
       }
     },
-    La = {
+    Ba = {
       variadic: function (e, t) {
-        return za(e, this, Aa, t.cache.create(), t.serializer);
+        return Oa(e, this, Da, t.cache.create(), t.serializer);
       },
       monadic: function (e, t) {
-        return za(e, this, Ma, t.cache.create(), t.serializer);
+        return Oa(e, this, Ta, t.cache.create(), t.serializer);
       }
     };
-  function ja(e) {
-    return e.type === Ca.literal;
-  }
-  function Ia(e) {
-    return e.type === Ca.argument;
-  }
-  function Ba(e) {
-    return e.type === Ca.number;
+  function Ua(e) {
+    return e.type === La.literal;
   }
   function Ra(e) {
-    return e.type === Ca.date;
-  }
-  function Ua(e) {
-    return e.type === Ca.time;
+    return e.type === La.argument;
   }
   function Ya(e) {
-    return e.type === Ca.select;
+    return e.type === La.number;
   }
   function Fa(e) {
-    return e.type === Ca.plural;
+    return e.type === La.date;
   }
   function Va(e) {
-    return e.type === Ca.pound;
+    return e.type === La.time;
   }
   function Ga(e) {
-    return e.type === Ca.tag;
+    return e.type === La.select;
   }
   function Wa(e) {
-    return !(!e || "object" != typeof e || e.type !== Pa.number);
+    return e.type === La.plural;
   }
   function Za(e) {
-    return !(!e || "object" != typeof e || e.type !== Pa.dateTime);
+    return e.type === La.pound;
+  }
+  function qa(e) {
+    return e.type === La.tag;
+  }
+  function Ka(e) {
+    return !(!e || "object" != typeof e || e.type !== ja.number);
+  }
+  function Xa(e) {
+    return !(!e || "object" != typeof e || e.type !== ja.dateTime);
   }
   !function (e) {
     e[e.EXPECT_ARGUMENT_CLOSING_BRACE = 1] = "EXPECT_ARGUMENT_CLOSING_BRACE", e[e.EMPTY_ARGUMENT = 2] = "EMPTY_ARGUMENT", e[e.MALFORMED_ARGUMENT = 3] = "MALFORMED_ARGUMENT", e[e.EXPECT_ARGUMENT_TYPE = 4] = "EXPECT_ARGUMENT_TYPE", e[e.INVALID_ARGUMENT_TYPE = 5] = "INVALID_ARGUMENT_TYPE", e[e.EXPECT_ARGUMENT_STYLE = 6] = "EXPECT_ARGUMENT_STYLE", e[e.INVALID_NUMBER_SKELETON = 7] = "INVALID_NUMBER_SKELETON", e[e.INVALID_DATE_TIME_SKELETON = 8] = "INVALID_DATE_TIME_SKELETON", e[e.EXPECT_NUMBER_SKELETON = 9] = "EXPECT_NUMBER_SKELETON", e[e.EXPECT_DATE_TIME_SKELETON = 10] = "EXPECT_DATE_TIME_SKELETON", e[e.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE = 11] = "UNCLOSED_QUOTE_IN_ARGUMENT_STYLE", e[e.EXPECT_SELECT_ARGUMENT_OPTIONS = 12] = "EXPECT_SELECT_ARGUMENT_OPTIONS", e[e.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE = 13] = "EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE", e[e.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE = 14] = "INVALID_PLURAL_ARGUMENT_OFFSET_VALUE", e[e.EXPECT_SELECT_ARGUMENT_SELECTOR = 15] = "EXPECT_SELECT_ARGUMENT_SELECTOR", e[e.EXPECT_PLURAL_ARGUMENT_SELECTOR = 16] = "EXPECT_PLURAL_ARGUMENT_SELECTOR", e[e.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT = 17] = "EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT", e[e.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT = 18] = "EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT", e[e.INVALID_PLURAL_ARGUMENT_SELECTOR = 19] = "INVALID_PLURAL_ARGUMENT_SELECTOR", e[e.DUPLICATE_PLURAL_ARGUMENT_SELECTOR = 20] = "DUPLICATE_PLURAL_ARGUMENT_SELECTOR", e[e.DUPLICATE_SELECT_ARGUMENT_SELECTOR = 21] = "DUPLICATE_SELECT_ARGUMENT_SELECTOR", e[e.MISSING_OTHER_CLAUSE = 22] = "MISSING_OTHER_CLAUSE", e[e.INVALID_TAG = 23] = "INVALID_TAG", e[e.INVALID_TAG_NAME = 25] = "INVALID_TAG_NAME", e[e.UNMATCHED_CLOSING_TAG = 26] = "UNMATCHED_CLOSING_TAG", e[e.UNCLOSED_TAG = 27] = "UNCLOSED_TAG";
-  }(Ha || (Ha = {})), function (e) {
+  }(Na || (Na = {})), function (e) {
     e[e.literal = 0] = "literal", e[e.argument = 1] = "argument", e[e.number = 2] = "number", e[e.date = 3] = "date", e[e.time = 4] = "time", e[e.select = 5] = "select", e[e.plural = 6] = "plural", e[e.pound = 7] = "pound", e[e.tag = 8] = "tag";
-  }(Ca || (Ca = {})), function (e) {
+  }(La || (La = {})), function (e) {
     e[e.number = 0] = "number", e[e.dateTime = 1] = "dateTime";
-  }(Pa || (Pa = {}));
-  var qa = /[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/,
-    Ka = /(?:[Eec]{1,6}|G{1,5}|[Qq]{1,5}|(?:[yYur]+|U{1,5})|[ML]{1,5}|d{1,2}|D{1,3}|F{1}|[abB]{1,5}|[hkHK]{1,2}|w{1,2}|W{1}|m{1,2}|s{1,2}|[zZOvVxX]{1,4})(?=([^']*'[^']*')*[^']*$)/g;
-  function Xa(e) {
+  }(ja || (ja = {}));
+  var Ja = /[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/,
+    Qa = /(?:[Eec]{1,6}|G{1,5}|[Qq]{1,5}|(?:[yYur]+|U{1,5})|[ML]{1,5}|d{1,2}|D{1,3}|F{1}|[abB]{1,5}|[hkHK]{1,2}|w{1,2}|W{1}|m{1,2}|s{1,2}|[zZOvVxX]{1,4})(?=([^']*'[^']*')*[^']*$)/g;
+  function ei(e) {
     var t = {};
-    return e.replace(Ka, function (e) {
+    return e.replace(Qa, function (e) {
       var a = e.length;
       switch (e[0]) {
         case "G":
@@ -3307,18 +3326,18 @@
       return "";
     }), t;
   }
-  var Ja = /[\t-\r \x85\u200E\u200F\u2028\u2029]/i;
-  var Qa = /^\.(?:(0+)(\*)?|(#+)|(0+)(#+))$/g,
-    ei = /^(@+)?(\+|#+)?[rs]?$/g,
-    ti = /(\*)(0+)|(#+)(0+)|(0+)/g,
-    ai = /^(0+)$/;
-  function ii(e) {
+  var ti = /[\t-\r \x85\u200E\u200F\u2028\u2029]/i;
+  var ai = /^\.(?:(0+)(\*)?|(#+)|(0+)(#+))$/g,
+    ii = /^(@+)?(\+|#+)?[rs]?$/g,
+    ni = /(\*)(0+)|(#+)(0+)|(0+)/g,
+    si = /^(0+)$/;
+  function ri(e) {
     var t = {};
-    return "r" === e[e.length - 1] ? t.roundingPriority = "morePrecision" : "s" === e[e.length - 1] && (t.roundingPriority = "lessPrecision"), e.replace(ei, function (e, a, i) {
+    return "r" === e[e.length - 1] ? t.roundingPriority = "morePrecision" : "s" === e[e.length - 1] && (t.roundingPriority = "lessPrecision"), e.replace(ii, function (e, a, i) {
       return "string" != typeof i ? (t.minimumSignificantDigits = a.length, t.maximumSignificantDigits = a.length) : "+" === i ? t.minimumSignificantDigits = a.length : "#" === a[0] ? t.maximumSignificantDigits = a.length : (t.minimumSignificantDigits = a.length, t.maximumSignificantDigits = a.length + ("string" == typeof i ? i.length : 0)), "";
     }), t;
   }
-  function ni(e) {
+  function oi(e) {
     switch (e) {
       case "sign-auto":
         return {
@@ -3358,7 +3377,7 @@
         };
     }
   }
-  function si(e) {
+  function li(e) {
     var t;
     if ("E" === e[0] && "E" === e[1] ? (t = {
       notation: "engineering"
@@ -3366,16 +3385,16 @@
       notation: "scientific"
     }, e = e.slice(1)), t) {
       var a = e.slice(0, 2);
-      if ("+!" === a ? (t.signDisplay = "always", e = e.slice(2)) : "+?" === a && (t.signDisplay = "exceptZero", e = e.slice(2)), !ai.test(e)) throw new Error("Malformed concise eng/scientific notation");
+      if ("+!" === a ? (t.signDisplay = "always", e = e.slice(2)) : "+?" === a && (t.signDisplay = "exceptZero", e = e.slice(2)), !si.test(e)) throw new Error("Malformed concise eng/scientific notation");
       t.minimumIntegerDigits = e.length;
     }
     return t;
   }
-  function ri(e) {
-    var t = ni(e);
+  function ui(e) {
+    var t = oi(e);
     return t || {};
   }
-  function oi(e) {
+  function di(e) {
     for (var t = {}, a = 0, n = e; a < n.length; a++) {
       var s = n[a];
       switch (s.stem) {
@@ -3413,14 +3432,14 @@
           t = i(i(i({}, t), {
             notation: "scientific"
           }), s.options.reduce(function (e, t) {
-            return i(i({}, e), ri(t));
+            return i(i({}, e), ui(t));
           }, {}));
           continue;
         case "engineering":
           t = i(i(i({}, t), {
             notation: "engineering"
           }), s.options.reduce(function (e, t) {
-            return i(i({}, e), ri(t));
+            return i(i({}, e), ui(t));
           }, {}));
           continue;
         case "notation-simple":
@@ -3464,7 +3483,7 @@
           continue;
         case "integer-width":
           if (s.options.length > 1) throw new RangeError("integer-width stems only accept a single optional option");
-          s.options[0].replace(ti, function (e, a, i, n, s, r) {
+          s.options[0].replace(ni, function (e, a, i, n, s, r) {
             if (a) t.minimumIntegerDigits = i.length;else {
               if (n && s) throw new Error("We currently do not support maximum integer digits");
               if (r) throw new Error("We currently do not support exact integer digits");
@@ -3473,26 +3492,26 @@
           });
           continue;
       }
-      if (ai.test(s.stem)) t.minimumIntegerDigits = s.stem.length;else if (Qa.test(s.stem)) {
+      if (si.test(s.stem)) t.minimumIntegerDigits = s.stem.length;else if (ai.test(s.stem)) {
         if (s.options.length > 1) throw new RangeError("Fraction-precision stems only accept a single optional option");
-        s.stem.replace(Qa, function (e, a, i, n, s, r) {
+        s.stem.replace(ai, function (e, a, i, n, s, r) {
           return "*" === i ? t.minimumFractionDigits = a.length : n && "#" === n[0] ? t.maximumFractionDigits = n.length : s && r ? (t.minimumFractionDigits = s.length, t.maximumFractionDigits = s.length + r.length) : (t.minimumFractionDigits = a.length, t.maximumFractionDigits = a.length), "";
         });
         var r = s.options[0];
         "w" === r ? t = i(i({}, t), {
           trailingZeroDisplay: "stripIfInteger"
-        }) : r && (t = i(i({}, t), ii(r)));
-      } else if (ei.test(s.stem)) t = i(i({}, t), ii(s.stem));else {
-        var o = ni(s.stem);
+        }) : r && (t = i(i({}, t), ri(r)));
+      } else if (ii.test(s.stem)) t = i(i({}, t), ri(s.stem));else {
+        var o = oi(s.stem);
         o && (t = i(i({}, t), o));
-        var l = si(s.stem);
+        var l = li(s.stem);
         l && (t = i(i({}, t), l));
       }
     }
     return t;
   }
-  var li,
-    ui = {
+  var ci,
+    hi = {
       "001": ["H", "h"],
       419: ["h", "H", "hB", "hb"],
       AC: ["H", "h", "hb", "hB"],
@@ -3768,7 +3787,7 @@
       "te-IN": ["hB", "h", "H"],
       "zu-ZA": ["H", "hB", "hb", "h"]
     };
-  function di(e) {
+  function pi(e) {
     var t = e.hourCycle;
     if (void 0 === t && e.hourCycles && e.hourCycles.length && (t = e.hourCycles[0]), t) switch (t) {
       case "h24":
@@ -3784,38 +3803,38 @@
     }
     var a,
       i = e.language;
-    return "root" !== i && (a = e.maximize().region), (ui[a || ""] || ui[i || ""] || ui["".concat(i, "-001")] || ui["001"])[0];
+    return "root" !== i && (a = e.maximize().region), (hi[a || ""] || hi[i || ""] || hi["".concat(i, "-001")] || hi["001"])[0];
   }
-  var ci = new RegExp("^".concat(qa.source, "*")),
-    hi = new RegExp("".concat(qa.source, "*$"));
-  function pi(e, t) {
+  var mi = new RegExp("^".concat(Ja.source, "*")),
+    gi = new RegExp("".concat(Ja.source, "*$"));
+  function fi(e, t) {
     return {
       start: e,
       end: t
     };
   }
-  var mi = !!String.prototype.startsWith && "_a".startsWith("a", 1),
-    gi = !!String.fromCodePoint,
-    fi = !!Object.fromEntries,
-    vi = !!String.prototype.codePointAt,
-    bi = !!String.prototype.trimStart,
-    yi = !!String.prototype.trimEnd,
-    _i = !!Number.isSafeInteger ? Number.isSafeInteger : function (e) {
+  var vi = !!String.prototype.startsWith && "_a".startsWith("a", 1),
+    bi = !!String.fromCodePoint,
+    yi = !!Object.fromEntries,
+    _i = !!String.prototype.codePointAt,
+    wi = !!String.prototype.trimStart,
+    ki = !!String.prototype.trimEnd,
+    $i = !!Number.isSafeInteger ? Number.isSafeInteger : function (e) {
       return "number" == typeof e && isFinite(e) && Math.floor(e) === e && Math.abs(e) <= 9007199254740991;
     },
-    wi = !0;
+    Si = !0;
   try {
-    wi = "a" === (null === (li = zi("([^\\p{White_Space}\\p{Pattern_Syntax}]*)", "yu").exec("a")) || void 0 === li ? void 0 : li[0]);
+    Si = "a" === (null === (ci = Oi("([^\\p{White_Space}\\p{Pattern_Syntax}]*)", "yu").exec("a")) || void 0 === ci ? void 0 : ci[0]);
   } catch (L) {
-    wi = !1;
+    Si = !1;
   }
-  var ki,
-    $i = mi ? function (e, t, a) {
+  var xi,
+    Ei = vi ? function (e, t, a) {
       return e.startsWith(t, a);
     } : function (e, t, a) {
       return e.slice(a, a + t.length) === t;
     },
-    Si = gi ? String.fromCodePoint : function () {
+    Mi = bi ? String.fromCodePoint : function () {
       for (var e = [], t = 0; t < arguments.length; t++) e[t] = arguments[t];
       for (var a, i = "", n = e.length, s = 0; n > s;) {
         if ((a = e[s++]) > 1114111) throw RangeError(a + " is not a valid code point");
@@ -3823,7 +3842,7 @@
       }
       return i;
     },
-    xi = fi ? Object.fromEntries : function (e) {
+    zi = yi ? Object.fromEntries : function (e) {
       for (var t = {}, a = 0, i = e; a < i.length; a++) {
         var n = i[a],
           s = n[0],
@@ -3832,7 +3851,7 @@
       }
       return t;
     },
-    Ei = vi ? function (e, t) {
+    Ai = _i ? function (e, t) {
       return e.codePointAt(t);
     } : function (e, t) {
       var a = e.length;
@@ -3842,35 +3861,35 @@
         return n < 55296 || n > 56319 || t + 1 === a || (i = e.charCodeAt(t + 1)) < 56320 || i > 57343 ? n : i - 56320 + (n - 55296 << 10) + 65536;
       }
     },
-    Mi = bi ? function (e) {
+    Ti = wi ? function (e) {
       return e.trimStart();
     } : function (e) {
-      return e.replace(ci, "");
+      return e.replace(mi, "");
     },
-    Ai = yi ? function (e) {
+    Di = ki ? function (e) {
       return e.trimEnd();
     } : function (e) {
-      return e.replace(hi, "");
+      return e.replace(gi, "");
     };
-  function zi(e, t) {
+  function Oi(e, t) {
     return new RegExp(e, t);
   }
-  if (wi) {
-    var Ti = zi("([^\\p{White_Space}\\p{Pattern_Syntax}]*)", "yu");
-    ki = function (e, t) {
+  if (Si) {
+    var Hi = Oi("([^\\p{White_Space}\\p{Pattern_Syntax}]*)", "yu");
+    xi = function (e, t) {
       var a;
-      return Ti.lastIndex = t, null !== (a = Ti.exec(e)[1]) && void 0 !== a ? a : "";
+      return Hi.lastIndex = t, null !== (a = Hi.exec(e)[1]) && void 0 !== a ? a : "";
     };
-  } else ki = function (e, t) {
+  } else xi = function (e, t) {
     for (var a = [];;) {
-      var i = Ei(e, t);
-      if (void 0 === i || Pi(i) || Ni(i)) break;
+      var i = Ai(e, t);
+      if (void 0 === i || ji(i) || Ii(i)) break;
       a.push(i), t += i >= 65536 ? 2 : 1;
     }
-    return Si.apply(void 0, a);
+    return Mi.apply(void 0, a);
   };
-  var Di,
-    Oi = function () {
+  var Ci,
+    Pi = function () {
       function e(e, t) {
         void 0 === t && (t = {}), this.message = e, this.position = {
           offset: 0,
@@ -3892,9 +3911,9 @@
             if (35 !== n || "plural" !== t && "selectordinal" !== t) {
               if (60 === n && !this.ignoreTag && 47 === this.peek()) {
                 if (a) break;
-                return this.error(Ha.UNMATCHED_CLOSING_TAG, pi(this.clonePosition(), this.clonePosition()));
+                return this.error(Na.UNMATCHED_CLOSING_TAG, fi(this.clonePosition(), this.clonePosition()));
               }
-              if (60 === n && !this.ignoreTag && Hi(this.peek() || 0)) {
+              if (60 === n && !this.ignoreTag && Ni(this.peek() || 0)) {
                 if ((s = this.parseTag(e, t)).err) return s;
                 i.push(s.val);
               } else {
@@ -3905,8 +3924,8 @@
             } else {
               var r = this.clonePosition();
               this.bump(), i.push({
-                type: Ca.pound,
-                location: pi(r, this.clonePosition())
+                type: La.pound,
+                location: fi(r, this.clonePosition())
               });
             }
           }
@@ -3921,9 +3940,9 @@
         var i = this.parseTagName();
         if (this.bumpSpace(), this.bumpIf("/>")) return {
           val: {
-            type: Ca.literal,
+            type: La.literal,
             value: "<".concat(i, "/>"),
-            location: pi(a, this.clonePosition())
+            location: fi(a, this.clonePosition())
           },
           err: null
         };
@@ -3933,24 +3952,24 @@
           var s = n.val,
             r = this.clonePosition();
           if (this.bumpIf("</")) {
-            if (this.isEOF() || !Hi(this.char())) return this.error(Ha.INVALID_TAG, pi(r, this.clonePosition()));
+            if (this.isEOF() || !Ni(this.char())) return this.error(Na.INVALID_TAG, fi(r, this.clonePosition()));
             var o = this.clonePosition();
-            return i !== this.parseTagName() ? this.error(Ha.UNMATCHED_CLOSING_TAG, pi(o, this.clonePosition())) : (this.bumpSpace(), this.bumpIf(">") ? {
+            return i !== this.parseTagName() ? this.error(Na.UNMATCHED_CLOSING_TAG, fi(o, this.clonePosition())) : (this.bumpSpace(), this.bumpIf(">") ? {
               val: {
-                type: Ca.tag,
+                type: La.tag,
                 value: i,
                 children: s,
-                location: pi(a, this.clonePosition())
+                location: fi(a, this.clonePosition())
               },
               err: null
-            } : this.error(Ha.INVALID_TAG, pi(r, this.clonePosition())));
+            } : this.error(Na.INVALID_TAG, fi(r, this.clonePosition())));
           }
-          return this.error(Ha.UNCLOSED_TAG, pi(a, this.clonePosition()));
+          return this.error(Na.UNCLOSED_TAG, fi(a, this.clonePosition()));
         }
-        return this.error(Ha.INVALID_TAG, pi(a, this.clonePosition()));
+        return this.error(Na.INVALID_TAG, fi(a, this.clonePosition()));
       }, e.prototype.parseTagName = function () {
         var e = this.offset();
-        for (this.bump(); !this.isEOF() && Ci(this.char());) this.bump();
+        for (this.bump(); !this.isEOF() && Li(this.char());) this.bump();
         return this.message.slice(e, this.offset());
       }, e.prototype.parseLiteral = function (e, t) {
         for (var a = this.clonePosition(), i = "";;) {
@@ -3964,17 +3983,17 @@
             }
           }
         }
-        var o = pi(a, this.clonePosition());
+        var o = fi(a, this.clonePosition());
         return {
           val: {
-            type: Ca.literal,
+            type: La.literal,
             value: i,
             location: o
           },
           err: null
         };
       }, e.prototype.tryParseLeftAngleBracket = function () {
-        return this.isEOF() || 60 !== this.char() || !this.ignoreTag && (Hi(e = this.peek() || 0) || 47 === e) ? null : (this.bump(), "<");
+        return this.isEOF() || 60 !== this.char() || !this.ignoreTag && (Ni(e = this.peek() || 0) || 47 === e) ? null : (this.bump(), "<");
         var e;
       }, e.prototype.tryParseQuote = function (e) {
         if (this.isEOF() || 39 !== this.char()) return null;
@@ -4005,41 +4024,41 @@
           } else t.push(a);
           this.bump();
         }
-        return Si.apply(void 0, t);
+        return Mi.apply(void 0, t);
       }, e.prototype.tryParseUnquoted = function (e, t) {
         if (this.isEOF()) return null;
         var a = this.char();
-        return 60 === a || 123 === a || 35 === a && ("plural" === t || "selectordinal" === t) || 125 === a && e > 0 ? null : (this.bump(), Si(a));
+        return 60 === a || 123 === a || 35 === a && ("plural" === t || "selectordinal" === t) || 125 === a && e > 0 ? null : (this.bump(), Mi(a));
       }, e.prototype.parseArgument = function (e, t) {
         var a = this.clonePosition();
-        if (this.bump(), this.bumpSpace(), this.isEOF()) return this.error(Ha.EXPECT_ARGUMENT_CLOSING_BRACE, pi(a, this.clonePosition()));
-        if (125 === this.char()) return this.bump(), this.error(Ha.EMPTY_ARGUMENT, pi(a, this.clonePosition()));
+        if (this.bump(), this.bumpSpace(), this.isEOF()) return this.error(Na.EXPECT_ARGUMENT_CLOSING_BRACE, fi(a, this.clonePosition()));
+        if (125 === this.char()) return this.bump(), this.error(Na.EMPTY_ARGUMENT, fi(a, this.clonePosition()));
         var i = this.parseIdentifierIfPossible().value;
-        if (!i) return this.error(Ha.MALFORMED_ARGUMENT, pi(a, this.clonePosition()));
-        if (this.bumpSpace(), this.isEOF()) return this.error(Ha.EXPECT_ARGUMENT_CLOSING_BRACE, pi(a, this.clonePosition()));
+        if (!i) return this.error(Na.MALFORMED_ARGUMENT, fi(a, this.clonePosition()));
+        if (this.bumpSpace(), this.isEOF()) return this.error(Na.EXPECT_ARGUMENT_CLOSING_BRACE, fi(a, this.clonePosition()));
         switch (this.char()) {
           case 125:
             return this.bump(), {
               val: {
-                type: Ca.argument,
+                type: La.argument,
                 value: i,
-                location: pi(a, this.clonePosition())
+                location: fi(a, this.clonePosition())
               },
               err: null
             };
           case 44:
-            return this.bump(), this.bumpSpace(), this.isEOF() ? this.error(Ha.EXPECT_ARGUMENT_CLOSING_BRACE, pi(a, this.clonePosition())) : this.parseArgumentOptions(e, t, i, a);
+            return this.bump(), this.bumpSpace(), this.isEOF() ? this.error(Na.EXPECT_ARGUMENT_CLOSING_BRACE, fi(a, this.clonePosition())) : this.parseArgumentOptions(e, t, i, a);
           default:
-            return this.error(Ha.MALFORMED_ARGUMENT, pi(a, this.clonePosition()));
+            return this.error(Na.MALFORMED_ARGUMENT, fi(a, this.clonePosition()));
         }
       }, e.prototype.parseIdentifierIfPossible = function () {
         var e = this.clonePosition(),
           t = this.offset(),
-          a = ki(this.message, t),
+          a = xi(this.message, t),
           i = t + a.length;
         return this.bumpTo(i), {
           value: a,
-          location: pi(e, this.clonePosition())
+          location: fi(e, this.clonePosition())
         };
       }, e.prototype.parseArgumentOptions = function (e, t, a, n) {
         var s,
@@ -4048,7 +4067,7 @@
           l = this.clonePosition();
         switch (o) {
           case "":
-            return this.error(Ha.EXPECT_ARGUMENT_TYPE, pi(r, l));
+            return this.error(Na.EXPECT_ARGUMENT_TYPE, fi(r, l));
           case "number":
           case "date":
           case "time":
@@ -4058,26 +4077,26 @@
               this.bumpSpace();
               var d = this.clonePosition();
               if ((b = this.parseSimpleArgStyleIfPossible()).err) return b;
-              if (0 === (m = Ai(b.val)).length) return this.error(Ha.EXPECT_ARGUMENT_STYLE, pi(this.clonePosition(), this.clonePosition()));
+              if (0 === (m = Di(b.val)).length) return this.error(Na.EXPECT_ARGUMENT_STYLE, fi(this.clonePosition(), this.clonePosition()));
               u = {
                 style: m,
-                styleLocation: pi(d, this.clonePosition())
+                styleLocation: fi(d, this.clonePosition())
               };
             }
             if ((y = this.tryParseArgumentClose(n)).err) return y;
-            var c = pi(n, this.clonePosition());
-            if (u && $i(null == u ? void 0 : u.style, "::", 0)) {
-              var h = Mi(u.style.slice(2));
+            var c = fi(n, this.clonePosition());
+            if (u && Ei(null == u ? void 0 : u.style, "::", 0)) {
+              var h = Ti(u.style.slice(2));
               if ("number" === o) return (b = this.parseNumberSkeletonFromString(h, u.styleLocation)).err ? b : {
                 val: {
-                  type: Ca.number,
+                  type: La.number,
                   value: a,
                   location: c,
                   style: b.val
                 },
                 err: null
               };
-              if (0 === h.length) return this.error(Ha.EXPECT_DATE_TIME_SKELETON, c);
+              if (0 === h.length) return this.error(Na.EXPECT_DATE_TIME_SKELETON, c);
               var p = h;
               this.locale && (p = function (e, t) {
                 for (var a = "", i = 0; i < e.length; i++) {
@@ -4086,7 +4105,7 @@
                     for (var s = 0; i + 1 < e.length && e.charAt(i + 1) === n;) s++, i++;
                     var r = 1 + (1 & s),
                       o = s < 2 ? 1 : 3 + (s >> 1),
-                      l = di(t);
+                      l = pi(t);
                     for ("H" != l && "k" != l || (o = 0); o-- > 0;) a += "a";
                     for (; r-- > 0;) a = l + a;
                   } else a += "J" === n ? "H" : n;
@@ -4094,14 +4113,14 @@
                 return a;
               }(h, this.locale));
               var m = {
-                type: Pa.dateTime,
+                type: ja.dateTime,
                 pattern: p,
                 location: u.styleLocation,
-                parsedOptions: this.shouldParseSkeletons ? Xa(p) : {}
+                parsedOptions: this.shouldParseSkeletons ? ei(p) : {}
               };
               return {
                 val: {
-                  type: "date" === o ? Ca.date : Ca.time,
+                  type: "date" === o ? La.date : La.time,
                   value: a,
                   location: c,
                   style: m
@@ -4111,7 +4130,7 @@
             }
             return {
               val: {
-                type: "number" === o ? Ca.number : "date" === o ? Ca.date : Ca.time,
+                type: "number" === o ? La.number : "date" === o ? La.date : La.time,
                 value: a,
                 location: c,
                 style: null !== (s = null == u ? void 0 : u.style) && void 0 !== s ? s : null
@@ -4122,34 +4141,34 @@
           case "selectordinal":
           case "select":
             var g = this.clonePosition();
-            if (this.bumpSpace(), !this.bumpIf(",")) return this.error(Ha.EXPECT_SELECT_ARGUMENT_OPTIONS, pi(g, i({}, g)));
+            if (this.bumpSpace(), !this.bumpIf(",")) return this.error(Na.EXPECT_SELECT_ARGUMENT_OPTIONS, fi(g, i({}, g)));
             this.bumpSpace();
             var f = this.parseIdentifierIfPossible(),
               v = 0;
             if ("select" !== o && "offset" === f.value) {
-              if (!this.bumpIf(":")) return this.error(Ha.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE, pi(this.clonePosition(), this.clonePosition()));
+              if (!this.bumpIf(":")) return this.error(Na.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE, fi(this.clonePosition(), this.clonePosition()));
               var b;
-              if (this.bumpSpace(), (b = this.tryParseDecimalInteger(Ha.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE, Ha.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE)).err) return b;
+              if (this.bumpSpace(), (b = this.tryParseDecimalInteger(Na.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE, Na.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE)).err) return b;
               this.bumpSpace(), f = this.parseIdentifierIfPossible(), v = b.val;
             }
             var y,
               _ = this.tryParsePluralOrSelectOptions(e, o, t, f);
             if (_.err) return _;
             if ((y = this.tryParseArgumentClose(n)).err) return y;
-            var w = pi(n, this.clonePosition());
+            var w = fi(n, this.clonePosition());
             return "select" === o ? {
               val: {
-                type: Ca.select,
+                type: La.select,
                 value: a,
-                options: xi(_.val),
+                options: zi(_.val),
                 location: w
               },
               err: null
             } : {
               val: {
-                type: Ca.plural,
+                type: La.plural,
                 value: a,
-                options: xi(_.val),
+                options: zi(_.val),
                 offset: v,
                 pluralType: "plural" === o ? "cardinal" : "ordinal",
                 location: w
@@ -4157,10 +4176,10 @@
               err: null
             };
           default:
-            return this.error(Ha.INVALID_ARGUMENT_TYPE, pi(r, l));
+            return this.error(Na.INVALID_ARGUMENT_TYPE, fi(r, l));
         }
       }, e.prototype.tryParseArgumentClose = function (e) {
-        return this.isEOF() || 125 !== this.char() ? this.error(Ha.EXPECT_ARGUMENT_CLOSING_BRACE, pi(e, this.clonePosition())) : (this.bump(), {
+        return this.isEOF() || 125 !== this.char() ? this.error(Na.EXPECT_ARGUMENT_CLOSING_BRACE, fi(e, this.clonePosition())) : (this.bump(), {
           val: !0,
           err: null
         });
@@ -4170,7 +4189,7 @@
             case 39:
               this.bump();
               var a = this.clonePosition();
-              if (!this.bumpUntil("'")) return this.error(Ha.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE, pi(a, this.clonePosition()));
+              if (!this.bumpUntil("'")) return this.error(Na.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE, fi(a, this.clonePosition()));
               this.bump();
               break;
             case 123:
@@ -4196,7 +4215,7 @@
         try {
           a = function (e) {
             if (0 === e.length) throw new Error("Number skeleton cannot be empty");
-            for (var t = e.split(Ja).filter(function (e) {
+            for (var t = e.split(ti).filter(function (e) {
                 return e.length > 0;
               }), a = [], i = 0, n = t; i < n.length; i++) {
               var s = n[i].split("/");
@@ -4210,14 +4229,14 @@
             return a;
           }(e);
         } catch (e) {
-          return this.error(Ha.INVALID_NUMBER_SKELETON, t);
+          return this.error(Na.INVALID_NUMBER_SKELETON, t);
         }
         return {
           val: {
-            type: Pa.number,
+            type: ja.number,
             tokens: a,
             location: t,
-            parsedOptions: this.shouldParseSkeletons ? oi(a) : {}
+            parsedOptions: this.shouldParseSkeletons ? di(a) : {}
           },
           err: null
         };
@@ -4226,24 +4245,24 @@
           if (0 === l.length) {
             var d = this.clonePosition();
             if ("select" === t || !this.bumpIf("=")) break;
-            var c = this.tryParseDecimalInteger(Ha.EXPECT_PLURAL_ARGUMENT_SELECTOR, Ha.INVALID_PLURAL_ARGUMENT_SELECTOR);
+            var c = this.tryParseDecimalInteger(Na.EXPECT_PLURAL_ARGUMENT_SELECTOR, Na.INVALID_PLURAL_ARGUMENT_SELECTOR);
             if (c.err) return c;
-            u = pi(d, this.clonePosition()), l = this.message.slice(d.offset, this.offset());
+            u = fi(d, this.clonePosition()), l = this.message.slice(d.offset, this.offset());
           }
-          if (o.has(l)) return this.error("select" === t ? Ha.DUPLICATE_SELECT_ARGUMENT_SELECTOR : Ha.DUPLICATE_PLURAL_ARGUMENT_SELECTOR, u);
+          if (o.has(l)) return this.error("select" === t ? Na.DUPLICATE_SELECT_ARGUMENT_SELECTOR : Na.DUPLICATE_PLURAL_ARGUMENT_SELECTOR, u);
           "other" === l && (s = !0), this.bumpSpace();
           var h = this.clonePosition();
-          if (!this.bumpIf("{")) return this.error("select" === t ? Ha.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT : Ha.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT, pi(this.clonePosition(), this.clonePosition()));
+          if (!this.bumpIf("{")) return this.error("select" === t ? Na.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT : Na.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT, fi(this.clonePosition(), this.clonePosition()));
           var p = this.parseMessage(e + 1, t, a);
           if (p.err) return p;
           var m = this.tryParseArgumentClose(h);
           if (m.err) return m;
           r.push([l, {
             value: p.val,
-            location: pi(h, this.clonePosition())
+            location: fi(h, this.clonePosition())
           }]), o.add(l), this.bumpSpace(), l = (n = this.parseIdentifierIfPossible()).value, u = n.location;
         }
-        return 0 === r.length ? this.error("select" === t ? Ha.EXPECT_SELECT_ARGUMENT_SELECTOR : Ha.EXPECT_PLURAL_ARGUMENT_SELECTOR, pi(this.clonePosition(), this.clonePosition())) : this.requiresOtherClause && !s ? this.error(Ha.MISSING_OTHER_CLAUSE, pi(this.clonePosition(), this.clonePosition())) : {
+        return 0 === r.length ? this.error("select" === t ? Na.EXPECT_SELECT_ARGUMENT_SELECTOR : Na.EXPECT_PLURAL_ARGUMENT_SELECTOR, fi(this.clonePosition(), this.clonePosition())) : this.requiresOtherClause && !s ? this.error(Na.MISSING_OTHER_CLAUSE, fi(this.clonePosition(), this.clonePosition())) : {
           val: r,
           err: null
         };
@@ -4256,8 +4275,8 @@
           if (!(r >= 48 && r <= 57)) break;
           n = !0, s = 10 * s + (r - 48), this.bump();
         }
-        var o = pi(i, this.clonePosition());
-        return n ? _i(s *= a) ? {
+        var o = fi(i, this.clonePosition());
+        return n ? $i(s *= a) ? {
           val: s,
           err: null
         } : this.error(t, o) : this.error(e, o);
@@ -4274,7 +4293,7 @@
       }, e.prototype.char = function () {
         var e = this.position.offset;
         if (e >= this.message.length) throw Error("out of bound");
-        var t = Ei(this.message, e);
+        var t = Ai(this.message, e);
         if (void 0 === t) throw Error("Offset ".concat(e, " is at invalid UTF-16 code unit boundary"));
         return t;
       }, e.prototype.error = function (e, t) {
@@ -4292,7 +4311,7 @@
           10 === e ? (this.position.line += 1, this.position.column = 1, this.position.offset += 1) : (this.position.column += 1, this.position.offset += e < 65536 ? 1 : 2);
         }
       }, e.prototype.bumpIf = function (e) {
-        if ($i(this.message, e, this.offset())) {
+        if (Ei(this.message, e, this.offset())) {
           for (var t = 0; t < e.length; t++) this.bump();
           return !0;
         }
@@ -4310,7 +4329,7 @@
           if (this.bump(), this.isEOF()) break;
         }
       }, e.prototype.bumpSpace = function () {
-        for (; !this.isEOF() && Pi(this.char());) this.bump();
+        for (; !this.isEOF() && ji(this.char());) this.bump();
       }, e.prototype.peek = function () {
         if (this.isEOF()) return null;
         var e = this.char(),
@@ -4319,40 +4338,40 @@
         return null != a ? a : null;
       }, e;
     }();
-  function Hi(e) {
+  function Ni(e) {
     return e >= 97 && e <= 122 || e >= 65 && e <= 90;
   }
-  function Ci(e) {
+  function Li(e) {
     return 45 === e || 46 === e || e >= 48 && e <= 57 || 95 === e || e >= 97 && e <= 122 || e >= 65 && e <= 90 || 183 == e || e >= 192 && e <= 214 || e >= 216 && e <= 246 || e >= 248 && e <= 893 || e >= 895 && e <= 8191 || e >= 8204 && e <= 8205 || e >= 8255 && e <= 8256 || e >= 8304 && e <= 8591 || e >= 11264 && e <= 12271 || e >= 12289 && e <= 55295 || e >= 63744 && e <= 64975 || e >= 65008 && e <= 65533 || e >= 65536 && e <= 983039;
   }
-  function Pi(e) {
+  function ji(e) {
     return e >= 9 && e <= 13 || 32 === e || 133 === e || e >= 8206 && e <= 8207 || 8232 === e || 8233 === e;
   }
-  function Ni(e) {
+  function Ii(e) {
     return e >= 33 && e <= 35 || 36 === e || e >= 37 && e <= 39 || 40 === e || 41 === e || 42 === e || 43 === e || 44 === e || 45 === e || e >= 46 && e <= 47 || e >= 58 && e <= 59 || e >= 60 && e <= 62 || e >= 63 && e <= 64 || 91 === e || 92 === e || 93 === e || 94 === e || 96 === e || 123 === e || 124 === e || 125 === e || 126 === e || 161 === e || e >= 162 && e <= 165 || 166 === e || 167 === e || 169 === e || 171 === e || 172 === e || 174 === e || 176 === e || 177 === e || 182 === e || 187 === e || 191 === e || 215 === e || 247 === e || e >= 8208 && e <= 8213 || e >= 8214 && e <= 8215 || 8216 === e || 8217 === e || 8218 === e || e >= 8219 && e <= 8220 || 8221 === e || 8222 === e || 8223 === e || e >= 8224 && e <= 8231 || e >= 8240 && e <= 8248 || 8249 === e || 8250 === e || e >= 8251 && e <= 8254 || e >= 8257 && e <= 8259 || 8260 === e || 8261 === e || 8262 === e || e >= 8263 && e <= 8273 || 8274 === e || 8275 === e || e >= 8277 && e <= 8286 || e >= 8592 && e <= 8596 || e >= 8597 && e <= 8601 || e >= 8602 && e <= 8603 || e >= 8604 && e <= 8607 || 8608 === e || e >= 8609 && e <= 8610 || 8611 === e || e >= 8612 && e <= 8613 || 8614 === e || e >= 8615 && e <= 8621 || 8622 === e || e >= 8623 && e <= 8653 || e >= 8654 && e <= 8655 || e >= 8656 && e <= 8657 || 8658 === e || 8659 === e || 8660 === e || e >= 8661 && e <= 8691 || e >= 8692 && e <= 8959 || e >= 8960 && e <= 8967 || 8968 === e || 8969 === e || 8970 === e || 8971 === e || e >= 8972 && e <= 8991 || e >= 8992 && e <= 8993 || e >= 8994 && e <= 9e3 || 9001 === e || 9002 === e || e >= 9003 && e <= 9083 || 9084 === e || e >= 9085 && e <= 9114 || e >= 9115 && e <= 9139 || e >= 9140 && e <= 9179 || e >= 9180 && e <= 9185 || e >= 9186 && e <= 9254 || e >= 9255 && e <= 9279 || e >= 9280 && e <= 9290 || e >= 9291 && e <= 9311 || e >= 9472 && e <= 9654 || 9655 === e || e >= 9656 && e <= 9664 || 9665 === e || e >= 9666 && e <= 9719 || e >= 9720 && e <= 9727 || e >= 9728 && e <= 9838 || 9839 === e || e >= 9840 && e <= 10087 || 10088 === e || 10089 === e || 10090 === e || 10091 === e || 10092 === e || 10093 === e || 10094 === e || 10095 === e || 10096 === e || 10097 === e || 10098 === e || 10099 === e || 10100 === e || 10101 === e || e >= 10132 && e <= 10175 || e >= 10176 && e <= 10180 || 10181 === e || 10182 === e || e >= 10183 && e <= 10213 || 10214 === e || 10215 === e || 10216 === e || 10217 === e || 10218 === e || 10219 === e || 10220 === e || 10221 === e || 10222 === e || 10223 === e || e >= 10224 && e <= 10239 || e >= 10240 && e <= 10495 || e >= 10496 && e <= 10626 || 10627 === e || 10628 === e || 10629 === e || 10630 === e || 10631 === e || 10632 === e || 10633 === e || 10634 === e || 10635 === e || 10636 === e || 10637 === e || 10638 === e || 10639 === e || 10640 === e || 10641 === e || 10642 === e || 10643 === e || 10644 === e || 10645 === e || 10646 === e || 10647 === e || 10648 === e || e >= 10649 && e <= 10711 || 10712 === e || 10713 === e || 10714 === e || 10715 === e || e >= 10716 && e <= 10747 || 10748 === e || 10749 === e || e >= 10750 && e <= 11007 || e >= 11008 && e <= 11055 || e >= 11056 && e <= 11076 || e >= 11077 && e <= 11078 || e >= 11079 && e <= 11084 || e >= 11085 && e <= 11123 || e >= 11124 && e <= 11125 || e >= 11126 && e <= 11157 || 11158 === e || e >= 11159 && e <= 11263 || e >= 11776 && e <= 11777 || 11778 === e || 11779 === e || 11780 === e || 11781 === e || e >= 11782 && e <= 11784 || 11785 === e || 11786 === e || 11787 === e || 11788 === e || 11789 === e || e >= 11790 && e <= 11798 || 11799 === e || e >= 11800 && e <= 11801 || 11802 === e || 11803 === e || 11804 === e || 11805 === e || e >= 11806 && e <= 11807 || 11808 === e || 11809 === e || 11810 === e || 11811 === e || 11812 === e || 11813 === e || 11814 === e || 11815 === e || 11816 === e || 11817 === e || e >= 11818 && e <= 11822 || 11823 === e || e >= 11824 && e <= 11833 || e >= 11834 && e <= 11835 || e >= 11836 && e <= 11839 || 11840 === e || 11841 === e || 11842 === e || e >= 11843 && e <= 11855 || e >= 11856 && e <= 11857 || 11858 === e || e >= 11859 && e <= 11903 || e >= 12289 && e <= 12291 || 12296 === e || 12297 === e || 12298 === e || 12299 === e || 12300 === e || 12301 === e || 12302 === e || 12303 === e || 12304 === e || 12305 === e || e >= 12306 && e <= 12307 || 12308 === e || 12309 === e || 12310 === e || 12311 === e || 12312 === e || 12313 === e || 12314 === e || 12315 === e || 12316 === e || 12317 === e || e >= 12318 && e <= 12319 || 12320 === e || 12336 === e || 64830 === e || 64831 === e || e >= 65093 && e <= 65094;
   }
-  function Li(e) {
+  function Bi(e) {
     e.forEach(function (e) {
-      if (delete e.location, Ya(e) || Fa(e)) for (var t in e.options) delete e.options[t].location, Li(e.options[t].value);else Ba(e) && Wa(e.style) || (Ra(e) || Ua(e)) && Za(e.style) ? delete e.style.location : Ga(e) && Li(e.children);
+      if (delete e.location, Ga(e) || Wa(e)) for (var t in e.options) delete e.options[t].location, Bi(e.options[t].value);else Ya(e) && Ka(e.style) || (Fa(e) || Va(e)) && Xa(e.style) ? delete e.style.location : qa(e) && Bi(e.children);
     });
   }
-  function ji(e, t) {
+  function Ui(e, t) {
     void 0 === t && (t = {}), t = i({
       shouldParseSkeletons: !0,
       requiresOtherClause: !0
     }, t);
-    var a = new Oi(e, t).parse();
+    var a = new Pi(e, t).parse();
     if (a.err) {
-      var n = SyntaxError(Ha[a.err.kind]);
+      var n = SyntaxError(Na[a.err.kind]);
       throw n.location = a.err.location, n.originalMessage = a.err.message, n;
     }
-    return (null == t ? void 0 : t.captureLocation) || Li(a.val), a.val;
+    return (null == t ? void 0 : t.captureLocation) || Bi(a.val), a.val;
   }
   !function (e) {
     e.MISSING_VALUE = "MISSING_VALUE", e.INVALID_VALUE = "INVALID_VALUE", e.MISSING_INTL_API = "MISSING_INTL_API";
-  }(Di || (Di = {}));
-  var Ii,
-    Bi = function (e) {
+  }(Ci || (Ci = {}));
+  var Ri,
+    Yi = function (e) {
       function t(t, a, i) {
         var n = e.call(this, t) || this;
         return n.code = a, n.originalMessage = i, n;
@@ -4361,94 +4380,94 @@
         return "[formatjs Error: ".concat(this.code, "] ").concat(this.message);
       }, t;
     }(Error),
-    Ri = function (e) {
+    Fi = function (e) {
       function t(t, a, i, n) {
-        return e.call(this, 'Invalid values for "'.concat(t, '": "').concat(a, '". Options are "').concat(Object.keys(i).join('", "'), '"'), Di.INVALID_VALUE, n) || this;
+        return e.call(this, 'Invalid values for "'.concat(t, '": "').concat(a, '". Options are "').concat(Object.keys(i).join('", "'), '"'), Ci.INVALID_VALUE, n) || this;
       }
       return a(t, e), t;
-    }(Bi),
-    Ui = function (e) {
+    }(Yi),
+    Vi = function (e) {
       function t(t, a, i) {
-        return e.call(this, 'Value for "'.concat(t, '" must be of type ').concat(a), Di.INVALID_VALUE, i) || this;
+        return e.call(this, 'Value for "'.concat(t, '" must be of type ').concat(a), Ci.INVALID_VALUE, i) || this;
       }
       return a(t, e), t;
-    }(Bi),
-    Yi = function (e) {
+    }(Yi),
+    Gi = function (e) {
       function t(t, a) {
-        return e.call(this, 'The intl string context variable "'.concat(t, '" was not provided to the string "').concat(a, '"'), Di.MISSING_VALUE, a) || this;
+        return e.call(this, 'The intl string context variable "'.concat(t, '" was not provided to the string "').concat(a, '"'), Ci.MISSING_VALUE, a) || this;
       }
       return a(t, e), t;
-    }(Bi);
-  function Fi(e) {
+    }(Yi);
+  function Wi(e) {
     return "function" == typeof e;
   }
-  function Vi(e, t, a, i, n, s, r) {
-    if (1 === e.length && ja(e[0])) return [{
-      type: Ii.literal,
+  function Zi(e, t, a, i, n, s, r) {
+    if (1 === e.length && Ua(e[0])) return [{
+      type: Ri.literal,
       value: e[0].value
     }];
     for (var o = [], l = 0, u = e; l < u.length; l++) {
       var d = u[l];
-      if (ja(d)) o.push({
-        type: Ii.literal,
+      if (Ua(d)) o.push({
+        type: Ri.literal,
         value: d.value
-      });else if (Va(d)) "number" == typeof s && o.push({
-        type: Ii.literal,
+      });else if (Za(d)) "number" == typeof s && o.push({
+        type: Ri.literal,
         value: a.getNumberFormat(t).format(s)
       });else {
         var c = d.value;
-        if (!n || !(c in n)) throw new Yi(c, r);
+        if (!n || !(c in n)) throw new Gi(c, r);
         var h = n[c];
-        if (Ia(d)) h && "string" != typeof h && "number" != typeof h || (h = "string" == typeof h || "number" == typeof h ? String(h) : ""), o.push({
-          type: "string" == typeof h ? Ii.literal : Ii.object,
+        if (Ra(d)) h && "string" != typeof h && "number" != typeof h || (h = "string" == typeof h || "number" == typeof h ? String(h) : ""), o.push({
+          type: "string" == typeof h ? Ri.literal : Ri.object,
           value: h
-        });else if (Ra(d)) {
-          var p = "string" == typeof d.style ? i.date[d.style] : Za(d.style) ? d.style.parsedOptions : void 0;
+        });else if (Fa(d)) {
+          var p = "string" == typeof d.style ? i.date[d.style] : Xa(d.style) ? d.style.parsedOptions : void 0;
           o.push({
-            type: Ii.literal,
+            type: Ri.literal,
             value: a.getDateTimeFormat(t, p).format(h)
           });
-        } else if (Ua(d)) {
-          p = "string" == typeof d.style ? i.time[d.style] : Za(d.style) ? d.style.parsedOptions : i.time.medium;
+        } else if (Va(d)) {
+          p = "string" == typeof d.style ? i.time[d.style] : Xa(d.style) ? d.style.parsedOptions : i.time.medium;
           o.push({
-            type: Ii.literal,
+            type: Ri.literal,
             value: a.getDateTimeFormat(t, p).format(h)
           });
-        } else if (Ba(d)) {
-          (p = "string" == typeof d.style ? i.number[d.style] : Wa(d.style) ? d.style.parsedOptions : void 0) && p.scale && (h *= p.scale || 1), o.push({
-            type: Ii.literal,
+        } else if (Ya(d)) {
+          (p = "string" == typeof d.style ? i.number[d.style] : Ka(d.style) ? d.style.parsedOptions : void 0) && p.scale && (h *= p.scale || 1), o.push({
+            type: Ri.literal,
             value: a.getNumberFormat(t, p).format(h)
           });
         } else {
-          if (Ga(d)) {
+          if (qa(d)) {
             var m = d.children,
               g = d.value,
               f = n[g];
-            if (!Fi(f)) throw new Ui(g, "function", r);
-            var v = f(Vi(m, t, a, i, n, s).map(function (e) {
+            if (!Wi(f)) throw new Vi(g, "function", r);
+            var v = f(Zi(m, t, a, i, n, s).map(function (e) {
               return e.value;
             }));
             Array.isArray(v) || (v = [v]), o.push.apply(o, v.map(function (e) {
               return {
-                type: "string" == typeof e ? Ii.literal : Ii.object,
+                type: "string" == typeof e ? Ri.literal : Ri.object,
                 value: e
               };
             }));
           }
-          if (Ya(d)) {
-            if (!(b = d.options[h] || d.options.other)) throw new Ri(d.value, h, Object.keys(d.options), r);
-            o.push.apply(o, Vi(b.value, t, a, i, n));
-          } else if (Fa(d)) {
+          if (Ga(d)) {
+            if (!(b = d.options[h] || d.options.other)) throw new Fi(d.value, h, Object.keys(d.options), r);
+            o.push.apply(o, Zi(b.value, t, a, i, n));
+          } else if (Wa(d)) {
             var b;
             if (!(b = d.options["=".concat(h)])) {
-              if (!Intl.PluralRules) throw new Bi('Intl.PluralRules is not available in this environment.\nTry polyfilling it using "@formatjs/intl-pluralrules"\n', Di.MISSING_INTL_API, r);
+              if (!Intl.PluralRules) throw new Yi('Intl.PluralRules is not available in this environment.\nTry polyfilling it using "@formatjs/intl-pluralrules"\n', Ci.MISSING_INTL_API, r);
               var y = a.getPluralRules(t, {
                 type: d.pluralType
               }).select(h - (d.offset || 0));
               b = d.options[y] || d.options.other;
             }
-            if (!b) throw new Ri(d.value, h, Object.keys(d.options), r);
-            o.push.apply(o, Vi(b.value, t, a, i, n, h - (d.offset || 0)));
+            if (!b) throw new Fi(d.value, h, Object.keys(d.options), r);
+            o.push.apply(o, Zi(b.value, t, a, i, n, h - (d.offset || 0)));
           } else ;
         }
       }
@@ -4456,11 +4475,11 @@
     return function (e) {
       return e.length < 2 ? e : e.reduce(function (e, t) {
         var a = e[e.length - 1];
-        return a && a.type === Ii.literal && t.type === Ii.literal ? a.value += t.value : e.push(t), e;
+        return a && a.type === Ri.literal && t.type === Ri.literal ? a.value += t.value : e.push(t), e;
       }, []);
     }(o);
   }
-  function Gi(e, t) {
+  function qi(e, t) {
     return t ? Object.keys(e).reduce(function (a, n) {
       var s, r;
       return a[n] = (s = e[n], (r = t[n]) ? i(i(i({}, s || {}), r || {}), Object.keys(s).reduce(function (e, t) {
@@ -4468,7 +4487,7 @@
       }, {})) : s), a;
     }, i({}, e)) : e;
   }
-  function Wi(e) {
+  function Ki(e) {
     return {
       create: function () {
         return {
@@ -4484,8 +4503,8 @@
   }
   !function (e) {
     e[e.literal = 0] = "literal", e[e.object = 1] = "object";
-  }(Ii || (Ii = {}));
-  var Zi = function () {
+  }(Ri || (Ri = {}));
+  var Xi = function () {
       function e(t, a, n, r) {
         void 0 === a && (a = e.defaultLocale);
         var o,
@@ -4498,11 +4517,11 @@
           var t = l.formatToParts(e);
           if (1 === t.length) return t[0].value;
           var a = t.reduce(function (e, t) {
-            return e.length && t.type === Ii.literal && "string" == typeof e[e.length - 1] ? e[e.length - 1] += t.value : e.push(t.value), e;
+            return e.length && t.type === Ri.literal && "string" == typeof e[e.length - 1] ? e[e.length - 1] += t.value : e.push(t.value), e;
           }, []);
           return a.length <= 1 ? a[0] || "" : a;
         }, this.formatToParts = function (e) {
-          return Vi(l.ast, l.locales, l.formatters, l.formats, e, void 0, l.message);
+          return Zi(l.ast, l.locales, l.formatters, l.formats, e, void 0, l.message);
         }, this.resolvedOptions = function () {
           var e;
           return {
@@ -4528,31 +4547,31 @@
           }));
         } else this.ast = t;
         if (!Array.isArray(this.ast)) throw new TypeError("A message must be provided as a String or AST.");
-        this.formats = Gi(e.formats, n), this.formatters = r && r.formatters || (void 0 === (o = this.formatterCache) && (o = {
+        this.formats = qi(e.formats, n), this.formatters = r && r.formatters || (void 0 === (o = this.formatterCache) && (o = {
           number: {},
           dateTime: {},
           pluralRules: {}
         }), {
-          getNumberFormat: Ea(function () {
+          getNumberFormat: Aa(function () {
             for (var e, t = [], a = 0; a < arguments.length; a++) t[a] = arguments[a];
             return new ((e = Intl.NumberFormat).bind.apply(e, s([void 0], t, !1)))();
           }, {
-            cache: Wi(o.number),
-            strategy: La.variadic
+            cache: Ki(o.number),
+            strategy: Ba.variadic
           }),
-          getDateTimeFormat: Ea(function () {
+          getDateTimeFormat: Aa(function () {
             for (var e, t = [], a = 0; a < arguments.length; a++) t[a] = arguments[a];
             return new ((e = Intl.DateTimeFormat).bind.apply(e, s([void 0], t, !1)))();
           }, {
-            cache: Wi(o.dateTime),
-            strategy: La.variadic
+            cache: Ki(o.dateTime),
+            strategy: Ba.variadic
           }),
-          getPluralRules: Ea(function () {
+          getPluralRules: Aa(function () {
             for (var e, t = [], a = 0; a < arguments.length; a++) t[a] = arguments[a];
             return new ((e = Intl.PluralRules).bind.apply(e, s([void 0], t, !1)))();
           }, {
-            cache: Wi(o.pluralRules),
-            strategy: La.variadic
+            cache: Ki(o.pluralRules),
+            strategy: Ba.variadic
           })
         });
       }
@@ -4567,7 +4586,7 @@
           var t = Intl.NumberFormat.supportedLocalesOf(e);
           return t.length > 0 ? new Intl.Locale(t[0]) : new Intl.Locale("string" == typeof e ? e : e[0]);
         }
-      }, e.__parse = ji, e.formats = {
+      }, e.__parse = Ui, e.formats = {
         number: {
           integer: {
             maximumFractionDigits: 0
@@ -4627,33 +4646,33 @@
         }
       }, e;
     }(),
-    qi = Zi;
-  const Ki = {
-    de: St,
-    en: Ot,
-    es: Bt,
-    fr: Zt,
-    it: aa,
-    nl: da,
-    no: va,
-    sk: xa
+    Ji = Xi;
+  const Qi = {
+    de: Mt,
+    en: Pt,
+    es: Yt,
+    fr: Xt,
+    it: sa,
+    nl: pa,
+    no: _a,
+    sk: za
   };
-  function Xi(e, t, ...a) {
+  function en(e, t, ...a) {
     const i = t.replace(/['"]+/g, "");
     let n;
     try {
-      n = e.split(".").reduce((e, t) => e[t], Ki[i]);
+      n = e.split(".").reduce((e, t) => e[t], Qi[i]);
     } catch (t) {
-      n = e.split(".").reduce((e, t) => e[t], Ki.en);
+      n = e.split(".").reduce((e, t) => e[t], Qi.en);
     }
-    if (void 0 === n && (n = e.split(".").reduce((e, t) => e[t], Ki.en)), !a.length) return n;
+    if (void 0 === n && (n = e.split(".").reduce((e, t) => e[t], Qi.en)), !a.length) return n;
     const s = {};
     for (let e = 0; e < a.length; e += 2) {
       let t = a[e];
       t = t.replace(/^{([^}]+)?}$/, "$1"), s[t] = a[e + 1];
     }
     try {
-      return new qi(n, t).format(s);
+      return new Ji(n, t).format(s);
     } catch (e) {
       return "Translation " + e;
     }
@@ -4663,8 +4682,8 @@
        * Copyright 2017 Google LLC
        * SPDX-License-Identifier: BSD-3-Clause
        */
-  const Ji = 2;
-  class Qi {
+  const tn = 2;
+  class an {
     constructor(e) {}
     get _$AU() {
       return this._$AM._$AU;
@@ -4684,9 +4703,9 @@
        * Copyright 2017 Google LLC
        * SPDX-License-Identifier: BSD-3-Clause
        */
-  class en extends Qi {
+  class nn extends an {
     constructor(e) {
-      if (super(e), this.et = V, e.type !== Ji) throw Error(this.constructor.directiveName + "() can only be used in child bindings");
+      if (super(e), this.et = V, e.type !== tn) throw Error(this.constructor.directiveName + "() can only be used in child bindings");
     }
     render(e) {
       if (e === V || null == e) return this.ft = void 0, this.et = e;
@@ -4702,37 +4721,37 @@
       };
     }
   }
-  en.directiveName = "unsafeHTML", en.resultType = 1;
-  const tn = (e => (...t) => ({
+  nn.directiveName = "unsafeHTML", nn.resultType = 1;
+  const sn = (e => (...t) => ({
     _$litDirective$: e,
     values: t
-  }))(en);
-  function an(e) {
+  }))(nn);
+  function rn(e) {
     return "on" === (e = null == e ? void 0 : e.toString().toLowerCase()) || "true" === e || "1" === e;
   }
-  function nn(e, t) {
+  function on(e, t) {
     return (e = e.toString()).split(",")[t];
   }
-  function sn(e, t) {
+  function ln(e, t) {
     switch (t) {
-      case dt:
-        return e.units == Me ? Y`${tn(Ke)}` : Y`${tn(Xe)}`;
-      case nt:
-        return e.units == Me ? Y`${tn("mm")}` : Y`${tn("in")}`;
-      case Qe:
-        return e.units == Me ? Y`${tn("m<sup>2</sup>")}` : Y`${tn("sq ft")}`;
-      case et:
-        return e.units == Me ? Y`${tn("l/minute")}` : Y`${tn("gal/minute")}`;
+      case pt:
+        return e.units == Te ? Y`${sn(Qe)}` : Y`${sn(et)}`;
+      case ot:
+        return e.units == Te ? Y`${sn("mm")}` : Y`${sn("in")}`;
+      case at:
+        return e.units == Te ? Y`${sn("m<sup>2</sup>")}` : Y`${sn("sq ft")}`;
+      case it:
+        return e.units == Te ? Y`${sn("l/minute")}` : Y`${sn("gal/minute")}`;
       default:
         return Y``;
     }
   }
-  function rn(e, t) {
+  function un(e, t) {
     !function (e, t) {
       be(e, "show-dialog", {
         dialogTag: "error-dialog",
         dialogImport: () => Promise.resolve().then(function () {
-          return xn;
+          return An;
         }),
         dialogParams: {
           error: t
@@ -4742,7 +4761,16 @@
     ${e.error}:${e.body.message ? Y` ${e.body.message} ` : ""}
   `);
   }
-  const on = c`
+  class dn {
+    constructor(e = "", t = "sunrise") {
+      this.id = e, this.type = t, this.offset_before = 0, this.offset_after = 0, this.azimuth_value = 0;
+    }
+  }
+  var cn;
+  !function (e) {
+    e.Disabled = "disabled", e.Manual = "manual", e.Automatic = "automatic";
+  }(cn || (cn = {}));
+  const hn = c`
   /* Existing common styles */
   ha-card {
     display: flex;
@@ -5279,9 +5307,9 @@
     margin-bottom: 10px;
   }
 `;
-  var ln = "M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z",
-    un = "M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z";
-  let dn = class extends ft(ue) {
+  var pn = "M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z",
+    mn = "M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z";
+  let gn = class extends yt(ue) {
     constructor() {
       super(...arguments), this.isLoading = !0, this.isSaving = !1, this._updateScheduled = !1, this.debouncedSave = (() => {
         let e = null;
@@ -5312,7 +5340,7 @@
       if (this.hass) {
         this.isLoading = !0, this._scheduleUpdate();
         try {
-          this.config = await ct(this.hass), this.data = (e = this.config, t = ["calctime", "autocalcenabled", "autoupdateenabled", "autoupdateschedule", "autoupdatefirsttime", "autoupdateinterval", "autoclearenabled", "cleardatatime", "continuousupdates", "sensor_debounce"], e ? Object.entries(e).filter(([e]) => t.includes(e)).reduce((e, [t, a]) => Object.assign(e, {
+          this.config = await mt(this.hass), this.data = (e = this.config, t = ["calctime", "calctriggers", "autocalcenabled", "autoupdateenabled", "autoupdateschedule", "autoupdatefirsttime", "autoupdateinterval", "autoclearenabled", "cleardatatime", "continuousupdates", "sensor_debounce"], e ? Object.entries(e).filter(([e]) => t.includes(e)).reduce((e, [t, a]) => Object.assign(e, {
             [t]: a
           }), {}) : {});
         } catch (e) {
@@ -5331,10 +5359,10 @@
     render() {
       var e, t;
       if (!this.hass || !this.config || !this.data) return Y`<div class="loading-indicator">
-        ${Xi("common.loading-messages.configuration", null !== (t = null === (e = this.hass) || void 0 === e ? void 0 : e.language) && void 0 !== t ? t : "en")}
+        ${en("common.loading-messages.configuration", null !== (t = null === (e = this.hass) || void 0 === e ? void 0 : e.language) && void 0 !== t ? t : "en")}
       </div>`;
       if (this.isLoading) return Y`<div class="loading-indicator">
-        ${Xi("common.loading-messages.general", this.hass.language)}
+        ${en("common.loading-messages.general", this.hass.language)}
       </div>`;
       {
         let e = Y` <div class="card-content">
@@ -5346,21 +5374,21 @@
           >
             >
             <title>
-              ${Xi("panels.zones.actions.information", this.hass.language)}
+              ${en("panels.zones.actions.information", this.hass.language)}
             </title>
-            <path fill="#404040" d="${un}" />
+            <path fill="#404040" d="${mn}" />
           </svg>
         </div>
 
         <div class="card-content">
           <label class="hidden" id="autocalcdescription">
-            ${Xi("panels.general.cards.automatic-duration-calculation.description", this.hass.language)}
+            ${en("panels.general.cards.automatic-duration-calculation.description", this.hass.language)}
           </label>
         </div>
         <div class="card-content">
           <div class="zoneline">
             <label for="autocalcenabled"
-              >${Xi("panels.general.cards.automatic-duration-calculation.labels.auto-calc-enabled", this.hass.language)}:</label
+              >${en("panels.general.cards.automatic-duration-calculation.labels.auto-calc-enabled", this.hass.language)}:</label
             >
             <div>
               <input
@@ -5371,11 +5399,11 @@
                 ?checked="${this.config.autocalcenabled}"
                 @change="${e => {
           this.handleConfigChange({
-            autocalcenabled: an(e.target.value)
+            autocalcenabled: rn(e.target.value)
           });
         }}"
               /><label for="autocalcon"
-                >${Xi("common.labels.yes", this.hass.language)}</label
+                >${en("common.labels.yes", this.hass.language)}</label
               >
               <input
                 type="radio"
@@ -5385,20 +5413,21 @@
                 ?checked="${!this.config.autocalcenabled}"
                 @change="${e => {
           this.handleConfigChange({
-            autocalcenabled: an(e.target.value)
+            autocalcenabled: rn(e.target.value)
           });
         }}"
               /><label for="autocalcoff"
-                >${Xi("common.labels.no", this.hass.language)}</label
+                >${en("common.labels.no", this.hass.language)}</label
               >
             </div>
           </div>
         </div>`;
         this.data.autocalcenabled && (e = Y`${e}
+          ${this.renderTriggersUI()}
           <div class="card-content">
             <div class="zoneline">
               <label for="calctime"
-                >${Xi("panels.general.cards.automatic-duration-calculation.labels.calc-time", this.hass.language)}:</label
+                >${en("panels.general.cards.automatic-duration-calculation.labels.legacy-calc-time", this.hass.language)}:</label
               >
               <input
                 id="calctime"
@@ -5411,9 +5440,12 @@
           });
         }}
               />
+              <small class="legacy-note">
+                ${en("panels.general.cards.automatic-duration-calculation.labels.legacy-note", this.hass.language)}
+              </small>
             </div>
           </div>`), e = Y`<ha-card
-        header="${Xi("panels.general.cards.automatic-duration-calculation.header", this.hass.language)}"
+        header="${en("panels.general.cards.automatic-duration-calculation.header", this.hass.language)}"
       >
         ${e}</ha-card
       >`;
@@ -5426,20 +5458,20 @@
           >
             >
             <title>
-              ${Xi("panels.zones.actions.information", this.hass.language)}
+              ${en("panels.zones.actions.information", this.hass.language)}
             </title>
-            <path fill="#404040" d="${un}" />
+            <path fill="#404040" d="${mn}" />
           </svg>
         </div>
         <div class="card-content">
           <label class="hidden" id="autoupdatedescription">
-            ${Xi("panels.general.cards.automatic-update.description", this.hass.language)}
+            ${en("panels.general.cards.automatic-update.description", this.hass.language)}
           </label>
         </div>
         <div class="card-content">
           <div class="zoneline">
             <label for="autoupdateenabled"
-              >${Xi("panels.general.cards.automatic-update.labels.auto-update-enabled", this.hass.language)}:</label
+              >${en("panels.general.cards.automatic-update.labels.auto-update-enabled", this.hass.language)}:</label
             >
             <div>
               <input
@@ -5450,11 +5482,11 @@
                 ?checked="${this.config.autoupdateenabled}"
                 @change="${e => {
           this.saveData({
-            autoupdateenabled: an(e.target.value)
+            autoupdateenabled: rn(e.target.value)
           });
         }}"
               /><label for="autoupdateon"
-                >${Xi("common.labels.yes", this.hass.language)}</label
+                >${en("common.labels.yes", this.hass.language)}</label
               >
               <input
                 type="radio"
@@ -5464,11 +5496,11 @@
                 ?checked="${!this.config.autoupdateenabled}"
                 @change="${e => {
           this.saveData({
-            autoupdateenabled: an(e.target.value)
+            autoupdateenabled: rn(e.target.value)
           });
         }}"
               /><label for="autoupdateoff"
-                >${Xi("common.labels.no", this.hass.language)}</label
+                >${en("common.labels.no", this.hass.language)}</label
               >
             </div>
           </div>
@@ -5477,7 +5509,7 @@
           <div class="card-content">
             <div class="zoneline">
               <label for="autoupdateinterval"
-                >${Xi("panels.general.cards.automatic-update.labels.auto-update-interval", this.hass.language)}:</label
+                >${en("panels.general.cards.automatic-update.labels.auto-update-interval", this.hass.language)}:</label
               >
               <div style="display: flex; gap: 8px; align-items: center;">
                 <input
@@ -5501,22 +5533,22 @@
         }}"
                 >
                   <option
-                    value="${$e}"
-                    ?selected="${this.data.autoupdateschedule === $e}"
+                    value="${Ee}"
+                    ?selected="${this.data.autoupdateschedule === Ee}"
                   >
-                    ${Xi("panels.general.cards.automatic-update.options.minutes", this.hass.language)}
+                    ${en("panels.general.cards.automatic-update.options.minutes", this.hass.language)}
                   </option>
                   <option
-                    value="${Se}"
-                    ?selected="${this.data.autoupdateschedule === Se}"
+                    value="${Me}"
+                    ?selected="${this.data.autoupdateschedule === Me}"
                   >
-                    ${Xi("panels.general.cards.automatic-update.options.hours", this.hass.language)}
+                    ${en("panels.general.cards.automatic-update.options.hours", this.hass.language)}
                   </option>
                   <option
-                    value="${xe}"
-                    ?selected="${this.data.autoupdateschedule === xe}"
+                    value="${ze}"
+                    ?selected="${this.data.autoupdateschedule === ze}"
                   >
-                    ${Xi("panels.general.cards.automatic-update.options.days", this.hass.language)}
+                    ${en("panels.general.cards.automatic-update.options.days", this.hass.language)}
                   </option>
                 </select>
               </div>
@@ -5525,7 +5557,7 @@
           <div class="card-content">
             <div class="zoneline">
               <label for="updatedelay"
-                >${Xi("panels.general.cards.automatic-update.labels.auto-update-delay", this.hass.language)}
+                >${en("panels.general.cards.automatic-update.labels.auto-update-delay", this.hass.language)}
                 (s):</label
               >
               <input
@@ -5540,7 +5572,7 @@
         }}
               />
             </div>
-          </div>`), t = Y`<ha-card header="${Xi("panels.general.cards.automatic-update.header", this.hass.language)}",
+          </div>`), t = Y`<ha-card header="${en("panels.general.cards.automatic-update.header", this.hass.language)}",
       this.hass.language)}">${t}</ha-card>`;
         let a = Y` <div class="card-content">
           <svg
@@ -5550,21 +5582,21 @@
             @click="${() => this.toggleInformation("autocleardescription")}"
           >
             <title>
-              ${Xi("panels.zones.actions.information", this.hass.language)}
+              ${en("panels.zones.actions.information", this.hass.language)}
             </title>
 
-            <path fill="#404040" d="${un}" />
+            <path fill="#404040" d="${mn}" />
           </svg>
         </div>
         <div class="card-content">
           <label class="hidden" id="autocleardescription">
-            ${Xi("panels.general.cards.automatic-clear.description", this.hass.language)}
+            ${en("panels.general.cards.automatic-clear.description", this.hass.language)}
           </label>
         </div>
         <div class="card-content">
           <div class="zoneline">
             <label for="autoclearenabled"
-              >${Xi("panels.general.cards.automatic-clear.labels.automatic-clear-enabled", this.hass.language)}:</label
+              >${en("panels.general.cards.automatic-clear.labels.automatic-clear-enabled", this.hass.language)}:</label
             >
             <div>
               <input
@@ -5575,11 +5607,11 @@
                 ?checked="${this.config.autoclearenabled}"
                 @change="${e => {
           this.handleConfigChange({
-            autoclearenabled: an(e.target.value)
+            autoclearenabled: rn(e.target.value)
           });
         }}"
               /><label for="autoclearon"
-                >${Xi("common.labels.yes", this.hass.language)}</label
+                >${en("common.labels.yes", this.hass.language)}</label
               >
               <input
                 type="radio"
@@ -5589,11 +5621,11 @@
                 ?checked="${!this.config.autoclearenabled}"
                 @change="${e => {
           this.handleConfigChange({
-            autoclearenabled: an(e.target.value)
+            autoclearenabled: rn(e.target.value)
           });
         }}"
               /><label for="autoclearoff"
-                >${Xi("common.labels.no", this.hass.language)}</label
+                >${en("common.labels.no", this.hass.language)}</label
               >
             </div>
           </div>
@@ -5602,7 +5634,7 @@
           <div class="card-content">
             <div class="zoneline">
               <label for="calctime"
-                >${Xi("panels.general.cards.automatic-clear.labels.automatic-clear-time", this.hass.language)}:</label
+                >${en("panels.general.cards.automatic-clear.labels.automatic-clear-time", this.hass.language)}:</label
               >
               <input
                 id="cleardatatime"
@@ -5617,7 +5649,7 @@
               />
             </div>
           </div>`), a = Y`<ha-card
-        header="${Xi("panels.general.cards.automatic-clear.header", this.hass.language)}"
+        header="${en("panels.general.cards.automatic-clear.header", this.hass.language)}"
         >${a}</ha-card
       >`;
         let i = Y`<div class="card-content">
@@ -5629,20 +5661,20 @@
           >
             >
             <title>
-              ${Xi("panels.zones.actions.information", this.hass.language)}
+              ${en("panels.zones.actions.information", this.hass.language)}
             </title>
-            <path fill="#404040" d="${un}" />
+            <path fill="#404040" d="${mn}" />
           </svg>
         </div>
         <div class="card-content">
           <label class="hidden" id="continuousupdatesdescription">
-            ${Xi("panels.general.cards.continuousupdates.description", this.hass.language)}
+            ${en("panels.general.cards.continuousupdates.description", this.hass.language)}
           </label>
         </div>
         <div class="card-content">
           <div class="zoneline">
             <label for="continuousupdates"
-              >${Xi("panels.general.cards.continuousupdates.labels.continuousupdates", this.hass.language)}:</label
+              >${en("panels.general.cards.continuousupdates.labels.continuousupdates", this.hass.language)}:</label
             >
             <div>
               <input
@@ -5653,11 +5685,11 @@
                 ?checked="${this.config.continuousupdates}"
                 @change="${e => {
           this.handleConfigChange({
-            continuousupdates: an(e.target.value)
+            continuousupdates: rn(e.target.value)
           });
         }}"
               /><label for="continuousupdateson"
-                >${Xi("common.labels.yes", this.hass.language)}</label
+                >${en("common.labels.yes", this.hass.language)}</label
               >
               <input
                 type="radio"
@@ -5667,11 +5699,11 @@
                 ?checked="${!this.config.continuousupdates}"
                 @change="${e => {
           this.handleConfigChange({
-            continuousupdates: an(e.target.value)
+            continuousupdates: rn(e.target.value)
           });
         }}"
               /><label for="continuousupdatesoff"
-                >${Xi("common.labels.no", this.hass.language)}</label
+                >${en("common.labels.no", this.hass.language)}</label
               >
             </div>
           </div>
@@ -5680,7 +5712,7 @@
           <div class="card-content">
             <div class="zoneline">
               <label for="sensor_debounce"
-                >${Xi("panels.general.cards.continuousupdates.labels.sensor_debounce", this.hass.language)}
+                >${en("panels.general.cards.continuousupdates.labels.sensor_debounce", this.hass.language)}
                 (ms):</label
               >
               <input
@@ -5696,14 +5728,14 @@
               />
             </div>
           </div>`), i = Y`<ha-card
-        header="${Xi("panels.general.cards.continuousupdates.header", this.hass.language)}"
+        header="${en("panels.general.cards.continuousupdates.header", this.hass.language)}"
         >${i}</ha-card
       > `;
         return Y`<ha-card
-          header="${Xi("panels.general.title", this.hass.language)}"
+          header="${en("panels.general.title", this.hass.language)}"
         >
           <div class="card-content">
-            ${Xi("panels.general.description", this.hass.language)}
+            ${en("panels.general.description", this.hass.language)}
           </div> </ha-card
         >${t}${e}${a}${i}`;
       }
@@ -5714,7 +5746,7 @@
         try {
           this.data = Object.assign(Object.assign({}, this.data), e), this._scheduleUpdate(), await (t = this.hass, a = this.data, t.callApi("POST", ke + "/config", a));
         } catch (e) {
-          console.error("Error saving config:", e), rn(e, this.shadowRoot.querySelector("ha-card")), await this._fetchData();
+          console.error("Error saving config:", e), un(e, this.shadowRoot.querySelector("ha-card")), await this._fetchData();
         } finally {
           this.isSaving = !1, this._scheduleUpdate();
         }
@@ -5723,6 +5755,148 @@
     }
     handleConfigChange(e) {
       this.debouncedSave(e);
+    }
+    addTrigger() {
+      if (!this.data) return;
+      const e = [...(this.data.calctriggers || [])],
+        t = new dn(`trigger_${Date.now()}`, $e);
+      e.push(t), this.handleConfigChange({
+        calctriggers: e
+      });
+    }
+    removeTrigger(e) {
+      if (!this.data) return;
+      const t = [...(this.data.calctriggers || [])];
+      t.splice(e, 1), this.handleConfigChange({
+        calctriggers: t
+      });
+    }
+    updateTrigger(e, t) {
+      if (!this.data) return;
+      const a = [...(this.data.calctriggers || [])];
+      a[e] = Object.assign(Object.assign({}, a[e]), t), this.handleConfigChange({
+        calctriggers: a
+      });
+    }
+    renderTriggersUI() {
+      if (!this.hass || !this.data) return Y``;
+      const e = this.data.calctriggers || [];
+      return Y`
+      <div class="card-content">
+        <h3>${en("panels.general.cards.automatic-duration-calculation.labels.calculation-triggers", this.hass.language)}</h3>
+      </div>
+      ${e.map((e, t) => this.renderSingleTrigger(e, t))}
+      <div class="card-content">
+        <div class="zoneline">
+          <button 
+            @click=${this.addTrigger}
+            class="add-trigger-button"
+          >
+            ${en("panels.general.cards.automatic-duration-calculation.labels.add-trigger", this.hass.language)}
+          </button>
+        </div>
+      </div>
+    `;
+    }
+    renderSingleTrigger(e, t) {
+      return this.hass ? Y`
+      <div class="card-content trigger-item">
+        <div class="trigger-header">
+          <span>${en("panels.general.cards.automatic-duration-calculation.labels.trigger", this.hass.language)} ${t + 1}</span>
+          <button 
+            @click=${() => this.removeTrigger(t)}
+            class="remove-trigger-button"
+          >
+            ${en("panels.general.cards.automatic-duration-calculation.labels.remove", this.hass.language)}
+          </button>
+        </div>
+        
+        <div class="zoneline">
+          <label for="trigger-type-${t}">
+            ${en("panels.general.cards.automatic-duration-calculation.labels.trigger-type", this.hass.language)}:
+          </label>
+          <select 
+            id="trigger-type-${t}"
+            .value=${e.type}
+            @change=${e => {
+        this.updateTrigger(t, {
+          type: e.target.value
+        });
+      }}
+          >
+            <option value="${$e}" ?selected=${e.type === $e}>
+              ${en("panels.general.cards.automatic-duration-calculation.options.sunrise", this.hass.language)}
+            </option>
+            <option value="${Se}" ?selected=${e.type === Se}>
+              ${en("panels.general.cards.automatic-duration-calculation.options.sunset", this.hass.language)}
+            </option>
+            <option value="${xe}" ?selected=${e.type === xe}>
+              ${en("panels.general.cards.automatic-duration-calculation.options.azimuth", this.hass.language)}
+            </option>
+          </select>
+        </div>
+
+        ${e.type === xe ? Y`
+          <div class="zoneline">
+            <label for="trigger-azimuth-${t}">
+              ${en("panels.general.cards.automatic-duration-calculation.labels.azimuth-value", this.hass.language)}:
+            </label>
+            <input
+              id="trigger-azimuth-${t}"
+              type="number"
+              min="0"
+              max="360"
+              class="shortinput"
+              .value=${e.azimuth_value}
+              @input=${e => {
+        this.updateTrigger(t, {
+          azimuth_value: parseFloat(e.target.value)
+        });
+      }}
+            />
+            <span class="unit">°</span>
+          </div>
+        ` : ""}
+
+        <div class="zoneline">
+          <label for="trigger-offset-before-${t}">
+            ${en("panels.general.cards.automatic-duration-calculation.labels.offset-before", this.hass.language)}:
+          </label>
+          <input
+            id="trigger-offset-before-${t}"
+            type="number"
+            min="0"
+            class="shortinput"
+            .value=${e.offset_before}
+            @input=${e => {
+        this.updateTrigger(t, {
+          offset_before: parseInt(e.target.value)
+        });
+      }}
+          />
+          <span class="unit">${en("panels.general.cards.automatic-duration-calculation.labels.minutes", this.hass.language)}</span>
+        </div>
+
+        <div class="zoneline">
+          <label for="trigger-offset-after-${t}">
+            ${en("panels.general.cards.automatic-duration-calculation.labels.offset-after", this.hass.language)}:
+          </label>
+          <input
+            id="trigger-offset-after-${t}"
+            type="number"
+            min="0"
+            class="shortinput"
+            .value=${e.offset_after}
+            @input=${e => {
+        this.updateTrigger(t, {
+          offset_after: parseInt(e.target.value)
+        });
+      }}
+          />
+          <span class="unit">${en("panels.general.cards.automatic-duration-calculation.labels.minutes", this.hass.language)}</span>
+        </div>
+      </div>
+    ` : Y``;
     }
     disconnectedCallback() {
       super.disconnectedCallback();
@@ -5734,29 +5908,72 @@
     }
     static get styles() {
       return c`
-      ${on}/* View-specific styles only - most common styles are now in globalStyle */
+      ${hn}/* View-specific styles only - most common styles are now in globalStyle */
+      
+      .trigger-item {
+        border: 1px solid var(--divider-color);
+        border-radius: 8px;
+        margin: 8px 0;
+        padding: 16px;
+        background: var(--card-background-color);
+      }
+      
+      .trigger-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        font-weight: bold;
+      }
+      
+      .add-trigger-button, .remove-trigger-button {
+        background: var(--primary-color);
+        color: var(--text-primary-color);
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      
+      .remove-trigger-button {
+        background: var(--error-color);
+      }
+      
+      .add-trigger-button:hover, .remove-trigger-button:hover {
+        opacity: 0.8;
+      }
+      
+      .unit {
+        margin-left: 8px;
+        color: var(--secondary-text-color);
+      }
+      
+      .legacy-note {
+        display: block;
+        color: var(--secondary-text-color);
+        font-style: italic;
+        margin-top: 4px;
+      }
     `;
     }
   };
-  var cn;
-  function hn(e) {
+  function fn(e) {
     return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
   }
-  function pn(e) {
+  function vn(e) {
     throw new Error('Could not dynamically require "' + e + '". Please configure the dynamicRequireTargets or/and ignoreDynamicRequires option of @rollup/plugin-commonjs appropriately for this require call to work.');
   }
-  n([pe()], dn.prototype, "narrow", void 0), n([pe()], dn.prototype, "path", void 0), n([pe()], dn.prototype, "data", void 0), n([pe()], dn.prototype, "config", void 0), n([pe({
+  n([pe()], gn.prototype, "narrow", void 0), n([pe()], gn.prototype, "path", void 0), n([pe()], gn.prototype, "data", void 0), n([pe()], gn.prototype, "config", void 0), n([pe({
     type: Boolean
-  })], dn.prototype, "isLoading", void 0), n([pe({
+  })], gn.prototype, "isLoading", void 0), n([pe({
     type: Boolean
-  })], dn.prototype, "isSaving", void 0), dn = n([ce("smart-irrigation-view-general")], dn), function (e) {
-    e.Disabled = "disabled", e.Manual = "manual", e.Automatic = "automatic";
-  }(cn || (cn = {}));
-  var mn,
-    gn = {
+  })], gn.prototype, "isSaving", void 0), gn = n([ce("smart-irrigation-view-general")], gn);
+  var bn,
+    yn = {
       exports: {}
     };
-  var fn = (mn || (mn = 1, function (e) {
+  var _n = (bn || (bn = 1, function (e) {
       e.exports = function () {
         var t, a;
         function i() {
@@ -5887,15 +6104,15 @@
         }
         var E,
           M = {};
-        function A(e, t) {
+        function z(e, t) {
           null != i.deprecationHandler && i.deprecationHandler(e, t), M[e] || (S(t), M[e] = !0);
         }
-        function z(e) {
+        function A(e) {
           return "undefined" != typeof Function && e instanceof Function || "[object Function]" === Object.prototype.toString.call(e);
         }
         function T(e) {
           var t, a;
-          for (a in e) o(e, a) && (z(t = e[a]) ? this[a] = t : this["_" + a] = t);
+          for (a in e) o(e, a) && (A(t = e[a]) ? this[a] = t : this["_" + a] = t);
           this._config = e, this._dayOfMonthOrdinalParseLenient = new RegExp((this._dayOfMonthOrdinalParse.source || this._ordinalParse.source) + "|" + /\d{1,2}/.source);
         }
         function D(e, t) {
@@ -5924,7 +6141,7 @@
         };
         function C(e, t, a) {
           var i = this._calendar[e] || this._calendar.sameElse;
-          return z(i) ? i.call(t, a) : i;
+          return A(i) ? i.call(t, a) : i;
         }
         function P(e, t, a) {
           var i = "" + Math.abs(e),
@@ -5945,23 +6162,23 @@
             return this.localeData().ordinal(n.apply(this, arguments), e);
           });
         }
-        function R(e) {
+        function U(e) {
           return e.match(/\[[\s\S]/) ? e.replace(/^\[|\]$/g, "") : e.replace(/\\/g, "");
         }
-        function U(e) {
+        function R(e) {
           var t,
             a,
             i = e.match(N);
-          for (t = 0, a = i.length; t < a; t++) I[i[t]] ? i[t] = I[i[t]] : i[t] = R(i[t]);
+          for (t = 0, a = i.length; t < a; t++) I[i[t]] ? i[t] = I[i[t]] : i[t] = U(i[t]);
           return function (t) {
             var n,
               s = "";
-            for (n = 0; n < a; n++) s += z(i[n]) ? i[n].call(t, e) : i[n];
+            for (n = 0; n < a; n++) s += A(i[n]) ? i[n].call(t, e) : i[n];
             return s;
           };
         }
         function Y(e, t) {
-          return e.isValid() ? (t = F(t, e.localeData()), j[t] = j[t] || U(t), j[t](e)) : e.localeData().invalidDate();
+          return e.isValid() ? (t = F(t, e.localeData()), j[t] = j[t] || R(t), j[t](e)) : e.localeData().invalidDate();
         }
         function F(e, t) {
           var a = 5;
@@ -6015,11 +6232,11 @@
         };
         function Q(e, t, a, i) {
           var n = this._relativeTime[a];
-          return z(n) ? n(e, t, a, i) : n.replace(/%d/i, e);
+          return A(n) ? n(e, t, a, i) : n.replace(/%d/i, e);
         }
         function ee(e, t) {
           var a = this._relativeTime[e > 0 ? "future" : "past"];
-          return z(a) ? a(t) : a.replace(/%s/i, t);
+          return A(a) ? a(t) : a.replace(/%s/i, t);
         }
         var te = {
           D: "date",
@@ -6131,19 +6348,19 @@
           Se = /^[1-9]\d?/,
           xe = /^([1-9]\d|\d)/;
         function Ee(e, t, a) {
-          re[e] = z(t) ? t : function (e, i) {
+          re[e] = A(t) ? t : function (e, i) {
             return e && a ? a : t;
           };
         }
         function Me(e, t) {
-          return o(re, e) ? re[e](t._strict, t._locale) : new RegExp(Ae(e));
+          return o(re, e) ? re[e](t._strict, t._locale) : new RegExp(ze(e));
         }
-        function Ae(e) {
-          return ze(e.replace("\\", "").replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function (e, t, a, i, n) {
+        function ze(e) {
+          return Ae(e.replace("\\", "").replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function (e, t, a, i, n) {
             return t || a || i || n;
           }));
         }
-        function ze(e) {
+        function Ae(e) {
           return e.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
         }
         function Te(e) {
@@ -6179,8 +6396,8 @@
           je = 1,
           Ie = 2,
           Be = 3,
-          Re = 4,
-          Ue = 5,
+          Ue = 4,
+          Re = 5,
           Ye = 6,
           Fe = 7,
           Ve = 8;
@@ -6259,7 +6476,7 @@
           }
         }
         function Qe(e) {
-          return z(this[e = ae(e)]) ? this[e]() : this;
+          return A(this[e = ae(e)]) ? this[e]() : this;
         }
         function et(e, t) {
           if ("object" == typeof e) {
@@ -6267,7 +6484,7 @@
               i = se(e = ie(e)),
               n = i.length;
             for (a = 0; a < n; a++) this[i[a].unit](e[i[a].unit]);
-          } else if (z(this[e = ae(e)])) return this[e](t);
+          } else if (A(this[e = ae(e)])) return this[e](t);
           return this;
         }
         function tt(e, t) {
@@ -6356,7 +6573,7 @@
             s = [],
             r = [],
             o = [];
-          for (t = 0; t < 12; t++) a = m([2e3, t]), i = ze(this.monthsShort(a, "")), n = ze(this.months(a, "")), s.push(i), r.push(n), o.push(n), o.push(i);
+          for (t = 0; t < 12; t++) a = m([2e3, t]), i = Ae(this.monthsShort(a, "")), n = Ae(this.months(a, "")), s.push(i), r.push(n), o.push(n), o.push(i);
           s.sort(e), r.sort(e), o.sort(e), this._monthsRegex = new RegExp("^(" + o.join("|") + ")", "i"), this._monthsShortRegex = this._monthsRegex, this._monthsStrictRegex = new RegExp("^(" + r.join("|") + ")", "i"), this._monthsShortStrictRegex = new RegExp("^(" + s.join("|") + ")", "i");
         }
         function bt(e, t, a, i, n, s, r) {
@@ -6411,11 +6628,11 @@
         function Mt() {
           return this._week.doy;
         }
-        function At(e) {
+        function zt(e) {
           var t = this.localeData().week(this);
           return null == e ? t : this.add(7 * (e - t), "d");
         }
-        function zt(e) {
+        function At(e) {
           var t = kt(this, 1, 4).week;
           return null == e ? t : this.add(7 * (e - t), "d");
         }
@@ -6459,10 +6676,10 @@
         function Bt(e) {
           return !0 === e ? Ot(this._weekdaysShort, this._week.dow) : e ? this._weekdaysShort[e.day()] : this._weekdaysShort;
         }
-        function Rt(e) {
+        function Ut(e) {
           return !0 === e ? Ot(this._weekdaysMin, this._week.dow) : e ? this._weekdaysMin[e.day()] : this._weekdaysMin;
         }
-        function Ut(e, t, a) {
+        function Rt(e, t, a) {
           var i,
             n,
             s,
@@ -6472,7 +6689,7 @@
         }
         function Yt(e, t, a) {
           var i, n, s;
-          if (this._weekdaysParseExact) return Ut.call(this, e, t, a);
+          if (this._weekdaysParseExact) return Rt.call(this, e, t, a);
           for (this._weekdaysParse || (this._weekdaysParse = [], this._minWeekdaysParse = [], this._shortWeekdaysParse = [], this._fullWeekdaysParse = []), i = 0; i < 7; i++) {
             if (n = m([2e3, 1]).day(i), a && !this._fullWeekdaysParse[i] && (this._fullWeekdaysParse[i] = new RegExp("^" + this.weekdays(n, "").replace(".", "\\.?") + "$", "i"), this._shortWeekdaysParse[i] = new RegExp("^" + this.weekdaysShort(n, "").replace(".", "\\.?") + "$", "i"), this._minWeekdaysParse[i] = new RegExp("^" + this.weekdaysMin(n, "").replace(".", "\\.?") + "$", "i")), this._weekdaysParse[i] || (s = "^" + this.weekdays(n, "") + "|^" + this.weekdaysShort(n, "") + "|^" + this.weekdaysMin(n, ""), this._weekdaysParse[i] = new RegExp(s.replace(".", ""), "i")), a && "dddd" === t && this._fullWeekdaysParse[i].test(e)) return i;
             if (a && "ddd" === t && this._shortWeekdaysParse[i].test(e)) return i;
@@ -6520,7 +6737,7 @@
             o = [],
             l = [],
             u = [];
-          for (t = 0; t < 7; t++) a = m([2e3, 1]).day(t), i = ze(this.weekdaysMin(a, "")), n = ze(this.weekdaysShort(a, "")), s = ze(this.weekdays(a, "")), r.push(i), o.push(n), l.push(s), u.push(i), u.push(n), u.push(s);
+          for (t = 0; t < 7; t++) a = m([2e3, 1]).day(t), i = Ae(this.weekdaysMin(a, "")), n = Ae(this.weekdaysShort(a, "")), s = Ae(this.weekdays(a, "")), r.push(i), o.push(n), l.push(s), u.push(i), u.push(n), u.push(s);
           r.sort(e), o.sort(e), l.sort(e), u.sort(e), this._weekdaysRegex = new RegExp("^(" + u.join("|") + ")", "i"), this._weekdaysShortRegex = this._weekdaysRegex, this._weekdaysMinRegex = this._weekdaysRegex, this._weekdaysStrictRegex = new RegExp("^(" + l.join("|") + ")", "i"), this._weekdaysShortStrictRegex = new RegExp("^(" + o.join("|") + ")", "i"), this._weekdaysMinStrictRegex = new RegExp("^(" + r.join("|") + ")", "i");
         }
         function Xt() {
@@ -6557,18 +6774,18 @@
           t[Be] = De(e), f(a).bigHour = !0;
         }), He("hmm", function (e, t, a) {
           var i = e.length - 2;
-          t[Be] = De(e.substr(0, i)), t[Re] = De(e.substr(i)), f(a).bigHour = !0;
+          t[Be] = De(e.substr(0, i)), t[Ue] = De(e.substr(i)), f(a).bigHour = !0;
         }), He("hmmss", function (e, t, a) {
           var i = e.length - 4,
             n = e.length - 2;
-          t[Be] = De(e.substr(0, i)), t[Re] = De(e.substr(i, 2)), t[Ue] = De(e.substr(n)), f(a).bigHour = !0;
+          t[Be] = De(e.substr(0, i)), t[Ue] = De(e.substr(i, 2)), t[Re] = De(e.substr(n)), f(a).bigHour = !0;
         }), He("Hmm", function (e, t, a) {
           var i = e.length - 2;
-          t[Be] = De(e.substr(0, i)), t[Re] = De(e.substr(i));
+          t[Be] = De(e.substr(0, i)), t[Ue] = De(e.substr(i));
         }), He("Hmmss", function (e, t, a) {
           var i = e.length - 4,
             n = e.length - 2;
-          t[Be] = De(e.substr(0, i)), t[Re] = De(e.substr(i, 2)), t[Ue] = De(e.substr(n));
+          t[Be] = De(e.substr(0, i)), t[Ue] = De(e.substr(i, 2)), t[Re] = De(e.substr(n));
         });
         var aa = /[ap]\.?m?\.?/i,
           ia = Ke("Hours", !0);
@@ -6619,7 +6836,7 @@
         function pa(t) {
           var a = null;
           if (void 0 === oa[t] && e && e.exports && ha(t)) try {
-            a = sa._abbr, pn("./locale/" + t), ma(a);
+            a = sa._abbr, vn("./locale/" + t), ma(a);
           } catch (e) {
             oa[t] = null;
           }
@@ -6633,7 +6850,7 @@
           if (null !== t) {
             var a,
               i = ra;
-            if (t.abbr = e, null != oa[e]) A("defineLocaleOverride", "use moment.updateLocale(localeName, config) to change an existing locale. moment.defineLocale(localeName, config) should only be used for creating a new locale See http://momentjs.com/guides/#/warnings/define-locale/ for more info."), i = oa[e]._config;else if (null != t.parentLocale) if (null != oa[t.parentLocale]) i = oa[t.parentLocale]._config;else {
+            if (t.abbr = e, null != oa[e]) z("defineLocaleOverride", "use moment.updateLocale(localeName, config) to change an existing locale. moment.defineLocale(localeName, config) should only be used for creating a new locale See http://momentjs.com/guides/#/warnings/define-locale/ for more info."), i = oa[e]._config;else if (null != t.parentLocale) if (null != oa[t.parentLocale]) i = oa[t.parentLocale]._config;else {
               if (null == (a = pa(t.parentLocale))) return la[t.parentLocale] || (la[t.parentLocale] = []), la[t.parentLocale].push({
                 name: e,
                 config: t
@@ -6670,7 +6887,7 @@
         function ya(e) {
           var t,
             a = e._a;
-          return a && -2 === f(e).overflow && (t = a[je] < 0 || a[je] > 11 ? je : a[Ie] < 1 || a[Ie] > at(a[Le], a[je]) ? Ie : a[Be] < 0 || a[Be] > 24 || 24 === a[Be] && (0 !== a[Re] || 0 !== a[Ue] || 0 !== a[Ye]) ? Be : a[Re] < 0 || a[Re] > 59 ? Re : a[Ue] < 0 || a[Ue] > 59 ? Ue : a[Ye] < 0 || a[Ye] > 999 ? Ye : -1, f(e)._overflowDayOfYear && (t < Le || t > Ie) && (t = Ie), f(e)._overflowWeeks && -1 === t && (t = Fe), f(e)._overflowWeekday && -1 === t && (t = Ve), f(e).overflow = t), e;
+          return a && -2 === f(e).overflow && (t = a[je] < 0 || a[je] > 11 ? je : a[Ie] < 1 || a[Ie] > at(a[Le], a[je]) ? Ie : a[Be] < 0 || a[Be] > 24 || 24 === a[Be] && (0 !== a[Ue] || 0 !== a[Re] || 0 !== a[Ye]) ? Be : a[Ue] < 0 || a[Ue] > 59 ? Ue : a[Re] < 0 || a[Re] > 59 ? Re : a[Ye] < 0 || a[Ye] > 999 ? Ye : -1, f(e)._overflowDayOfYear && (t < Le || t > Ie) && (t = Ie), f(e)._overflowWeeks && -1 === t && (t = Fe), f(e)._overflowWeekday && -1 === t && (t = Ve), f(e).overflow = t), e;
         }
         var _a = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([+-]\d\d(?::?\d\d)?|\s*Z)?)?$/,
           wa = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d|))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([+-]\d\d(?::?\d\d)?|\s*Z)?)?$/,
@@ -6691,7 +6908,7 @@
             PDT: -420,
             PST: -480
           };
-        function Aa(e) {
+        function za(e) {
           var t,
             a,
             i,
@@ -6723,7 +6940,7 @@
             e._f = n + (s || "") + (r || ""), Ba(e);
           } else e._isValid = !1;
         }
-        function za(e, t, a, i, n, s) {
+        function Aa(e, t, a, i, n, s) {
           var r = [Ta(e), nt.indexOf(t), parseInt(a, 10), parseInt(i, 10), parseInt(n, 10)];
           return s && r.push(parseInt(s, 10)), r;
         }
@@ -6748,13 +6965,13 @@
           var t,
             a = Ea.exec(Da(e._i));
           if (a) {
-            if (t = za(a[4], a[3], a[2], a[5], a[6], a[7]), !Oa(a[1], t, e)) return;
+            if (t = Aa(a[4], a[3], a[2], a[5], a[6], a[7]), !Oa(a[1], t, e)) return;
             e._a = t, e._tzm = Ha(a[8], a[9], a[10]), e._d = yt.apply(null, e._a), e._d.setUTCMinutes(e._d.getUTCMinutes() - e._tzm), f(e).rfc2822 = !0;
           } else e._isValid = !1;
         }
         function Pa(e) {
           var t = xa.exec(e._i);
-          null === t ? (Aa(e), !1 === e._isValid && (delete e._isValid, Ca(e), !1 === e._isValid && (delete e._isValid, e._strict ? e._isValid = !1 : i.createFromInputFallback(e)))) : e._d = new Date(+t[1]);
+          null === t ? (za(e), !1 === e._isValid && (delete e._isValid, Ca(e), !1 === e._isValid && (delete e._isValid, e._strict ? e._isValid = !1 : i.createFromInputFallback(e)))) : e._d = new Date(+t[1]);
         }
         function Na(e, t, a) {
           return null != e ? e : null != t ? t : a;
@@ -6773,7 +6990,7 @@
           if (!e._d) {
             for (i = La(e), e._w && null == e._a[Ie] && null == e._a[je] && Ia(e), null != e._dayOfYear && (s = Na(e._a[Le], i[Le]), (e._dayOfYear > Ge(s) || 0 === e._dayOfYear) && (f(e)._overflowDayOfYear = !0), a = yt(s, 0, e._dayOfYear), e._a[je] = a.getUTCMonth(), e._a[Ie] = a.getUTCDate()), t = 0; t < 3 && null == e._a[t]; ++t) e._a[t] = r[t] = i[t];
             for (; t < 7; t++) e._a[t] = r[t] = null == e._a[t] ? 2 === t ? 1 : 0 : e._a[t];
-            24 === e._a[Be] && 0 === e._a[Re] && 0 === e._a[Ue] && 0 === e._a[Ye] && (e._nextDay = !0, e._a[Be] = 0), e._d = (e._useUTC ? yt : bt).apply(null, r), n = e._useUTC ? e._d.getUTCDay() : e._d.getDay(), null != e._tzm && e._d.setUTCMinutes(e._d.getUTCMinutes() - e._tzm), e._nextDay && (e._a[Be] = 24), e._w && void 0 !== e._w.d && e._w.d !== n && (f(e).weekdayMismatch = !0);
+            24 === e._a[Be] && 0 === e._a[Ue] && 0 === e._a[Re] && 0 === e._a[Ye] && (e._nextDay = !0, e._a[Be] = 0), e._d = (e._useUTC ? yt : bt).apply(null, r), n = e._useUTC ? e._d.getUTCDay() : e._d.getDay(), null != e._tzm && e._d.setUTCMinutes(e._d.getUTCMinutes() - e._tzm), e._nextDay && (e._a[Be] = 24), e._w && void 0 !== e._w.d && e._w.d !== n && (f(e).weekdayMismatch = !0);
           }
         }
         function Ia(e) {
@@ -6795,15 +7012,15 @@
                 d = u.length,
                 c = 0;
               for (l = (n = F(e._f, e._locale).match(N) || []).length, t = 0; t < l; t++) s = n[t], (a = (u.match(Me(s, e)) || [])[0]) && ((r = u.substr(0, u.indexOf(a))).length > 0 && f(e).unusedInput.push(r), u = u.slice(u.indexOf(a) + a.length), c += a.length), I[s] ? (a ? f(e).empty = !1 : f(e).unusedTokens.push(s), Pe(s, a, e)) : e._strict && !a && f(e).unusedTokens.push(s);
-              f(e).charsLeftOver = d - c, u.length > 0 && f(e).unusedInput.push(u), e._a[Be] <= 12 && !0 === f(e).bigHour && e._a[Be] > 0 && (f(e).bigHour = void 0), f(e).parsedDateParts = e._a.slice(0), f(e).meridiem = e._meridiem, e._a[Be] = Ra(e._locale, e._a[Be], e._meridiem), null !== (o = f(e).era) && (e._a[Le] = e._locale.erasConvertYear(o, e._a[Le])), ja(e), ya(e);
+              f(e).charsLeftOver = d - c, u.length > 0 && f(e).unusedInput.push(u), e._a[Be] <= 12 && !0 === f(e).bigHour && e._a[Be] > 0 && (f(e).bigHour = void 0), f(e).parsedDateParts = e._a.slice(0), f(e).meridiem = e._meridiem, e._a[Be] = Ua(e._locale, e._a[Be], e._meridiem), null !== (o = f(e).era) && (e._a[Le] = e._locale.erasConvertYear(o, e._a[Le])), ja(e), ya(e);
             } else Ca(e);
-          } else Aa(e);
+          } else za(e);
         }
-        function Ra(e, t, a) {
+        function Ua(e, t, a) {
           var i;
           return null == a ? t : null != e.meridiemHour ? e.meridiemHour(t, a) : null != e.isPM ? ((i = e.isPM(a)) && t < 12 && (t += 12), i || 12 !== t || (t = 0), t) : t;
         }
-        function Ua(e) {
+        function Ra(e) {
           var t,
             a,
             i,
@@ -6834,7 +7051,7 @@
             a = e._f;
           return e._locale = e._locale || va(e._l), null === t || void 0 === a && "" === t ? b({
             nullInput: !0
-          }) : ("string" == typeof t && (e._i = t = e._locale.preparse(t)), $(t) ? new k(ya(t)) : (c(t) ? e._d = t : s(a) ? Ua(e) : a ? Ba(e) : Ga(e), v(e) || (e._d = null), e));
+          }) : ("string" == typeof t && (e._i = t = e._locale.preparse(t)), $(t) ? new k(ya(t)) : (c(t) ? e._d = t : s(a) ? Ra(e) : a ? Ba(e) : Ga(e), v(e) || (e._d = null), e));
         }
         function Ga(e) {
           var t = e._i;
@@ -7011,30 +7228,30 @@
             y: 0,
             d: De(r[Ie]) * a,
             h: De(r[Be]) * a,
-            m: De(r[Re]) * a,
-            s: De(r[Ue]) * a,
+            m: De(r[Ue]) * a,
+            s: De(r[Re]) * a,
             ms: De(oi(1e3 * r[Ye])) * a
           }) : (r = Ei.exec(e)) ? (a = "-" === r[1] ? -1 : 1, s = {
-            y: Ai(r[2], a),
-            M: Ai(r[3], a),
-            w: Ai(r[4], a),
-            d: Ai(r[5], a),
-            h: Ai(r[6], a),
-            m: Ai(r[7], a),
-            s: Ai(r[8], a)
+            y: zi(r[2], a),
+            M: zi(r[3], a),
+            w: zi(r[4], a),
+            d: zi(r[5], a),
+            h: zi(r[6], a),
+            m: zi(r[7], a),
+            s: zi(r[8], a)
           }) : null == s ? s = {} : "object" == typeof s && ("from" in s || "to" in s) && (n = Ti(Za(s.from), Za(s.to)), (s = {}).ms = n.milliseconds, s.M = n.months), i = new si(s), ri(e) && o(e, "_locale") && (i._locale = e._locale), ri(e) && o(e, "_isValid") && (i._isValid = e._isValid), i;
         }
-        function Ai(e, t) {
+        function zi(e, t) {
           var a = e && parseFloat(e.replace(",", "."));
           return (isNaN(a) ? 0 : a) * t;
         }
-        function zi(e, t) {
+        function Ai(e, t) {
           var a = {};
           return a.months = t.month() - e.month() + 12 * (t.year() - e.year()), e.clone().add(a.months, "M").isAfter(t) && --a.months, a.milliseconds = +t - +e.clone().add(a.months, "M"), a;
         }
         function Ti(e, t) {
           var a;
-          return e.isValid() && t.isValid() ? (t = hi(t, e), e.isBefore(t) ? a = zi(e, t) : ((a = zi(t, e)).milliseconds = -a.milliseconds, a.months = -a.months), a) : {
+          return e.isValid() && t.isValid() ? (t = hi(t, e), e.isBefore(t) ? a = Ai(e, t) : ((a = Ai(t, e)).milliseconds = -a.milliseconds, a.months = -a.months), a) : {
             milliseconds: 0,
             months: 0
           };
@@ -7042,7 +7259,7 @@
         function Di(e, t) {
           return function (a, i) {
             var n;
-            return null === i || isNaN(+i) || (A(t, "moment()." + t + "(period, number) is deprecated. Please use moment()." + t + "(number, period). See http://momentjs.com/guides/#/warnings/add-inverted-param/ for more info."), n = a, a = i, i = n), Oi(this, Mi(a, i), e), this;
+            return null === i || isNaN(+i) || (z(t, "moment()." + t + "(period, number) is deprecated. Please use moment()." + t + "(number, period). See http://momentjs.com/guides/#/warnings/add-inverted-param/ for more info."), n = a, a = i, i = n), Oi(this, Mi(a, i), e), this;
           };
         }
         function Oi(e, t, a, n) {
@@ -7090,15 +7307,15 @@
           var a = e.diff(t, "days", !0);
           return a < -6 ? "sameElse" : a < -1 ? "lastWeek" : a < 0 ? "lastDay" : a < 1 ? "sameDay" : a < 2 ? "nextDay" : a < 7 ? "nextWeek" : "sameElse";
         }
-        function Ri(e, t) {
+        function Ui(e, t) {
           1 === arguments.length && (arguments[0] ? Ni(arguments[0]) ? (e = arguments[0], t = void 0) : Ii(arguments[0]) && (t = arguments[0], e = void 0) : (e = void 0, t = void 0));
           var a = e || Za(),
             n = hi(a, this).startOf("day"),
             s = i.calendarFormat(this, n) || "sameElse",
-            r = t && (z(t[s]) ? t[s].call(this, a) : t[s]);
+            r = t && (A(t[s]) ? t[s].call(this, a) : t[s]);
           return this.format(r || this.localeData().calendar(s, this, Za(a)));
         }
-        function Ui() {
+        function Ri() {
           return new k(this);
         }
         function Yi(e, t) {
@@ -7172,7 +7389,7 @@
           if (!this.isValid()) return null;
           var t = !0 !== e,
             a = t ? this.clone().utc() : this;
-          return a.year() < 0 || a.year() > 9999 ? Y(a, t ? "YYYYYY-MM-DD[T]HH:mm:ss.SSS[Z]" : "YYYYYY-MM-DD[T]HH:mm:ss.SSSZ") : z(Date.prototype.toISOString) ? t ? this.toDate().toISOString() : new Date(this.valueOf() + 60 * this.utcOffset() * 1e3).toISOString().replace("Z", Y(a, "Z")) : Y(a, t ? "YYYY-MM-DD[T]HH:mm:ss.SSS[Z]" : "YYYY-MM-DD[T]HH:mm:ss.SSSZ");
+          return a.year() < 0 || a.year() > 9999 ? Y(a, t ? "YYYYYY-MM-DD[T]HH:mm:ss.SSS[Z]" : "YYYYYY-MM-DD[T]HH:mm:ss.SSSZ") : A(Date.prototype.toISOString) ? t ? this.toDate().toISOString() : new Date(this.valueOf() + 60 * this.utcOffset() * 1e3).toISOString().replace("Z", Y(a, "Z")) : Y(a, t ? "YYYY-MM-DD[T]HH:mm:ss.SSS[Z]" : "YYYY-MM-DD[T]HH:mm:ss.SSSZ");
         }
         function Qi() {
           if (!this.isValid()) return "moment.invalid(/* " + this._i + " */)";
@@ -7222,19 +7439,19 @@
           dn = 60 * un,
           cn = 60 * dn,
           hn = 3506328 * cn;
-        function mn(e, t) {
+        function pn(e, t) {
           return (e % t + t) % t;
         }
-        function gn(e, t, a) {
+        function mn(e, t, a) {
           return e < 100 && e >= 0 ? new Date(e + 400, t, a) - hn : new Date(e, t, a).valueOf();
         }
-        function fn(e, t, a) {
+        function gn(e, t, a) {
           return e < 100 && e >= 0 ? Date.UTC(e + 400, t, a) - hn : Date.UTC(e, t, a);
         }
-        function vn(e) {
+        function fn(e) {
           var t, a;
           if (void 0 === (e = ae(e)) || "millisecond" === e || !this.isValid()) return this;
-          switch (a = this._isUTC ? fn : gn, e) {
+          switch (a = this._isUTC ? gn : mn, e) {
             case "year":
               t = a(this.year(), 0, 1);
               break;
@@ -7255,20 +7472,20 @@
               t = a(this.year(), this.month(), this.date());
               break;
             case "hour":
-              t = this._d.valueOf(), t -= mn(t + (this._isUTC ? 0 : this.utcOffset() * dn), cn);
+              t = this._d.valueOf(), t -= pn(t + (this._isUTC ? 0 : this.utcOffset() * dn), cn);
               break;
             case "minute":
-              t = this._d.valueOf(), t -= mn(t, dn);
+              t = this._d.valueOf(), t -= pn(t, dn);
               break;
             case "second":
-              t = this._d.valueOf(), t -= mn(t, un);
+              t = this._d.valueOf(), t -= pn(t, un);
           }
           return this._d.setTime(t), i.updateOffset(this, !0), this;
         }
         function bn(e) {
           var t, a;
           if (void 0 === (e = ae(e)) || "millisecond" === e || !this.isValid()) return this;
-          switch (a = this._isUTC ? fn : gn, e) {
+          switch (a = this._isUTC ? gn : mn, e) {
             case "year":
               t = a(this.year() + 1, 0, 1) - 1;
               break;
@@ -7289,13 +7506,13 @@
               t = a(this.year(), this.month(), this.date() + 1) - 1;
               break;
             case "hour":
-              t = this._d.valueOf(), t += cn - mn(t + (this._isUTC ? 0 : this.utcOffset() * dn), cn) - 1;
+              t = this._d.valueOf(), t += cn - pn(t + (this._isUTC ? 0 : this.utcOffset() * dn), cn) - 1;
               break;
             case "minute":
-              t = this._d.valueOf(), t += dn - mn(t, dn) - 1;
+              t = this._d.valueOf(), t += dn - pn(t, dn) - 1;
               break;
             case "second":
-              t = this._d.valueOf(), t += un - mn(t, un) - 1;
+              t = this._d.valueOf(), t += un - pn(t, un) - 1;
           }
           return this._d.setTime(t), i.updateOffset(this, !0), this;
         }
@@ -7336,7 +7553,7 @@
         function Mn() {
           return f(this).overflow;
         }
-        function An() {
+        function zn() {
           return {
             input: this._i,
             format: this._f,
@@ -7345,7 +7562,7 @@
             strict: this._strict
           };
         }
-        function zn(e, t) {
+        function An(e, t) {
           var a,
             n,
             s,
@@ -7440,10 +7657,10 @@
         function Bn(e, t) {
           return t.erasNameRegex(e);
         }
-        function Rn(e, t) {
+        function Un(e, t) {
           return t.erasNarrowRegex(e);
         }
-        function Un(e, t) {
+        function Rn(e, t) {
           return t._eraYearOrdinalRegex || be;
         }
         function Yn() {
@@ -7457,7 +7674,7 @@
             o = [],
             l = [],
             u = this.eras();
-          for (e = 0, t = u.length; e < t; ++e) a = ze(u[e].name), i = ze(u[e].abbr), n = ze(u[e].narrow), r.push(a), s.push(i), o.push(n), l.push(a), l.push(i), l.push(n);
+          for (e = 0, t = u.length; e < t; ++e) a = Ae(u[e].name), i = Ae(u[e].abbr), n = Ae(u[e].narrow), r.push(a), s.push(i), o.push(n), l.push(a), l.push(i), l.push(n);
           this._erasRegex = new RegExp("^(" + l.join("|") + ")", "i"), this._erasNameRegex = new RegExp("^(" + r.join("|") + ")", "i"), this._erasAbbrRegex = new RegExp("^(" + s.join("|") + ")", "i"), this._erasNarrowRegex = new RegExp("^(" + o.join("|") + ")", "i");
         }
         function Fn(e, t) {
@@ -7495,10 +7712,10 @@
         function Qn(e) {
           return null == e ? Math.ceil((this.month() + 1) / 3) : this.month(3 * (e - 1) + this.month() % 3);
         }
-        B("N", 0, 0, "eraAbbr"), B("NN", 0, 0, "eraAbbr"), B("NNN", 0, 0, "eraAbbr"), B("NNNN", 0, 0, "eraName"), B("NNNNN", 0, 0, "eraNarrow"), B("y", ["y", 1], "yo", "eraYear"), B("y", ["yy", 2], 0, "eraYear"), B("y", ["yyy", 3], 0, "eraYear"), B("y", ["yyyy", 4], 0, "eraYear"), Ee("N", In), Ee("NN", In), Ee("NNN", In), Ee("NNNN", Bn), Ee("NNNNN", Rn), He(["N", "NN", "NNN", "NNNN", "NNNNN"], function (e, t, a, i) {
+        B("N", 0, 0, "eraAbbr"), B("NN", 0, 0, "eraAbbr"), B("NNN", 0, 0, "eraAbbr"), B("NNNN", 0, 0, "eraName"), B("NNNNN", 0, 0, "eraNarrow"), B("y", ["y", 1], "yo", "eraYear"), B("y", ["yy", 2], 0, "eraYear"), B("y", ["yyy", 3], 0, "eraYear"), B("y", ["yyyy", 4], 0, "eraYear"), Ee("N", In), Ee("NN", In), Ee("NNN", In), Ee("NNNN", Bn), Ee("NNNNN", Un), He(["N", "NN", "NNN", "NNNN", "NNNNN"], function (e, t, a, i) {
           var n = a._locale.erasParse(e, i, a._strict);
           n ? f(a).era = n : f(a).invalidEra = e;
-        }), Ee("y", be), Ee("yy", be), Ee("yyy", be), Ee("yyyy", be), Ee("yo", Un), He(["y", "yy", "yyy", "yyyy"], Le), He(["yo"], function (e, t, a, i) {
+        }), Ee("y", be), Ee("yy", be), Ee("yyy", be), Ee("yyyy", be), Ee("yo", Rn), He(["y", "yy", "yyy", "yyyy"], Le), He(["yo"], function (e, t, a, i) {
           var n;
           a._locale._eraYearOrdinalRegex && (n = e.match(a._locale._eraYearOrdinalRegex)), a._locale.eraYearOrdinalParse ? t[Le] = a._locale.eraYearOrdinalParse(e, n) : t[Le] = parseInt(e, 10);
         }), B(0, ["gg", 2], 0, function () {
@@ -7523,9 +7740,9 @@
         }
         B("DDD", ["DDDD", 3], "DDDo", "dayOfYear"), Ee("DDD", ge), Ee("DDDD", ue), He(["DDD", "DDDD"], function (e, t, a) {
           a._dayOfYear = De(e);
-        }), B("m", ["mm", 2], 0, "minute"), Ee("m", he, xe), Ee("mm", he, le), He(["m", "mm"], Re);
+        }), B("m", ["mm", 2], 0, "minute"), Ee("m", he, xe), Ee("mm", he, le), He(["m", "mm"], Ue);
         var as = Ke("Minutes", !1);
-        B("s", ["ss", 2], 0, "second"), Ee("s", he, xe), Ee("ss", he, le), He(["s", "ss"], Ue);
+        B("s", ["ss", 2], 0, "second"), Ee("s", he, xe), Ee("ss", he, le), He(["s", "ss"], Re);
         var is,
           ns,
           ss = Ke("Seconds", !1);
@@ -7567,9 +7784,9 @@
         function hs(e) {
           return e;
         }
-        us.add = Hi, us.calendar = Ri, us.clone = Ui, us.diff = qi, us.endOf = bn, us.format = en, us.from = tn, us.fromNow = an, us.to = nn, us.toNow = sn, us.get = Qe, us.invalidAt = Mn, us.isAfter = Yi, us.isBefore = Fi, us.isBetween = Vi, us.isSame = Gi, us.isSameOrAfter = Wi, us.isSameOrBefore = Zi, us.isValid = xn, us.lang = on, us.locale = rn, us.localeData = ln, us.max = Ka, us.min = qa, us.parsingFlags = En, us.set = et, us.startOf = vn, us.subtract = Ci, us.toArray = kn, us.toObject = $n, us.toDate = wn, us.toISOString = Ji, us.inspect = Qi, "undefined" != typeof Symbol && null != Symbol.for && (us[Symbol.for("nodejs.util.inspect.custom")] = function () {
+        us.add = Hi, us.calendar = Ui, us.clone = Ri, us.diff = qi, us.endOf = bn, us.format = en, us.from = tn, us.fromNow = an, us.to = nn, us.toNow = sn, us.get = Qe, us.invalidAt = Mn, us.isAfter = Yi, us.isBefore = Fi, us.isBetween = Vi, us.isSame = Gi, us.isSameOrAfter = Wi, us.isSameOrBefore = Zi, us.isValid = xn, us.lang = on, us.locale = rn, us.localeData = ln, us.max = Ka, us.min = qa, us.parsingFlags = En, us.set = et, us.startOf = fn, us.subtract = Ci, us.toArray = kn, us.toObject = $n, us.toDate = wn, us.toISOString = Ji, us.inspect = Qi, "undefined" != typeof Symbol && null != Symbol.for && (us[Symbol.for("nodejs.util.inspect.custom")] = function () {
           return "Moment<" + this.format() + ">";
-        }), us.toJSON = Sn, us.toString = Xi, us.unix = _n, us.valueOf = yn, us.creationData = An, us.eraName = On, us.eraNarrow = Hn, us.eraAbbr = Cn, us.eraYear = Pn, us.year = Ze, us.isLeapYear = qe, us.weekYear = Vn, us.isoWeekYear = Gn, us.quarter = us.quarters = Qn, us.month = pt, us.daysInMonth = mt, us.week = us.weeks = At, us.isoWeek = us.isoWeeks = zt, us.weeksInYear = qn, us.weeksInWeekYear = Kn, us.isoWeeksInYear = Wn, us.isoWeeksInISOWeekYear = Zn, us.date = es, us.day = us.days = Ft, us.weekday = Vt, us.isoWeekday = Gt, us.dayOfYear = ts, us.hour = us.hours = ia, us.minute = us.minutes = as, us.second = us.seconds = ss, us.millisecond = us.milliseconds = ns, us.utcOffset = mi, us.utc = fi, us.local = vi, us.parseZone = bi, us.hasAlignedHourOffset = yi, us.isDST = _i, us.isLocal = ki, us.isUtcOffset = $i, us.isUtc = Si, us.isUTC = Si, us.zoneAbbr = os, us.zoneName = ls, us.dates = x("dates accessor is deprecated. Use date instead.", es), us.months = x("months accessor is deprecated. Use month instead", pt), us.years = x("years accessor is deprecated. Use year instead", Ze), us.zone = x("moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/", gi), us.isDSTShifted = x("isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information", wi);
+        }), us.toJSON = Sn, us.toString = Xi, us.unix = _n, us.valueOf = yn, us.creationData = zn, us.eraName = On, us.eraNarrow = Hn, us.eraAbbr = Cn, us.eraYear = Pn, us.year = Ze, us.isLeapYear = qe, us.weekYear = Vn, us.isoWeekYear = Gn, us.quarter = us.quarters = Qn, us.month = pt, us.daysInMonth = mt, us.week = us.weeks = zt, us.isoWeek = us.isoWeeks = At, us.weeksInYear = qn, us.weeksInWeekYear = Kn, us.isoWeeksInYear = Wn, us.isoWeeksInISOWeekYear = Zn, us.date = es, us.day = us.days = Ft, us.weekday = Vt, us.isoWeekday = Gt, us.dayOfYear = ts, us.hour = us.hours = ia, us.minute = us.minutes = as, us.second = us.seconds = ss, us.millisecond = us.milliseconds = ns, us.utcOffset = mi, us.utc = fi, us.local = vi, us.parseZone = bi, us.hasAlignedHourOffset = yi, us.isDST = _i, us.isLocal = ki, us.isUtcOffset = $i, us.isUtc = Si, us.isUTC = Si, us.zoneAbbr = os, us.zoneName = ls, us.dates = x("dates accessor is deprecated. Use date instead.", es), us.months = x("months accessor is deprecated. Use month instead", pt), us.years = x("years accessor is deprecated. Use year instead", Ze), us.zone = x("moment().zone is deprecated, use moment().utcOffset instead. http://momentjs.com/guides/#/warnings/zone/", gi), us.isDSTShifted = x("isDSTShifted is deprecated. See http://momentjs.com/guides/#/warnings/dst-shifted/ for more information", wi);
         var ps = O.prototype;
         function ms(e, t, a, i) {
           var n = va(),
@@ -7608,7 +7825,7 @@
         function ws(e, t, a) {
           return fs(e, t, a, "weekdaysMin");
         }
-        ps.calendar = C, ps.longDateFormat = G, ps.invalidDate = Z, ps.ordinal = X, ps.preparse = hs, ps.postformat = hs, ps.relativeTime = Q, ps.pastFuture = ee, ps.set = T, ps.eras = zn, ps.erasParse = Tn, ps.erasConvertYear = Dn, ps.erasAbbrRegex = Ln, ps.erasNameRegex = Nn, ps.erasNarrowRegex = jn, ps.months = lt, ps.monthsShort = ut, ps.monthsParse = ct, ps.monthsRegex = ft, ps.monthsShortRegex = gt, ps.week = St, ps.firstDayOfYear = Mt, ps.firstDayOfWeek = Et, ps.weekdays = It, ps.weekdaysMin = Rt, ps.weekdaysShort = Bt, ps.weekdaysParse = Yt, ps.weekdaysRegex = Wt, ps.weekdaysShortRegex = Zt, ps.weekdaysMinRegex = qt, ps.isPM = ta, ps.meridiem = na, ma("en", {
+        ps.calendar = C, ps.longDateFormat = G, ps.invalidDate = Z, ps.ordinal = X, ps.preparse = hs, ps.postformat = hs, ps.relativeTime = Q, ps.pastFuture = ee, ps.set = T, ps.eras = An, ps.erasParse = Tn, ps.erasConvertYear = Dn, ps.erasAbbrRegex = Ln, ps.erasNameRegex = Nn, ps.erasNarrowRegex = jn, ps.months = lt, ps.monthsShort = ut, ps.monthsParse = ct, ps.monthsRegex = ft, ps.monthsShortRegex = gt, ps.week = St, ps.firstDayOfYear = Mt, ps.firstDayOfWeek = Et, ps.weekdays = It, ps.weekdaysMin = Ut, ps.weekdaysShort = Bt, ps.weekdaysParse = Yt, ps.weekdaysRegex = Wt, ps.weekdaysShortRegex = Zt, ps.weekdaysMinRegex = qt, ps.isPM = ta, ps.meridiem = na, ma("en", {
           eras: [{
             since: "0001-01-01",
             until: 1 / 0,
@@ -7648,7 +7865,7 @@
         function Ms(e) {
           return e < 0 ? Math.floor(e) : Math.ceil(e);
         }
-        function As() {
+        function zs() {
           var e,
             t,
             a,
@@ -7658,9 +7875,9 @@
             r = this._days,
             o = this._months,
             l = this._data;
-          return s >= 0 && r >= 0 && o >= 0 || s <= 0 && r <= 0 && o <= 0 || (s += 864e5 * Ms(Ts(o) + r), r = 0, o = 0), l.milliseconds = s % 1e3, e = Te(s / 1e3), l.seconds = e % 60, t = Te(e / 60), l.minutes = t % 60, a = Te(t / 60), l.hours = a % 24, r += Te(a / 24), o += n = Te(zs(r)), r -= Ms(Ts(n)), i = Te(o / 12), o %= 12, l.days = r, l.months = o, l.years = i, this;
+          return s >= 0 && r >= 0 && o >= 0 || s <= 0 && r <= 0 && o <= 0 || (s += 864e5 * Ms(Ts(o) + r), r = 0, o = 0), l.milliseconds = s % 1e3, e = Te(s / 1e3), l.seconds = e % 60, t = Te(e / 60), l.minutes = t % 60, a = Te(t / 60), l.hours = a % 24, r += Te(a / 24), o += n = Te(As(r)), r -= Ms(Ts(n)), i = Te(o / 12), o %= 12, l.days = r, l.months = o, l.years = i, this;
         }
-        function zs(e) {
+        function As(e) {
           return 4800 * e / 146097;
         }
         function Ts(e) {
@@ -7671,7 +7888,7 @@
           var t,
             a,
             i = this._milliseconds;
-          if ("month" === (e = ae(e)) || "quarter" === e || "year" === e) switch (t = this._days + i / 864e5, a = this._months + zs(t), e) {
+          if ("month" === (e = ae(e)) || "quarter" === e || "year" === e) switch (t = this._days + i / 864e5, a = this._months + As(t), e) {
             case "month":
               return a;
             case "quarter":
@@ -7708,8 +7925,8 @@
           js = Os("w"),
           Is = Os("M"),
           Bs = Os("Q"),
-          Rs = Os("y"),
-          Us = Hs;
+          Us = Os("y"),
+          Rs = Hs;
         function Ys() {
           return Mi(this);
         }
@@ -7791,7 +8008,7 @@
           return c ? (e = Te(l / 60), t = Te(e / 60), l %= 60, e %= 60, a = Te(d / 12), d %= 12, i = l ? l.toFixed(3).replace(/\.?0+$/, "") : "", n = c < 0 ? "-" : "", s = lr(this._months) !== lr(c) ? "-" : "", r = lr(this._days) !== lr(c) ? "-" : "", o = lr(this._milliseconds) !== lr(c) ? "-" : "", n + "P" + (a ? s + a + "Y" : "") + (d ? s + d + "M" : "") + (u ? r + u + "D" : "") + (t || e || l ? "T" : "") + (t ? o + t + "H" : "") + (e ? o + e + "M" : "") + (l ? o + i + "S" : "")) : "P0D";
         }
         var dr = si.prototype;
-        return dr.isValid = ii, dr.abs = $s, dr.add = xs, dr.subtract = Es, dr.as = Ds, dr.asMilliseconds = Hs, dr.asSeconds = Cs, dr.asMinutes = Ps, dr.asHours = Ns, dr.asDays = Ls, dr.asWeeks = js, dr.asMonths = Is, dr.asQuarters = Bs, dr.asYears = Rs, dr.valueOf = Us, dr._bubble = As, dr.clone = Ys, dr.get = Fs, dr.milliseconds = Gs, dr.seconds = Ws, dr.minutes = Zs, dr.hours = qs, dr.days = Ks, dr.weeks = Qs, dr.months = Xs, dr.years = Js, dr.humanize = rr, dr.toISOString = ur, dr.toString = ur, dr.toJSON = ur, dr.locale = rn, dr.localeData = ln, dr.toIsoString = x("toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)", ur), dr.lang = on, B("X", 0, 0, "unix"), B("x", 0, 0, "valueOf"), Ee("x", ye), Ee("X", ke), He("X", function (e, t, a) {
+        return dr.isValid = ii, dr.abs = $s, dr.add = xs, dr.subtract = Es, dr.as = Ds, dr.asMilliseconds = Hs, dr.asSeconds = Cs, dr.asMinutes = Ps, dr.asHours = Ns, dr.asDays = Ls, dr.asWeeks = js, dr.asMonths = Is, dr.asQuarters = Bs, dr.asYears = Us, dr.valueOf = Rs, dr._bubble = zs, dr.clone = Ys, dr.get = Fs, dr.milliseconds = Gs, dr.seconds = Ws, dr.minutes = Zs, dr.hours = qs, dr.days = Ks, dr.weeks = Qs, dr.months = Xs, dr.years = Js, dr.humanize = rr, dr.toISOString = ur, dr.toString = ur, dr.toJSON = ur, dr.locale = rn, dr.localeData = ln, dr.toIsoString = x("toIsoString() is deprecated. Please use toISOString() instead (notice the capitals)", ur), dr.lang = on, B("X", 0, 0, "unix"), B("x", 0, 0, "valueOf"), Ee("x", ye), Ee("X", ke), He("X", function (e, t, a) {
           a._d = new Date(1e3 * parseFloat(e));
         }), He("x", function (e, t, a) {
           a._d = new Date(De(e));
@@ -7809,9 +8026,9 @@
           MONTH: "YYYY-MM"
         }, i;
       }();
-    }(gn)), gn.exports),
-    vn = hn(fn);
-  let bn = class extends ft(ue) {
+    }(yn)), yn.exports),
+    wn = fn(_n);
+  let kn = class extends yt(ue) {
     constructor() {
       super(...arguments), this.zones = [], this.modules = [], this.mappings = [], this.wateringCalendars = new Map(), this.weatherRecords = new Map(), this.isLoading = !0, this.isSaving = !1, this._updateScheduled = !1, this.globalDebounceTimer = null, this.zoneCache = new Map();
     }
@@ -7839,7 +8056,7 @@
     async _fetchData() {
       if (this.hass) try {
         this.isLoading = !0;
-        const [e, t, a, i] = await Promise.all([ct(this.hass), ht(this.hass), pt(this.hass), mt(this.hass)]);
+        const [e, t, a, i] = await Promise.all([mt(this.hass), gt(this.hass), ft(this.hass), vt(this.hass)]);
         this.config = e, this.zones = t, this.modules = a, this.mappings = i, this._fetchWateringCalendars(), this._fetchWeatherRecords(), this.zoneCache.clear();
       } catch (e) {
         console.error("Error fetching data:", e);
@@ -7976,7 +8193,7 @@
     async _fetchWeatherRecords() {
       if (this.hass) {
         for (const e of this.zones) if (void 0 !== e.id && void 0 !== e.mapping) try {
-          const t = await gt(this.hass, e.mapping.toString(), 10);
+          const t = await bt(this.hass, e.mapping.toString(), 10);
           this.weatherRecords.set(e.id, t);
         } catch (t) {
           console.error(`Failed to fetch weather records for zone ${e.id} (mapping ${e.mapping}):`, t);
@@ -8005,35 +8222,35 @@
       return Y`
       <div class="weather-records">
         <h4>
-          ${Xi("panels.mappings.weather-records.title", this.hass.language)}
+          ${en("panels.mappings.weather-records.title", this.hass.language)}
         </h4>
         ${0 === t.length ? Y`
               <div class="weather-note">
-                ${Xi("panels.mappings.weather-records.no-data", this.hass.language)}
+                ${en("panels.mappings.weather-records.no-data", this.hass.language)}
               </div>
             ` : Y`
               <div class="weather-table">
                 <div class="weather-header">
                   <span
-                    >${Xi("panels.mappings.weather-records.timestamp", this.hass.language)}</span
+                    >${en("panels.mappings.weather-records.timestamp", this.hass.language)}</span
                   >
                   <span
-                    >${Xi("panels.mappings.weather-records.temperature", this.hass.language)}</span
+                    >${en("panels.mappings.weather-records.temperature", this.hass.language)}</span
                   >
                   <span
-                    >${Xi("panels.mappings.weather-records.humidity", this.hass.language)}</span
+                    >${en("panels.mappings.weather-records.humidity", this.hass.language)}</span
                   >
                   <span
-                    >${Xi("panels.mappings.weather-records.precipitation", this.hass.language)}</span
+                    >${en("panels.mappings.weather-records.precipitation", this.hass.language)}</span
                   >
                   <span
-                    >${Xi("panels.mappings.weather-records.retrieval-time", this.hass.language)}</span
+                    >${en("panels.mappings.weather-records.retrieval-time", this.hass.language)}</span
                   >
                 </div>
                 ${t.slice(0, 10).map(e => Y`
                     <div class="weather-row">
                       <span
-                        >${vn(e.timestamp).format("MM-DD HH:mm")}</span
+                        >${wn(e.timestamp).format("MM-DD HH:mm")}</span
                       >
                       <span
                         >${e.temperature ? e.temperature.toFixed(1) + "°C" : "-"}</span
@@ -8045,7 +8262,7 @@
                         >${e.precipitation ? e.precipitation.toFixed(1) + "mm" : "-"}</span
                       >
                       <span
-                        >${e.retrieval_time ? vn(e.retrieval_time).format("MM-DD HH:mm") : "-"}</span
+                        >${e.retrieval_time ? wn(e.retrieval_time).format("MM-DD HH:mm") : "-"}</span
                       >
                     </div>
                   `)}
@@ -8107,7 +8324,7 @@
     }
     renderTheOptions(e, t) {
       if (this.hass) {
-        let a = Y`<option value="" ?selected=${void 0 === t}">---${Xi("common.labels.select", this.hass.language)}---</option>`;
+        let a = Y`<option value="" ?selected=${void 0 === t}">---${en("common.labels.select", this.hass.language)}---</option>`;
         return Object.entries(e).map(([e, i]) => a = Y`${a}
             <option
               value="${i.id}"
@@ -8128,9 +8345,9 @@
           @click="${() => this.toggleExplanation(t)}"
         >
           <title>
-            ${Xi("panels.zones.actions.information", this.hass.language)}
+            ${en("panels.zones.actions.information", this.hass.language)}
           </title>
-          <path fill="#404040" d="${un}" />
+          <path fill="#404040" d="${mn}" />
         </svg>`, e.state === cn.Automatic && (a = Y` <div
           class="action-button-left"
           @click="${() => this.handleCalculateZone(t)}"
@@ -8139,7 +8356,7 @@
             <path fill="#404040" d="${"M7,2H17A2,2 0 0,1 19,4V20A2,2 0 0,1 17,22H7A2,2 0 0,1 5,20V4A2,2 0 0,1 7,2M7,4V8H17V4H7M7,10V12H9V10H7M11,10V12H13V10H11M15,10V12H17V10H15M7,14V16H9V14H7M11,14V16H13V14H11M15,14V16H17V14H15M7,18V20H9V18H7M11,18V20H13V18H11M15,18V20H17V18H15Z"}" />
           </svg>
           <span class="action-button-label">
-            ${Xi("panels.zones.actions.calculate", this.hass.language)}
+            ${en("panels.zones.actions.calculate", this.hass.language)}
           </span>
         </div>`), e.state === cn.Automatic && (i = Y` <div
           class="action-button-left"
@@ -8149,17 +8366,17 @@
             <path fill="#404040" d="${"M21,10.12H14.22L16.96,7.3C14.23,4.6 9.81,4.5 7.08,7.2C4.35,9.91 4.35,14.28 7.08,17C9.81,19.7 14.23,19.7 16.96,17C18.32,15.65 19,14.08 19,12.1H21C21,14.08 20.12,16.65 18.36,18.39C14.85,21.87 9.15,21.87 5.64,18.39C2.14,14.92 2.11,9.28 5.62,5.81C9.13,2.34 14.76,2.34 18.27,5.81L21,3V10.12M12.5,8V12.25L16,14.33L15.28,15.54L11,13V8H12.5Z"}" />
           </svg>
           <span class="action-button-label">
-            ${Xi("panels.zones.actions.update", this.hass.language)}
+            ${en("panels.zones.actions.update", this.hass.language)}
           </span>
         </div>`);
         const n = Y` <div
         class="action-button-right"
         @click="${() => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [nt]: 0
+          [ot]: 0
         }))}"
       >
         <span class="action-button-label">
-          ${Xi("panels.zones.actions.reset-bucket", this.hass.language)}
+          ${en("panels.zones.actions.reset-bucket", this.hass.language)}
         </span>
         <svg style="width:24px;height:24px" viewBox="0 0 24 24">
           <path fill="#404040" d="${"M12.5 9.36L4.27 14.11C3.79 14.39 3.18 14.23 2.9 13.75C2.62 13.27 2.79 12.66 3.27 12.38L11.5 7.63C11.97 7.35 12.58 7.5 12.86 8C13.14 8.47 12.97 9.09 12.5 9.36M13 19C13 15.82 15.47 13.23 18.6 13L20 6H21V4H3V6H4L4.76 9.79L10.71 6.36C11.09 6.13 11.53 6 12 6C13.38 6 14.5 7.12 14.5 8.5C14.5 9.44 14 10.26 13.21 10.69L5.79 14.97L7 21H13.35C13.13 20.37 13 19.7 13 19M21.12 15.46L19 17.59L16.88 15.46L15.47 16.88L17.59 19L15.47 21.12L16.88 22.54L19 20.41L21.12 22.54L22.54 21.12L20.41 19L22.54 16.88L21.12 15.46Z"}" />
@@ -8171,7 +8388,7 @@
           @click="${() => this.handleViewWeatherInfo(t)}"
         >
           <span class="action-button-label">
-            ${Xi("panels.zones.actions.view-weather-info", this.hass.language)}
+            ${en("panels.zones.actions.view-weather-info", this.hass.language)}
           </span>
           <svg style="width:24px;height:24px" viewBox="0 0 24 24">
             <path fill="#404040" d="${"M6.5 20Q4.22 20 2.61 18.43 1 16.85 1 14.58 1 12.63 2.17 11.1 3.35 9.57 5.25 9.15 5.88 6.85 7.75 5.43 9.63 4 12 4 14.93 4 16.96 6.04 19 8.07 19 11 20.73 11.2 21.86 12.5 23 13.78 23 15.5 23 17.38 21.69 18.69 20.38 20 18.5 20M6.5 18H18.5Q19.55 18 20.27 17.27 21 16.55 21 15.5 21 14.45 20.27 13.73 19.55 13 18.5 13H17V11Q17 8.93 15.54 7.46 14.08 6 12 6 9.93 6 8.46 7.46 7 8.93 7 11H6.5Q5.05 11 4.03 12.03 3 13.05 3 14.5 3 15.95 4.03 17 5.05 18 6.5 18M12 12Z"}" />
@@ -8182,7 +8399,7 @@
         @click="${() => this.handleViewWateringCalendar(t)}"
       >
         <span class="action-button-label">
-          ${Xi("panels.zones.actions.view-watering-calendar", this.hass.language)}
+          ${en("panels.zones.actions.view-watering-calendar", this.hass.language)}
         </span>
         <svg style="width:24px;height:24px" viewBox="0 0 24 24">
           <path fill="#404040" d="${"M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1M17,12H12V17H17V12Z"}" />
@@ -8193,10 +8410,10 @@
               @click="${() => this.toggleExplanation(t)}"
             >
               <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                <path fill="#404040" d="${un}" />
+                <path fill="#404040" d="${mn}" />
               </svg>
               <span class="action-button-label">
-                ${Xi("panels.zones.actions.information", this.hass.language)}
+                ${en("panels.zones.actions.information", this.hass.language)}
               </span>
             </div>` : Y``,
           l = Y` <div
@@ -8204,10 +8421,10 @@
         @click="${e => this.handleRemoveZone(e, t)}"
       >
         <span class="action-button-label">
-          ${Xi("common.actions.delete", this.hass.language)}
+          ${en("common.actions.delete", this.hass.language)}
         </span>
         <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-          <path fill="#404040" d="${ln}" />
+          <path fill="#404040" d="${pn}" />
         </svg>
       </div>`;
         let u;
@@ -8216,47 +8433,47 @@
           <div class="card-content">
             <div class="zone-info-table">
               <div class="zone-info-row">
-                <span class="zone-info-label">${Xi("panels.zones.labels.last_calculated", this.hass.language)}:</span>
-                <span class="zone-info-value">${e.last_calculated ? vn(e.last_calculated).format("YYYY-MM-DD HH:mm:ss") : "-"}</span>
+                <span class="zone-info-label">${en("panels.zones.labels.last_calculated", this.hass.language)}:</span>
+                <span class="zone-info-value">${e.last_calculated ? wn(e.last_calculated).format("YYYY-MM-DD HH:mm:ss") : "-"}</span>
               </div>
               <div class="zone-info-row">
-                <span class="zone-info-label">${Xi("panels.zones.labels.data-last-updated", this.hass.language)}:</span>
-                <span class="zone-info-value">${e.last_updated ? vn(e.last_updated).format("YYYY-MM-DD HH:mm:ss") : "-"}</span>
+                <span class="zone-info-label">${en("panels.zones.labels.data-last-updated", this.hass.language)}:</span>
+                <span class="zone-info-value">${e.last_updated ? wn(e.last_updated).format("YYYY-MM-DD HH:mm:ss") : "-"}</span>
               </div>
               <div class="zone-info-row">
-                <span class="zone-info-label">${Xi("panels.zones.labels.data-number-of-data-points", this.hass.language)}:</span>
+                <span class="zone-info-label">${en("panels.zones.labels.data-number-of-data-points", this.hass.language)}:</span>
                 <span class="zone-info-value">${e.number_of_data_points}</span>
               </div>
             </div>
           </div>
           <div class="card-content">
             <label for="name${t}"
-              >${Xi("panels.zones.labels.name", this.hass.language)}:</label
+              >${en("panels.zones.labels.name", this.hass.language)}:</label
             >
             <input
               id="name${t}"
               type="text"
               .value="${e.name}"
               @input="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [Je]: a.target.value
+          [tt]: a.target.value
         }))}"
             />
             <div class="zoneline">
               <label for="size${t}"
-                >${Xi("panels.zones.labels.size", this.hass.language)}
-                (${sn(this.config, Qe)}):</label
+                >${en("panels.zones.labels.size", this.hass.language)}
+                (${ln(this.config, at)}):</label
               >
               <input class="shortinput" id="size${t}" type="number""
               .value="${e.size}"
               @input="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [Qe]: parseFloat(a.target.value)
+          [at]: parseFloat(a.target.value)
         }))}"
               />
             </div>
             <div class="zoneline">
               <label for="throughput${t}"
-                >${Xi("panels.zones.labels.throughput", this.hass.language)}
-                (${sn(this.config, et)}):</label
+                >${en("panels.zones.labels.throughput", this.hass.language)}
+                (${ln(this.config, it)}):</label
               >
               <input
                 class="shortinput"
@@ -8264,14 +8481,14 @@
                 type="number"
                 .value="${e.throughput}"
                 @input="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [et]: parseFloat(a.target.value)
+          [it]: parseFloat(a.target.value)
         }))}"
               />
             </div>
             <div class="zoneline">
               <label for="drainage_rate${t}"
-                >${Xi("panels.zones.labels.drainage_rate", this.hass.language)}
-                (${sn(this.config, dt)}):</label
+                >${en("panels.zones.labels.drainage_rate", this.hass.language)}
+                (${ln(this.config, pt)}):</label
               >
               <input
                 class="shortinput"
@@ -8279,61 +8496,61 @@
                 type="number"
                 .value="${e.drainage_rate}"
                 @input="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [dt]: parseFloat(a.target.value)
+          [pt]: parseFloat(a.target.value)
         }))}"
               />
             </div>
             <div class="zoneline">
               <label for="state${t}"
-                >${Xi("panels.zones.labels.state", this.hass.language)}:</label
+                >${en("panels.zones.labels.state", this.hass.language)}:</label
               >
               <select
                 required
                 id="state${t}"
                 @change="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [tt]: a.target.value,
-          [at]: 0
+          [nt]: a.target.value,
+          [st]: 0
         }))}"
               >
                 <option
                   value="${cn.Automatic}"
                   ?selected="${e.state === cn.Automatic}"
                 >
-                  ${Xi("panels.zones.labels.states.automatic", this.hass.language)}
+                  ${en("panels.zones.labels.states.automatic", this.hass.language)}
                 </option>
                 <option
                   value="${cn.Disabled}"
                   ?selected="${e.state === cn.Disabled}"
                 >
-                  ${Xi("panels.zones.labels.states.disabled", this.hass.language)}
+                  ${en("panels.zones.labels.states.disabled", this.hass.language)}
                 </option>
                 <option
                   value="${cn.Manual}"
                   ?selected="${e.state === cn.Manual}"
                 >
-                  ${Xi("panels.zones.labels.states.manual", this.hass.language)}
+                  ${en("panels.zones.labels.states.manual", this.hass.language)}
                 </option>
               </select>
               <label for="module${t}"
-                >${Xi("common.labels.module", this.hass.language)}:</label
+                >${en("common.labels.module", this.hass.language)}:</label
               >
 
               <select
                 id="module${t}"
                 @change="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [it]: parseInt(a.target.value)
+          [rt]: parseInt(a.target.value)
         }))}"
               >
                 ${this.renderTheOptions(this.modules, e.module)}
               </select>
               <label for="module${t}"
-                >${Xi("panels.zones.labels.mapping", this.hass.language)}:</label
+                >${en("panels.zones.labels.mapping", this.hass.language)}:</label
               >
 
               <select
                 id="mapping${t}"
                 @change="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [rt]: parseInt(a.target.value)
+          [ut]: parseInt(a.target.value)
         }))}"
               >
                 ${this.renderTheOptions(this.mappings, e.mapping)}
@@ -8341,8 +8558,8 @@
             </div>
             <div class="zoneline">
               <label for="bucket${t}"
-                >${Xi("panels.zones.labels.bucket", this.hass.language)}
-                (${sn(this.config, nt)}):</label
+                >${en("panels.zones.labels.bucket", this.hass.language)}
+                (${ln(this.config, ot)}):</label
               >
               <input
                 class="shortinput"
@@ -8350,12 +8567,12 @@
                 type="number"
                 .value="${Number(e.bucket).toFixed(1)}"
                 @input="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [nt]: parseFloat(a.target.value)
+          [ot]: parseFloat(a.target.value)
         }))}"
               />
               <label for="maximum-bucket${t}"
-                >${Xi("panels.zones.labels.maximum-bucket", this.hass.language)}
-                (${sn(this.config, nt)}):</label
+                >${en("panels.zones.labels.maximum-bucket", this.hass.language)}
+                (${ln(this.config, ot)}):</label
               >
               <input
                 class="shortinput"
@@ -8363,13 +8580,13 @@
                 type="number"
                 .value="${Number(e.maximum_bucket).toFixed(1)}"
                 @input="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [ut]: parseFloat(a.target.value)
+          [ht]: parseFloat(a.target.value)
         }))}"
               />
             </div>
             <div class="zoneline">
               <label for="lead_time${t}"
-                >${Xi("panels.zones.labels.lead-time", this.hass.language)}
+                >${en("panels.zones.labels.lead-time", this.hass.language)}
                 (s):</label
               >
               <input
@@ -8378,13 +8595,13 @@
                 type="number"
                 .value="${e.lead_time}"
                 @input="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [ot]: parseInt(a.target.value, 10)
+          [dt]: parseInt(a.target.value, 10)
         }))}"
               />
             </div>
             <div class="zoneline">
               <label for="maximum-duration${t}"
-                >${Xi("panels.zones.labels.maximum-duration", this.hass.language)}
+                >${en("panels.zones.labels.maximum-duration", this.hass.language)}
                 (s):</label
               >
               <input
@@ -8393,13 +8610,13 @@
                 type="number"
                 .value="${e.maximum_duration}"
                 @input="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [lt]: parseInt(a.target.value, 10)
+          [ct]: parseInt(a.target.value, 10)
         }))}"
               />
             </div>
             <div class="zoneline">
               <label for="multiplier${t}"
-                >${Xi("panels.zones.labels.multiplier", this.hass.language)}:</label
+                >${en("panels.zones.labels.multiplier", this.hass.language)}:</label
               >
               <input
                 class="shortinput"
@@ -8407,11 +8624,11 @@
                 type="number"
                 .value="${e.multiplier}"
                 @input="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [st]: parseFloat(a.target.value)
+          [lt]: parseFloat(a.target.value)
         }))}"
               />
               <label for="duration${t}"
-                >${Xi("panels.zones.labels.duration", this.hass.language)}
+                >${en("panels.zones.labels.duration", this.hass.language)}
                 (${"s"}):</label
               >
               <input
@@ -8421,7 +8638,7 @@
                 .value="${e.duration}"
                 ?readonly="${e.state === cn.Disabled || e.state === cn.Automatic}"
                 @input="${a => this.handleEditZone(t, Object.assign(Object.assign({}, e), {
-          [at]: parseInt(a.target.value, 10)
+          [st]: parseInt(a.target.value, 10)
         }))}"
               />
             </div>
@@ -8441,7 +8658,7 @@
             <div class="zoneline">
               <div>
                 <label class="hidden" id="calcresults${t}"
-                  >${tn("<br/>" + e.explanation)}</label
+                  >${sn("<br/>" + e.explanation)}</label
                 >
               </div>
             </div>
@@ -8464,51 +8681,51 @@
     }
     render() {
       return this.hass ? this.isLoading ? Y`
-        <ha-card header="${Xi("panels.zones.title", this.hass.language)}">
+        <ha-card header="${en("panels.zones.title", this.hass.language)}">
           <div class="card-content">
-            ${Xi("common.loading-messages.general", this.hass.language)}...
+            ${en("common.loading-messages.general", this.hass.language)}...
           </div>
         </ha-card>
       ` : Y`
-      <ha-card header="${Xi("panels.zones.title", this.hass.language)}">
+      <ha-card header="${en("panels.zones.title", this.hass.language)}">
         <div class="card-content">
-          ${Xi("panels.zones.description", this.hass.language)}
+          ${en("panels.zones.description", this.hass.language)}
         </div>
       </ha-card>
 
       <ha-card
-        header="${Xi("panels.zones.cards.add-zone.header", this.hass.language)}"
+        header="${en("panels.zones.cards.add-zone.header", this.hass.language)}"
       >
         <div class="card-content">
           <div class="zoneline">
             <label for="nameInput"
-              >${Xi("panels.zones.labels.name", this.hass.language)}:</label
+              >${en("panels.zones.labels.name", this.hass.language)}:</label
             >
             <input id="nameInput" type="text" />
           </div>
           <div class="zoneline">
             <label for="sizeInput"
-              >${Xi("panels.zones.labels.size", this.hass.language)}:</label
+              >${en("panels.zones.labels.size", this.hass.language)}:</label
             >
             <input id="sizeInput" type="number" />
           </div>
           <div class="zoneline">
             <label for="throughputInput"
-              >${Xi("panels.zones.labels.throughput", this.hass.language)}:</label
+              >${en("panels.zones.labels.throughput", this.hass.language)}:</label
             >
             <input id="throughputInput" type="number" />
           </div>
           <div class="zoneline">
             <span></span>
             <button @click="${this.handleAddZone}" ?disabled="${this.isSaving}">
-              ${this.isSaving ? Xi("common.saving-messages.adding", this.hass.language) : Xi("panels.zones.cards.add-zone.actions.add", this.hass.language)}
+              ${this.isSaving ? en("common.saving-messages.adding", this.hass.language) : en("panels.zones.cards.add-zone.actions.add", this.hass.language)}
             </button>
           </div>
         </div>
       </ha-card>
 
       <ha-card
-        header="${Xi("panels.zones.cards.zone-actions.header", this.hass.language)}"
+        header="${en("panels.zones.cards.zone-actions.header", this.hass.language)}"
       >
         <div class="card-content">
           <div class="action-buttons">
@@ -8516,25 +8733,25 @@
               @click="${this.handleCalculateAllZones}"
               ?disabled="${this.isSaving}"
             >
-              ${Xi("panels.zones.cards.zone-actions.actions.calculate-all", this.hass.language)}
+              ${en("panels.zones.cards.zone-actions.actions.calculate-all", this.hass.language)}
             </button>
             <button
               @click="${this.handleUpdateAllZones}"
               ?disabled="${this.isSaving}"
             >
-              ${Xi("panels.zones.cards.zone-actions.actions.update-all", this.hass.language)}
+              ${en("panels.zones.cards.zone-actions.actions.update-all", this.hass.language)}
             </button>
             <button
               @click="${this.handleResetAllBuckets}"
               ?disabled="${this.isSaving}"
             >
-              ${Xi("panels.zones.cards.zone-actions.actions.reset-all-buckets", this.hass.language)}
+              ${en("panels.zones.cards.zone-actions.actions.reset-all-buckets", this.hass.language)}
             </button>
             <button
               @click="${this.handleClearAllWeatherdata}"
               ?disabled="${this.isSaving}"
             >
-              ${Xi("panels.zones.cards.zone-actions.actions.clear-all-weatherdata", this.hass.language)}
+              ${en("panels.zones.cards.zone-actions.actions.clear-all-weatherdata", this.hass.language)}
             </button>
           </div>
         </div>
@@ -8548,26 +8765,26 @@
     }
     static get styles() {
       return c`
-      ${on}/* View-specific styles only - most common styles are now in globalStyle */
+      ${hn}/* View-specific styles only - most common styles are now in globalStyle */
     `;
     }
   };
-  n([pe()], bn.prototype, "config", void 0), n([pe({
+  n([pe()], kn.prototype, "config", void 0), n([pe({
     type: Array
-  })], bn.prototype, "zones", void 0), n([pe({
+  })], kn.prototype, "zones", void 0), n([pe({
     type: Array
-  })], bn.prototype, "modules", void 0), n([pe({
+  })], kn.prototype, "modules", void 0), n([pe({
     type: Array
-  })], bn.prototype, "mappings", void 0), n([pe({
+  })], kn.prototype, "mappings", void 0), n([pe({
     type: Map
-  })], bn.prototype, "wateringCalendars", void 0), n([pe({
+  })], kn.prototype, "wateringCalendars", void 0), n([pe({
     type: Map
-  })], bn.prototype, "weatherRecords", void 0), n([pe({
+  })], kn.prototype, "weatherRecords", void 0), n([pe({
     type: Boolean
-  })], bn.prototype, "isLoading", void 0), n([pe({
+  })], kn.prototype, "isLoading", void 0), n([pe({
     type: Boolean
-  })], bn.prototype, "isSaving", void 0), n([me("#nameInput")], bn.prototype, "nameInput", void 0), n([me("#sizeInput")], bn.prototype, "sizeInput", void 0), n([me("#throughputInput")], bn.prototype, "throughputInput", void 0), bn = n([ce("smart-irrigation-view-zones")], bn);
-  let yn = class extends ft(ue) {
+  })], kn.prototype, "isSaving", void 0), n([me("#nameInput")], kn.prototype, "nameInput", void 0), n([me("#sizeInput")], kn.prototype, "sizeInput", void 0), n([me("#throughputInput")], kn.prototype, "throughputInput", void 0), kn = n([ce("smart-irrigation-view-zones")], kn);
+  let $n = class extends yt(ue) {
     constructor() {
       super(...arguments), this.zones = [], this.modules = [], this.allmodules = [], this.isLoading = !0, this.isSaving = !1, this._updateScheduled = !1, this.globalDebounceTimer = null, this.moduleCache = new Map(), this.debouncedSave = (() => {
         let e = null;
@@ -8603,7 +8820,7 @@
       if (this.hass) {
         this.isLoading = !0, this._scheduleUpdate();
         try {
-          const [t, a, i, n] = await Promise.all([ct(this.hass), ht(this.hass), pt(this.hass), (e = this.hass, e.callWS({
+          const [t, a, i, n] = await Promise.all([mt(this.hass), gt(this.hass), ft(this.hass), (e = this.hass, e.callWS({
             type: ke + "/allmodules"
           }))]);
           this.config = t, this.zones = a, this.modules = i, this.allmodules = n, this.moduleCache.clear();
@@ -8675,21 +8892,21 @@
           <div class="moduledescription${t}">${e.description}</div>
           <div class="moduleconfig">
             <label class="subheader"
-              >${Xi("panels.modules.cards.module.labels.configuration", this.hass.language)}
+              >${en("panels.modules.cards.module.labels.configuration", this.hass.language)}
               (*
-              ${Xi("panels.modules.cards.module.labels.required", this.hass.language)})</label
+              ${en("panels.modules.cards.module.labels.required", this.hass.language)})</label
             >
             ${e.schema ? Object.entries(e.schema).map(([e]) => this.renderConfig(t, e)) : null}
           </div>
           ${i ? Y`<div class="weather-note">
-                ${Xi("panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it", this.hass.language)}
+                ${en("panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it", this.hass.language)}
               </div>` : Y`
               <div class="action-button" @click="${e => this.handleRemoveModule(e, t)}">
                 <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                  <path fill="#404040" d="${ln}" />
+                  <path fill="#404040" d="${pn}" />
                 </svg>
                 <span class="action-button-label">
-                  ${Xi("common.actions.delete", this.hass.language)}
+                  ${en("common.actions.delete", this.hass.language)}
                 </span>
               </div>`}
         </div>
@@ -8749,10 +8966,10 @@
         }))}"
         >
           ${Object.entries(i.options).map(([e, a]) => Y`<option
-                value="${nn(a, 0)}"
-                ?selected="${r === nn(a, 0)}"
+                value="${on(a, 0)}"
+                ?selected="${r === on(a, 0)}"
               >
-                ${Xi("panels.modules.cards.module.translated-options." + nn(a, 1), t)}
+                ${en("panels.modules.cards.module.translated-options." + on(a, 1), t)}
               </option>`)}
         </select>`;
       }
@@ -8766,20 +8983,20 @@
     }
     render() {
       return this.hass ? Y`
-      <ha-card header="${Xi("panels.modules.title", this.hass.language)}">
+      <ha-card header="${en("panels.modules.title", this.hass.language)}">
         <div class="card-content">
-          ${Xi("panels.modules.description", this.hass.language)}
+          ${en("panels.modules.description", this.hass.language)}
         </div>
       </ha-card>
 
       <ha-card
-        header="${Xi("panels.modules.cards.add-module.header", this.hass.language)}"
+        header="${en("panels.modules.cards.add-module.header", this.hass.language)}"
       >
         <div class="card-content">
-          ${this.isLoading ? Y`<div class="loading-indicator">${Xi("common.loading-messages.general", this.hass.language)}</div>` : Y`
+          ${this.isLoading ? Y`<div class="loading-indicator">${en("common.loading-messages.general", this.hass.language)}</div>` : Y`
                 <div class="zoneline">
                   <label for="moduleInput"
-                    >${Xi("common.labels.module", this.hass.language)}:</label
+                    >${en("common.labels.module", this.hass.language)}:</label
                   >
                   <select id="moduleInput" ?disabled="${this.isSaving}">
                     ${Object.entries(this.allmodules).map(([e, t]) => Y`<option value="${t.id}">${t.name}</option>`)}
@@ -8792,14 +9009,14 @@
                     ?disabled="${this.isSaving}"
                     class="${this.isSaving ? "saving" : ""}"
                   >
-                    ${this.isSaving ? Xi("common.saving-messages.adding", this.hass.language) : Xi("panels.modules.cards.add-module.actions.add", this.hass.language)}
+                    ${this.isSaving ? en("common.saving-messages.adding", this.hass.language) : en("panels.modules.cards.add-module.actions.add", this.hass.language)}
                   </button>
                 </div>
               `}
         </div>
       </ha-card>
 
-      ${this.isLoading ? Y`<div class="loading-indicator">${Xi("common.loading-messages.modules", this.hass.language)}</div>` : Object.entries(this.modules).map(([e, t]) => this.renderModule(t, parseInt(e)))}
+      ${this.isLoading ? Y`<div class="loading-indicator">${en("common.loading-messages.modules", this.hass.language)}</div>` : Object.entries(this.modules).map(([e, t]) => this.renderModule(t, parseInt(e)))}
     ` : Y``;
     }
     disconnectedCallback() {
@@ -8807,23 +9024,23 @@
     }
     static get styles() {
       return c`
-      ${on}
+      ${hn}
       /* View-specific styles only - most common styles are now in globalStyle */
     `;
     }
   };
-  n([pe()], yn.prototype, "config", void 0), n([pe({
+  n([pe()], $n.prototype, "config", void 0), n([pe({
     type: Array
-  })], yn.prototype, "zones", void 0), n([pe({
+  })], $n.prototype, "zones", void 0), n([pe({
     type: Array
-  })], yn.prototype, "modules", void 0), n([pe({
+  })], $n.prototype, "modules", void 0), n([pe({
     type: Array
-  })], yn.prototype, "allmodules", void 0), n([pe({
+  })], $n.prototype, "allmodules", void 0), n([pe({
     type: Boolean
-  })], yn.prototype, "isLoading", void 0), n([pe({
+  })], $n.prototype, "isLoading", void 0), n([pe({
     type: Boolean
-  })], yn.prototype, "isSaving", void 0), n([me("#moduleInput")], yn.prototype, "moduleInput", void 0), yn = n([ce("smart-irrigation-view-modules")], yn);
-  let _n = class extends ft(ue) {
+  })], $n.prototype, "isSaving", void 0), n([me("#moduleInput")], $n.prototype, "moduleInput", void 0), $n = n([ce("smart-irrigation-view-modules")], $n);
+  let Sn = class extends yt(ue) {
     constructor() {
       super(...arguments), this.zones = [], this.mappings = [], this.weatherRecords = new Map(), this.isLoading = !0, this.isSaving = !1, this.debounceTimers = new Map(), this.globalDebounceTimer = null, this.mappingCache = new Map(), this._updateScheduled = !1, this._lastUpdateTime = 0, this._updateThrottleDelay = 16;
     }
@@ -8856,10 +9073,10 @@
       var e;
       if (this.hass) try {
         this.isLoading = !0;
-        const [e, t, a] = await Promise.all([ct(this.hass), ht(this.hass), mt(this.hass)]);
+        const [e, t, a] = await Promise.all([mt(this.hass), gt(this.hass), vt(this.hass)]);
         this.config = e, this.zones = t, this.mappings = a, this._fetchWeatherRecords(), this.mappingCache.clear();
       } catch (t) {
-        console.error("Error fetching data:", t), rn({
+        console.error("Error fetching data:", t), un({
           body: {
             message: "Failed to load mapping data"
           },
@@ -8872,7 +9089,7 @@
     async _fetchWeatherRecords() {
       if (this.hass) {
         for (const e of this.mappings) if (void 0 !== e.id) try {
-          const t = await gt(this.hass, e.id.toString(), 10);
+          const t = await bt(this.hass, e.id.toString(), 10);
           this.weatherRecords.set(e.id, t);
         } catch (t) {
           console.error(`Failed to fetch weather records for mapping ${e.id}:`, t), this.weatherRecords.set(e.id, []);
@@ -8886,29 +9103,29 @@
       return Y`
       <div class="weather-records">
         <h4>
-          ${Xi("panels.mappings.weather-records.title", this.hass.language)}
+          ${en("panels.mappings.weather-records.title", this.hass.language)}
         </h4>
         ${0 === t.length ? Y`
               <div class="weather-note">
-                ${Xi("panels.mappings.weather-records.no-data", this.hass.language)}
+                ${en("panels.mappings.weather-records.no-data", this.hass.language)}
               </div>
             ` : Y`
               <div class="weather-table">
                 <div class="weather-header">
                   <span
-                    >${Xi("panels.mappings.weather-records.timestamp", this.hass.language)}</span
+                    >${en("panels.mappings.weather-records.timestamp", this.hass.language)}</span
                   >
                   <span
-                    >${Xi("panels.mappings.weather-records.temperature", this.hass.language)}</span
+                    >${en("panels.mappings.weather-records.temperature", this.hass.language)}</span
                   >
                   <span
-                    >${Xi("panels.mappings.weather-records.humidity", this.hass.language)}</span
+                    >${en("panels.mappings.weather-records.humidity", this.hass.language)}</span
                   >
                   <span
-                    >${Xi("panels.mappings.weather-records.precipitation", this.hass.language)}</span
+                    >${en("panels.mappings.weather-records.precipitation", this.hass.language)}</span
                   >
                   <span
-                    >${Xi("panels.mappings.weather-records.retrieval-time", this.hass.language)}</span
+                    >${en("panels.mappings.weather-records.retrieval-time", this.hass.language)}</span
                   >
                 </div>
                 ${t.slice(0, 10).map(e => {
@@ -8916,7 +9133,7 @@
           a = "-";
         try {
           if (e.timestamp && null !== e.timestamp) {
-            const a = vn(e.timestamp);
+            const a = wn(e.timestamp);
             a.isValid() && (t = a.format("MM-DD HH:mm"));
           }
         } catch (t) {
@@ -8924,7 +9141,7 @@
         }
         try {
           if (e.retrieval_time && null !== e.retrieval_time) {
-            const t = vn(e.retrieval_time);
+            const t = wn(e.retrieval_time);
             t.isValid() && (a = t.format("MM-DD HH:mm"));
           }
         } catch (t) {
@@ -8954,15 +9171,15 @@
     handleAddMapping() {
       if (!this.mappingNameInput.value.trim()) return;
       const e = {
-          [Ae]: "",
-          [ze]: "",
-          [Te]: "",
           [De]: "",
           [Oe]: "",
           [He]: "",
           [Ce]: "",
           [Pe]: "",
-          [Ne]: ""
+          [Ne]: "",
+          [Le]: "",
+          [je]: "",
+          [Ie]: ""
         },
         t = {
           name: this.mappingNameInput.value.trim(),
@@ -9013,11 +9230,11 @@
       }
       if (a.length > 0) {
         const e = null === (t = this.shadowRoot) || void 0 === t ? void 0 : t.querySelector("ha-card");
-        throw e && rn({
+        throw e && un({
           body: {
-            message: Xi("panels.mappings.cards.mapping.errors.source_does_not_exist", this.hass.language) + ": " + a.join(", ")
+            message: en("panels.mappings.cards.mapping.errors.source_does_not_exist", this.hass.language) + ": " + a.join(", ")
           },
-          error: Xi("panels.mappings.cards.mapping.errors.invalid_source", this.hass.language)
+          error: en("panels.mappings.cards.mapping.errors.invalid_source", this.hass.language)
         }, e), new Error("Invalid sensor entities found");
       }
       var n, s;
@@ -9033,7 +9250,7 @@
         <div class="card-content">
           <div class="card-content">
             <label for="name${e.id}"
-              >${Xi("panels.mappings.labels.mapping-name", this.hass.language)}:</label
+              >${en("panels.mappings.labels.mapping-name", this.hass.language)}:</label
             >
             <input
               id="name${e.id}"
@@ -9045,16 +9262,16 @@
             />
             ${Object.entries(e.mappings).map(([e]) => this.renderMappingSetting(t, e))}
             ${i ? Y`<div class="weather-note">
-                  ${Xi("panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it", this.hass.language)}
+                  ${en("panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it", this.hass.language)}
                 </div>` : Y` <div
                   class="action-button"
                   @click="${e => this.handleRemoveMapping(e, t)}"
                 >
                   <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                    <path fill="#404040" d="${ln}" />
+                    <path fill="#404040" d="${pn}" />
                   </svg>
                   <span class="action-button-label">
-                    ${Xi("common.actions.delete", this.hass.language)}
+                    ${en("common.actions.delete", this.hass.language)}
                   </span>
                 </div>`}
           </div>
@@ -9071,12 +9288,12 @@
       <div class="mappingline">
         <div class="mappingsettingname">
           <label for="${`${t}_${e}`}">
-            ${Xi(`panels.mappings.cards.mapping.items.${t.toLowerCase()}`, this.hass.language)}
+            ${en(`panels.mappings.cards.mapping.items.${t.toLowerCase()}`, this.hass.language)}
           </label>
         </div>
         <div class="mappingsettingline">
           <label
-            >${Xi("panels.mappings.cards.mapping.source", this.hass.language)}:</label
+            >${en("panels.mappings.cards.mapping.source", this.hass.language)}:</label
           >
           <div class="radio-group">
             ${this.renderSimpleRadioOptions(e, t, i)}
@@ -9088,19 +9305,19 @@
     }
     renderSimpleRadioOptions(e, t, a) {
       if (!this.hass || !this.config) return Y``;
-      const i = t === ze || t === Ce,
-        n = a[Fe];
+      const i = t === Oe || t === Le,
+        n = a[We];
       return Y`
       ${!i && this.config.use_weather_service ? Y`
             <label>
               <input
                 type="radio"
                 name="${t}_${e}_source"
-                value="${Le}"
-                ?checked="${n === Le}"
+                value="${Be}"
+                ?checked="${n === Be}"
                 @change="${a => this.handleSimpleSourceChange(e, t, a)}"
               />
-              ${Xi("panels.mappings.cards.mapping.sources.weather_service", this.hass.language)}
+              ${en("panels.mappings.cards.mapping.sources.weather_service", this.hass.language)}
             </label>
           ` : ""}
       ${i ? Y`
@@ -9108,11 +9325,11 @@
               <input
                 type="radio"
                 name="${t}_${e}_source"
-                value="${Ye}"
-                ?checked="${n === Ye}"
+                value="${Ge}"
+                ?checked="${n === Ge}"
                 @change="${a => this.handleSimpleSourceChange(e, t, a)}"
               />
-              ${Xi("panels.mappings.cards.mapping.sources.none", this.hass.language)}
+              ${en("panels.mappings.cards.mapping.sources.none", this.hass.language)}
             </label>
           ` : ""}
 
@@ -9120,48 +9337,48 @@
         <input
           type="radio"
           name="${t}_${e}_source"
-          value="${je}"
-          ?checked="${n === je}"
+          value="${Ue}"
+          ?checked="${n === Ue}"
           @change="${a => this.handleSimpleSourceChange(e, t, a)}"
         />
-        ${Xi("panels.mappings.cards.mapping.sources.sensor", this.hass.language)}
+        ${en("panels.mappings.cards.mapping.sources.sensor", this.hass.language)}
       </label>
 
       <label>
         <input
           type="radio"
           name="${t}_${e}_source"
-          value="${Ie}"
-          ?checked="${n === Ie}"
+          value="${Re}"
+          ?checked="${n === Re}"
           @change="${a => this.handleSimpleSourceChange(e, t, a)}"
         />
-        ${Xi("panels.mappings.cards.mapping.sources.static", this.hass.language)}
+        ${en("panels.mappings.cards.mapping.sources.static", this.hass.language)}
       </label>
     `;
     }
     renderMappingInputsSimple(e, t, a) {
       if (!this.hass) return Y``;
-      const i = a[Fe];
-      return i === je ? Y`
+      const i = a[We];
+      return i === Ue ? Y`
         <div class="mappingsettingline">
           <label
-            >${Xi("panels.mappings.cards.mapping.sensor-entity", this.hass.language)}:</label
+            >${en("panels.mappings.cards.mapping.sensor-entity", this.hass.language)}:</label
           >
           <input
             type="text"
-            .value="${a[Ve] || ""}"
-            @change="${a => this.handleSimpleInputChange(e, t, Ve, a)}"
+            .value="${a[Ze] || ""}"
+            @change="${a => this.handleSimpleInputChange(e, t, Ze, a)}"
           />
         </div>
-      ` : i === Ie ? Y`
+      ` : i === Re ? Y`
         <div class="mappingsettingline">
           <label
-            >${Xi("panels.mappings.cards.mapping.static_value", this.hass.language)}:</label
+            >${en("panels.mappings.cards.mapping.static_value", this.hass.language)}:</label
           >
           <input
             type="text"
-            .value="${a[Ge] || ""}"
-            @input="${a => this.handleSimpleInputChange(e, t, Ge, a)}"
+            .value="${a[qe] || ""}"
+            @input="${a => this.handleSimpleInputChange(e, t, qe, a)}"
           />
         </div>
       ` : Y``;
@@ -9172,8 +9389,8 @@
       this.handleEditMapping(e, Object.assign(Object.assign({}, i), {
         mappings: Object.assign(Object.assign({}, i.mappings), {
           [t]: Object.assign(Object.assign({}, i.mappings[t]), {
-            [Fe]: n,
-            [Ve]: ""
+            [We]: n,
+            [Ze]: ""
           })
         })
       }));
@@ -9191,11 +9408,11 @@
     }
     renderSourceOptions(e, t, a) {
       if (!this.hass) return Y``;
-      const i = t === ze || t === Ce;
+      const i = t === Oe || t === Le;
       return Y`
       <div class="mappingsettingline">
         <label for="${`${t}_${e}`}_source">
-          ${Xi("panels.mappings.cards.mapping.source", this.hass.language)}:
+          ${en("panels.mappings.cards.mapping.source", this.hass.language)}:
         </label>
       </div>
       <div class="radio-group">
@@ -9210,73 +9427,73 @@
       if (!this.hass || !this.config) return Y``;
       const i = `${t}_${e}`,
         n = !this.config.use_weather_service,
-        s = this.config.use_weather_service && a[Fe] === Le;
+        s = this.config.use_weather_service && a[We] === Be;
       return Y`
       <label class="${n ? "strikethrough" : ""}">
         <input
           type="radio"
           id="${i}_weather"
-          value="${Le}"
+          value="${Be}"
           name="${i}_source"
           ?checked="${s}"
           ?disabled="${n}"
           @change="${a => this.handleSourceChange(e, t, a)}"
         />
-        ${Xi("panels.mappings.cards.mapping.sources.weather_service", this.hass.language)}
+        ${en("panels.mappings.cards.mapping.sources.weather_service", this.hass.language)}
       </label>
     `;
     }
     renderNoneOption(e, t, a) {
       if (!this.hass) return Y``;
       const i = `${t}_${e}`,
-        n = a[Fe] === Ye;
+        n = a[We] === Ge;
       return Y`
       <label>
         <input
           type="radio"
           id="${i}_none"
-          value="${Ye}"
+          value="${Ge}"
           name="${i}_source"
           ?checked="${n}"
           @change="${a => this.handleSourceChange(e, t, a)}"
         />
-        ${Xi("panels.mappings.cards.mapping.sources.none", this.hass.language)}
+        ${en("panels.mappings.cards.mapping.sources.none", this.hass.language)}
       </label>
     `;
     }
     renderSensorOption(e, t, a) {
       if (!this.hass) return Y``;
       const i = `${t}_${e}`,
-        n = a[Fe] === je;
+        n = a[We] === Ue;
       return Y`
       <label>
         <input
           type="radio"
           id="${i}_sensor"
-          value="${je}"
+          value="${Ue}"
           name="${i}_source"
           ?checked="${n}"
           @change="${a => this.handleSourceChange(e, t, a)}"
         />
-        ${Xi("panels.mappings.cards.mapping.sources.sensor", this.hass.language)}
+        ${en("panels.mappings.cards.mapping.sources.sensor", this.hass.language)}
       </label>
     `;
     }
     renderStaticValueOption(e, t, a) {
       if (!this.hass) return Y``;
       const i = `${t}_${e}`,
-        n = a[Fe] === Ie;
+        n = a[We] === Re;
       return Y`
       <label>
         <input
           type="radio"
           id="${i}_static"
-          value="${Ie}"
+          value="${Re}"
           name="${i}_source"
           ?checked="${n}"
           @change="${a => this.handleSourceChange(e, t, a)}"
         />
-        ${Xi("panels.mappings.cards.mapping.sources.static", this.hass.language)}
+        ${en("panels.mappings.cards.mapping.sources.static", this.hass.language)}
       </label>
     `;
     }
@@ -9286,21 +9503,21 @@
       this.handleEditMapping(e, Object.assign(Object.assign({}, i), {
         mappings: Object.assign(Object.assign({}, i.mappings), {
           [t]: Object.assign(Object.assign({}, i.mappings[t]), {
-            [Fe]: n,
-            [Ve]: ""
+            [We]: n,
+            [Ze]: ""
           })
         })
       }));
     }
     renderMappingInputs(e, t, a) {
       if (!this.hass) return Y``;
-      const i = a[Fe];
+      const i = a[We];
       return Y`
-      ${i === je ? this.renderSensorInput(e, t, a) : ""}
-      ${i === Ie ? this.renderStaticValueInput(e, t, a) : ""}
-      ${i === je || i === Ie ? this.renderUnitSelect(e, t, a) : ""}
-      ${t !== He || i !== je && i !== Ie ? "" : this.renderPressureTypeSelect(e, t, a)}
-      ${i === je ? this.renderAggregateSelect(e, t, a) : ""}
+      ${i === Ue ? this.renderSensorInput(e, t, a) : ""}
+      ${i === Re ? this.renderStaticValueInput(e, t, a) : ""}
+      ${i === Ue || i === Re ? this.renderUnitSelect(e, t, a) : ""}
+      ${t !== Ne || i !== Ue && i !== Re ? "" : this.renderPressureTypeSelect(e, t, a)}
+      ${i === Ue ? this.renderAggregateSelect(e, t, a) : ""}
     `;
     }
     renderSensorInput(e, t, a) {
@@ -9309,12 +9526,12 @@
       return Y`
       <div class="mappingsettingline">
         <label for="${i}_sensor_entity">
-          ${Xi("panels.mappings.cards.mapping.sensor-entity", this.hass.language)}:
+          ${en("panels.mappings.cards.mapping.sensor-entity", this.hass.language)}:
         </label>
         <input
           type="text"
           id="${i}_sensor_entity"
-          .value="${a[Ve] || ""}"
+          .value="${a[Ze] || ""}"
           @change="${a => this.handleSensorChange(e, t, a)}"
         />
       </div>
@@ -9326,12 +9543,12 @@
       return Y`
       <div class="mappingsettingline">
         <label for="${i}_static_value">
-          ${Xi("panels.mappings.cards.mapping.static_value", this.hass.language)}:
+          ${en("panels.mappings.cards.mapping.static_value", this.hass.language)}:
         </label>
         <input
           type="text"
           id="${i}_static_value"
-          .value="${a[Ge] || ""}"
+          .value="${a[qe] || ""}"
           @input="${a => this.handleStaticValueChange(e, t, a)}"
         />
       </div>
@@ -9343,7 +9560,7 @@
       return Y`
       <div class="mappingsettingline">
         <label for="${i}_unit">
-          ${Xi("panels.mappings.cards.mapping.input-units", this.hass.language)}:
+          ${en("panels.mappings.cards.mapping.input-units", this.hass.language)}:
         </label>
         <select
           id="${i}_unit"
@@ -9360,7 +9577,7 @@
       return Y`
       <div class="mappingsettingline">
         <label for="${i}_pressure_type">
-          ${Xi("panels.mappings.cards.mapping.pressure-type", this.hass.language)}:
+          ${en("panels.mappings.cards.mapping.pressure-type", this.hass.language)}:
         </label>
         <select
           id="${i}_pressure_type"
@@ -9377,7 +9594,7 @@
       return Y`
       <div class="mappingsettingline">
         <label for="${i}_aggregate">
-          ${Xi("panels.mappings.cards.mapping.sensor-aggregate-use-the", this.hass.language)}
+          ${en("panels.mappings.cards.mapping.sensor-aggregate-use-the", this.hass.language)}
         </label>
         <select
           id="${i}_aggregate"
@@ -9386,7 +9603,7 @@
           ${this.renderAggregateOptionsForMapping(t, a)}
         </select>
         <label for="${i}_aggregate">
-          ${Xi("panels.mappings.cards.mapping.sensor-aggregate-of-sensor-values-to-calculate", this.hass.language)}
+          ${en("panels.mappings.cards.mapping.sensor-aggregate-of-sensor-values-to-calculate", this.hass.language)}
         </label>
       </div>
     `;
@@ -9396,7 +9613,7 @@
       this.handleEditMapping(e, Object.assign(Object.assign({}, i), {
         mappings: Object.assign(Object.assign({}, i.mappings), {
           [t]: Object.assign(Object.assign({}, i.mappings[t]), {
-            [Ve]: a.target.value
+            [Ze]: a.target.value
           })
         })
       }));
@@ -9406,7 +9623,7 @@
       this.handleEditMapping(e, Object.assign(Object.assign({}, i), {
         mappings: Object.assign(Object.assign({}, i.mappings), {
           [t]: Object.assign(Object.assign({}, i.mappings[t]), {
-            [Ge]: a.target.value
+            [qe]: a.target.value
           })
         })
       }));
@@ -9416,7 +9633,7 @@
       this.handleEditMapping(e, Object.assign(Object.assign({}, i), {
         mappings: Object.assign(Object.assign({}, i.mappings), {
           [t]: Object.assign(Object.assign({}, i.mappings[t]), {
-            [We]: a.target.value
+            [Ke]: a.target.value
           })
         })
       }));
@@ -9426,7 +9643,7 @@
       this.handleEditMapping(e, Object.assign(Object.assign({}, i), {
         mappings: Object.assign(Object.assign({}, i.mappings), {
           [t]: Object.assign(Object.assign({}, i.mappings[t]), {
-            [Be]: a.target.value
+            [Ye]: a.target.value
           })
         })
       }));
@@ -9436,7 +9653,7 @@
       this.handleEditMapping(e, Object.assign(Object.assign({}, i), {
         mappings: Object.assign(Object.assign({}, i.mappings), {
           [t]: Object.assign(Object.assign({}, i.mappings[t]), {
-            [Ze]: a.target.value
+            [Xe]: a.target.value
           })
         })
       }));
@@ -9444,14 +9661,14 @@
     renderAggregateOptionsForMapping(e, t) {
       if (!this.hass || !this.config) return Y``;
       let a = "average";
-      return e === De && (a = "maximum"), e === Oe && (a = "last"), t[Ze] && (a = t[Ze]), Y`
-      ${qe.map(e => this.renderAggregateOption(e, a))}
+      return e === Ce && (a = "maximum"), e === Pe && (a = "last"), t[Xe] && (a = t[Xe]), Y`
+      ${Je.map(e => this.renderAggregateOption(e, a))}
     `;
     }
     renderAggregateOption(e, t) {
       if (this.hass && this.config) {
         return Y`<option value="${e}" ?selected="${e === t}">
-        ${Xi("panels.mappings.cards.mapping.aggregates." + e, this.hass.language)}
+        ${en("panels.mappings.cards.mapping.aggregates." + e, this.hass.language)}
       </option>`;
       }
       return Y``;
@@ -9459,19 +9676,19 @@
     renderPressureTypes(e, t) {
       if (this.hass && this.config) {
         let e = Y``;
-        const a = t[Be];
+        const a = t[Ye];
         return e = Y`${e}
         <option
-          value="${Re}"
-          ?selected="${a === Re}"
+          value="${Fe}"
+          ?selected="${a === Fe}"
         >
-          ${Xi("panels.mappings.cards.mapping.pressure_types." + Re, this.hass.language)}
+          ${en("panels.mappings.cards.mapping.pressure_types." + Fe, this.hass.language)}
         </option>
         <option
-          value="${Ue}"
-          ?selected="${a === Ue}"
+          value="${Ve}"
+          ?selected="${a === Ve}"
         >
-          ${Xi("panels.mappings.cards.mapping.pressure_types." + Ue, this.hass.language)}
+          ${en("panels.mappings.cards.mapping.pressure_types." + Ve, this.hass.language)}
         </option>`, e;
       }
       return Y``;
@@ -9480,83 +9697,83 @@
       if (!this.hass || !this.config) return Y``;
       const a = function (e) {
         switch (e) {
-          case Ae:
-          case Pe:
+          case De:
+          case je:
             return [{
               unit: "°C",
-              system: Me
+              system: Te
             }, {
               unit: "°F",
-              system: Ee
+              system: Ae
             }];
-          case De:
-          case ze:
-            return [{
-              unit: "mm",
-              system: Me
-            }, {
-              unit: "in",
-              system: Ee
-            }];
+          case Ce:
           case Oe:
             return [{
-              unit: Ke,
-              system: Me
+              unit: "mm",
+              system: Te
             }, {
-              unit: Xe,
-              system: Ee
+              unit: "in",
+              system: Ae
             }];
-          case Te:
+          case Pe:
             return [{
-              unit: "%",
-              system: [Me, Ee]
+              unit: Qe,
+              system: Te
+            }, {
+              unit: et,
+              system: Ae
             }];
           case He:
             return [{
-              unit: "millibar",
-              system: Me
-            }, {
-              unit: "hPa",
-              system: Me
-            }, {
-              unit: "psi",
-              system: Ee
-            }, {
-              unit: "inch Hg",
-              system: Ee
+              unit: "%",
+              system: [Te, Ae]
             }];
           case Ne:
             return [{
+              unit: "millibar",
+              system: Te
+            }, {
+              unit: "hPa",
+              system: Te
+            }, {
+              unit: "psi",
+              system: Ae
+            }, {
+              unit: "inch Hg",
+              system: Ae
+            }];
+          case Ie:
+            return [{
               unit: "km/h",
-              system: Me
+              system: Te
             }, {
               unit: "meter/s",
-              system: Me
+              system: Te
             }, {
               unit: "mile/h",
-              system: Ee
+              system: Ae
             }];
-          case Ce:
+          case Le:
             return [{
               unit: "W/m2",
-              system: Me
+              system: Te
             }, {
               unit: "MJ/day/m2",
-              system: Me
+              system: Te
             }, {
               unit: "W/sq ft",
-              system: Ee
+              system: Ae
             }, {
               unit: "MJ/day/sq ft",
-              system: Ee
+              system: Ae
             }];
           default:
             return [];
         }
       }(e);
-      let i = t[We];
+      let i = t[Ke];
       const n = this.config.units;
-      if (!t[We]) for (const e of a) if ("string" == typeof e.system) {
+      if (!t[Ke]) for (const e of a) if ("string" == typeof e.system) {
         if (n === e.system) {
           i = e.unit;
           break;
@@ -9578,32 +9795,32 @@
     }
     render() {
       return this.hass ? this.isLoading ? Y`
-        <ha-card header="${Xi("panels.mappings.title", this.hass.language)}">
+        <ha-card header="${en("panels.mappings.title", this.hass.language)}">
           <div class="card-content">
-            ${Xi("common.loading-messages.general", this.hass.language)}
+            ${en("common.loading-messages.general", this.hass.language)}
           </div>
         </ha-card>
       ` : Y`
-      <ha-card header="${Xi("panels.mappings.title", this.hass.language)}">
+      <ha-card header="${en("panels.mappings.title", this.hass.language)}">
         <div class="card-content">
-          ${Xi("panels.mappings.description", this.hass.language)}
+          ${en("panels.mappings.description", this.hass.language)}
         </div>
       </ha-card>
 
       <ha-card
-        header="${Xi("panels.mappings.cards.add-mapping.header", this.hass.language)}"
+        header="${en("panels.mappings.cards.add-mapping.header", this.hass.language)}"
       >
         <div class="card-content">
           <div class="zoneline">
             <label for="mappingNameInput"
-              >${Xi("panels.mappings.labels.mapping-name", this.hass.language)}:</label
+              >${en("panels.mappings.labels.mapping-name", this.hass.language)}:</label
             >
             <input id="mappingNameInput" type="text" />
           </div>
           <div class="zoneline">
             <span></span>
             <button @click="${this.handleAddMapping}">
-              ${Xi("panels.mappings.cards.add-mapping.actions.add", this.hass.language)}
+              ${en("panels.mappings.cards.add-mapping.actions.add", this.hass.language)}
             </button>
           </div>
         </div>
@@ -9634,7 +9851,7 @@
         <div class="card-content">
           <div class="card-content">
             <label for="name${e.id}"
-              >${Xi("panels.mappings.labels.mapping-name", this.hass.language)}:</label
+              >${en("panels.mappings.labels.mapping-name", this.hass.language)}:</label
             >
             <input
               id="name${e.id}"
@@ -9647,16 +9864,16 @@
             ${this.renderMappingSettings(e, t)}
             ${this.renderWeatherRecords(e)}
             ${a ? Y`<div class="weather-note">
-                  ${Xi("panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it", this.hass.language)}
+                  ${en("panels.mappings.cards.mapping.errors.cannot-delete-mapping-because-zones-use-it", this.hass.language)}
                 </div>` : Y` <div
                   class="action-button"
                   @click="${e => this.handleRemoveMapping(e, t)}"
                 >
                   <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                    <path fill="#404040" d="${ln}" />
+                    <path fill="#404040" d="${pn}" />
                   </svg>
                   <span class="action-button-label">
-                    ${Xi("common.actions.delete", this.hass.language)}
+                    ${en("common.actions.delete", this.hass.language)}
                   </span>
                 </div>`}
           </div>
@@ -9675,7 +9892,7 @@
     }
     static get styles() {
       return c`
-      ${on}/* View-specific styles only - most common styles are now in globalStyle */
+      ${hn}/* View-specific styles only - most common styles are now in globalStyle */
     `;
     }
     disconnectedCallback() {
@@ -9684,18 +9901,18 @@
       }), this.debounceTimers.clear(), this.globalDebounceTimer && (clearTimeout(this.globalDebounceTimer), this.globalDebounceTimer = null), this.mappingCache.clear();
     }
   };
-  n([pe()], _n.prototype, "config", void 0), n([pe({
+  n([pe()], Sn.prototype, "config", void 0), n([pe({
     type: Array
-  })], _n.prototype, "zones", void 0), n([pe({
+  })], Sn.prototype, "zones", void 0), n([pe({
     type: Array
-  })], _n.prototype, "mappings", void 0), n([pe({
+  })], Sn.prototype, "mappings", void 0), n([pe({
     type: Map
-  })], _n.prototype, "weatherRecords", void 0), n([pe({
+  })], Sn.prototype, "weatherRecords", void 0), n([pe({
     type: Boolean
-  })], _n.prototype, "isLoading", void 0), n([pe({
+  })], Sn.prototype, "isLoading", void 0), n([pe({
     type: Boolean
-  })], _n.prototype, "isSaving", void 0), n([me("#mappingNameInput")], _n.prototype, "mappingNameInput", void 0), _n = n([ce("smart-irrigation-view-mappings")], _n);
-  let wn = class extends ft(ue) {
+  })], Sn.prototype, "isSaving", void 0), n([me("#mappingNameInput")], Sn.prototype, "mappingNameInput", void 0), Sn = n([ce("smart-irrigation-view-mappings")], Sn);
+  let xn = class extends yt(ue) {
     constructor() {
       super(...arguments), this.zones = [], this.isLoading = !0, this._updateScheduled = !1;
     }
@@ -9724,9 +9941,9 @@
       var e;
       if (this.hass) try {
         this.isLoading = !0;
-        const [t, a, i] = await Promise.all([ct(this.hass), (e = this.hass, e.callWS({
+        const [t, a, i] = await Promise.all([mt(this.hass), (e = this.hass, e.callWS({
           type: ke + "/info"
-        })), ht(this.hass)]);
+        })), gt(this.hass)]);
         this.config = t, this.info = a, this.zones = i;
       } catch (e) {
         console.error("Error fetching data:", e);
@@ -9736,24 +9953,24 @@
     }
     render() {
       return this.hass ? this.isLoading ? Y`
-        <ha-card header="${Xi("panels.info.title", this.hass.language)}">
+        <ha-card header="${en("panels.info.title", this.hass.language)}">
           <div class="card-content">
-            ${Xi("common.loading", this.hass.language)}...
+            ${en("common.loading", this.hass.language)}...
           </div>
         </ha-card>
       ` : this.config ? Y`
-      <ha-card header="${Xi("panels.info.title", this.hass.language)}">
+      <ha-card header="${en("panels.info.title", this.hass.language)}">
         <div class="card-content">
-          ${Xi("panels.info.description", this.hass.language)}
+          ${en("panels.info.description", this.hass.language)}
         </div>
       </ha-card>
 
       ${this.renderZoneBucketsCard()} ${this.renderNextIrrigationCard()}
       ${this.renderIrrigationReasonCard()}
     ` : Y`
-        <ha-card header="${Xi("panels.info.title", this.hass.language)}">
+        <ha-card header="${en("panels.info.title", this.hass.language)}">
           <div class="card-content">
-            ${Xi("panels.info.configuration-not-available", this.hass.language)}
+            ${en("panels.info.configuration-not-available", this.hass.language)}
           </div>
         </ha-card>
       ` : Y``;
@@ -9762,21 +9979,21 @@
       if (!this.hass) return Y``;
       if (!this.zones || 0 === this.zones.length) return Y`
         <ha-card
-          header="${Xi("panels.info.cards.zone-bucket-values.title", this.hass.language)}"
+          header="${en("panels.info.cards.zone-bucket-values.title", this.hass.language)}"
         >
           <div class="card-content">
             <div class="info-item">
               <span class="value"
-                >${Xi("panels.info.cards.zone-bucket-values.no-zones", this.hass.language)}</span
+                >${en("panels.info.cards.zone-bucket-values.no-zones", this.hass.language)}</span
               >
             </div>
           </div>
         </ha-card>
       `;
-      const e = this.config ? sn(this.config, nt) : "mm";
+      const e = this.config ? ln(this.config, ot) : "mm";
       return Y`
       <ha-card
-        header="${Xi("panels.info.cards.zone-bucket-values.title", this.hass.language)}"
+        header="${en("panels.info.cards.zone-bucket-values.title", this.hass.language)}"
       >
         <div class="card-content">
           ${this.zones.map(t => {
@@ -9789,7 +10006,7 @@
                 <div class="zone-details">
                   <div class="zone-bucket">
                     <span class="label"
-                      >${Xi("panels.info.cards.zone-bucket-values.labels.bucket", null !== (i = null === (a = this.hass) || void 0 === a ? void 0 : a.language) && void 0 !== i ? i : "en")}:</span
+                      >${en("panels.info.cards.zone-bucket-values.labels.bucket", null !== (i = null === (a = this.hass) || void 0 === a ? void 0 : a.language) && void 0 !== i ? i : "en")}:</span
                     >
                     <span class="value">
                       ${Number(t.bucket).toFixed(1)} ${e}
@@ -9797,10 +10014,10 @@
                   </div>
                   <div class="zone-duration">
                     <span class="label"
-                      >${Xi("panels.info.cards.zone-bucket-values.labels.duration", null !== (s = null === (n = this.hass) || void 0 === n ? void 0 : n.language) && void 0 !== s ? s : "en")}:</span
+                      >${en("panels.info.cards.zone-bucket-values.labels.duration", null !== (s = null === (n = this.hass) || void 0 === n ? void 0 : n.language) && void 0 !== s ? s : "en")}:</span
                     >
                     <span class="value">
-                      ${t.duration ? `${Math.round(t.duration)} ${Xi("common.units.seconds", null !== (o = null === (r = this.hass) || void 0 === r ? void 0 : r.language) && void 0 !== o ? o : "en")}` : `0 ${Xi("common.units.seconds", null !== (u = null === (l = this.hass) || void 0 === l ? void 0 : l.language) && void 0 !== u ? u : "en")}`}
+                      ${t.duration ? `${Math.round(t.duration)} ${en("common.units.seconds", null !== (o = null === (r = this.hass) || void 0 === r ? void 0 : r.language) && void 0 !== o ? o : "en")}` : `0 ${en("common.units.seconds", null !== (u = null === (l = this.hass) || void 0 === l ? void 0 : l.language) && void 0 !== u ? u : "en")}`}
                     </span>
                   </div>
                 </div>
@@ -9815,33 +10032,33 @@
       var e, t, a, i, n, s, r, o;
       return this.hass && this.info ? Y`
       <ha-card
-        header="${Xi("panels.info.cards.next-irrigation.title", this.hass.language)}"
+        header="${en("panels.info.cards.next-irrigation.title", this.hass.language)}"
       >
         <div class="card-content">
           <div class="info-item">
             <label
-              >${Xi("panels.info.cards.next-irrigation.labels.next-start", this.hass.language)}:</label
+              >${en("panels.info.cards.next-irrigation.labels.next-start", this.hass.language)}:</label
             >
             <span class="value">
-              ${this.info.next_irrigation_start ? vn(this.info.next_irrigation_start).format("YYYY-MM-DD HH:mm:ss") : Xi("panels.info.cards.next-irrigation.no-data", this.hass.language)}
+              ${this.info.next_irrigation_start ? wn(this.info.next_irrigation_start).format("YYYY-MM-DD HH:mm:ss") : en("panels.info.cards.next-irrigation.no-data", this.hass.language)}
             </span>
           </div>
 
           ${this.info.next_irrigation_duration ? Y`
                 <div class="info-item">
                   <label
-                    >${Xi("panels.info.cards.next-irrigation.labels.duration", this.hass.language)}:</label
+                    >${en("panels.info.cards.next-irrigation.labels.duration", this.hass.language)}:</label
                   >
                   <span class="value"
                     >${this.info.next_irrigation_duration}
-                    ${Xi("common.units.seconds", this.hass.language)}</span
+                    ${en("common.units.seconds", this.hass.language)}</span
                   >
                 </div>
               ` : ""}
           ${this.info.next_irrigation_zones && this.info.next_irrigation_zones.length > 0 ? Y`
                 <div class="info-item">
                   <label
-                    >${Xi("panels.info.cards.next-irrigation.labels.zones", this.hass.language)}:</label
+                    >${en("panels.info.cards.next-irrigation.labels.zones", this.hass.language)}:</label
                   >
                   <span class="value"
                     >${this.info.next_irrigation_zones.join(", ")}</span
@@ -9852,19 +10069,19 @@
       </ha-card>
     ` : Y`
         <ha-card
-          header="${Xi("panels.info.cards.next-irrigation.title", null !== (t = null === (e = this.hass) || void 0 === e ? void 0 : e.language) && void 0 !== t ? t : "en")}"
+          header="${en("panels.info.cards.next-irrigation.title", null !== (t = null === (e = this.hass) || void 0 === e ? void 0 : e.language) && void 0 !== t ? t : "en")}"
         >
           <div class="card-content">
             <div class="info-item">
               <label
-                >${Xi("panels.info.cards.next-irrigation.labels.next-start", null !== (i = null === (a = this.hass) || void 0 === a ? void 0 : a.language) && void 0 !== i ? i : "en")}:</label
+                >${en("panels.info.cards.next-irrigation.labels.next-start", null !== (i = null === (a = this.hass) || void 0 === a ? void 0 : a.language) && void 0 !== i ? i : "en")}:</label
               >
               <span class="value">
-                ${Xi("panels.info.cards.next-irrigation.no-data", null !== (s = null === (n = this.hass) || void 0 === n ? void 0 : n.language) && void 0 !== s ? s : "en")}
+                ${en("panels.info.cards.next-irrigation.no-data", null !== (s = null === (n = this.hass) || void 0 === n ? void 0 : n.language) && void 0 !== s ? s : "en")}
               </span>
             </div>
             <div class="info-note">
-              ${Xi("panels.info.cards.next-irrigation.backend-todo", null !== (o = null === (r = this.hass) || void 0 === r ? void 0 : r.language) && void 0 !== o ? o : "en")}
+              ${en("panels.info.cards.next-irrigation.backend-todo", null !== (o = null === (r = this.hass) || void 0 === r ? void 0 : r.language) && void 0 !== o ? o : "en")}
             </div>
           </div>
         </ha-card>
@@ -9874,43 +10091,43 @@
       var e, t, a, i, n, s, r, o;
       return this.hass && this.info ? Y`
       <ha-card
-        header="${Xi("panels.info.cards.irrigation-reason.title", this.hass.language)}"
+        header="${en("panels.info.cards.irrigation-reason.title", this.hass.language)}"
       >
         <div class="card-content">
           <div class="info-item">
             <label
-              >${Xi("panels.info.cards.irrigation-reason.labels.reason", this.hass.language)}:</label
+              >${en("panels.info.cards.irrigation-reason.labels.reason", this.hass.language)}:</label
             >
             <span class="value">
-              ${this.info.irrigation_reason || Xi("panels.info.cards.irrigation-reason.no-data", this.hass.language)}
+              ${this.info.irrigation_reason || en("panels.info.cards.irrigation-reason.no-data", this.hass.language)}
             </span>
           </div>
 
           ${this.info.sunrise_time ? Y`
                 <div class="info-item">
                   <label
-                    >${Xi("panels.info.cards.irrigation-reason.labels.sunrise", this.hass.language)}:</label
+                    >${en("panels.info.cards.irrigation-reason.labels.sunrise", this.hass.language)}:</label
                   >
                   <span class="value"
-                    >${vn(this.info.sunrise_time).format("HH:mm:ss")}</span
+                    >${wn(this.info.sunrise_time).format("HH:mm:ss")}</span
                   >
                 </div>
               ` : ""}
           ${void 0 !== this.info.total_irrigation_duration ? Y`
                 <div class="info-item">
                   <label
-                    >${Xi("panels.info.cards.irrigation-reason.labels.total-duration", this.hass.language)}:</label
+                    >${en("panels.info.cards.irrigation-reason.labels.total-duration", this.hass.language)}:</label
                   >
                   <span class="value"
                     >${this.info.total_irrigation_duration}
-                    ${Xi("common.units.seconds", this.hass.language)}</span
+                    ${en("common.units.seconds", this.hass.language)}</span
                   >
                 </div>
               ` : ""}
           ${this.info.irrigation_explanation ? Y`
                 <div class="info-item explanation">
                   <label
-                    >${Xi("panels.info.cards.irrigation-reason.labels.explanation", this.hass.language)}:</label
+                    >${en("panels.info.cards.irrigation-reason.labels.explanation", this.hass.language)}:</label
                   >
                   <div class="explanation-text">
                     ${this.info.irrigation_explanation}
@@ -9921,19 +10138,19 @@
       </ha-card>
     ` : Y`
         <ha-card
-          header="${Xi("panels.info.cards.irrigation-reason.title", null !== (t = null === (e = this.hass) || void 0 === e ? void 0 : e.language) && void 0 !== t ? t : "en")}"
+          header="${en("panels.info.cards.irrigation-reason.title", null !== (t = null === (e = this.hass) || void 0 === e ? void 0 : e.language) && void 0 !== t ? t : "en")}"
         >
           <div class="card-content">
             <div class="info-item">
               <label
-                >${Xi("panels.info.cards.irrigation-reason.labels.reason", null !== (i = null === (a = this.hass) || void 0 === a ? void 0 : a.language) && void 0 !== i ? i : "en")}:</label
+                >${en("panels.info.cards.irrigation-reason.labels.reason", null !== (i = null === (a = this.hass) || void 0 === a ? void 0 : a.language) && void 0 !== i ? i : "en")}:</label
               >
               <span class="value">
-                ${Xi("panels.info.cards.irrigation-reason.no-data", null !== (s = null === (n = this.hass) || void 0 === n ? void 0 : n.language) && void 0 !== s ? s : "en")}
+                ${en("panels.info.cards.irrigation-reason.no-data", null !== (s = null === (n = this.hass) || void 0 === n ? void 0 : n.language) && void 0 !== s ? s : "en")}
               </span>
             </div>
             <div class="info-note">
-              ${Xi("panels.info.cards.irrigation-reason.backend-todo", null !== (o = null === (r = this.hass) || void 0 === r ? void 0 : r.language) && void 0 !== o ? o : "en")}
+              ${en("panels.info.cards.irrigation-reason.backend-todo", null !== (o = null === (r = this.hass) || void 0 === r ? void 0 : r.language) && void 0 !== o ? o : "en")}
             </div>
           </div>
         </ha-card>
@@ -9941,7 +10158,7 @@
     }
     static get styles() {
       return c`
-      ${on} /* View-specific styles only - most common styles are now in globalStyle */
+      ${hn} /* View-specific styles only - most common styles are now in globalStyle */
 
       .zone-info {
         margin-bottom: 16px;
@@ -10003,15 +10220,15 @@
     `;
     }
   };
-  n([pe()], wn.prototype, "config", void 0), n([pe({
+  n([pe()], xn.prototype, "config", void 0), n([pe({
     type: Object
-  })], wn.prototype, "info", void 0), n([pe({
+  })], xn.prototype, "info", void 0), n([pe({
     type: Array
-  })], wn.prototype, "zones", void 0), n([pe({
+  })], xn.prototype, "zones", void 0), n([pe({
     type: Boolean
-  })], wn.prototype, "isLoading", void 0), wn = n([ce("smart-irrigation-view-info")], wn);
-  const kn = on,
-    $n = () => {
+  })], xn.prototype, "isLoading", void 0), xn = n([ce("smart-irrigation-view-info")], xn);
+  const En = hn,
+    Mn = () => {
       const e = e => {
           let t = {};
           for (let a = 0; a < e.length; a += 2) {
@@ -10066,7 +10283,7 @@
       });
     }
     render() {
-      const e = $n();
+      const e = Mn();
       return Y`
       <div class="header">
         <div class="toolbar">
@@ -10074,7 +10291,7 @@
             .hass=${this.hass}
             .narrow=${this.narrow}
           ></ha-menu-button>
-          <div class="main-title">${Xi("title", this.hass.language)}</div>
+          <div class="main-title">${en("title", this.hass.language)}</div>
           <div class="version">${"v2025.7.2"}</div>
         </div>
 
@@ -10085,26 +10302,26 @@
           @sl-tab-show=${this.handlePageSelected}
         >
           <sl-tab slot="nav" panel="info" .active=${"info" === e.page}>
-            ${Xi("panels.info.title", this.hass.language)}
+            ${en("panels.info.title", this.hass.language)}
           </sl-tab>
           <sl-tab slot="nav" panel="general" .active=${"general" === e.page}>
-            ${Xi("panels.general.title", this.hass.language)}
+            ${en("panels.general.title", this.hass.language)}
           </sl-tab>
           <sl-tab slot="nav" panel="zones" .active=${"zones" === e.page}>
-            ${Xi("panels.zones.title", this.hass.language)}
+            ${en("panels.zones.title", this.hass.language)}
           </sl-tab>
           <sl-tab slot="nav" panel="modules" .active=${"modules" === e.page}>
-            ${Xi("panels.modules.title", this.hass.language)}
+            ${en("panels.modules.title", this.hass.language)}
           </sl-tab>
           <sl-tab
             slot="nav"
             panel="mappings"
             .active=${"mappings" === e.page}
           >
-            ${Xi("panels.mappings.title", this.hass.language)}
+            ${en("panels.mappings.title", this.hass.language)}
           </sl-tab>
           <sl-tab slot="nav" panel="help" .active=${"help" === e.page}>
-            ${Xi("panels.help.title", this.hass.language)}
+            ${en("panels.help.title", this.hass.language)}
           </sl-tab>
         </sl-tab-group>
       </div>
@@ -10155,24 +10372,24 @@
         `;
         case "help":
           return Y`<ha-card
-          header="${Xi("panels.help.cards.how-to-get-help.title", this.hass.language)}"
+          header="${en("panels.help.cards.how-to-get-help.title", this.hass.language)}"
         >
           <div class="card-content">
-            ${Xi("panels.help.cards.how-to-get-help.first-read-the", this.hass.language)}
+            ${en("panels.help.cards.how-to-get-help.first-read-the", this.hass.language)}
             <a href="https://github.com/jeroenterheerdt/HAsmartirrigation/wiki"
-              >${Xi("panels.help.cards.how-to-get-help.wiki", this.hass.language)}</a
+              >${en("panels.help.cards.how-to-get-help.wiki", this.hass.language)}</a
             >.
-            ${Xi("panels.help.cards.how-to-get-help.if-you-still-need-help", this.hass.language)}
+            ${en("panels.help.cards.how-to-get-help.if-you-still-need-help", this.hass.language)}
             <a
               href="https://community.home-assistant.io/t/smart-irrigation-save-water-by-precisely-watering-your-lawn-garden"
-              >${Xi("panels.help.cards.how-to-get-help.community-forum", this.hass.language)}</a
+              >${en("panels.help.cards.how-to-get-help.community-forum", this.hass.language)}</a
             >
-            ${Xi("panels.help.cards.how-to-get-help.or-open-a", this.hass.language)}
+            ${en("panels.help.cards.how-to-get-help.or-open-a", this.hass.language)}
             <a
               href="https://github.com/jeroenterheerdt/HAsmartirrigation/issues"
-              >${Xi("panels.help.cards.how-to-get-help.github-issue", this.hass.language)}</a
+              >${en("panels.help.cards.how-to-get-help.github-issue", this.hass.language)}</a
             >
-            (${Xi("panels.help.cards.how-to-get-help.english-only", this.hass.language)}).
+            (${en("panels.help.cards.how-to-get-help.english-only", this.hass.language)}).
           </div></ha-card
         >`;
         default:
@@ -10189,7 +10406,7 @@
     handlePageSelected(e) {
       var t, a, i, n;
       const s = e.detail.name || e.detail.panel || (null === (a = null === (t = e.target) || void 0 === t ? void 0 : t.getAttribute) || void 0 === a ? void 0 : a.call(t, "panel")) || (null === (n = null === (i = e.detail.item) || void 0 === i ? void 0 : i.getAttribute) || void 0 === n ? void 0 : n.call(i, "panel"));
-      s && s !== $n().page ? function (e, t, a) {
+      s && s !== Mn().page ? function (e, t, a) {
         void 0 === a && (a = !1), a ? history.replaceState(null, "", t) : history.pushState(null, "", t), be(window, "location-changed", {
           replace: a
         });
@@ -10222,7 +10439,7 @@
     }
     static get styles() {
       return c`
-      ${kn} :host {
+      ${En} :host {
         color: var(--primary-text-color);
         --paper-card-header-color: var(--primary-text-color);
       }
@@ -10282,7 +10499,7 @@
     type: Boolean,
     reflect: !0
   })], e.SmartIrrigationPanel.prototype, "narrow", void 0), e.SmartIrrigationPanel = n([ce("smart-irrigation")], e.SmartIrrigationPanel);
-  let Sn = class extends ue {
+  let zn = class extends ue {
     async showDialog(e) {
       this._params = e, await this.updateComplete;
     }
@@ -10337,7 +10554,7 @@
   };
   n([pe({
     attribute: !1
-  })], Sn.prototype, "hass", void 0), n([function (e) {
+  })], zn.prototype, "hass", void 0), n([function (e) {
     return pe({
       ...e,
       state: !0
@@ -10347,11 +10564,11 @@
        * @license
        * Copyright 2017 Google LLC
        * SPDX-License-Identifier: BSD-3-Clause
-       */()], Sn.prototype, "_params", void 0), Sn = n([ce("error-dialog")], Sn);
-  var xn = Object.freeze({
+       */()], zn.prototype, "_params", void 0), zn = n([ce("error-dialog")], zn);
+  var An = Object.freeze({
     __proto__: null,
     get ErrorDialog() {
-      return Sn;
+      return zn;
     }
   });
   Object.defineProperty(e, "__esModule", {

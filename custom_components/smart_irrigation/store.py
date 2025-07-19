@@ -16,14 +16,16 @@ from .const import (ATTR_NEW_BUCKET_VALUE, ATTR_NEW_MULTIPLIER_VALUE,
                     CONF_AUTO_CALC_ENABLED, CONF_AUTO_CLEAR_ENABLED,
                     CONF_AUTO_UPDATE_DELAY, CONF_AUTO_UPDATE_ENABLED,
                     CONF_AUTO_UPDATE_INTERVAL, CONF_AUTO_UPDATE_SCHEDULE,
-                    CONF_CALC_TIME, CONF_CLEAR_TIME, CONF_CONTINUOUS_UPDATES,
+                    CONF_CALC_TIME, CONF_CALC_TRIGGERS, CONF_CLEAR_TIME, 
+                    CONF_CONTINUOUS_UPDATES,
                     CONF_DEFAULT_AUTO_CALC_ENABLED,
                     CONF_DEFAULT_AUTO_CLEAR_ENABLED,
                     CONF_DEFAULT_AUTO_UPDATE_DELAY,
                     CONF_DEFAULT_AUTO_UPDATE_INTERVAL,
                     CONF_DEFAULT_AUTO_UPDATE_SCHEDULE,
                     CONF_DEFAULT_AUTO_UPDATED_ENABLED, CONF_DEFAULT_CALC_TIME,
-                    CONF_DEFAULT_CLEAR_TIME, CONF_DEFAULT_CONTINUOUS_UPDATES,
+                    CONF_DEFAULT_CALC_TRIGGERS, CONF_DEFAULT_CLEAR_TIME, 
+                    CONF_DEFAULT_CONTINUOUS_UPDATES,
                     CONF_DEFAULT_DRAINAGE_RATE, CONF_DEFAULT_MAXIMUM_BUCKET,
                     CONF_DEFAULT_MAXIMUM_DURATION,
                     CONF_DEFAULT_SENSOR_DEBOUNCE,
@@ -42,8 +44,10 @@ from .const import (ATTR_NEW_BUCKET_VALUE, ATTR_NEW_MULTIPLIER_VALUE,
                     MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_SOLRAD,
                     MAPPING_TEMPERATURE, MAPPING_WINDSPEED, MODULE_CONFIG,
                     MODULE_DESCRIPTION, MODULE_DIR, MODULE_ID, MODULE_NAME,
-                    MODULE_SCHEMA, START_EVENT_FIRED_TODAY, ZONE_BUCKET,
-                    ZONE_CURRENT_DRAINAGE, ZONE_DELTA, ZONE_DRAINAGE_RATE,
+                    MODULE_SCHEMA, START_EVENT_FIRED_TODAY, 
+                    TRIGGER_AZIMUTH_VALUE, TRIGGER_ID, TRIGGER_OFFSET_AFTER,
+                    TRIGGER_OFFSET_BEFORE, TRIGGER_TYPE, TRIGGER_TYPE_SUNRISE,
+                    ZONE_BUCKET, ZONE_CURRENT_DRAINAGE, ZONE_DELTA, ZONE_DRAINAGE_RATE,
                     ZONE_DURATION, ZONE_ID, ZONE_LAST_CALCULATED,
                     ZONE_LAST_UPDATED, ZONE_LEAD_TIME, ZONE_MAPPING,
                     ZONE_MAXIMUM_BUCKET, ZONE_MAXIMUM_DURATION, ZONE_MODULE,
@@ -116,6 +120,7 @@ class Config:
     """(General) Config storage Entry."""
 
     calctime = attr.ib(type=str, default=CONF_DEFAULT_CALC_TIME)
+    calctriggers = attr.ib(type=list, default=CONF_DEFAULT_CALC_TRIGGERS)
     units = attr.ib(type=str, default=None)
     use_weather_service = attr.ib(type=bool, default=CONF_DEFAULT_WEATHER_SERVICE)
     weather_service = attr.ib(type=str, default=None)
@@ -172,6 +177,7 @@ class SmartIrrigationStorage:
         data = await self._store.async_load()
         config: Config = Config(
             calctime=CONF_DEFAULT_CALC_TIME,
+            calctriggers=CONF_DEFAULT_CALC_TRIGGERS,
             units=(
                 CONF_METRIC
                 if self.hass.config.units is METRIC_SYSTEM
@@ -197,6 +203,7 @@ class SmartIrrigationStorage:
         if data is not None:
             config = Config(
                 calctime=data["config"].get(CONF_CALC_TIME, CONF_DEFAULT_CALC_TIME),
+                calctriggers=data["config"].get(CONF_CALC_TRIGGERS, CONF_DEFAULT_CALC_TRIGGERS),
                 units=data["config"].get(
                     CONF_UNITS,
                     (

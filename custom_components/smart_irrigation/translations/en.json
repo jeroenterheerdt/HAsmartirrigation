@@ -199,5 +199,37 @@
         }
       }
     }
+  },
+  "panels": {
+    "general": {
+      "title": "General Configuration",
+      "description": "Configure general settings for Smart Irrigation.",
+      "cards": {
+        "automatic-duration-calculation": {
+          "header": "Automatic duration calculation",
+          "description": "Calculation takes collected weather data up to that point and updates the bucket for each automatic zone. Then, the duration is adjusted based on the new bucket value and the collected weather data is removed.",
+          "labels": {
+            "auto-calc-enabled": "Automatically calculate irrigation durations",
+            "calc-time": "Calculate at",
+            "legacy-calc-time": "Legacy calculation time (fallback)",
+            "legacy-note": "This is used as fallback if no calculation triggers are configured",
+            "calculation-triggers": "Calculation Triggers",
+            "add-trigger": "Add Trigger",
+            "remove": "Remove",
+            "trigger": "Trigger",
+            "trigger-type": "Trigger Type",
+            "azimuth-value": "Azimuth (degrees)",
+            "offset-before": "Minutes before",
+            "offset-after": "Minutes after",
+            "minutes": "minutes"
+          },
+          "options": {
+            "sunrise": "Sunrise",
+            "sunset": "Sunset",
+            "azimuth": "Solar Azimuth"
+          }
+        }
+      }
+    }
   }
 }
