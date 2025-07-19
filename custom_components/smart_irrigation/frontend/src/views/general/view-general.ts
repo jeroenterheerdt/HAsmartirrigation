@@ -8,7 +8,8 @@ import { SubscribeMixin } from "../../subscribe-mixin";
 import { localize } from "../../../localize/localize";
 import { pick, handleError, parseBoolean } from "../../helpers";
 import { loadHaForm } from "../../load-ha-elements";
-import { SmartIrrigationConfig } from "../../types";
+import "../../dialogs/trigger-dialog";
+import { SmartIrrigationConfig, IrrigationStartTrigger } from "../../types";
 import { globalStyle } from "../../styles/global-style";
 import { Path } from "../../common/navigation";
 import {
@@ -25,9 +26,13 @@ import {
   CONF_CLEAR_TIME,
   CONF_CONTINUOUS_UPDATES,
   CONF_SENSOR_DEBOUNCE,
+  CONF_IRRIGATION_START_TRIGGERS,
+  TRIGGER_TYPE_SUNRISE,
+  TRIGGER_TYPE_SUNSET,
+  TRIGGER_TYPE_SOLAR_AZIMUTH,
   DOMAIN,
 } from "../../const";
-import { mdiInformationOutline } from "@mdi/js";
+import { mdiInformationOutline, mdiPlus, mdiPencil, mdiDelete } from "@mdi/js";
 
 @customElement("smart-irrigation-view-general")
 export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
@@ -622,16 +627,244 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
         >${r4}</ha-card
       > `;
 
+      // Irrigation Start Triggers Card
+      const r5 = this.renderTriggersCard();
+
       const r = html`<ha-card
           header="${localize("panels.general.title", this.hass.language)}"
         >
           <div class="card-content">
             ${localize("panels.general.description", this.hass.language)}
           </div> </ha-card
-        >${r2}${r1}${r3}${r4}`;
+        >${r2}${r1}${r3}${r4}${r5}`;
 
       return r;
     }
+  }
+
+  renderTriggersCard() {
+    if (!this.config || !this.data || !this.hass) return html``;
+
+    const triggers = this.config.irrigation_start_triggers || [];
+
+    return html`
+      <ha-card
+        header="${localize(
+          "irrigation_start_triggers.title",
+          this.hass.language,
+        )}"
+      >
+        <div class="card-content">
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showtriggersdescription"
+            @click="${() => this.toggleInformation("triggersdescription")}"
+          >
+            <title>
+              ${localize(
+                "panels.zones.actions.information",
+                this.hass.language,
+              )}
+            </title>
+            <path fill="#404040" d="${mdiInformationOutline}" />
+          </svg>
+        </div>
+
+        <div class="card-content">
+          <label class="hidden" id="triggersdescription">
+            ${localize(
+              "irrigation_start_triggers.description",
+              this.hass.language,
+            )}
+          </label>
+        </div>
+
+        <div class="card-content">
+          <div class="triggers-list">
+            ${triggers.length === 0
+              ? html`
+                  <div class="no-triggers">
+                    ${localize(
+                      "irrigation_start_triggers.no_triggers",
+                      this.hass.language,
+                    )}
+                  </div>
+                `
+              : triggers.map((trigger, index) =>
+                  this.renderTriggerItem(trigger, index),
+                )}
+          </div>
+
+          <div class="add-trigger-section">
+            <ha-button @click="${this._addTrigger}">
+              <ha-icon .path="${mdiPlus}"></ha-icon>
+              ${localize(
+                "irrigation_start_triggers.add_trigger",
+                this.hass.language,
+              )}
+            </ha-button>
+          </div>
+        </div>
+      </ha-card>
+    `;
+  }
+
+  renderTriggerItem(trigger: IrrigationStartTrigger, index: number) {
+    if (!this.hass) return html``;
+    
+    const triggerTypeLabel = localize(
+      `irrigation_start_triggers.trigger_types.${trigger.type}`,
+      this.hass.language,
+    );
+
+    let offsetText = "";
+    if (trigger.type === TRIGGER_TYPE_SUNRISE && trigger.offset_minutes === 0) {
+      offsetText = localize(
+        "irrigation_start_triggers.offset_auto",
+        this.hass.language,
+      );
+    } else {
+      const minutes = Math.abs(trigger.offset_minutes);
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      const direction =
+        trigger.offset_minutes < 0
+          ? localize("common.labels.before", this.hass.language)
+          : localize("common.labels.after", this.hass.language);
+
+      if (hours > 0) {
+        offsetText = `${hours}h ${mins}m ${direction}`;
+      } else {
+        offsetText = `${mins}m ${direction}`;
+      }
+    }
+
+    let additionalInfo = "";
+    if (
+      trigger.type === TRIGGER_TYPE_SOLAR_AZIMUTH &&
+      trigger.azimuth_angle !== undefined
+    ) {
+      additionalInfo = ` (${trigger.azimuth_angle}°)`;
+    }
+
+    return html`
+      <div class="trigger-item ${trigger.enabled ? "enabled" : "disabled"}">
+        <div class="trigger-main">
+          <div class="trigger-info">
+            <div class="trigger-name">${trigger.name}</div>
+            <div class="trigger-details">
+              ${triggerTypeLabel}${additionalInfo} - ${offsetText}
+            </div>
+          </div>
+          <div class="trigger-status">
+            ${trigger.enabled
+              ? localize("common.labels.enabled", this.hass.language)
+              : localize("common.labels.disabled", this.hass.language)}
+          </div>
+        </div>
+        <div class="trigger-actions">
+          <ha-icon-button
+            .path="${mdiPencil}"
+            @click="${() => this._editTrigger(index)}"
+            title="${localize(
+              "irrigation_start_triggers.edit_trigger",
+              this.hass.language,
+            )}"
+          ></ha-icon-button>
+          <ha-icon-button
+            .path="${mdiDelete}"
+            @click="${() => this._deleteTrigger(index)}"
+            title="${localize(
+              "irrigation_start_triggers.delete_trigger",
+              this.hass.language,
+            )}"
+          ></ha-icon-button>
+        </div>
+      </div>
+    `;
+  }
+
+  private _addTrigger() {
+    this._showTriggerDialog({ createTrigger: true });
+  }
+
+  private _editTrigger(index: number) {
+    const trigger = this.config?.irrigation_start_triggers?.[index];
+    if (trigger) {
+      this._showTriggerDialog({
+        trigger: trigger,
+        triggerIndex: index,
+      });
+    }
+  }
+
+  private _deleteTrigger(index: number) {
+    if (!this.config?.irrigation_start_triggers || !this.hass) return;
+
+    const triggerName =
+      this.config.irrigation_start_triggers[index]?.name || "Unknown";
+    if (
+      confirm(
+        localize(
+          "irrigation_start_triggers.confirm_delete",
+          this.hass.language,
+        ).replace("{name}", triggerName),
+      )
+    ) {
+      const triggers = [...this.config.irrigation_start_triggers];
+      triggers.splice(index, 1);
+      this.handleConfigChange({ [CONF_IRRIGATION_START_TRIGGERS]: triggers });
+    }
+  }
+
+  private _showTriggerDialog(params: any) {
+    if (!this.hass) return;
+    
+    const dialog = document.createElement("trigger-dialog") as any;
+    dialog.hass = this.hass;
+
+    dialog.addEventListener("trigger-save", (event: any) => {
+      this._handleTriggerSave(event.detail);
+    });
+
+    dialog.addEventListener("trigger-delete", (event: any) => {
+      this._handleTriggerDelete(event.detail);
+    });
+
+    // Add to DOM and show dialog
+    document.body.appendChild(dialog);
+    dialog.showDialog(params);
+
+    // Clean up when dialog closes
+    dialog.addEventListener("closed", () => {
+      document.body.removeChild(dialog);
+    });
+  }
+
+  private _handleTriggerSave(detail: any) {
+    if (!this.config) return;
+
+    const triggers = this.config.irrigation_start_triggers
+      ? [...this.config.irrigation_start_triggers]
+      : [];
+
+    if (detail.isNew) {
+      triggers.push(detail.trigger);
+    } else if (detail.index !== undefined) {
+      triggers[detail.index] = detail.trigger;
+    }
+
+    this.handleConfigChange({ [CONF_IRRIGATION_START_TRIGGERS]: triggers });
+  }
+
+  private _handleTriggerDelete(detail: any) {
+    if (!this.config?.irrigation_start_triggers || detail.index === undefined)
+      return;
+
+    const triggers = [...this.config.irrigation_start_triggers];
+    triggers.splice(detail.index, 1);
+    this.handleConfigChange({ [CONF_IRRIGATION_START_TRIGGERS]: triggers });
   }
 
   private async saveData(
@@ -697,7 +930,89 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
   }
   static get styles(): CSSResultGroup {
     return css`
-      ${globalStyle}/* View-specific styles only - most common styles are now in globalStyle */
+      ${globalStyle} /* View-specific styles only - most common styles are now in globalStyle */
+      
+      /* Irrigation triggers styles */
+      .triggers-list {
+        margin: 16px 0;
+      }
+
+      .no-triggers {
+        text-align: center;
+        padding: 32px 16px;
+        color: var(--secondary-text-color);
+        font-style: italic;
+      }
+
+      .trigger-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        margin: 8px 0;
+        border: 1px solid var(--divider-color);
+        border-radius: 8px;
+        background: var(--card-background-color);
+      }
+
+      .trigger-item.disabled {
+        opacity: 0.6;
+      }
+
+      .trigger-main {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        gap: 16px;
+      }
+
+      .trigger-info {
+        flex: 1;
+      }
+
+      .trigger-name {
+        font-weight: 500;
+        color: var(--primary-text-color);
+        margin-bottom: 4px;
+      }
+
+      .trigger-details {
+        font-size: 0.875rem;
+        color: var(--secondary-text-color);
+      }
+
+      .trigger-status {
+        font-size: 0.875rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background: var(--primary-color);
+        color: var(--text-primary-color);
+        min-width: 60px;
+        text-align: center;
+      }
+
+      .trigger-item.disabled .trigger-status {
+        background: var(--disabled-text-color);
+      }
+
+      .trigger-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .add-trigger-section {
+        margin-top: 16px;
+        text-align: center;
+      }
+
+      .add-trigger-section ha-button {
+        --mdc-theme-primary: var(--primary-color);
+      }
+
+      .add-trigger-section ha-icon {
+        margin-right: 8px;
+      }
     `;
   }
 }

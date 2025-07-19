@@ -249,6 +249,23 @@
       "cancel": "Cancel",
       "save": "Save",
       "delete": "Delete"
+    },
+    "no_triggers": "No irrigation start triggers configured. Add a trigger to control when irrigation starts.",
+    "offset_auto": "Auto (total zone duration)",
+    "confirm_delete": "Are you sure you want to delete the trigger '{name}'?",
+    "validation": {
+      "name_required": "Trigger name is required",
+      "azimuth_invalid": "Azimuth angle must be between 0 and 360 degrees"
+    }
+  },
+  "common": {
+    "labels": {
+      "enabled": "Enabled",
+      "disabled": "Disabled", 
+      "before": "before",
+      "after": "after",
+      "yes": "Yes",
+      "no": "No"
     }
   }
 }

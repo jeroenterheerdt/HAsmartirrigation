@@ -770,46 +770,32 @@ def calculate_solar_azimuth(latitude: float, longitude: float, timestamp: dateti
     # Convert to radians
     lat_rad = math.radians(latitude)
     
-    # Calculate Julian day
-    a = (14 - timestamp.month) // 12
-    y = timestamp.year - a
-    m = timestamp.month + 12 * a - 3
-    julian_day = timestamp.day + (153 * m + 2) // 5 + 365 * y + y // 4 - y // 100 + y // 400 + 1721119
+    # Day of year
+    day_of_year = timestamp.timetuple().tm_yday
     
-    # Calculate time
+    # Solar declination (simplified)
+    declination = math.radians(23.45 * math.sin(math.radians(360 * (284 + day_of_year) / 365)))
+    
+    # Hour angle
     time_decimal = timestamp.hour + timestamp.minute / 60.0 + timestamp.second / 3600.0
-    julian_date = julian_day + (time_decimal - 12) / 24.0
+    # Longitude correction for local solar time
+    longitude_correction = longitude / 15.0
+    solar_time = time_decimal - longitude_correction
+    hour_angle = math.radians((solar_time - 12) * 15)
     
-    # Calculate solar position
-    n = julian_date - 2451545.0
-    L = (280.460 + 0.9856474 * n) % 360
-    g = math.radians((357.528 + 0.9856003 * n) % 360)
-    lambda_sun = math.radians(L + 1.915 * math.sin(g) + 0.020 * math.sin(2 * g))
-    
-    # Calculate obliquity of ecliptic
-    epsilon = math.radians(23.439 - 0.0000004 * n)
-    
-    # Calculate right ascension and declination
-    alpha = math.atan2(math.cos(epsilon) * math.sin(lambda_sun), math.cos(lambda_sun))
-    delta = math.asin(math.sin(epsilon) * math.sin(lambda_sun))
-    
-    # Calculate hour angle
-    gmst = (18.697374558 + 24.06570982441908 * n) % 24
-    local_sidereal_time = gmst + longitude / 15.0
-    hour_angle = math.radians((local_sidereal_time * 15 - math.degrees(alpha)) % 360)
-    
-    # Calculate elevation and azimuth
+    # Solar elevation
     elevation = math.asin(
-        math.sin(lat_rad) * math.sin(delta) + 
-        math.cos(lat_rad) * math.cos(delta) * math.cos(hour_angle)
+        math.sin(lat_rad) * math.sin(declination) + 
+        math.cos(lat_rad) * math.cos(declination) * math.cos(hour_angle)
     )
     
+    # Solar azimuth
     azimuth = math.atan2(
         math.sin(hour_angle),
-        math.cos(hour_angle) * math.sin(lat_rad) - math.tan(delta) * math.cos(lat_rad)
+        math.cos(hour_angle) * math.sin(lat_rad) - math.tan(declination) * math.cos(lat_rad)
     )
     
-    # Convert to degrees and normalize to 0-360
+    # Convert to degrees and normalize to 0-360 (0=North, 90=East, 180=South, 270=West)
     azimuth_degrees = (math.degrees(azimuth) + 180) % 360
     
     return azimuth_degrees

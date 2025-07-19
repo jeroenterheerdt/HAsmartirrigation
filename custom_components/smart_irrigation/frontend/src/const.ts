@@ -17,6 +17,17 @@ export const CONF_CLEAR_TIME = "cleardatatime";
 export const CONF_CONTINUOUS_UPDATES = "continuousupdates";
 export const CONF_SENSOR_DEBOUNCE = "sensor_debounce";
 
+// Irrigation start trigger configuration
+export const CONF_IRRIGATION_START_TRIGGERS = "irrigation_start_triggers";
+export const TRIGGER_TYPE_SUNRISE = "sunrise";
+export const TRIGGER_TYPE_SUNSET = "sunset";
+export const TRIGGER_TYPE_SOLAR_AZIMUTH = "solar_azimuth";
+export const TRIGGER_CONF_TYPE = "type";
+export const TRIGGER_CONF_OFFSET_MINUTES = "offset_minutes";
+export const TRIGGER_CONF_AZIMUTH_ANGLE = "azimuth_angle";
+export const TRIGGER_CONF_ENABLED = "enabled";
+export const TRIGGER_CONF_NAME = "name";
+
 export const AUTO_UPDATE_SCHEDULE_MINUTELY = "minutes";
 export const AUTO_UPDATE_SCHEDULE_HOURLY = "hours";
 export const AUTO_UPDATE_SCHEDULE_DAILY = "days";
