@@ -30,7 +30,6 @@ from homeassistant.helpers.event import (
     async_call_later,
     async_track_state_change_event,
     async_track_sunrise,
-    async_track_sunset,
     async_track_time_change,
     async_track_time_interval,
 )
@@ -315,8 +314,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self._track_sunrise_event_unsub = None
         self._track_midnight_time_unsub = None
         self._debounced_update_cancel = None
-        # Multiple calculation trigger tracking
-        self._track_calc_triggers_unsubs = []
         # set up auto calc time and auto update time from data
         the_config = self.store.get_config()
         the_config[const.CONF_USE_WEATHER_SERVICE] = self.use_weather_service
@@ -819,39 +816,27 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         if self._track_auto_calc_time_unsub:
             self._track_auto_calc_time_unsub()
             self._track_auto_calc_time_unsub = None
-        
-        # unsubscribe from any existing calculation triggers
-        for unsub in self._track_calc_triggers_unsubs:
-            unsub()
-        self._track_calc_triggers_unsubs.clear()
-        
         if data[const.CONF_AUTO_CALC_ENABLED]:
-            # Check if we have new-style triggers configured
-            triggers = data.get(const.CONF_CALC_TRIGGERS)
-            if triggers:
-                # Set up multiple triggers
-                await self._setup_calculation_triggers(triggers)
+            # make sure to unsub any existing and add for calc time
+            if check_time(data[const.CONF_CALC_TIME]):
+                # make sure we track this time and at that moment trigger the refresh of all modules of all zones that are on automatic
+                timesplit = data[const.CONF_CALC_TIME].split(":")
+                self._track_auto_calc_time_unsub = async_track_time_change(
+                    self.hass,
+                    self._async_calculate_all,
+                    hour=timesplit[0],
+                    minute=timesplit[1],
+                    second=0,
+                )
+                _LOGGER.info(
+                    "Scheduled auto calculate for %s", data[const.CONF_CALC_TIME]
+                )
             else:
-                # Fall back to legacy single time trigger for backward compatibility
-                if check_time(data[const.CONF_CALC_TIME]):
-                    # make sure we track this time and at that moment trigger the refresh of all modules of all zones that are on automatic
-                    timesplit = data[const.CONF_CALC_TIME].split(":")
-                    self._track_auto_calc_time_unsub = async_track_time_change(
-                        self.hass,
-                        self._async_calculate_all,
-                        hour=timesplit[0],
-                        minute=timesplit[1],
-                        second=0,
-                    )
-                    _LOGGER.info(
-                        "Scheduled auto calculate for %s", data[const.CONF_CALC_TIME]
-                    )
-                else:
-                    _LOGGER.warning(
-                        "Scheduled auto calculate time is not valid: %s",
-                        data[const.CONF_CALC_TIME],
-                    )
-                    # raise ValueError("Time is not a valid time")
+                _LOGGER.warning(
+                    "Scheduled auto calculate time is not valid: %s",
+                    data[const.CONF_CALC_TIME],
+                )
+                # raise ValueError("Time is not a valid time")
         else:
             # set OWM client cache to 0
             if self._WeatherServiceClient:
@@ -861,121 +846,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 self._track_auto_calc_time_unsub()
                 self._track_auto_calc_time_unsub = None
             await self.store.async_update_config(data)
-
-    async def _setup_calculation_triggers(self, triggers):
-        """Set up multiple calculation triggers based on configuration."""
-        import uuid
-        
-        _LOGGER.info("Setting up %d calculation triggers", len(triggers))
-        
-        for trigger in triggers:
-            trigger_type = trigger.get(const.TRIGGER_TYPE)
-            trigger_id = trigger.get(const.TRIGGER_ID, str(uuid.uuid4()))
-            offset_before = trigger.get(const.TRIGGER_OFFSET_BEFORE, 0)
-            offset_after = trigger.get(const.TRIGGER_OFFSET_AFTER, 0)
-            azimuth_value = trigger.get(const.TRIGGER_AZIMUTH_VALUE, 0)
-            
-            try:
-                if trigger_type == const.TRIGGER_TYPE_SUNRISE:
-                    # Calculate total offset (before is negative, after is positive)
-                    total_offset = timedelta(minutes=offset_after - offset_before)
-                    unsub = async_track_sunrise(
-                        self.hass,
-                        lambda now, tid=trigger_id: self._async_calculate_all_for_trigger(tid),
-                        total_offset,
-                    )
-                    self._track_calc_triggers_unsubs.append(unsub)
-                    _LOGGER.info(
-                        "Scheduled calculation trigger for sunrise with offset %s minutes (trigger_id: %s)", 
-                        offset_after - offset_before, trigger_id
-                    )
-                    
-                elif trigger_type == const.TRIGGER_TYPE_SUNSET:
-                    # Calculate total offset (before is negative, after is positive)
-                    total_offset = timedelta(minutes=offset_after - offset_before)
-                    unsub = async_track_sunset(
-                        self.hass,
-                        lambda now, tid=trigger_id: self._async_calculate_all_for_trigger(tid),
-                        total_offset,
-                    )
-                    self._track_calc_triggers_unsubs.append(unsub)
-                    _LOGGER.info(
-                        "Scheduled calculation trigger for sunset with offset %s minutes (trigger_id: %s)", 
-                        offset_after - offset_before, trigger_id
-                    )
-                    
-                elif trigger_type == const.TRIGGER_TYPE_AZIMUTH:
-                    # For azimuth-based triggers, we'll calculate the time when the sun reaches that azimuth
-                    # and schedule accordingly
-                    await self._schedule_azimuth_trigger(trigger_id, azimuth_value, offset_before, offset_after)
-                    
-            except Exception as e:
-                _LOGGER.error("Failed to set up trigger %s (%s): %s", trigger_id, trigger_type, e)
-
-    async def _schedule_azimuth_trigger(self, trigger_id, azimuth_value, offset_before, offset_after):
-        """Schedule a calculation trigger based on sun azimuth."""
-        from homeassistant.helpers.sun import get_astral_location
-        from astral.sun import sun
-        from datetime import datetime, date
-        
-        try:
-            # Get location for calculations
-            location = get_astral_location(self.hass)
-            
-            # Calculate when the sun will reach the specified azimuth today
-            today = date.today()
-            sun_times = sun(location.observer, date=today)
-            
-            # For simplicity, we'll schedule based on a calculation of the sun's position
-            # This is an approximation - for exact azimuth timing, more complex calculations would be needed
-            sunrise = sun_times['sunrise']
-            sunset = sun_times['sunset']
-            
-            # Estimate time based on azimuth (very rough approximation)
-            # Sun typically moves ~15 degrees per hour, starting roughly from east (90°) at sunrise
-            # This is a simplified calculation and may not be accurate for all locations/times
-            if 0 <= azimuth_value <= 180:  # Morning to noon
-                # From sunrise (east) to south (180°)
-                hours_from_sunrise = (azimuth_value - 90) / 15.0
-                target_time = sunrise + timedelta(hours=max(0, hours_from_sunrise))
-            else:  # Afternoon
-                # From south (180°) to west (270°)
-                hours_from_noon = (azimuth_value - 180) / 15.0
-                noon_time = sunrise + (sunset - sunrise) / 2
-                target_time = noon_time + timedelta(hours=hours_from_noon)
-            
-            # Apply offsets
-            actual_trigger_time = target_time - timedelta(minutes=offset_before) + timedelta(minutes=offset_after)
-            
-            # Convert to local time for scheduling - handle timezone properly
-            if actual_trigger_time.tzinfo is not None:
-                # Convert to naive local time
-                actual_trigger_time = actual_trigger_time.astimezone().replace(tzinfo=None)
-            
-            # Schedule the trigger
-            hour = actual_trigger_time.hour
-            minute = actual_trigger_time.minute
-            
-            unsub = async_track_time_change(
-                self.hass,
-                lambda now, tid=trigger_id: self._async_calculate_all_for_trigger(tid),
-                hour=hour,
-                minute=minute,
-                second=0,
-            )
-            self._track_calc_triggers_unsubs.append(unsub)
-            _LOGGER.info(
-                "Scheduled calculation trigger for azimuth %s° at %02d:%02d (trigger_id: %s)", 
-                azimuth_value, hour, minute, trigger_id
-            )
-            
-        except Exception as e:
-            _LOGGER.error("Failed to schedule azimuth trigger for %s°: %s", azimuth_value, e)
-
-    async def _async_calculate_all_for_trigger(self, trigger_id, delete_weather_data=True, *args):
-        """Calculate all zones for a specific trigger."""
-        _LOGGER.info("Executing calculation for trigger: %s", trigger_id)
-        await self._async_calculate_all(delete_weather_data)
 
     async def set_up_auto_clear_time(self, data):
         """Set up the automatic clear time for Smart Irrigation based on configuration data."""

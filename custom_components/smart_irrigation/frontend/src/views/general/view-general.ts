@@ -8,7 +8,7 @@ import { SubscribeMixin } from "../../subscribe-mixin";
 import { localize } from "../../../localize/localize";
 import { pick, handleError, parseBoolean } from "../../helpers";
 import { loadHaForm } from "../../load-ha-elements";
-import { SmartIrrigationConfig, SmartIrrigationTrigger } from "../../types";
+import { SmartIrrigationConfig } from "../../types";
 import { globalStyle } from "../../styles/global-style";
 import { Path } from "../../common/navigation";
 import {
@@ -22,20 +22,10 @@ import {
   CONF_AUTO_UPDATE_SCHEDULE,
   CONF_AUTO_UPDATE_TIME,
   CONF_CALC_TIME,
-  CONF_CALC_TRIGGERS,
   CONF_CLEAR_TIME,
   CONF_CONTINUOUS_UPDATES,
   CONF_SENSOR_DEBOUNCE,
   DOMAIN,
-  TRIGGER_AZIMUTH_VALUE,
-  TRIGGER_ID,
-  TRIGGER_OFFSET_AFTER,
-  TRIGGER_OFFSET_BEFORE,
-  TRIGGER_TYPE,
-  TRIGGER_TYPE_AZIMUTH,
-  TRIGGER_TYPE_SUNRISE,
-  TRIGGER_TYPE_SUNSET,
-  TRIGGER_TYPES,
 } from "../../const";
 import { mdiInformationOutline } from "@mdi/js";
 
@@ -112,7 +102,6 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       this.config = await fetchConfig(this.hass);
       this.data = pick(this.config, [
         CONF_CALC_TIME,
-        CONF_CALC_TRIGGERS,
         CONF_AUTO_CALC_ENABLED,
         CONF_AUTO_UPDATE_ENABLED,
         CONF_AUTO_UPDATE_SCHEDULE,
@@ -226,12 +215,11 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
         </div>`;
       if (this.data.autocalcenabled) {
         r1 = html`${r1}
-          ${this.renderTriggersUI()}
           <div class="card-content">
             <div class="zoneline">
               <label for="calctime"
                 >${localize(
-                  "panels.general.cards.automatic-duration-calculation.labels.legacy-calc-time",
+                  "panels.general.cards.automatic-duration-calculation.labels.calc-time",
                   this.hass.language,
                 )}:</label
               >
@@ -246,12 +234,6 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                   });
                 }}
               />
-              <small class="legacy-note">
-                ${localize(
-                  "panels.general.cards.automatic-duration-calculation.labels.legacy-note",
-                  this.hass.language,
-                )}
-              </small>
             </div>
           </div>`;
       }
@@ -688,147 +670,6 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
     this.debouncedSave(changes);
   }
 
-  private addTrigger(): void {
-    if (!this.data) return;
-    const triggers = [...(this.data.calctriggers || [])];
-    const newTrigger = new SmartIrrigationTrigger(
-      `trigger_${Date.now()}`,
-      TRIGGER_TYPE_SUNRISE
-    );
-    triggers.push(newTrigger);
-    this.handleConfigChange({ calctriggers: triggers });
-  }
-
-  private removeTrigger(index: number): void {
-    if (!this.data) return;
-    const triggers = [...(this.data.calctriggers || [])];
-    triggers.splice(index, 1);
-    this.handleConfigChange({ calctriggers: triggers });
-  }
-
-  private updateTrigger(index: number, changes: Partial<SmartIrrigationTrigger>): void {
-    if (!this.data) return;
-    const triggers = [...(this.data.calctriggers || [])];
-    triggers[index] = { ...triggers[index], ...changes };
-    this.handleConfigChange({ calctriggers: triggers });
-  }
-
-  private renderTriggersUI() {
-    if (!this.hass || !this.data) return html``;
-    const triggers = this.data.calctriggers || [];
-    
-    return html`
-      <div class="card-content">
-        <h3>${localize("panels.general.cards.automatic-duration-calculation.labels.calculation-triggers", this.hass.language)}</h3>
-      </div>
-      ${triggers.map((trigger, index) => this.renderSingleTrigger(trigger, index))}
-      <div class="card-content">
-        <div class="zoneline">
-          <button 
-            @click=${this.addTrigger}
-            class="add-trigger-button"
-          >
-            ${localize("panels.general.cards.automatic-duration-calculation.labels.add-trigger", this.hass.language)}
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  private renderSingleTrigger(trigger: SmartIrrigationTrigger, index: number) {
-    if (!this.hass) return html``;
-    return html`
-      <div class="card-content trigger-item">
-        <div class="trigger-header">
-          <span>${localize("panels.general.cards.automatic-duration-calculation.labels.trigger", this.hass.language)} ${index + 1}</span>
-          <button 
-            @click=${() => this.removeTrigger(index)}
-            class="remove-trigger-button"
-          >
-            ${localize("panels.general.cards.automatic-duration-calculation.labels.remove", this.hass.language)}
-          </button>
-        </div>
-        
-        <div class="zoneline">
-          <label for="trigger-type-${index}">
-            ${localize("panels.general.cards.automatic-duration-calculation.labels.trigger-type", this.hass.language)}:
-          </label>
-          <select 
-            id="trigger-type-${index}"
-            .value=${trigger.type}
-            @change=${(e: Event) => {
-              this.updateTrigger(index, { type: (e.target as HTMLSelectElement).value });
-            }}
-          >
-            <option value="${TRIGGER_TYPE_SUNRISE}" ?selected=${trigger.type === TRIGGER_TYPE_SUNRISE}>
-              ${localize("panels.general.cards.automatic-duration-calculation.options.sunrise", this.hass.language)}
-            </option>
-            <option value="${TRIGGER_TYPE_SUNSET}" ?selected=${trigger.type === TRIGGER_TYPE_SUNSET}>
-              ${localize("panels.general.cards.automatic-duration-calculation.options.sunset", this.hass.language)}
-            </option>
-            <option value="${TRIGGER_TYPE_AZIMUTH}" ?selected=${trigger.type === TRIGGER_TYPE_AZIMUTH}>
-              ${localize("panels.general.cards.automatic-duration-calculation.options.azimuth", this.hass.language)}
-            </option>
-          </select>
-        </div>
-
-        ${trigger.type === TRIGGER_TYPE_AZIMUTH ? html`
-          <div class="zoneline">
-            <label for="trigger-azimuth-${index}">
-              ${localize("panels.general.cards.automatic-duration-calculation.labels.azimuth-value", this.hass.language)}:
-            </label>
-            <input
-              id="trigger-azimuth-${index}"
-              type="number"
-              min="0"
-              max="360"
-              class="shortinput"
-              .value=${trigger.azimuth_value}
-              @input=${(e: Event) => {
-                this.updateTrigger(index, { azimuth_value: parseFloat((e.target as HTMLInputElement).value) });
-              }}
-            />
-            <span class="unit">°</span>
-          </div>
-        ` : ''}
-
-        <div class="zoneline">
-          <label for="trigger-offset-before-${index}">
-            ${localize("panels.general.cards.automatic-duration-calculation.labels.offset-before", this.hass.language)}:
-          </label>
-          <input
-            id="trigger-offset-before-${index}"
-            type="number"
-            min="0"
-            class="shortinput"
-            .value=${trigger.offset_before}
-            @input=${(e: Event) => {
-              this.updateTrigger(index, { offset_before: parseInt((e.target as HTMLInputElement).value) });
-            }}
-          />
-          <span class="unit">${localize("panels.general.cards.automatic-duration-calculation.labels.minutes", this.hass.language)}</span>
-        </div>
-
-        <div class="zoneline">
-          <label for="trigger-offset-after-${index}">
-            ${localize("panels.general.cards.automatic-duration-calculation.labels.offset-after", this.hass.language)}:
-          </label>
-          <input
-            id="trigger-offset-after-${index}"
-            type="number"
-            min="0"
-            class="shortinput"
-            .value=${trigger.offset_after}
-            @input=${(e: Event) => {
-              this.updateTrigger(index, { offset_after: parseInt((e.target as HTMLInputElement).value) });
-            }}
-          />
-          <span class="unit">${localize("panels.general.cards.automatic-duration-calculation.labels.minutes", this.hass.language)}</span>
-        </div>
-      </div>
-    `;
-  }
-
   disconnectedCallback() {
     super.disconnectedCallback();
 
@@ -857,52 +698,6 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
   static get styles(): CSSResultGroup {
     return css`
       ${globalStyle}/* View-specific styles only - most common styles are now in globalStyle */
-      
-      .trigger-item {
-        border: 1px solid var(--divider-color);
-        border-radius: 8px;
-        margin: 8px 0;
-        padding: 16px;
-        background: var(--card-background-color);
-      }
-      
-      .trigger-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-        font-weight: bold;
-      }
-      
-      .add-trigger-button, .remove-trigger-button {
-        background: var(--primary-color);
-        color: var(--text-primary-color);
-        border: none;
-        border-radius: 4px;
-        padding: 8px 16px;
-        cursor: pointer;
-        font-size: 14px;
-      }
-      
-      .remove-trigger-button {
-        background: var(--error-color);
-      }
-      
-      .add-trigger-button:hover, .remove-trigger-button:hover {
-        opacity: 0.8;
-      }
-      
-      .unit {
-        margin-left: 8px;
-        color: var(--secondary-text-color);
-      }
-      
-      .legacy-note {
-        display: block;
-        color: var(--secondary-text-color);
-        font-style: italic;
-        margin-top: 4px;
-      }
     `;
   }
 }
