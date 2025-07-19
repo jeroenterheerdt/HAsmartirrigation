@@ -61,6 +61,7 @@
         "duration-after-maximum-duration-is": "hence the duration is",
         "lead-time-is-applied": "Finally, the lead time is applied. The lead time is",
         "duration-after-lead-time-is": "hence the final duration is",
+        "final-duration": "Hence the final duration is",
         "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Since bucket >= 0, no irrigation is necessary and duration is set to",
         "maximum-bucket-is": "Maximum bucket size is",
         "drainage-rate-is": "Drainage rate when saturated (bucket at max) is",
