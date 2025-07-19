@@ -29,6 +29,8 @@ Continuous updates is an experimental feature that tries to capture more granula
 Any zone that does not meet the above requirements is not included in the continuous updates and instead will be included in the automatic update and calculation at the time configured. 
 Any zone that does meet this requirement will not be included in the automatic update and calculation.
 
+A sensor debounce setting is also provided to provide control over the speed of continuous updates.
+
 Please note that this is experimental right now and will have bugs.
 
 For continous updates, in the future, it will likely use specific set of aggregates (last for all data points except for solar radiation which will use average of riemann integral) and also requires current precipitation to be mapped in the sensor group.
