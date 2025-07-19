@@ -47,6 +47,7 @@ from .const import (ATTR_NEW_BUCKET_VALUE, ATTR_NEW_MULTIPLIER_VALUE,
                     MODULE_SCHEMA, START_EVENT_FIRED_TODAY, 
                     TRIGGER_CONF_ENABLED, TRIGGER_CONF_NAME, 
                     TRIGGER_CONF_OFFSET_MINUTES, TRIGGER_CONF_TYPE,
+                    TRIGGER_CONF_ACCOUNT_FOR_DURATION,
                     TRIGGER_TYPE_SUNRISE, ZONE_BUCKET,
                     ZONE_CURRENT_DRAINAGE, ZONE_DELTA, ZONE_DRAINAGE_RATE,
                     ZONE_DURATION, ZONE_ID, ZONE_LAST_CALCULATED,
@@ -171,8 +172,14 @@ class MigratableStore(Store):
                         TRIGGER_CONF_OFFSET_MINUTES: 0,  # Will be calculated from total duration
                         TRIGGER_CONF_ENABLED: True,
                         TRIGGER_CONF_NAME: "Sunrise (Legacy)",
+                        TRIGGER_CONF_ACCOUNT_FOR_DURATION: True,  # Default to accounting for duration
                     }
                     data["config"][CONF_IRRIGATION_START_TRIGGERS] = [default_trigger]
+                else:
+                    # Update existing triggers to include account_for_duration if missing
+                    for trigger in data["config"][CONF_IRRIGATION_START_TRIGGERS]:
+                        if TRIGGER_CONF_ACCOUNT_FOR_DURATION not in trigger:
+                            trigger[TRIGGER_CONF_ACCOUNT_FOR_DURATION] = True
         return data
 
 

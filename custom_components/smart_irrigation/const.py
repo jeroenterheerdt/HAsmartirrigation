@@ -28,6 +28,7 @@ TRIGGER_CONF_OFFSET_MINUTES = "offset_minutes"
 TRIGGER_CONF_AZIMUTH_ANGLE = "azimuth_angle"
 TRIGGER_CONF_ENABLED = "enabled"
 TRIGGER_CONF_NAME = "name"
+TRIGGER_CONF_ACCOUNT_FOR_DURATION = "account_for_duration"
 
 CONF_WEATHER_SERVICE = "weather_service"
 CONF_WEATHER_SERVICE_API_KEY = "weather_service_api_key"

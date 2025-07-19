@@ -64,6 +64,7 @@ export interface IrrigationStartTrigger {
   enabled: boolean;
   offset_minutes: number;
   azimuth_angle?: number;
+  account_for_duration: boolean;
 }
 
 export enum TriggerType {

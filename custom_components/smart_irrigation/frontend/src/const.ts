@@ -27,6 +27,7 @@ export const TRIGGER_CONF_OFFSET_MINUTES = "offset_minutes";
 export const TRIGGER_CONF_AZIMUTH_ANGLE = "azimuth_angle";
 export const TRIGGER_CONF_ENABLED = "enabled";
 export const TRIGGER_CONF_NAME = "name";
+export const TRIGGER_CONF_ACCOUNT_FOR_DURATION = "account_for_duration";
 
 export const AUTO_UPDATE_SCHEDULE_MINUTELY = "minutes";
 export const AUTO_UPDATE_SCHEDULE_HOURLY = "hours";

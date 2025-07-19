@@ -13,6 +13,7 @@ import {
   TRIGGER_CONF_ENABLED,
   TRIGGER_CONF_OFFSET_MINUTES,
   TRIGGER_CONF_AZIMUTH_ANGLE,
+  TRIGGER_CONF_ACCOUNT_FOR_DURATION,
 } from "../const";
 
 export interface TriggerDialogParams {
@@ -39,6 +40,7 @@ export class TriggerDialog extends LitElement {
         enabled: true,
         offset_minutes: 0,
         azimuth_angle: 90,
+        account_for_duration: true,
       };
     } else if (params.trigger) {
       this._trigger = { ...params.trigger };
@@ -239,6 +241,10 @@ export class TriggerDialog extends LitElement {
             mode: "box",
           },
         },
+      },
+      {
+        name: TRIGGER_CONF_ACCOUNT_FOR_DURATION,
+        selector: { boolean: {} },
       },
     ];
 

@@ -241,6 +241,10 @@
       "azimuth_angle": {
         "name": "Azimuth Angle (degrees)",
         "description": "Solar azimuth angle in degrees where 0=North, 90=East, 180=South, 270=West"
+      },
+      "account_for_duration": {
+        "name": "Account for Duration",
+        "description": "When enabled, irrigation will start early enough to finish at the specified time. When disabled, irrigation will start exactly at the specified time."
       }
     },
     "dialog": {
