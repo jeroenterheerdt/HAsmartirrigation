@@ -198,6 +198,16 @@
           "description": "New value for the throughput"
         }
       }
+    },
+    "generate_watering_calendar": {
+      "name": "Generate watering calendar",
+      "description": "Generate a 12-month watering calendar for irrigation zones based on representative climate data",
+      "fields": {
+        "entity": {
+          "name": "Entity",
+          "description": "Zone to generate watering calendar for"
+        }
+      }
     }
   }
 }
