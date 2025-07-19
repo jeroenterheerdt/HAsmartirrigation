@@ -46,16 +46,20 @@ except ImportError:
     class MockConfigEntry(ConfigEntry):
         """Mock config entry for testing."""
         def __init__(self, domain, title=None, data=None, entry_id=None, unique_id=None, **kwargs):
+            from homeassistant.config_entries import ConfigEntryState
+            from types import MappingProxyType
+            
             super().__init__(
                 version=1,
+                minor_version=1,
                 domain=domain,
                 title=title or domain,
                 data=data or {},
                 source="test",
                 options={},
-                system_options={},
                 unique_id=unique_id,
                 entry_id=entry_id or "test_entry",
+                discovery_keys=MappingProxyType({}),
                 **kwargs
             )
 
@@ -121,6 +125,26 @@ def mock_config_entry_with_weather():
     )
 
 
+@pytest.fixture  
+def mock_weather_config_entry():
+    """Return a mock config entry with weather service enabled."""
+    return MockConfigEntry(
+        domain=const.DOMAIN,
+        title=const.NAME,
+        data={
+            const.CONF_INSTANCE_NAME: "Test Smart Irrigation",
+            const.CONF_USE_WEATHER_SERVICE: True,
+            const.CONF_WEATHER_SERVICE: const.CONF_WEATHER_SERVICE_OWM,
+            const.CONF_WEATHER_SERVICE_API_KEY: "test_api_key",
+            CONF_LATITUDE: 52.379189,
+            CONF_LONGITUDE: 4.899431,
+            CONF_ELEVATION: 0,
+        },
+        entry_id="test_entry_id",
+        unique_id="test_unique_id",
+    )
+
+
 @pytest.fixture
 def mock_store():
     """Return a mock store."""
@@ -134,6 +158,12 @@ def mock_store():
     store.get_mappings = Mock(return_value={})
     store.get_modules = Mock(return_value={})
     store.get_zones = Mock(return_value={})
+    # Add get_config method that returns a sync dict
+    store.get_config = Mock(return_value={
+        const.CONF_AUTO_UPDATE_ENABLED: False,
+        const.CONF_AUTO_CALC_ENABLED: False,
+        const.CONF_USE_WEATHER_SERVICE: False
+    })
     return store
 
 
