@@ -1816,10 +1816,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
                 explanation += (
                     await localize(
-                        "module.calculation.explanation.duration-after-lead-time-is",
+                        "module.calculation.explanation.final-duration",
                         self.hass.config.language,
                     )
-                    + f" {duration}.</li></ol>"
+                    + f" {duration}."
                 )
 
                 # _LOGGER.debug("[calculate-module]: explanation: %s", explanation)

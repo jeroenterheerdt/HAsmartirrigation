@@ -43,6 +43,7 @@
         "duration-after-maximum-duration-is": "also ist die Dauer",
         "lead-time-is-applied": "Zuletzt wird die Vorlaufzeit angewendet. Diese beträgt",
         "duration-after-lead-time-is": "also ist die Dauer",
+        "final-duration": "Die Bewässerungszeit beträgt",
         "bucket-larger-than-or-equal-to-zero-no-irrigation-necessary": "Wenn der Vorrat >= 0 ist, ist keine Bewässerung nötig und die Dauer ist gleich",
         "maximum-bucket-is": "Der maximale Vorrat ist",
         "drainage-rate-is": "Die Entwässerungsrate bei Sättigung (Vorrat auf Maximum) beträgt",
