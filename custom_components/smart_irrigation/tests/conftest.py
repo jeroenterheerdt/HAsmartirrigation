@@ -2,19 +2,62 @@
 
 import sys
 from pathlib import Path
+from unittest.mock import AsyncMock, Mock, patch, MagicMock
 
-# Add the config directory to Python path so imports work
-config_dir = Path(__file__).parent.parent.parent.parent
-if str(config_dir) not in sys.path:
-    sys.path.insert(0, str(config_dir))
+# Add the repository root to Python path so imports work
+repo_root = Path(__file__).parent.parent.parent.parent
+if str(repo_root) not in sys.path:
+    sys.path.insert(0, str(repo_root))
+
+# Patch problematic Home Assistant modules before any imports
+def patch_homeassistant_modules():
+    """Patch Home Assistant modules that cause import issues."""
+    mock_modules = [
+        'homeassistant.helpers',
+        'homeassistant.helpers.device_registry',
+        'homeassistant.helpers.entity_registry',
+        'homeassistant.components.frontend',
+        'homeassistant.components.websocket_api',
+        'homeassistant.components.http',
+        'homeassistant.components.logger',
+        'homeassistant.components.system_log',
+    ]
+    
+    for module_name in mock_modules:
+        if module_name not in sys.modules:
+            sys.modules[module_name] = MagicMock()
+
+# Apply patches early
+patch_homeassistant_modules()
 
 import pytest
-from unittest.mock import AsyncMock, Mock, patch
 from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_ELEVATION
 from pytest_homeassistant_custom_component.syrupy import HomeAssistantSnapshotExtension
 from syrupy.assertion import SnapshotAssertion
-from tests.common import MockConfigEntry
+
+# Import MockConfigEntry safely
+try:
+    from tests.common import MockConfigEntry
+except ImportError:
+    # Fallback MockConfigEntry implementation
+    from homeassistant.config_entries import ConfigEntry
+    
+    class MockConfigEntry(ConfigEntry):
+        """Mock config entry for testing."""
+        def __init__(self, domain, title=None, data=None, entry_id=None, unique_id=None, **kwargs):
+            super().__init__(
+                version=1,
+                domain=domain,
+                title=title or domain,
+                data=data or {},
+                source="test",
+                options={},
+                system_options={},
+                unique_id=unique_id,
+                entry_id=entry_id or "test_entry",
+                **kwargs
+            )
 
 from custom_components.smart_irrigation import const
 
@@ -117,7 +160,45 @@ def mock_coordinator(mock_store):
 
 
 @pytest.fixture
-def zone_config():
+def mock_hass():
+    """Return a mock Home Assistant instance with all required attributes."""
+    hass = Mock()
+    
+    # Mock config
+    hass.config = Mock()
+    hass.config.config_dir = "/tmp/test_config"
+    hass.config.latitude = 52.379189
+    hass.config.longitude = 4.899431
+    hass.config.elevation = 0
+    hass.config.units = Mock()
+    hass.config.time_zone = "UTC"
+    
+    # Mock data
+    hass.data = {}
+    
+    # Mock states
+    hass.states = Mock()
+    hass.states.async_set = AsyncMock()
+    hass.states.get = Mock(return_value=None)
+    
+    # Mock services
+    hass.services = Mock()
+    hass.services.async_call = AsyncMock()
+    
+    # Mock bus
+    hass.bus = Mock()
+    hass.bus.async_listen = Mock()
+    hass.bus.async_fire = AsyncMock()
+    
+    # Mock async methods
+    hass.async_add_executor_job = AsyncMock()
+    hass.async_create_task = AsyncMock()
+    
+    return hass
+
+
+@pytest.fixture
+def mock_zone_config():
     """Return a sample zone configuration."""
     return {
         "name": "Test Zone",
