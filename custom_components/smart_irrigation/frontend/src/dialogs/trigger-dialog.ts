@@ -69,7 +69,10 @@ export class TriggerDialog extends LitElement {
     }
 
     if (this._trigger.type === TRIGGER_TYPE_SOLAR_AZIMUTH) {
-      if (this._trigger.azimuth_angle === undefined || isNaN(this._trigger.azimuth_angle)) {
+      if (
+        this._trigger.azimuth_angle === undefined ||
+        isNaN(this._trigger.azimuth_angle)
+      ) {
         alert(
           localize(
             "irrigation_start_triggers.validation.azimuth_invalid",
@@ -256,7 +259,7 @@ export class TriggerDialog extends LitElement {
         selector: {
           number: {
             min: -999999, // Allow any reasonable azimuth value
-            max: 999999,  // Allow any reasonable azimuth value
+            max: 999999, // Allow any reasonable azimuth value
             step: 1,
             mode: "box",
           },
