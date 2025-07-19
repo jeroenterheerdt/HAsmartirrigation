@@ -106,12 +106,13 @@ def mock_store():
     store.get_mappings = Mock(return_value={})
     store.get_modules = Mock(return_value={})
     store.get_zones = Mock(return_value={})
-    # Add get_config method that returns a sync dict
-    store.get_config = Mock(return_value={
+    # Add get_config method that returns a sync dict - not a coroutine
+    default_config = {
         const.CONF_AUTO_UPDATE_ENABLED: False,
         const.CONF_AUTO_CALC_ENABLED: False,
         const.CONF_USE_WEATHER_SERVICE: False
-    })
+    }
+    store.get_config = Mock(return_value=default_config)
     return store
 
 
