@@ -1,7 +1,32 @@
 """Test Smart Irrigation config flow."""
 
-import pytest
+import sys
 from unittest.mock import AsyncMock, patch, MagicMock
+
+# Patch all problematic modules BEFORE any Home Assistant imports
+sys.modules["homeassistant.helpers.trigger"] = MagicMock()
+sys.modules["homeassistant.helpers.device_registry"] = MagicMock()
+sys.modules["homeassistant.components.frontend"] = MagicMock()
+sys.modules["homeassistant.components.websocket_api"] = MagicMock()
+
+# Mock the specific functions that are causing issues
+trigger_mock = MagicMock()
+trigger_mock.async_initialize_triggers = AsyncMock(return_value=None)
+sys.modules["homeassistant.helpers.trigger"] = trigger_mock
+
+device_registry_mock = MagicMock()
+device_registry_mock.async_get = MagicMock(return_value=MagicMock())
+sys.modules["homeassistant.helpers.device_registry"] = device_registry_mock
+
+frontend_mock = MagicMock()
+frontend_mock.async_register_built_in_panel = MagicMock()
+sys.modules["homeassistant.components.frontend"] = frontend_mock
+
+websocket_mock = MagicMock()
+websocket_mock.async_register_command = MagicMock()
+sys.modules["homeassistant.components.websocket_api"] = websocket_mock
+
+import pytest
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
@@ -13,45 +38,7 @@ from custom_components.smart_irrigation.config_flow import (
     InvalidAuth,
 )
 
-# Import MockConfigEntry from the root tests module
-import sys
-import os
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 from tests.common import MockConfigEntry
-
-
-# Mock problematic modules to prevent infrastructure issues
-@pytest.fixture(autouse=True)
-def mock_trigger_setup():
-    """Mock trigger setup to prevent async_setup AttributeError."""
-    with patch("homeassistant.helpers.trigger.async_setup", return_value=None):
-        yield
-
-
-@pytest.fixture(autouse=True)
-def mock_timezone():
-    """Mock timezone to UTC to prevent timezone mismatch."""
-    with patch("homeassistant.util.dt.DEFAULT_TIME_ZONE", "UTC"):
-        yield
-
-
-@pytest.fixture(autouse=True)
-def mock_setup_entry():
-    """Mock setup entry to prevent integration loading issues."""
-    with patch(
-        "custom_components.smart_irrigation.async_setup_entry", return_value=True
-    ):
-        yield
-
-
-@pytest.fixture(autouse=True)
-def mock_unload_entry():
-    """Mock unload entry to prevent cleanup issues."""
-    with patch(
-        "custom_components.smart_irrigation.async_unload_entry", return_value=True
-    ):
-        yield
 
 
 class TestSmartIrrigationConfigFlow:
@@ -68,7 +55,6 @@ class TestSmartIrrigationConfigFlow:
 
     async def test_form_user_step_single_instance(self, hass: HomeAssistant) -> None:
         """Test single instance check."""
-        # Create an existing config entry
         config_entry = MockConfigEntry(
             domain=const.DOMAIN,
             title=const.NAME,
@@ -125,9 +111,13 @@ class TestSmartIrrigationConfigFlow:
         assert result2["type"] is FlowResultType.FORM
         assert result2["step_id"] == "step1"
 
-    async def test_weather_service_step_owm(self, hass: HomeAssistant) -> None:
+    @patch("custom_components.smart_irrigation.helpers.test_api_key")
+    async def test_weather_service_step_owm(
+        self, mock_test_api: AsyncMock, hass: HomeAssistant
+    ) -> None:
         """Test weather service configuration step with OWM."""
-        # Start flow and get to weather service step
+        mock_test_api.return_value = None
+
         result = await hass.config_entries.flow.async_init(
             const.DOMAIN, context={"source": config_entries.SOURCE_USER}
         )
@@ -141,28 +131,28 @@ class TestSmartIrrigationConfigFlow:
             result["flow_id"], user_input_1
         )
 
-        # Configure weather service
-        with patch(
-            "custom_components.smart_irrigation.helpers.test_api_key", return_value=None
-        ) as mock_test:
-            user_input_2 = {
-                const.CONF_WEATHER_SERVICE: const.CONF_WEATHER_SERVICE_OWM,
-                const.CONF_WEATHER_SERVICE_API_KEY: "test_api_key",
-            }
+        user_input_2 = {
+            const.CONF_WEATHER_SERVICE: const.CONF_WEATHER_SERVICE_OWM,
+            const.CONF_WEATHER_SERVICE_API_KEY: "test_api_key",
+        }
 
-            result3 = await hass.config_entries.flow.async_configure(
-                result2["flow_id"], user_input_2
-            )
+        result3 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"], user_input_2
+        )
 
-            assert result3["type"] is FlowResultType.CREATE_ENTRY
-            assert result3["title"] == const.NAME
-            expected_data = {**user_input_1, **user_input_2}
-            assert result3["data"] == expected_data
-            mock_test.assert_called_once()
+        assert result3["type"] is FlowResultType.CREATE_ENTRY
+        assert result3["title"] == const.NAME
+        expected_data = {**user_input_1, **user_input_2}
+        assert result3["data"] == expected_data
+        mock_test_api.assert_called_once()
 
-    async def test_weather_service_invalid_api_key(self, hass: HomeAssistant) -> None:
+    @patch("custom_components.smart_irrigation.helpers.test_api_key")
+    async def test_weather_service_invalid_api_key(
+        self, mock_test_api: AsyncMock, hass: HomeAssistant
+    ) -> None:
         """Test weather service configuration with invalid API key."""
-        # Start flow and get to weather service step
+        mock_test_api.side_effect = InvalidAuth
+
         result = await hass.config_entries.flow.async_init(
             const.DOMAIN, context={"source": config_entries.SOURCE_USER}
         )
@@ -176,26 +166,25 @@ class TestSmartIrrigationConfigFlow:
             result["flow_id"], user_input_1
         )
 
-        # Configure weather service with invalid API key
-        with patch(
-            "custom_components.smart_irrigation.helpers.test_api_key",
-            side_effect=InvalidAuth,
-        ):
-            user_input_2 = {
-                const.CONF_WEATHER_SERVICE: const.CONF_WEATHER_SERVICE_OWM,
-                const.CONF_WEATHER_SERVICE_API_KEY: "invalid_key",
-            }
+        user_input_2 = {
+            const.CONF_WEATHER_SERVICE: const.CONF_WEATHER_SERVICE_OWM,
+            const.CONF_WEATHER_SERVICE_API_KEY: "invalid_key",
+        }
 
-            result3 = await hass.config_entries.flow.async_configure(
-                result2["flow_id"], user_input_2
-            )
+        result3 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"], user_input_2
+        )
 
-            assert result3["type"] is FlowResultType.FORM
-            assert result3["errors"]["base"] == "auth"
+        assert result3["type"] is FlowResultType.FORM
+        assert result3["errors"]["base"] == "auth"
 
-    async def test_weather_service_connection_error(self, hass: HomeAssistant) -> None:
+    @patch("custom_components.smart_irrigation.helpers.test_api_key")
+    async def test_weather_service_connection_error(
+        self, mock_test_api: AsyncMock, hass: HomeAssistant
+    ) -> None:
         """Test weather service configuration with connection error."""
-        # Start flow and get to weather service step
+        mock_test_api.side_effect = CannotConnect
+
         result = await hass.config_entries.flow.async_init(
             const.DOMAIN, context={"source": config_entries.SOURCE_USER}
         )
@@ -209,24 +198,22 @@ class TestSmartIrrigationConfigFlow:
             result["flow_id"], user_input_1
         )
 
-        # Configure weather service with connection error
-        with patch(
-            "custom_components.smart_irrigation.helpers.test_api_key",
-            side_effect=CannotConnect,
-        ):
-            user_input_2 = {
-                const.CONF_WEATHER_SERVICE: const.CONF_WEATHER_SERVICE_OWM,
-                const.CONF_WEATHER_SERVICE_API_KEY: "test_key",
-            }
+        user_input_2 = {
+            const.CONF_WEATHER_SERVICE: const.CONF_WEATHER_SERVICE_OWM,
+            const.CONF_WEATHER_SERVICE_API_KEY: "test_key",
+        }
 
-            result3 = await hass.config_entries.flow.async_configure(
-                result2["flow_id"], user_input_2
-            )
+        result3 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"], user_input_2
+        )
 
-            assert result3["type"] is FlowResultType.FORM
-            assert result3["errors"]["base"] == "auth"
+        assert result3["type"] is FlowResultType.FORM
+        assert result3["errors"]["base"] == "auth"
 
-    async def test_options_flow(self, hass: HomeAssistant) -> None:
+    @patch("custom_components.smart_irrigation.async_setup_entry", return_value=True)
+    async def test_options_flow(
+        self, mock_setup_entry: AsyncMock, hass: HomeAssistant
+    ) -> None:
         """Test options flow."""
         config_entry = MockConfigEntry(
             domain=const.DOMAIN,
