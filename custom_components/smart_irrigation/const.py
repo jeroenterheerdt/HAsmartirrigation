@@ -51,23 +51,6 @@ CONF_CALC_TIME = "calctime"
 CONF_DEFAULT_CALC_TIME = "23:00"
 CONF_AUTO_CALC_ENABLED = "autocalcenabled"
 CONF_DEFAULT_AUTO_CALC_ENABLED = True
-
-# Multiple calculation triggers configuration
-CONF_CALC_TRIGGERS = "calctriggers"
-CONF_DEFAULT_CALC_TRIGGERS = []
-
-# Trigger types
-TRIGGER_TYPE_SUNRISE = "sunrise"
-TRIGGER_TYPE_SUNSET = "sunset"
-TRIGGER_TYPE_AZIMUTH = "azimuth"
-TRIGGER_TYPES = [TRIGGER_TYPE_SUNRISE, TRIGGER_TYPE_SUNSET, TRIGGER_TYPE_AZIMUTH]
-
-# Trigger configuration keys
-TRIGGER_ID = "id"
-TRIGGER_TYPE = "type"
-TRIGGER_OFFSET_BEFORE = "offset_before"
-TRIGGER_OFFSET_AFTER = "offset_after"
-TRIGGER_AZIMUTH_VALUE = "azimuth_value"
 CONF_AUTO_UPDATE_ENABLED = "autoupdateenabled"
 CONF_AUTO_UPDATE_SCHEDULE = "autoupdateschedule"
 CONF_AUTO_UPDATE_MINUTELY = "minutes"

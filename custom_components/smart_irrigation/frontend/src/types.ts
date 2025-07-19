@@ -27,7 +27,6 @@ export interface Dictionary<TValue> {
 
 export class SmartIrrigationConfig {
   calctime: string;
-  calctriggers: SmartIrrigationTrigger[];
   use_weather_service: boolean;
   units: string;
   autocalcenabled: boolean;
@@ -42,7 +41,6 @@ export class SmartIrrigationConfig {
 
   constructor() {
     this.calctime = "23:00";
-    this.calctriggers = [];
     this.use_weather_service = false;
     this.units = "";
     this.autocalcenabled = true;
@@ -55,22 +53,6 @@ export class SmartIrrigationConfig {
     // continuousupdates are disabled by default
     this.continuousupdates = false;
     this.sensor_debounce = 100;
-  }
-}
-
-export class SmartIrrigationTrigger {
-  id: string;
-  type: string;
-  offset_before: number;
-  offset_after: number;
-  azimuth_value: number;
-
-  constructor(id: string = "", type: string = "sunrise") {
-    this.id = id;
-    this.type = type;
-    this.offset_before = 0;
-    this.offset_after = 0;
-    this.azimuth_value = 0;
   }
 }
 

@@ -85,15 +85,6 @@ class SmartIrrigationConfigView(HomeAssistantView):
                 vol.Optional(const.CONF_CLEAR_TIME): cv.string,
                 vol.Optional(const.CONF_CONTINUOUS_UPDATES): cv.boolean,
                 vol.Optional(const.CONF_SENSOR_DEBOUNCE): cv.string,
-                vol.Optional(const.CONF_CALC_TRIGGERS): vol.All(cv.ensure_list, [
-                    vol.Schema({
-                        vol.Required(const.TRIGGER_ID): cv.string,
-                        vol.Required(const.TRIGGER_TYPE): vol.In(const.TRIGGER_TYPES),
-                        vol.Optional(const.TRIGGER_OFFSET_BEFORE, default=0): vol.Coerce(int),
-                        vol.Optional(const.TRIGGER_OFFSET_AFTER, default=0): vol.Coerce(int),
-                        vol.Optional(const.TRIGGER_AZIMUTH_VALUE, default=0): vol.All(vol.Coerce(float), vol.Range(min=0, max=360)),
-                    })
-                ]),
             }
         )
     )

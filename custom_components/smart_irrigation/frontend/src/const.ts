@@ -7,21 +7,7 @@ export const DOMAIN = "smart_irrigation";
 export const editConfigService = "edit_config";
 
 export const CONF_CALC_TIME = "calctime";
-export const CONF_CALC_TRIGGERS = "calctriggers";
 export const CONF_AUTO_CALC_ENABLED = "autocalcenabled";
-
-// Trigger types
-export const TRIGGER_TYPE_SUNRISE = "sunrise";
-export const TRIGGER_TYPE_SUNSET = "sunset";
-export const TRIGGER_TYPE_AZIMUTH = "azimuth";
-export const TRIGGER_TYPES = [TRIGGER_TYPE_SUNRISE, TRIGGER_TYPE_SUNSET, TRIGGER_TYPE_AZIMUTH];
-
-// Trigger configuration keys
-export const TRIGGER_ID = "id";
-export const TRIGGER_TYPE = "type";
-export const TRIGGER_OFFSET_BEFORE = "offset_before";
-export const TRIGGER_OFFSET_AFTER = "offset_after";
-export const TRIGGER_AZIMUTH_VALUE = "azimuth_value";
 export const CONF_AUTO_UPDATE_ENABLED = "autoupdateenabled";
 export const CONF_AUTO_UPDATE_SCHEDULE = "autoupdateschedule";
 export const CONF_AUTO_UPDATE_TIME = "autoupdatefirsttime";
