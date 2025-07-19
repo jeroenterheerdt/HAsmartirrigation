@@ -2,33 +2,68 @@ name: Test Smart Irrigation
 
 on:
   push:
+    branches: [main, master]
   pull_request:
+    branches: [main, master]
   
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
 
     steps:
       - name: Checkout Smart Irrigation
         uses: actions/checkout@v4
 
-      - name: Checkout Home Assistant Core
-        uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
-          repository: home-assistant/core
-          path: core
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.test.txt
+
+      - name: Run unit tests with coverage
+        run: |
+          pytest tests/ -v --cov=custom_components.smart_irrigation --cov-report=xml --cov-report=term-missing
+
+      - name: Run integration tests
+        run: |
+          pytest custom_components/smart_irrigation/tests/test_helpers.py custom_components/smart_irrigation/tests/test_performance.py custom_components/smart_irrigation/tests/test_diagnostics.py -v
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Smart Irrigation
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13-dev'
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip uv
-          uv venv
-          uv pip install -e core  # Editable install of HA
-          uv pip install -r requirements.test.txt --system
+          python -m pip install --upgrade pip
+          pip install ruff black isort
 
-      - name: Run tests
-        run: pytest tests --durations=10
+      - name: Run ruff linter
+        run: ruff check custom_components/smart_irrigation/ --output-format=github
+
+      - name: Check code formatting with black
+        run: black --check custom_components/smart_irrigation/
+
+      - name: Check import sorting
+        run: isort --check-only custom_components/smart_irrigation/

@@ -82,6 +82,64 @@ make format      # Format code
 make lint        # Run linting
 ```
 
+### Testing
+
+To run the tests for this Smart Irrigation custom component:
+
+#### Prerequisites
+
+1. Install test requirements:
+   ```bash
+   pip install -r requirements.test.txt
+   ```
+
+#### Running Tests
+
+Run all tests:
+```bash
+pytest
+```
+
+Run specific test directories:
+```bash
+# Tests in the main tests/ directory
+pytest tests/
+
+# Tests in the custom component
+pytest custom_components/smart_irrigation/tests/
+```
+
+Run specific test files:
+```bash
+pytest tests/test_services.py
+pytest custom_components/smart_irrigation/tests/test_init.py
+```
+
+#### Test Structure
+
+The project has two test directories:
+- `tests/` - Integration tests and component behavior tests
+- `custom_components/smart_irrigation/tests/` - Unit tests for the custom component
+
+#### Troubleshooting Tests
+
+If you encounter issues:
+
+1. **Missing Home Assistant objects**: The test infrastructure includes mocks for Home Assistant core objects like `hass.config` and `hass.data`. If you get AttributeErrors, ensure the fixtures are properly imported.
+
+2. **Import errors**: Make sure you're running tests from the repository root directory. The test configuration automatically adds the necessary paths.
+
+3. **Module not found errors**: Ensure all test dependencies are installed:
+   ```bash
+   pip install -r requirements.test.txt
+   ```
+
+4. **Async/await issues**: Tests use pytest-asyncio. Make sure async test functions are properly marked and fixtures are compatible.
+
+#### Known Test Limitations
+
+Some test files reference modules that don't exist in the current codebase (e.g., `core.zone`, `core.updater`). These have been disabled with `.disabled` extensions until the corresponding functionality is implemented or the tests are updated.
+
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development instructions.
 
 ## Read the docs: https://jeroenterheerdt.github.io/HAsmartirrigation/
