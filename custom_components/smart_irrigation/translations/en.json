@@ -209,5 +209,46 @@
         }
       }
     }
+  },
+  "irrigation_start_triggers": {
+    "title": "Irrigation Start Triggers",
+    "description": "Configure when irrigation should start",
+    "add_trigger": "Add Trigger",
+    "edit_trigger": "Edit Trigger", 
+    "delete_trigger": "Delete Trigger",
+    "trigger_types": {
+      "sunrise": "Sunrise",
+      "sunset": "Sunset", 
+      "solar_azimuth": "Solar Azimuth"
+    },
+    "fields": {
+      "name": {
+        "name": "Trigger Name",
+        "description": "A name to identify this trigger"
+      },
+      "type": {
+        "name": "Trigger Type",
+        "description": "The type of solar event to trigger on"
+      },
+      "enabled": {
+        "name": "Enabled",
+        "description": "Whether this trigger is active"
+      },
+      "offset_minutes": {
+        "name": "Offset (minutes)",
+        "description": "Minutes before (-) or after (+) the solar event. For sunrise triggers, leave at 0 to use total zone duration."
+      },
+      "azimuth_angle": {
+        "name": "Azimuth Angle (degrees)",
+        "description": "Solar azimuth angle in degrees (0=North, 90=East, 180=South, 270=West)"
+      }
+    },
+    "dialog": {
+      "add_title": "Add Irrigation Start Trigger",
+      "edit_title": "Edit Irrigation Start Trigger",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete"
+    }
   }
 }

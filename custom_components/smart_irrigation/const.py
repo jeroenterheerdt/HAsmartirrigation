@@ -12,6 +12,23 @@ SUPPORTED_LANGUAGES = ["de", "en", "es", "fr", "it", "nl", "no", "sk"]
 
 START_EVENT_FIRED_TODAY = "starteventfiredtoday"
 
+# Irrigation start trigger configuration
+CONF_IRRIGATION_START_TRIGGERS = "irrigation_start_triggers"
+CONF_DEFAULT_IRRIGATION_START_TRIGGERS = []
+
+# Trigger types
+TRIGGER_TYPE_SUNRISE = "sunrise"
+TRIGGER_TYPE_SUNSET = "sunset"
+TRIGGER_TYPE_SOLAR_AZIMUTH = "solar_azimuth"
+TRIGGER_TYPES = [TRIGGER_TYPE_SUNRISE, TRIGGER_TYPE_SUNSET, TRIGGER_TYPE_SOLAR_AZIMUTH]
+
+# Trigger configuration keys
+TRIGGER_CONF_TYPE = "type"
+TRIGGER_CONF_OFFSET_MINUTES = "offset_minutes"
+TRIGGER_CONF_AZIMUTH_ANGLE = "azimuth_angle"
+TRIGGER_CONF_ENABLED = "enabled"
+TRIGGER_CONF_NAME = "name"
+
 CONF_WEATHER_SERVICE = "weather_service"
 CONF_WEATHER_SERVICE_API_KEY = "weather_service_api_key"
 CONF_WEATHER_SERVICE_API_VERSION = "weather_service_api_version"

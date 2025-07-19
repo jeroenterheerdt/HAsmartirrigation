@@ -30,6 +30,7 @@ from homeassistant.helpers.event import (
     async_call_later,
     async_track_state_change_event,
     async_track_sunrise,
+    async_track_sunset,
     async_track_time_change,
     async_track_time_interval,
 )
@@ -39,10 +40,12 @@ from homeassistant.util.unit_system import METRIC_SYSTEM
 from . import const
 from .helpers import (
     altitudeToPressure,
+    calculate_solar_azimuth,
     check_time,
     convert_between,
     convert_list_to_dict,
     convert_mapping_to_metric,
+    find_next_solar_azimuth_time,
     loadModules,
     relative_to_absolute_pressure,
 )
@@ -312,6 +315,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self._track_auto_update_time_unsub = None
         self._track_auto_clear_time_unsub = None
         self._track_sunrise_event_unsub = None
+        self._track_irrigation_triggers_unsub = []  # List to track multiple triggers
         self._track_midnight_time_unsub = None
         self._debounced_update_cancel = None
         # set up auto calc time and auto update time from data
@@ -2098,42 +2102,141 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         await self.register_start_event()
 
     async def register_start_event(self):
-        """Register a callback to fire the irrigation start event before sunrise based on total duration of enabled zones."""
-        # sun_state = self.hass.states.get("sun.sun")
-        # if sun_state is not None:
-        #    sun_rise = sun_state.attributes.get("next_rising")
-        #    if sun_rise is not None:
-        #        try:
-        #            sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S.%f%z")
-        #        except(ValueError):
-        #            sun_rise = datetime.datetime.strptime(sun_rise, "%Y-%m-%dT%H:%M:%S%z")
-        total_duration = await self.get_total_duration_all_enabled_zones()
+        """Register callbacks to fire the irrigation start event based on configured triggers."""
+        # Clear existing trigger subscriptions
         if self._track_sunrise_event_unsub:
             self._track_sunrise_event_unsub()
             self._track_sunrise_event_unsub = None
+        
+        for unsub in self._track_irrigation_triggers_unsub:
+            unsub()
+        self._track_irrigation_triggers_unsub.clear()
+        
+        # Get triggers configuration
+        config = await self.store.async_get_config()
+        triggers = config.get(const.CONF_IRRIGATION_START_TRIGGERS, [])
+        
+        if not triggers:
+            # Backward compatibility: if no triggers configured, use legacy behavior
+            await self._register_legacy_sunrise_trigger()
+            return
+            
+        total_duration = await self.get_total_duration_all_enabled_zones()
+        if total_duration <= 0:
+            _LOGGER.info("No enabled zones with duration > 0, skipping trigger registration")
+            return
+        
+        # Register each enabled trigger
+        for trigger in triggers:
+            if not trigger.get(const.TRIGGER_CONF_ENABLED, True):
+                continue
+                
+            trigger_type = trigger.get(const.TRIGGER_CONF_TYPE)
+            offset_minutes = trigger.get(const.TRIGGER_CONF_OFFSET_MINUTES, 0)
+            trigger_name = trigger.get(const.TRIGGER_CONF_NAME, "Unnamed Trigger")
+            
+            try:
+                if trigger_type == const.TRIGGER_TYPE_SUNRISE:
+                    await self._register_sunrise_trigger(offset_minutes, trigger_name, total_duration)
+                elif trigger_type == const.TRIGGER_TYPE_SUNSET:
+                    await self._register_sunset_trigger(offset_minutes, trigger_name, total_duration)
+                elif trigger_type == const.TRIGGER_TYPE_SOLAR_AZIMUTH:
+                    azimuth_angle = trigger.get(const.TRIGGER_CONF_AZIMUTH_ANGLE, 0)
+                    await self._register_azimuth_trigger(azimuth_angle, offset_minutes, trigger_name)
+                else:
+                    _LOGGER.warning("Unknown trigger type: %s", trigger_type)
+            except Exception as e:
+                _LOGGER.error("Failed to register trigger '%s': %s", trigger_name, e)
+
+    async def _register_legacy_sunrise_trigger(self):
+        """Register the legacy sunrise trigger for backward compatibility."""
+        total_duration = await self.get_total_duration_all_enabled_zones()
         if total_duration > 0:
-            # time_to_wait = sun_rise - datetime.datetime.now(timezone.utc) - datetime.timedelta(seconds=total_duration)
-            # time_to_fire = datetime.datetime.now(timezone.utc) + time_to_wait
-            # time_to_fire = sun_rise - datetime.timedelta(seconds=total_duration)
-            # time_to_wait = total_duration
-
-            # time_to_fire = datetime.datetime.now(timezone.utc)+datetime.timedelta(seconds=total_duration)
-
-            # self._track_sunrise_event_unsub = async_track_point_in_utc_time(
-            #    self.hass, self._fire_start_event, point_in_time=time_to_fire
-            # )
             self._track_sunrise_event_unsub = async_track_sunrise(
                 self.hass,
                 self._fire_start_event,
                 datetime.timedelta(seconds=0 - total_duration),
             )
-            # self._track_sunrise_event_unsub = async_call_later(self.hass, time_to_wait,self._fire_start_event)
             event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
             _LOGGER.info(
-                "Start irrigation event %s will fire at %s seconds before sunrise",
+                "Legacy start irrigation event %s will fire at %s seconds before sunrise",
                 event_to_fire,
                 total_duration,
             )
+
+    async def _register_sunrise_trigger(self, offset_minutes: int, trigger_name: str, total_duration: int):
+        """Register a sunrise-based trigger."""
+        # For sunrise triggers, use total duration unless offset is explicitly set
+        if offset_minutes == 0:
+            offset_seconds = -total_duration  # Negative for "before"
+        else:
+            offset_seconds = offset_minutes * 60  # Convert minutes to seconds
+            
+        unsub = async_track_sunrise(
+            self.hass,
+            self._fire_start_event,
+            datetime.timedelta(seconds=offset_seconds),
+        )
+        self._track_irrigation_triggers_unsub.append(unsub)
+        
+        offset_desc = f"{abs(offset_seconds)} seconds before" if offset_seconds < 0 else f"{offset_seconds} seconds after"
+        _LOGGER.info(
+            "Registered sunrise trigger '%s': will fire %s sunrise",
+            trigger_name, offset_desc
+        )
+
+    async def _register_sunset_trigger(self, offset_minutes: int, trigger_name: str, total_duration: int):
+        """Register a sunset-based trigger."""
+        offset_seconds = offset_minutes * 60  # Convert minutes to seconds
+        
+        unsub = async_track_sunset(
+            self.hass,
+            self._fire_start_event,
+            datetime.timedelta(seconds=offset_seconds),
+        )
+        self._track_irrigation_triggers_unsub.append(unsub)
+        
+        offset_desc = f"{abs(offset_seconds)} seconds before" if offset_seconds < 0 else f"{offset_seconds} seconds after"
+        _LOGGER.info(
+            "Registered sunset trigger '%s': will fire %s sunset",
+            trigger_name, offset_desc
+        )
+
+    async def _register_azimuth_trigger(self, azimuth_angle: float, offset_minutes: int, trigger_name: str):
+        """Register a solar azimuth-based trigger."""
+        # Calculate next occurrence of this azimuth
+        latitude = self._latitude
+        longitude = self.hass.config.as_dict().get(CONF_LONGITUDE, 0.0)
+        
+        next_azimuth_time = find_next_solar_azimuth_time(
+            latitude, longitude, azimuth_angle, datetime.datetime.now()
+        )
+        
+        if next_azimuth_time is None:
+            _LOGGER.warning(
+                "Could not calculate next occurrence of azimuth %s° for trigger '%s'",
+                azimuth_angle, trigger_name
+            )
+            return
+            
+        # Apply offset
+        trigger_time = next_azimuth_time + datetime.timedelta(minutes=offset_minutes)
+        
+        # Schedule the trigger
+        from homeassistant.helpers.event import async_track_point_in_utc_time
+        
+        unsub = async_track_point_in_utc_time(
+            self.hass,
+            self._fire_start_event,
+            trigger_time,
+        )
+        self._track_irrigation_triggers_unsub.append(unsub)
+        
+        offset_desc = f" with {offset_minutes} minute offset" if offset_minutes != 0 else ""
+        _LOGGER.info(
+            "Registered azimuth trigger '%s': will fire when sun reaches %s°%s at %s",
+            trigger_name, azimuth_angle, offset_desc, trigger_time
+        )
 
     async def get_total_duration_all_enabled_zones(self):
         """Calculate the total duration for all enabled (automatic or manual) zones.

@@ -752,3 +752,147 @@ class CannotConnect(exceptions.HomeAssistantError):
 
 class InvalidAuth(exceptions.HomeAssistantError):
     """Error to indicate there is invalid auth."""
+
+
+def calculate_solar_azimuth(latitude: float, longitude: float, timestamp: datetime) -> float:
+    """Calculate solar azimuth angle for a given location and time.
+    
+    Args:
+        latitude: Latitude in degrees
+        longitude: Longitude in degrees  
+        timestamp: UTC datetime object
+        
+    Returns:
+        Solar azimuth angle in degrees (0-360, 0=North, 90=East, 180=South, 270=West)
+    """
+    import math
+    
+    # Convert to radians
+    lat_rad = math.radians(latitude)
+    
+    # Calculate Julian day
+    a = (14 - timestamp.month) // 12
+    y = timestamp.year - a
+    m = timestamp.month + 12 * a - 3
+    julian_day = timestamp.day + (153 * m + 2) // 5 + 365 * y + y // 4 - y // 100 + y // 400 + 1721119
+    
+    # Calculate time
+    time_decimal = timestamp.hour + timestamp.minute / 60.0 + timestamp.second / 3600.0
+    julian_date = julian_day + (time_decimal - 12) / 24.0
+    
+    # Calculate solar position
+    n = julian_date - 2451545.0
+    L = (280.460 + 0.9856474 * n) % 360
+    g = math.radians((357.528 + 0.9856003 * n) % 360)
+    lambda_sun = math.radians(L + 1.915 * math.sin(g) + 0.020 * math.sin(2 * g))
+    
+    # Calculate obliquity of ecliptic
+    epsilon = math.radians(23.439 - 0.0000004 * n)
+    
+    # Calculate right ascension and declination
+    alpha = math.atan2(math.cos(epsilon) * math.sin(lambda_sun), math.cos(lambda_sun))
+    delta = math.asin(math.sin(epsilon) * math.sin(lambda_sun))
+    
+    # Calculate hour angle
+    gmst = (18.697374558 + 24.06570982441908 * n) % 24
+    local_sidereal_time = gmst + longitude / 15.0
+    hour_angle = math.radians((local_sidereal_time * 15 - math.degrees(alpha)) % 360)
+    
+    # Calculate elevation and azimuth
+    elevation = math.asin(
+        math.sin(lat_rad) * math.sin(delta) + 
+        math.cos(lat_rad) * math.cos(delta) * math.cos(hour_angle)
+    )
+    
+    azimuth = math.atan2(
+        math.sin(hour_angle),
+        math.cos(hour_angle) * math.sin(lat_rad) - math.tan(delta) * math.cos(lat_rad)
+    )
+    
+    # Convert to degrees and normalize to 0-360
+    azimuth_degrees = (math.degrees(azimuth) + 180) % 360
+    
+    return azimuth_degrees
+
+
+def find_next_solar_azimuth_time(
+    latitude: float, 
+    longitude: float, 
+    target_azimuth: float, 
+    start_time: datetime,
+    max_days: int = 1
+) -> datetime | None:
+    """Find the next time when the sun will be at a specific azimuth angle.
+    
+    Args:
+        latitude: Latitude in degrees
+        longitude: Longitude in degrees
+        target_azimuth: Target azimuth angle in degrees (0-360)
+        start_time: Starting datetime to search from
+        max_days: Maximum days to search ahead
+        
+    Returns:
+        Next datetime when sun will be at target azimuth, or None if not found
+    """
+    import math
+    from datetime import timedelta
+    
+    # Search in 15-minute intervals for the next 24 hours by default
+    search_interval = timedelta(minutes=15)
+    max_search_time = start_time + timedelta(days=max_days)
+    
+    current_time = start_time
+    prev_azimuth = calculate_solar_azimuth(latitude, longitude, current_time)
+    
+    while current_time < max_search_time:
+        current_time += search_interval
+        current_azimuth = calculate_solar_azimuth(latitude, longitude, current_time)
+        
+        # Check if we've crossed the target azimuth
+        if _azimuth_crossed_target(prev_azimuth, current_azimuth, target_azimuth):
+            # Refine to minute precision
+            return _refine_azimuth_time(
+                latitude, longitude, target_azimuth, 
+                current_time - search_interval, current_time
+            )
+        
+        prev_azimuth = current_azimuth
+    
+    return None
+
+
+def _azimuth_crossed_target(prev_azimuth: float, current_azimuth: float, target: float) -> bool:
+    """Check if azimuth crossed the target between two measurements."""
+    # Handle wraparound case (359° -> 1°)
+    if abs(prev_azimuth - current_azimuth) > 180:
+        if prev_azimuth > current_azimuth:
+            # Wrapped from 359 to small number
+            return target >= prev_azimuth or target <= current_azimuth
+        else:
+            # Wrapped from small number to 359
+            return target <= prev_azimuth or target >= current_azimuth
+    else:
+        # Normal case
+        return min(prev_azimuth, current_azimuth) <= target <= max(prev_azimuth, current_azimuth)
+
+
+def _refine_azimuth_time(
+    latitude: float, 
+    longitude: float, 
+    target_azimuth: float,
+    start_time: datetime, 
+    end_time: datetime
+) -> datetime:
+    """Refine azimuth time to minute precision using binary search."""
+    while (end_time - start_time).total_seconds() > 60:
+        mid_time = start_time + (end_time - start_time) / 2
+        mid_azimuth = calculate_solar_azimuth(latitude, longitude, mid_time)
+        
+        start_azimuth = calculate_solar_azimuth(latitude, longitude, start_time)
+        
+        if _azimuth_crossed_target(start_azimuth, mid_azimuth, target_azimuth):
+            end_time = mid_time
+        else:
+            start_time = mid_time
+    
+    return start_time
