@@ -88,11 +88,6 @@ clear_all_weather_data:
 generate_watering_calendar:
   name: Generate watering calendar
   description: Generate a 12-month watering calendar for irrigation zones based on representative climate data.
-  fields:
-    zone_id:
-      name: Zone ID
-      description: Optional zone ID to generate calendar for. If not provided, generates for all zones.
-      required: false
-      example: "1"
-      selector:
-        text:
+  target:
+    entity:
+      domain: sensor

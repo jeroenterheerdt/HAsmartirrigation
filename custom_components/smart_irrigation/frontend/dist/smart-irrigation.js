@@ -995,7 +995,7 @@ i.version="2.30.1",n(Za),i.fn=us,i.min=Ja,i.max=Qa,i.now=ei,i.utc=m,i.unix=ds,i.
                   <div class="calendar-info">
                     Method: ${a.calculation_method}
                   </div>
-                `:""}`};
+                `:""}`}
     </div>`}async saveToHA(e){if(!this.hass)throw new Error("Home Assistant connection not available");var t,a;await(t=this.hass,a=e,t.callApi("POST",ke+"/zones",a))}renderTheOptions(e,t){if(this.hass){let a=Y`<option value="" ?selected=${void 0===t}">---${Xi("common.labels.select",this.hass.language)}---</option>`;return Object.entries(e).map((([e,i])=>a=Y`${a}
             <option
               value="${i.id}"
@@ -2112,7 +2112,7 @@ i.version="2.30.1",n(Za),i.fn=us,i.min=Ja,i.max=Qa,i.now=ei,i.utc=m,i.unix=ds,i.
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${Xi("title",this.hass.language)}</div>
-          <div class="version">${"v2025.7.1"}</div>
+          <div class="version">${"v2025.7.2"}</div>
         </div>
 
         <sl-tab-group

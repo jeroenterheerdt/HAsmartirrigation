@@ -653,7 +653,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                     Method: ${zoneCalendar.calculation_method}
                   </div>
                 `
-              : ""}`};
+              : ""}`}
     </div>`;
   }
 

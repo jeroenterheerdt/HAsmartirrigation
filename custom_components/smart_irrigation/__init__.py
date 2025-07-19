@@ -291,9 +291,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         # Log a warning if using default values for user awareness
         if self._latitude == 45.0 and hass.config.as_dict().get(CONF_LATITUDE) is None:
-            _LOGGER.warning("Latitude not configured in Home Assistant, using default latitude of 45.0 for watering calendar calculations")
+            _LOGGER.warning(
+                "Latitude not configured in Home Assistant, using default latitude of 45.0 for watering calendar calculations"
+            )
         if self._elevation == 0 and hass.config.as_dict().get(CONF_ELEVATION) is None:
-            _LOGGER.warning("Elevation not configured in Home Assistant, using default elevation of 0m for watering calendar calculations")
+            _LOGGER.warning(
+                "Elevation not configured in Home Assistant, using default elevation of 0m for watering calendar calculations"
+            )
 
         self._subscriptions = []
 
@@ -361,11 +365,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             return value
 
         # Try config entry data
-        if hasattr(self.entry, 'data') and key in self.entry.data:
+        if hasattr(self.entry, "data") and key in self.entry.data:
             return self.entry.data[key]
 
         # Try config entry options
-        if hasattr(self.entry, 'options') and key in self.entry.options:
+        if hasattr(self.entry, "options") and key in self.entry.options:
             return self.entry.options[key]
 
         # Fall back to default
@@ -1086,7 +1090,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         _LOGGER.debug(
             "[apply_aggregates_to_mapping_data]: zone: %s mapping: %s", zone, mapping
         )
-        if not mapping.get(const.MAPPING_DATA):
+        if mapping.get(const.MAPPING_DATA) is None:
             return None
 
         data = mapping.get(const.MAPPING_DATA)
@@ -1143,9 +1147,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if last_calc_val:
                 if isinstance(last_calc_val, str):
                     try:
-                        last_calculated_dt = datetime.datetime.fromisoformat(last_calc_val)
+                        last_calculated_dt = datetime.datetime.fromisoformat(
+                            last_calc_val
+                        )
                     except ValueError:
-                        last_calculated_dt = datetime.datetime.strptime(last_calc_val, "%Y-%m-%dT%H:%M:%S")
+                        last_calculated_dt = datetime.datetime.strptime(
+                            last_calc_val, "%Y-%m-%dT%H:%M:%S"
+                        )
                 else:
                     last_calculated_dt = last_calc_val
 
@@ -1326,7 +1334,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         for mapping in mappings:
             changes = {}
             changes = self.clear_weatherdata_for_mapping(mapping)
-            await self.store.async_update_mapping(mapping.get(const.MAPPING_ID), changes)
+            await self.store.async_update_mapping(
+                mapping.get(const.MAPPING_ID), changes
+            )
 
     async def _async_calculate_all(self, delete_weather_data=True, *args):
         _LOGGER.info("Calculating all automatic zones")
@@ -1527,7 +1537,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 delta = modinst.calculate(
                     weather_data=weatherdata,
                     forecast_data=forecastdata,
-                    hour_multiplier=hour_multiplier
+                    hour_multiplier=hour_multiplier,
                 )
             elif m[const.MODULE_NAME] == "Static":
                 delta = modinst.calculate()
@@ -1850,8 +1860,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             module_id = int(module_id)
         if const.ATTR_REMOVE in data:
             # delete a module
-            zone = self.store.get_module(module_id)
-            if not zone:
+            module = self.store.get_module(module_id)
+            if not module:
                 return
             await self.store.async_delete_module(module_id)
         elif module_id is not None and self.store.get_module(module_id):
@@ -2413,7 +2423,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if "watering_calendars" not in self.hass.data[const.DOMAIN]:
                 self.hass.data[const.DOMAIN]["watering_calendars"] = {}
 
-            self.hass.data[const.DOMAIN]["watering_calendars"]["last_generated"] = calendar_data
+            self.hass.data[const.DOMAIN]["watering_calendars"]["last_generated"] = (
+                calendar_data
+            )
 
             # Fire an event with the calendar data
             self.hass.bus.fire(
@@ -2421,11 +2433,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 {
                     "zone_id": zone_id,
                     "calendar_data": calendar_data,
-                    "generated_at": datetime.datetime.now().isoformat()
-                }
+                    "generated_at": datetime.datetime.now().isoformat(),
+                },
             )
 
-            _LOGGER.info("Watering calendar generated successfully for %s zones", len(calendar_data))
+            _LOGGER.info(
+                "Watering calendar generated successfully for %s zones",
+                len(calendar_data),
+            )
 
         except Exception as e:
             _LOGGER.error("Failed to generate watering calendar: %s", e)
@@ -2434,8 +2449,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 {
                     "zone_id": zone_id,
                     "error": str(e),
-                    "generated_at": datetime.datetime.now().isoformat()
-                }
+                    "generated_at": datetime.datetime.now().isoformat(),
+                },
             )
 
     async def async_generate_watering_calendar(self, zone_id: int | None = None):
@@ -2447,7 +2462,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         Returns:
             dict: Dictionary mapping zone IDs to their 12-month watering calendars.
         """
-        _LOGGER.debug("[async_generate_watering_calendar]: generating calendar for zone %s", zone_id)
+        _LOGGER.debug(
+            "[async_generate_watering_calendar]: generating calendar for zone %s",
+            zone_id,
+        )
 
         # Get zones to process
         if zone_id is not None:
@@ -2464,11 +2482,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             zone_id = zone.get(const.ZONE_ID)
             zone_name = zone.get(const.ZONE_NAME)
 
-            _LOGGER.debug("[async_generate_watering_calendar]: processing zone %s (%s)", zone_id, zone_name)
+            _LOGGER.debug(
+                "[async_generate_watering_calendar]: processing zone %s (%s)",
+                zone_id,
+                zone_name,
+            )
 
             # Skip disabled zones
             if zone.get(const.ZONE_STATE) == const.ZONE_STATE_DISABLED:
-                _LOGGER.debug("[async_generate_watering_calendar]: skipping disabled zone %s", zone_id)
+                _LOGGER.debug(
+                    "[async_generate_watering_calendar]: skipping disabled zone %s",
+                    zone_id,
+                )
                 continue
 
             try:
@@ -2478,16 +2503,20 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "zone_id": zone_id,
                     "monthly_estimates": monthly_calendar,
                     "generated_at": datetime.datetime.now().isoformat(),
-                    "calculation_method": self._get_zone_calculation_method(zone)
+                    "calculation_method": self._get_zone_calculation_method(zone),
                 }
             except Exception as e:
-                _LOGGER.warning("[async_generate_watering_calendar]: failed to calculate calendar for zone %s: %s", zone_id, e)
+                _LOGGER.warning(
+                    "[async_generate_watering_calendar]: failed to calculate calendar for zone %s: %s",
+                    zone_id,
+                    e,
+                )
                 calendar_data[zone_id] = {
                     "zone_name": zone_name,
                     "zone_id": zone_id,
                     "monthly_estimates": [],
                     "error": str(e),
-                    "generated_at": datetime.datetime.now().isoformat()
+                    "generated_at": datetime.datetime.now().isoformat(),
                 }
 
         return calendar_data
@@ -2505,12 +2534,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         module_id = zone.get(const.ZONE_MODULE)
 
         if mapping_id is None or module_id is None:
-            raise SmartIrrigationError(f"Zone {zone.get(const.ZONE_ID)} missing mapping or module configuration")
+            raise SmartIrrigationError(
+                f"Zone {zone.get(const.ZONE_ID)} missing mapping or module configuration"
+            )
 
         # Get the calculation module instance
         modinst = await self.getModuleInstanceByID(module_id)
         if not modinst:
-            raise SmartIrrigationError(f"Cannot load calculation module for zone {zone.get(const.ZONE_ID)}")
+            raise SmartIrrigationError(
+                f"Cannot load calculation module for zone {zone.get(const.ZONE_ID)}"
+            )
 
         # Generate representative monthly climate data based on location
         monthly_data = self._generate_monthly_climate_data()
@@ -2524,36 +2557,52 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             try:
                 # Calculate ET and watering needs for this month using the zone's module
                 if modinst.name == "PyETO":
-                    et_estimate = self._calculate_monthly_et_pyeto(month_data, modinst, month)
+                    et_estimate = self._calculate_monthly_et_pyeto(
+                        month_data, modinst, month
+                    )
                 elif modinst.name == "Static":
                     et_estimate = modinst.calculate()
                 else:
                     # For other modules like Passthrough, use a simple estimation
-                    et_estimate = month_data.get("average_daily_et", 3.0) * 30  # mm/month
+                    et_estimate = (
+                        month_data.get("average_daily_et", 3.0) * 30
+                    )  # mm/month
 
                 # Calculate watering volume based on zone parameters
-                watering_volume = self._calculate_monthly_watering_volume(zone, et_estimate, month_data)
+                watering_volume = self._calculate_monthly_watering_volume(
+                    zone, et_estimate, month_data
+                )
 
-                monthly_estimates.append({
-                    "month": month,
-                    "month_name": month_name,
-                    "estimated_et_mm": round(et_estimate, 2),
-                    "estimated_watering_volume_liters": round(watering_volume, 1),
-                    "average_temperature_c": month_data.get("avg_temp", 20.0),
-                    "average_precipitation_mm": month_data.get("precipitation", 50.0),
-                    "calculation_notes": f"Based on typical {month_name} climate patterns"
-                })
+                monthly_estimates.append(
+                    {
+                        "month": month,
+                        "month_name": month_name,
+                        "estimated_et_mm": round(et_estimate, 2),
+                        "estimated_watering_volume_liters": round(watering_volume, 1),
+                        "average_temperature_c": month_data.get("avg_temp", 20.0),
+                        "average_precipitation_mm": month_data.get(
+                            "precipitation", 50.0
+                        ),
+                        "calculation_notes": f"Based on typical {month_name} climate patterns",
+                    }
+                )
 
             except Exception as e:
-                _LOGGER.warning("[_calculate_monthly_watering_for_zone]: failed to calculate month %s for zone %s: %s",
-                               month, zone.get(const.ZONE_ID), e)
-                monthly_estimates.append({
-                    "month": month,
-                    "month_name": month_name,
-                    "estimated_et_mm": 0.0,
-                    "estimated_watering_volume_liters": 0.0,
-                    "error": str(e)
-                })
+                _LOGGER.warning(
+                    "[_calculate_monthly_watering_for_zone]: failed to calculate month %s for zone %s: %s",
+                    month,
+                    zone.get(const.ZONE_ID),
+                    e,
+                )
+                monthly_estimates.append(
+                    {
+                        "month": month,
+                        "month_name": month_name,
+                        "estimated_et_mm": 0.0,
+                        "estimated_watering_volume_liters": 0.0,
+                        "error": str(e),
+                    }
+                )
 
         return monthly_estimates
 
@@ -2591,9 +2640,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
             # Simple precipitation model (more in winter for temperate, varies by location)
             if latitude > 35.0:  # Temperate zones
-                precip_factor = 1.5 - 0.5 * math.cos((month - 1) * math.pi / 6)  # More in winter
+                precip_factor = 1.5 - 0.5 * math.cos(
+                    (month - 1) * math.pi / 6
+                )  # More in winter
             else:  # Tropical/subtropical
-                precip_factor = 1.0 + 0.3 * math.sin((month - 1) * math.pi / 6)  # Slight seasonal variation
+                precip_factor = 1.0 + 0.3 * math.sin(
+                    (month - 1) * math.pi / 6
+                )  # Slight seasonal variation
 
             precipitation = 60.0 * precip_factor  # Base 60mm/month
 
@@ -2609,18 +2662,21 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # Dewpoint estimation
             dewpoint = avg_temp - ((100 - humidity) / 5)
 
-            monthly_data.append({
-                "month": month,
-                "avg_temp": avg_temp,
-                "min_temp": min_temp,
-                "max_temp": max_temp,
-                "precipitation": precipitation,
-                "humidity": humidity,
-                "wind_speed": wind_speed,
-                "pressure": pressure,
-                "dewpoint": dewpoint,
-                "average_daily_et": 2.0 + 2.0 * math.cos((month - 7) * math.pi / 6)  # Higher ET in summer
-            })
+            monthly_data.append(
+                {
+                    "month": month,
+                    "avg_temp": avg_temp,
+                    "min_temp": min_temp,
+                    "max_temp": max_temp,
+                    "precipitation": precipitation,
+                    "humidity": humidity,
+                    "wind_speed": wind_speed,
+                    "pressure": pressure,
+                    "dewpoint": dewpoint,
+                    "average_daily_et": 2.0
+                    + 2.0 * math.cos((month - 7) * math.pi / 6),  # Higher ET in summer
+                }
+            )
 
         return monthly_data
 
@@ -2644,7 +2700,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             const.MAPPING_HUMIDITY: month_data["humidity"],
             const.MAPPING_WINDSPEED: month_data["wind_speed"],
             const.MAPPING_PRESSURE: month_data["pressure"],
-            const.MAPPING_DEWPOINT: month_data["dewpoint"]
+            const.MAPPING_DEWPOINT: month_data["dewpoint"],
         }
 
         # Calculate daily ET and scale to monthly
@@ -2652,7 +2708,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         # Get days in month
         import calendar
-        days_in_month = calendar.monthrange(2024, month)[1]  # Use 2024 as reference year
+
+        days_in_month = calendar.monthrange(2024, month)[
+            1
+        ]  # Use 2024 as reference year
 
         # Convert daily ET delta to monthly total (remove precipitation since we want just ET)
         daily_et = abs(daily_et_delta) + month_data["precipitation"] / days_in_month
@@ -2678,7 +2737,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # Convert from imperial if needed
         ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
         if not ha_config_is_metric:
-            zone_size_m2 = convert_between(const.UNIT_SQ_FT, const.UNIT_M2, zone_size_m2)
+            zone_size_m2 = convert_between(
+                const.UNIT_SQ_FT, const.UNIT_M2, zone_size_m2
+            )
 
         # Calculate net water need (ET minus precipitation)
         net_water_need_mm = max(0, et_mm - precipitation_mm)
@@ -2701,23 +2762,22 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             str: Description of the calculation method used.
         """
         module_id = zone.get(const.ZONE_MODULE)
-        if not module_id:
+        if module_id is None:
             return "No calculation module configured"
 
         module = self.store.get_module(module_id)
-        if not module:
+        if module is None:
             return f"Module {module_id} not found"
 
         method_name = module.get(const.MODULE_NAME, "Unknown")
 
         if method_name == "PyETO":
             return "FAO-56 Penman-Monteith method using PyETO"
-        elif method_name == "Static":
+        if method_name == "Static":
             return "Static evapotranspiration rate"
-        elif method_name == "Passthrough":
+        if method_name == "Passthrough":
             return "Direct evapotranspiration input"
-        else:
-            return f"{method_name} calculation method"
+        return f"{method_name} calculation method"
 
 
 @callback
