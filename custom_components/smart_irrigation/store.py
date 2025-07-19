@@ -28,9 +28,15 @@ from .const import (ATTR_NEW_BUCKET_VALUE, ATTR_NEW_MULTIPLIER_VALUE,
                     CONF_DEFAULT_MAXIMUM_DURATION,
                     CONF_DEFAULT_SENSOR_DEBOUNCE,
                     CONF_DEFAULT_USE_WEATHER_SERVICE,
-                    CONF_DEFAULT_WEATHER_SERVICE, CONF_IMPERIAL, CONF_METRIC,
+                    CONF_DEFAULT_WEATHER_SERVICE, CONF_IMPERIAL, 
+                    CONF_IRRIGATION_START_TRIGGERS,
+                    CONF_DEFAULT_IRRIGATION_START_TRIGGERS, CONF_METRIC,
                     CONF_SENSOR_DEBOUNCE, CONF_UNITS, CONF_USE_WEATHER_SERVICE,
                     CONF_WEATHER_SERVICE, CONF_WEATHER_SERVICE_OWM, DOMAIN,
+                    CONF_SKIP_IRRIGATION_ON_PRECIPITATION,
+                    CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION,
+                    CONF_PRECIPITATION_THRESHOLD_MM,
+                    CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM,
                     MAPPING_CONF_SENSOR, MAPPING_CONF_SOURCE,
                     MAPPING_CONF_SOURCE_NONE, MAPPING_CONF_SOURCE_SENSOR,
                     MAPPING_CONF_SOURCE_WEATHER_SERVICE, MAPPING_CONF_UNIT,
@@ -42,7 +48,11 @@ from .const import (ATTR_NEW_BUCKET_VALUE, ATTR_NEW_MULTIPLIER_VALUE,
                     MAPPING_PRECIPITATION, MAPPING_PRESSURE, MAPPING_SOLRAD,
                     MAPPING_TEMPERATURE, MAPPING_WINDSPEED, MODULE_CONFIG,
                     MODULE_DESCRIPTION, MODULE_DIR, MODULE_ID, MODULE_NAME,
-                    MODULE_SCHEMA, START_EVENT_FIRED_TODAY, ZONE_BUCKET,
+                    MODULE_SCHEMA, START_EVENT_FIRED_TODAY, 
+                    TRIGGER_CONF_ENABLED, TRIGGER_CONF_NAME, 
+                    TRIGGER_CONF_OFFSET_MINUTES, TRIGGER_CONF_TYPE,
+                    TRIGGER_CONF_ACCOUNT_FOR_DURATION,
+                    TRIGGER_TYPE_SUNRISE, ZONE_BUCKET,
                     ZONE_CURRENT_DRAINAGE, ZONE_DELTA, ZONE_DRAINAGE_RATE,
                     ZONE_DURATION, ZONE_ID, ZONE_LAST_CALCULATED,
                     ZONE_LAST_UPDATED, ZONE_LEAD_TIME, ZONE_MAPPING,
@@ -57,7 +67,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DATA_REGISTRY = f"{DOMAIN}_storage"
 STORAGE_KEY = f"{DOMAIN}.storage"
-STORAGE_VERSION = 4
+STORAGE_VERSION = 5
 SAVE_DELAY = 0
 
 
@@ -131,6 +141,9 @@ class Config:
         type=bool, default=CONF_DEFAULT_CONTINUOUS_UPDATES
     )  # continuous updates are disabled by default for now
     sensor_debounce = attr.ib(type=int, default=CONF_DEFAULT_SENSOR_DEBOUNCE)
+    irrigation_start_triggers = attr.ib(
+        type=list, default=CONF_DEFAULT_IRRIGATION_START_TRIGGERS
+    )
 
 
 class MigratableStore(Store):
@@ -152,6 +165,31 @@ class MigratableStore(Store):
                 # owm_api_key --> forecasting_api_key
                 # owm_api_version --> forecasting_api_version
                 # new: forecasting_service (OWM or PirateWeather)
+        if old_version <= 4:
+            # v4 to v5: Add irrigation start triggers configuration
+            # Default to backward compatible behavior (sunrise trigger with total duration offset)
+            if "config" in data:
+                if CONF_IRRIGATION_START_TRIGGERS not in data["config"]:
+                    # Create default trigger that mimics current behavior
+                    default_trigger = {
+                        TRIGGER_CONF_TYPE: TRIGGER_TYPE_SUNRISE,
+                        TRIGGER_CONF_OFFSET_MINUTES: 0,  # Will be calculated from total duration
+                        TRIGGER_CONF_ENABLED: True,
+                        TRIGGER_CONF_NAME: "Sunrise (Legacy)",
+                        TRIGGER_CONF_ACCOUNT_FOR_DURATION: True,  # Default to accounting for duration
+                    }
+                    data["config"][CONF_IRRIGATION_START_TRIGGERS] = [default_trigger]
+                else:
+                    # Update existing triggers to include account_for_duration if missing
+                    for trigger in data["config"][CONF_IRRIGATION_START_TRIGGERS]:
+                        if TRIGGER_CONF_ACCOUNT_FOR_DURATION not in trigger:
+                            trigger[TRIGGER_CONF_ACCOUNT_FOR_DURATION] = True
+                            
+                # Add weather skip configuration if missing
+                if CONF_SKIP_IRRIGATION_ON_PRECIPITATION not in data["config"]:
+                    data["config"][CONF_SKIP_IRRIGATION_ON_PRECIPITATION] = CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
+                if CONF_PRECIPITATION_THRESHOLD_MM not in data["config"]:
+                    data["config"][CONF_PRECIPITATION_THRESHOLD_MM] = CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
         return data
 
 
@@ -238,6 +276,9 @@ class SmartIrrigationStorage:
                 ),
                 sensor_debounce=data["config"].get(
                     CONF_SENSOR_DEBOUNCE, CONF_DEFAULT_SENSOR_DEBOUNCE
+                ),
+                irrigation_start_triggers=data["config"].get(
+                    CONF_IRRIGATION_START_TRIGGERS, CONF_DEFAULT_IRRIGATION_START_TRIGGERS
                 ),
             )
 

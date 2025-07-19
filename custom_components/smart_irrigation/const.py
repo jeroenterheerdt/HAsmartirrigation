@@ -12,6 +12,30 @@ SUPPORTED_LANGUAGES = ["de", "en", "es", "fr", "it", "nl", "no", "sk"]
 
 START_EVENT_FIRED_TODAY = "starteventfiredtoday"
 
+# Irrigation start trigger configuration
+CONF_IRRIGATION_START_TRIGGERS = "irrigation_start_triggers"
+CONF_DEFAULT_IRRIGATION_START_TRIGGERS = []
+
+# Weather-based skip configuration  
+CONF_SKIP_IRRIGATION_ON_PRECIPITATION = "skip_irrigation_on_precipitation"
+CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION = False
+CONF_PRECIPITATION_THRESHOLD_MM = "precipitation_threshold_mm"
+CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM = 2.0  # 2mm threshold
+
+# Trigger types
+TRIGGER_TYPE_SUNRISE = "sunrise"
+TRIGGER_TYPE_SUNSET = "sunset"
+TRIGGER_TYPE_SOLAR_AZIMUTH = "solar_azimuth"
+TRIGGER_TYPES = [TRIGGER_TYPE_SUNRISE, TRIGGER_TYPE_SUNSET, TRIGGER_TYPE_SOLAR_AZIMUTH]
+
+# Trigger configuration keys
+TRIGGER_CONF_TYPE = "type"
+TRIGGER_CONF_OFFSET_MINUTES = "offset_minutes"
+TRIGGER_CONF_AZIMUTH_ANGLE = "azimuth_angle"
+TRIGGER_CONF_ENABLED = "enabled"
+TRIGGER_CONF_NAME = "name"
+TRIGGER_CONF_ACCOUNT_FOR_DURATION = "account_for_duration"
+
 CONF_WEATHER_SERVICE = "weather_service"
 CONF_WEATHER_SERVICE_API_KEY = "weather_service_api_key"
 CONF_WEATHER_SERVICE_API_VERSION = "weather_service_api_version"
