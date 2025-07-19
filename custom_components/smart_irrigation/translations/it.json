@@ -158,6 +158,46 @@
           "description": "Nuovo valore dello stato"
         }
       }
+    },
+    "set_zone": {
+      "name": "Set the values of a zone",
+      "description": "Set all configurable values of a zone",
+      "fields": {
+        "entity": {
+          "name": "Entity",
+          "description": "Zone to set configuration values"
+        },
+        "new_bucket_value": {
+          "name": "New bucket value",
+          "description": "New value for the bucket"
+        },
+        "new_multiplier_value": {
+          "name": "New multiplier value",
+          "description": "New value for the multiplier"
+        },
+        "new_duration_value": {
+          "name": "New duration value",
+          "description": "New value for the duration"
+        },
+        "new_state_value": {
+          "name": "New state value",
+          "description": "New value of the state"
+        },
+        "new_throughput_value": {
+          "name": "New throughput value",
+          "description": "New value for the throughput"
+        }
+      }
+    },
+    "generate_watering_calendar": {
+      "name": "Generate watering calendar",
+      "description": "Generate a 12-month watering calendar for irrigation zones based on representative climate data",
+      "fields": {
+        "entity": {
+          "name": "Entity",
+          "description": "Zone to generate watering calendar for"
+        }
+      }
     }
   }
 }
