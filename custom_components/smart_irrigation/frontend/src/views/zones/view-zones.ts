@@ -86,6 +86,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
   @property({ type: Boolean })
   private isSaving = false;
 
+  @property({ type: Boolean })
+  private isCreatingZone = false;
+
   // Prevent excessive re-renders
   private _updateScheduled = false;
   private _scheduleUpdate() {
@@ -132,6 +135,11 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     return [
       this.hass!.connection.subscribeMessage(
         () => {
+          // Skip automatic data updates when user is actively creating a zone
+          if (this.isCreatingZone) {
+            console.debug("Skipping data refresh during zone creation");
+            return;
+          }
           // Update data when notified of changes with proper error handling
           this._fetchData().catch((error) => {
             console.error("Failed to fetch data on config update:", error);
@@ -246,6 +254,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     if (!this.nameInput.value.trim()) {
       return; // Don't add empty zones
     }
+
+    // Clear the zone creation flag since we're submitting
+    this.isCreatingZone = false;
 
     const newZone: SmartIrrigationZone = {
       //id: this.zones.length + 1, //new zone will have ID that is equal to current zone length + 1
@@ -663,6 +674,23 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     }
     // Save zone to HA backend with proper error handling
     await saveZone(this.hass, zone);
+  }
+
+  private handleZoneFormFocus(): void {
+    // User started interacting with zone creation form
+    this.isCreatingZone = true;
+  }
+
+  private handleZoneFormBlur(): void {
+    // Check if any form field has content
+    const hasContent = this.nameInput?.value?.trim() || 
+                      this.sizeInput?.value || 
+                      this.throughputInput?.value;
+    
+    // Only clear the flag if all fields are empty
+    if (!hasContent) {
+      this.isCreatingZone = false;
+    }
   }
 
   private renderTheOptions(thelist: object, selected?: number): TemplateResult {
@@ -1250,7 +1278,12 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 this.hass.language,
               )}:</label
             >
-            <input id="nameInput" type="text" />
+            <input 
+              id="nameInput" 
+              type="text" 
+              @focus="${this.handleZoneFormFocus}"
+              @blur="${this.handleZoneFormBlur}"
+            />
           </div>
           <div class="zoneline">
             <label for="sizeInput"
@@ -1259,7 +1292,12 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 this.hass.language,
               )}:</label
             >
-            <input id="sizeInput" type="number" />
+            <input 
+              id="sizeInput" 
+              type="number" 
+              @focus="${this.handleZoneFormFocus}"
+              @blur="${this.handleZoneFormBlur}"
+            />
           </div>
           <div class="zoneline">
             <label for="throughputInput"
@@ -1268,7 +1306,12 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 this.hass.language,
               )}:</label
             >
-            <input id="throughputInput" type="number" />
+            <input 
+              id="throughputInput" 
+              type="number" 
+              @focus="${this.handleZoneFormFocus}"
+              @blur="${this.handleZoneFormBlur}"
+            />
           </div>
           <div class="zoneline">
             <span></span>
@@ -1348,6 +1391,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
     // Clear the zone cache
     this.zoneCache.clear();
+    
+    // Clear zone creation state when component is disconnected
+    this.isCreatingZone = false;
   }
 
   /*
