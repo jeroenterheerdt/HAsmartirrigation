@@ -53,7 +53,13 @@
   "services": {
     "calculate_all_zones": {
       "name": "Calcola tutte le zone",
-      "description": "Calcola tutte le zone in modalità automatica"
+      "description": "Calcola tutte le zone in modalità automatica",
+      "fields":{
+        "delete_weather_data": {
+          "name": "Cancellare i dati meteo",
+          "description": "Cancellare i dati meteo dopo il calcolo"
+        }
+      }
     },
     "calculate_zone": {
       "name": "Calcola zona",
@@ -62,6 +68,10 @@
         "entity": {
           "name": "Entitità",
           "description": "Zona da calcolare"
+        },
+        "delete_weather_data": {
+          "name": "Elimina i dati meteo",
+          "description": "Elimina i dati meteo per la zona dopo il calcolo"
         }
       }
     },
@@ -160,42 +170,32 @@
       }
     },
     "set_zone": {
-      "name": "Set the values of a zone",
-      "description": "Set all configurable values of a zone",
+      "name": "Imposta i valori di una zona",
+      "description": "Imposta tutti i valori configurabili di una zona",
       "fields": {
         "entity": {
-          "name": "Entity",
-          "description": "Zone to set configuration values"
+          "name": "Entità",
+          "description": "Zona per impostare i valori di configurazione"
         },
         "new_bucket_value": {
-          "name": "New bucket value",
-          "description": "New value for the bucket"
+          "name": "Nuovo valore del bucket",
+          "description": "Nuovo valore per il secchio"
         },
         "new_multiplier_value": {
-          "name": "New multiplier value",
-          "description": "New value for the multiplier"
+          "name": "Nuovo valore moltiplicatore",
+          "description": "Nuovo valore per il moltiplicatore"
         },
         "new_duration_value": {
-          "name": "New duration value",
-          "description": "New value for the duration"
+          "name": "Nuovo valore di durata",
+          "description": "Nuovo valore per la durata"
         },
         "new_state_value": {
-          "name": "New state value",
-          "description": "New value of the state"
+          "name": "Nuovo valore di stato",
+          "description": "Nuovo valore di stato"
         },
         "new_throughput_value": {
-          "name": "New throughput value",
-          "description": "New value for the throughput"
-        }
-      }
-    },
-    "generate_watering_calendar": {
-      "name": "Generate watering calendar",
-      "description": "Generate a 12-month watering calendar for irrigation zones based on representative climate data",
-      "fields": {
-        "entity": {
-          "name": "Entity",
-          "description": "Zone to generate watering calendar for"
+          "name": "Nuovo valore di capacità",
+          "description": "Nuovo valore di capacità"
         }
       }
     }
