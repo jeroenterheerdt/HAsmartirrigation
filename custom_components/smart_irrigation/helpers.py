@@ -754,6 +754,23 @@ class InvalidAuth(exceptions.HomeAssistantError):
     """Error to indicate there is invalid auth."""
 
 
+def normalize_azimuth_angle(angle: float) -> float:
+    """Normalize any azimuth angle to 0-360 degree range.
+    
+    Args:
+        angle: Input angle in degrees (can be any value)
+        
+    Returns:
+        Normalized angle in 0-360 degree range
+        
+    Examples:
+        normalize_azimuth_angle(450) -> 90
+        normalize_azimuth_angle(-30) -> 330
+        normalize_azimuth_angle(365) -> 5
+    """
+    return angle % 360
+
+
 def calculate_solar_azimuth(latitude: float, longitude: float, timestamp: datetime) -> float:
     """Calculate solar azimuth angle for a given location and time.
     

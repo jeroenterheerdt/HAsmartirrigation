@@ -69,11 +69,7 @@ export class TriggerDialog extends LitElement {
     }
 
     if (this._trigger.type === TRIGGER_TYPE_SOLAR_AZIMUTH) {
-      if (
-        this._trigger.azimuth_angle === undefined ||
-        this._trigger.azimuth_angle < 0 ||
-        this._trigger.azimuth_angle > 360
-      ) {
+      if (this._trigger.azimuth_angle === undefined || isNaN(this._trigger.azimuth_angle)) {
         alert(
           localize(
             "irrigation_start_triggers.validation.azimuth_invalid",
@@ -81,6 +77,11 @@ export class TriggerDialog extends LitElement {
           ),
         );
         return;
+      }
+      // Normalize azimuth angle to 0-360 range for display purposes
+      this._trigger.azimuth_angle = this._trigger.azimuth_angle % 360;
+      if (this._trigger.azimuth_angle < 0) {
+        this._trigger.azimuth_angle += 360;
       }
     }
 
@@ -254,8 +255,8 @@ export class TriggerDialog extends LitElement {
         name: TRIGGER_CONF_AZIMUTH_ANGLE,
         selector: {
           number: {
-            min: 0,
-            max: 360,
+            min: -999999, // Allow any reasonable azimuth value
+            max: 999999,  // Allow any reasonable azimuth value
             step: 1,
             mode: "box",
           },

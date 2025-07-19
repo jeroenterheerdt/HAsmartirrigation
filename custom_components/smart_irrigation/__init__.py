@@ -2143,6 +2143,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     await self._register_sunset_trigger(offset_minutes, trigger_name, total_duration, account_for_duration)
                 elif trigger_type == const.TRIGGER_TYPE_SOLAR_AZIMUTH:
                     azimuth_angle = trigger.get(const.TRIGGER_CONF_AZIMUTH_ANGLE, 0)
+                    # Normalize azimuth angle to 0-360 range
+                    azimuth_angle = helpers.normalize_azimuth_angle(azimuth_angle)
                     await self._register_azimuth_trigger(azimuth_angle, offset_minutes, trigger_name, total_duration, account_for_duration)
                 else:
                     _LOGGER.warning("Unknown trigger type: %s", trigger_type)

@@ -259,12 +259,12 @@
     "confirm_delete": "Are you sure you want to delete the trigger '{name}'?",
     "validation": {
       "name_required": "Trigger name is required",
-      "azimuth_invalid": "Azimuth angle must be between 0 and 360 degrees"
+      "azimuth_invalid": "Azimuth angle must be a valid number"
     },
     "help": {
       "sunrise_offset": "For sunrise triggers: Use negative values to start before sunrise, positive to start after. Set to 0 to automatically start early enough to complete all zones before sunrise.",
       "sunset_offset": "For sunset triggers: Use negative values to start before sunset, positive to start after sunset.",
-      "azimuth_explanation": "Solar azimuth is the compass direction of the sun. 0°=North, 90°=East, 180°=South, 270°=West. Use this to trigger irrigation when the sun reaches a specific position.",
+      "azimuth_explanation": "Solar azimuth is the compass direction of the sun. 0°=North, 90°=East, 180°=South, 270°=West. You can enter any angle value (e.g., 450° = 90°, -30° = 330°). Use this to trigger irrigation when the sun reaches a specific position.",
       "multiple_triggers": "You can configure multiple triggers. Each enabled trigger will independently schedule irrigation starts."
     }
   },
