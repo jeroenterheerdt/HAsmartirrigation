@@ -30,6 +30,7 @@ from homeassistant.helpers.event import (
     async_call_later,
     async_track_state_change_event,
     async_track_sunrise,
+    async_track_sunset,
     async_track_time_change,
     async_track_time_interval,
 )
@@ -863,7 +864,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def _setup_calculation_triggers(self, triggers):
         """Set up multiple calculation triggers based on configuration."""
-        from homeassistant.helpers.sun import async_track_sunset
         import uuid
         
         _LOGGER.info("Setting up %d calculation triggers", len(triggers))
@@ -947,9 +947,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # Apply offsets
             actual_trigger_time = target_time - timedelta(minutes=offset_before) + timedelta(minutes=offset_after)
             
-            # Convert to local time for scheduling
-            if actual_trigger_time.tzinfo is None:
-                actual_trigger_time = actual_trigger_time.replace(tzinfo=self.hass.config.time_zone)
+            # Convert to local time for scheduling - handle timezone properly
+            if actual_trigger_time.tzinfo is not None:
+                # Convert to naive local time
+                actual_trigger_time = actual_trigger_time.astimezone().replace(tzinfo=None)
             
             # Schedule the trigger
             hour = actual_trigger_time.hour
