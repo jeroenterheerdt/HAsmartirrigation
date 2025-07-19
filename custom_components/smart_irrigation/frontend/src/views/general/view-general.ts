@@ -27,6 +27,8 @@ import {
   CONF_CONTINUOUS_UPDATES,
   CONF_SENSOR_DEBOUNCE,
   CONF_IRRIGATION_START_TRIGGERS,
+  CONF_SKIP_IRRIGATION_ON_PRECIPITATION,
+  CONF_PRECIPITATION_THRESHOLD_MM,
   TRIGGER_TYPE_SUNRISE,
   TRIGGER_TYPE_SUNSET,
   TRIGGER_TYPE_SOLAR_AZIMUTH,
@@ -630,13 +632,16 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       // Irrigation Start Triggers Card
       const r5 = this.renderTriggersCard();
 
+      // Weather-based Skip Card
+      const r6 = this.renderWeatherSkipCard();
+
       const r = html`<ha-card
           header="${localize("panels.general.title", this.hass.language)}"
         >
           <div class="card-content">
             ${localize("panels.general.description", this.hass.language)}
           </div> </ha-card
-        >${r2}${r1}${r3}${r4}${r5}`;
+        >${r2}${r1}${r3}${r4}${r5}${r6}`;
 
       return r;
     }
@@ -865,6 +870,86 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
     const triggers = [...this.config.irrigation_start_triggers];
     triggers.splice(detail.index, 1);
     this.handleConfigChange({ [CONF_IRRIGATION_START_TRIGGERS]: triggers });
+  }
+
+  renderWeatherSkipCard() {
+    if (!this.config || !this.data || !this.hass) return html``;
+
+    return html`
+      <ha-card
+        header="${localize(
+          "weather_skip.title",
+          this.hass.language,
+        )}"
+      >
+        <div class="card-content">
+          <div class="zoneline">
+            <div style="margin-bottom: 16px;">
+              ${localize("weather_skip.description", this.hass.language)}
+            </div>
+            
+            <div class="switch-container" style="margin-bottom: 16px;">
+              <input
+                type="radio"
+                id="weatherskipon"
+                name="skip_irrigation_on_precipitation"
+                value="true"
+                ?checked="${this.config.skip_irrigation_on_precipitation}"
+                @change=${() => {
+                  this.handleConfigChange({
+                    skip_irrigation_on_precipitation: true,
+                  });
+                }}
+              /><label for="weatherskipon"
+                >${localize("common.labels.yes", this.hass.language)}</label
+              >
+              <input
+                type="radio"
+                id="weatherskipoff"
+                name="skip_irrigation_on_precipitation"
+                value="false"
+                ?checked="${!this.config.skip_irrigation_on_precipitation}"
+                @change=${() => {
+                  this.handleConfigChange({
+                    skip_irrigation_on_precipitation: false,
+                  });
+                }}
+              /><label for="weatherskipoff"
+                >${localize("common.labels.no", this.hass.language)}</label
+              >
+            </div>
+
+            ${this.config.skip_irrigation_on_precipitation
+              ? html`
+                  <div class="zoneline">
+                    <label for="precipitation_threshold_mm"
+                      >${localize(
+                        "weather_skip.threshold_label",
+                        this.hass.language,
+                      )} (mm):</label
+                    >
+                    <input
+                      id="precipitation_threshold_mm"
+                      type="number"
+                      class="shortinput"
+                      min="0"
+                      step="0.1"
+                      .value="${this.config.precipitation_threshold_mm}"
+                      @input=${(e: Event) => {
+                        this.handleConfigChange({
+                          precipitation_threshold_mm: parseFloat(
+                            (e.target as HTMLInputElement).value,
+                          ),
+                        });
+                      }}
+                    />
+                  </div>
+                `
+              : ""}
+          </div>
+        </div>
+      </ha-card>
+    `;
   }
 
   private async saveData(

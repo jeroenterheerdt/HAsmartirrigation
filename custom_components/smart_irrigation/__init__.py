@@ -2276,19 +2276,108 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 total_duration += zone.get(const.ZONE_DURATION, 0)
         return total_duration
 
+    async def _check_precipitation_forecast(self) -> bool:
+        """Check if precipitation is forecasted and should skip irrigation.
+        
+        Returns:
+            bool: True if irrigation should be skipped due to precipitation, False otherwise.
+        """
+        config = await self.store.async_get_config()
+        
+        # Check if precipitation skip is enabled
+        skip_on_precipitation = config.get(const.CONF_SKIP_IRRIGATION_ON_PRECIPITATION, const.CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION)
+        if not skip_on_precipitation:
+            return False
+            
+        # Check if weather service is being used
+        use_weather_service = config.get(const.CONF_USE_WEATHER_SERVICE, const.CONF_DEFAULT_USE_WEATHER_SERVICE)
+        if not use_weather_service:
+            _LOGGER.debug("Weather service not enabled, cannot check precipitation forecast")
+            return False
+            
+        # Get precipitation threshold
+        threshold_mm = config.get(const.CONF_PRECIPITATION_THRESHOLD_MM, const.CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM)
+        
+        try:
+            # Get weather service
+            weather_service = config.get(const.CONF_WEATHER_SERVICE, const.CONF_DEFAULT_WEATHER_SERVICE)
+            if weather_service is None:
+                _LOGGER.debug("No weather service configured")
+                return False
+                
+            weather_client = None
+            if weather_service == const.CONF_WEATHER_SERVICE_OWM:
+                weather_client = self._OWMClient
+            elif weather_service == const.CONF_WEATHER_SERVICE_PW:
+                weather_client = self._PirateWeatherClient  
+            elif weather_service == const.CONF_WEATHER_SERVICE_KNMI:
+                weather_client = self._KNMIClient
+                
+            if weather_client is None:
+                _LOGGER.debug("Weather client not available")
+                return False
+                
+            # Get forecast data (today and tomorrow)
+            forecast_data = weather_client.get_forecast_data()
+            if not forecast_data:
+                _LOGGER.debug("No forecast data available")
+                return False
+                
+            # Check precipitation for today and tomorrow
+            total_precipitation = 0.0
+            for day_data in forecast_data[:2]:  # Check today and tomorrow only
+                if const.MAPPING_PRECIPITATION in day_data:
+                    total_precipitation += day_data[const.MAPPING_PRECIPITATION]
+                    
+            _LOGGER.debug("Forecast precipitation: %.1f mm (threshold: %.1f mm)", total_precipitation, threshold_mm)
+            
+            if total_precipitation >= threshold_mm:
+                _LOGGER.info("Skipping irrigation due to forecasted precipitation: %.1f mm (threshold: %.1f mm)", 
+                           total_precipitation, threshold_mm)
+                return True
+                
+        except Exception as e:
+            _LOGGER.warning("Error checking precipitation forecast: %s", e)
+            
+        return False
+
     @callback
     def _fire_start_event(self, *args):
+        """Fire the irrigation start event if conditions are met."""
         if not self._start_event_fired_today:
-            event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
-            self.hass.bus.fire(event_to_fire, {})
-            _LOGGER.info("Fired start event: %s", event_to_fire)
-            self._start_event_fired_today = True
-            # save config asynchronously - fire-and-forget since this is a callback
-            self.hass.async_create_task(
-                self.store.async_update_config(
-                    {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
-                )
-            )
+            # Check for precipitation forecast asynchronously
+            async def check_and_fire():
+                try:
+                    should_skip = await self._check_precipitation_forecast()
+                    if should_skip:
+                        _LOGGER.info("Irrigation start event skipped due to forecasted precipitation")
+                        return
+                        
+                    # Fire the event
+                    event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
+                    self.hass.bus.fire(event_to_fire, {})
+                    _LOGGER.info("Fired start event: %s", event_to_fire)
+                    self._start_event_fired_today = True
+                    
+                    # Save config asynchronously
+                    await self.store.async_update_config(
+                        {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
+                    )
+                except Exception as e:
+                    _LOGGER.error("Error in precipitation check, firing irrigation event anyway: %s", e)
+                    # Fire the event as fallback
+                    event_to_fire = f"{const.DOMAIN}_{const.EVENT_IRRIGATE_START}"
+                    self.hass.bus.fire(event_to_fire, {})
+                    _LOGGER.info("Fired start event (fallback): %s", event_to_fire)
+                    self._start_event_fired_today = True
+                    
+                    # Save config asynchronously
+                    await self.store.async_update_config(
+                        {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
+                    )
+                    
+            # Schedule the async check
+            self.hass.async_create_task(check_and_fire())
         else:
             _LOGGER.info("Did not fire start event, it was already fired today")
 

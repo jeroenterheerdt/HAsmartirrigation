@@ -33,6 +33,10 @@ from .const import (ATTR_NEW_BUCKET_VALUE, ATTR_NEW_MULTIPLIER_VALUE,
                     CONF_DEFAULT_IRRIGATION_START_TRIGGERS, CONF_METRIC,
                     CONF_SENSOR_DEBOUNCE, CONF_UNITS, CONF_USE_WEATHER_SERVICE,
                     CONF_WEATHER_SERVICE, CONF_WEATHER_SERVICE_OWM, DOMAIN,
+                    CONF_SKIP_IRRIGATION_ON_PRECIPITATION,
+                    CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION,
+                    CONF_PRECIPITATION_THRESHOLD_MM,
+                    CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM,
                     MAPPING_CONF_SENSOR, MAPPING_CONF_SOURCE,
                     MAPPING_CONF_SOURCE_NONE, MAPPING_CONF_SOURCE_SENSOR,
                     MAPPING_CONF_SOURCE_WEATHER_SERVICE, MAPPING_CONF_UNIT,
@@ -180,6 +184,12 @@ class MigratableStore(Store):
                     for trigger in data["config"][CONF_IRRIGATION_START_TRIGGERS]:
                         if TRIGGER_CONF_ACCOUNT_FOR_DURATION not in trigger:
                             trigger[TRIGGER_CONF_ACCOUNT_FOR_DURATION] = True
+                            
+                # Add weather skip configuration if missing
+                if CONF_SKIP_IRRIGATION_ON_PRECIPITATION not in data["config"]:
+                    data["config"][CONF_SKIP_IRRIGATION_ON_PRECIPITATION] = CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
+                if CONF_PRECIPITATION_THRESHOLD_MM not in data["config"]:
+                    data["config"][CONF_PRECIPITATION_THRESHOLD_MM] = CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
         return data
 
 

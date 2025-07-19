@@ -268,6 +268,12 @@
       "multiple_triggers": "You can configure multiple triggers. Each enabled trigger will independently schedule irrigation starts."
     }
   },
+  "weather_skip": {
+    "title": "Weather-based Irrigation Skip",
+    "description": "Automatically skip irrigation when precipitation is forecasted. This feature requires a weather service to be configured.",
+    "threshold_label": "Precipitation Threshold",
+    "threshold_description": "Minimum amount of precipitation (in mm) forecasted for today and tomorrow to skip irrigation."
+  },
   "common": {
     "labels": {
       "enabled": "Enabled",

@@ -39,6 +39,8 @@ export class SmartIrrigationConfig {
   continuousupdates: boolean;
   sensor_debounce: number;
   irrigation_start_triggers: IrrigationStartTrigger[];
+  skip_irrigation_on_precipitation: boolean;
+  precipitation_threshold_mm: number;
 
   constructor() {
     this.calctime = "23:00";
@@ -55,6 +57,8 @@ export class SmartIrrigationConfig {
     this.continuousupdates = false;
     this.sensor_debounce = 100;
     this.irrigation_start_triggers = [];
+    this.skip_irrigation_on_precipitation = false;
+    this.precipitation_threshold_mm = 2.0;
   }
 }
 

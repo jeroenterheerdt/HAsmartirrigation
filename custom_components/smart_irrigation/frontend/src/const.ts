@@ -17,6 +17,10 @@ export const CONF_CLEAR_TIME = "cleardatatime";
 export const CONF_CONTINUOUS_UPDATES = "continuousupdates";
 export const CONF_SENSOR_DEBOUNCE = "sensor_debounce";
 
+// Weather-based skip configuration
+export const CONF_SKIP_IRRIGATION_ON_PRECIPITATION = "skip_irrigation_on_precipitation";
+export const CONF_PRECIPITATION_THRESHOLD_MM = "precipitation_threshold_mm";
+
 // Irrigation start trigger configuration
 export const CONF_IRRIGATION_START_TRIGGERS = "irrigation_start_triggers";
 export const TRIGGER_TYPE_SUNRISE = "sunrise";
