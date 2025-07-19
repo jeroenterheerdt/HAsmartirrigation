@@ -385,6 +385,3 @@ Thumbs.db
 # Temporary test files
 test_latitude_*.py
 test_calendar_fix.py
-
-# Frontend compiled files
-custom_components/smart_irrigation/frontend/dist/
