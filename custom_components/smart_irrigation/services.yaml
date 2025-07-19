@@ -1,4 +1,6 @@
 calculate_all_zones:
+  name: Calculate all zones
+  description: Calculate irrigation requirements for all zones.
   fields:
     delete_weather_data:
         required: false
@@ -7,6 +9,8 @@ calculate_all_zones:
         selector:
           boolean: {}
 calculate_zone:
+  name: Calculate zone
+  description: Calculate irrigation requirements for a specific zone.
   target:
     entity:
       domain: sensor
@@ -18,11 +22,17 @@ calculate_zone:
         selector:
           boolean: {}
 update_all_zones:
+  name: Update all zones
+  description: Update irrigation settings for all zones.
 update_zone:
+  name: Update zone
+  description: Update irrigation settings for a specific zone.
   target:
     entity:
       domain: sensor
 set_bucket:
+  name: Set bucket
+  description: Set the water bucket value for a specific zone.
   target:
     entity:
       domain: sensor
@@ -32,23 +42,33 @@ set_bucket:
       example: -10
       default: 0
 set_all_buckets:
+  name: Set all buckets
+  description: Set the water bucket value for all zones.
   fields:
     new_bucket_value:
       required: true
       example: -10
       default: 0
 reset_bucket:
+  name: Reset bucket
+  description: Reset the water bucket value for a specific zone.
   target:
     entity:
       domain: sensor
 reset_all_buckets:
+  name: Reset all buckets
+  description: Reset the water bucket value for all zones.
 set_all_multipliers:
+  name: Set all multipliers
+  description: Set the irrigation multiplier value for all zones.
   fields:
     new_multiplier_value:
       required: true
       example: 1.0
       default: 1.0
 set_multiplier:
+  name: Set multiplier
+  description: Set the irrigation multiplier value for a specific zone.
   target:
     entity:
       domain: sensor
@@ -58,6 +78,8 @@ set_multiplier:
       example: 1.0
       default: 1.0
 set_zone:
+  name: Set zone
+  description: Set irrigation parameters for a specific zone.
   target:
     entity:
       domain: sensor
