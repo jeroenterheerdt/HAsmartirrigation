@@ -42,7 +42,7 @@ export class ConfirmationDialog extends LitElement {
               dialogAction="cancel"
               .path=${mdiClose}
             ></ha-icon-button>
-            <span slot="title">
+            <span class="dialog-header" slot="title">
               ${this.hass.localize("dialogs.confirmation.title")}
             </span>
           </ha-header-bar>

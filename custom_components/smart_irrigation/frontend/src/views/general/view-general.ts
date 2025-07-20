@@ -6,7 +6,7 @@ import { UnsubscribeFunc } from "home-assistant-js-websocket";
 import { fetchConfig, saveConfig } from "../../data/websockets";
 import { SubscribeMixin } from "../../subscribe-mixin";
 import { localize } from "../../../localize/localize";
-import { pick, handleError, parseBoolean } from "../../helpers";
+import { output_unit, pick, handleError, parseBoolean } from "../../helpers";
 import { loadHaForm } from "../../load-ha-elements";
 import "../../dialogs/trigger-dialog";
 import { SmartIrrigationConfig, IrrigationStartTrigger } from "../../types";
@@ -717,7 +717,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
 
   renderTriggerItem(trigger: IrrigationStartTrigger, index: number) {
     if (!this.hass) return html``;
-    
+
     const triggerTypeLabel = localize(
       `irrigation_start_triggers.trigger_types.${trigger.type}`,
       this.hass.language,
@@ -825,7 +825,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
 
   private _showTriggerDialog(params: any) {
     if (!this.hass) return;
-    
+
     const dialog = document.createElement("trigger-dialog") as any;
     dialog.hass = this.hass;
 
@@ -876,18 +876,13 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
     if (!this.config || !this.data || !this.hass) return html``;
 
     return html`
-      <ha-card
-        header="${localize(
-          "weather_skip.title",
-          this.hass.language,
-        )}"
-      >
+      <ha-card header="${localize("weather_skip.title", this.hass.language)}">
         <div class="card-content">
           <div class="zoneline">
             <div style="margin-bottom: 16px;">
               ${localize("weather_skip.description", this.hass.language)}
             </div>
-            
+
             <div class="switch-container" style="margin-bottom: 16px;">
               <input
                 type="radio"
@@ -926,7 +921,11 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                       >${localize(
                         "weather_skip.threshold_label",
                         this.hass.language,
-                      )} (mm):</label
+                      )}
+                      (${output_unit(
+                        this.config,
+                        CONF_PRECIPITATION_THRESHOLD_MM,
+                      )}):</label
                     >
                     <input
                       id="precipitation_threshold_mm"
@@ -1016,7 +1015,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
   static get styles(): CSSResultGroup {
     return css`
       ${globalStyle} /* View-specific styles only - most common styles are now in globalStyle */
-      
+
       /* Irrigation triggers styles */
       .triggers-list {
         margin: 16px 0;

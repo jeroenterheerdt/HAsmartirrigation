@@ -152,7 +152,7 @@ export class TriggerDialog extends LitElement {
               dialogAction="cancel"
               .path=${mdiClose}
             ></ha-icon-button>
-            <span slot="title">${title}</span>
+            <span class="dialog-header" slot="title">${title}</span>
           </ha-header-bar>
         </div>
 
