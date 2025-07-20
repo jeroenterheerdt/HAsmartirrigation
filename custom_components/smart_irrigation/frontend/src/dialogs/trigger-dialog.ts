@@ -157,12 +157,111 @@ export class TriggerDialog extends LitElement {
         </div>
 
         <div class="wrapper">
-          <ha-form
-            .data=${this._trigger}
-            .schema=${this._getFormSchema()}
-            .computeLabel=${this._computeLabel}
-            @value-changed=${this._valueChanged}
-          ></ha-form>
+          <div class="form-group">
+            <ha-textfield
+              .label=${localize(
+                "irrigation_start_triggers.fields.name.name",
+                this.hass.language,
+              )}
+              .value=${this._trigger.name || ""}
+              @input=${this._nameChanged}
+              required
+            ></ha-textfield>
+          </div>
+
+          <div class="form-group">
+            <ha-select
+              .label=${localize(
+                "irrigation_start_triggers.fields.type.name",
+                this.hass.language,
+              )}
+              .value=${this._trigger.type}
+              @selected=${this._typeChanged}
+            >
+              <mwc-list-item value=${TRIGGER_TYPE_SUNRISE}>
+                ${localize(
+                  "irrigation_start_triggers.trigger_types.sunrise",
+                  this.hass.language,
+                )}
+              </mwc-list-item>
+              <mwc-list-item value=${TRIGGER_TYPE_SUNSET}>
+                ${localize(
+                  "irrigation_start_triggers.trigger_types.sunset",
+                  this.hass.language,
+                )}
+              </mwc-list-item>
+              <mwc-list-item value=${TRIGGER_TYPE_SOLAR_AZIMUTH}>
+                ${localize(
+                  "irrigation_start_triggers.trigger_types.solar_azimuth",
+                  this.hass.language,
+                )}
+              </mwc-list-item>
+            </ha-select>
+          </div>
+
+          <div class="form-group">
+            <ha-formfield
+              .label=${localize(
+                "irrigation_start_triggers.fields.enabled.name",
+                this.hass.language,
+              )}
+            >
+              <ha-switch
+                .checked=${this._trigger.enabled}
+                @change=${this._enabledChanged}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+
+          <div class="form-group">
+            <ha-textfield
+              type="number"
+              .label=${localize(
+                "irrigation_start_triggers.fields.offset_minutes.name",
+                this.hass.language,
+              )}
+              .value=${this._trigger.offset_minutes?.toString() || "0"}
+              min="-1440"
+              max="1440"
+              step="1"
+              suffix="min"
+              @input=${this._offsetChanged}
+            ></ha-textfield>
+          </div>
+
+          <div class="form-group">
+            <ha-formfield
+              .label=${localize(
+                "irrigation_start_triggers.fields.account_for_duration.name",
+                this.hass.language,
+              )}
+            >
+              <ha-switch
+                .checked=${this._trigger.account_for_duration}
+                @change=${this._accountForDurationChanged}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+
+          ${this._trigger.type === TRIGGER_TYPE_SOLAR_AZIMUTH
+            ? html`
+                <div class="form-group">
+                  <ha-textfield
+                    type="number"
+                    .label=${localize(
+                      "irrigation_start_triggers.fields.azimuth_angle.name",
+                      this.hass.language,
+                    )}
+                    .value=${this._trigger.azimuth_angle?.toString() || "90"}
+                    min="0"
+                    max="359"
+                    step="1"
+                    suffix="°"
+                    @input=${this._azimuthChanged}
+                  ></ha-textfield>
+                </div>
+              `
+            : ""}
         </div>
 
         <div slot="primaryAction">
@@ -196,91 +295,33 @@ export class TriggerDialog extends LitElement {
     `;
   }
 
-  private _getFormSchema() {
-    const schema = [
-      {
-        name: TRIGGER_CONF_NAME,
-        selector: { text: {} },
-      },
-      {
-        name: TRIGGER_CONF_TYPE,
-        selector: {
-          select: {
-            options: [
-              {
-                value: TRIGGER_TYPE_SUNRISE,
-                label: localize(
-                  "irrigation_start_triggers.trigger_types.sunrise",
-                  this.hass.language,
-                ),
-              },
-              {
-                value: TRIGGER_TYPE_SUNSET,
-                label: localize(
-                  "irrigation_start_triggers.trigger_types.sunset",
-                  this.hass.language,
-                ),
-              },
-              {
-                value: TRIGGER_TYPE_SOLAR_AZIMUTH,
-                label: localize(
-                  "irrigation_start_triggers.trigger_types.solar_azimuth",
-                  this.hass.language,
-                ),
-              },
-            ],
-          },
-        },
-      },
-      {
-        name: TRIGGER_CONF_ENABLED,
-        selector: { boolean: {} },
-      },
-      {
-        name: TRIGGER_CONF_OFFSET_MINUTES,
-        selector: {
-          number: {
-            min: -1440, // -24 hours
-            max: 1440, // +24 hours
-            step: 1,
-            mode: "box",
-          },
-        },
-      },
-      {
-        name: TRIGGER_CONF_ACCOUNT_FOR_DURATION,
-        selector: { boolean: {} },
-      },
-    ];
-
-    // Add azimuth field for solar azimuth triggers
-    if (this._trigger?.type === TRIGGER_TYPE_SOLAR_AZIMUTH) {
-      schema.push({
-        name: TRIGGER_CONF_AZIMUTH_ANGLE,
-        selector: {
-          number: {
-            min: -999999, // Allow any reasonable azimuth value
-            max: 999999, // Allow any reasonable azimuth value
-            step: 1,
-            mode: "box",
-          },
-        },
-      });
-    }
-
-    return schema;
+  private _nameChanged(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this._updateTrigger({ name: target.value });
   }
 
-  private _computeLabel = (schema: any) => {
-    return localize(
-      `irrigation_start_triggers.fields.${schema.name}.name`,
-      this.hass.language,
-    );
-  };
+  private _typeChanged(event: CustomEvent) {
+    this._updateTrigger({ type: event.detail.value as TriggerType });
+  }
 
-  private _valueChanged(event: CustomEvent) {
-    const changes = event.detail.value;
-    this._updateTrigger(changes);
+  private _enabledChanged(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this._updateTrigger({ enabled: target.checked });
+  }
+
+  private _offsetChanged(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this._updateTrigger({ offset_minutes: parseInt(target.value) || 0 });
+  }
+
+  private _accountForDurationChanged(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this._updateTrigger({ account_for_duration: target.checked });
+  }
+
+  private _azimuthChanged(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this._updateTrigger({ azimuth_angle: parseInt(target.value) || 90 });
   }
 
   static get styles(): CSSResultGroup {
@@ -295,7 +336,20 @@ export class TriggerDialog extends LitElement {
           --mdc-theme-primary: var(--error-color);
         }
 
-        ha-form {
+        .form-group {
+          margin-bottom: 16px;
+        }
+
+        .form-group:last-child {
+          margin-bottom: 0;
+        }
+
+        ha-textfield,
+        ha-select {
+          width: 100%;
+        }
+
+        ha-formfield {
           width: 100%;
         }
       `,

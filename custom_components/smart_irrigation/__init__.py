@@ -2,11 +2,11 @@
 
 import contextlib
 import datetime
+from datetime import timedelta
 import logging
 import math
 import re
 import statistics
-from datetime import timedelta
 
 from homeassistant.components.sensor import DOMAIN as PLATFORM
 from homeassistant.config_entries import ConfigEntry
@@ -18,9 +18,11 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 from homeassistant.core import Event, HomeAssistant, State, asyncio, callback
-from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import (
+    config_validation as cv,
+    device_registry as dr,
+    entity_registry as er,
+)
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
@@ -40,13 +42,13 @@ from homeassistant.util.unit_system import METRIC_SYSTEM
 from . import const
 from .helpers import (
     altitudeToPressure,
-    calculate_solar_azimuth,
     check_time,
     convert_between,
     convert_list_to_dict,
     convert_mapping_to_metric,
     find_next_solar_azimuth_time,
     loadModules,
+    normalize_azimuth_angle,
     relative_to_absolute_pressure,
 )
 from .localize import localize
@@ -2184,7 +2186,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 elif trigger_type == const.TRIGGER_TYPE_SOLAR_AZIMUTH:
                     azimuth_angle = trigger.get(const.TRIGGER_CONF_AZIMUTH_ANGLE, 0)
                     # Normalize azimuth angle to 0-360 range
-                    azimuth_angle = helpers.normalize_azimuth_angle(azimuth_angle)
+                    azimuth_angle = normalize_azimuth_angle(azimuth_angle)
                     await self._register_azimuth_trigger(
                         azimuth_angle,
                         offset_minutes,

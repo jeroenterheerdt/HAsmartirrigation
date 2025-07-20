@@ -67,7 +67,6 @@ export function getPart(value: any, index: number) {
   return value.split(",")[index];
 }
 export function output_unit(config, arg0: string): TemplateResult {
-  console.log("output unit called with arg0: " + arg0);
   switch (arg0) {
     case ZONE_DRAINAGE_RATE:
       if (config.units == CONF_METRIC) {
