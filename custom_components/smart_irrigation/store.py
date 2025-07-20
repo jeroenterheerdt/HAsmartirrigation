@@ -144,12 +144,31 @@ class Config:
     irrigation_start_triggers = attr.ib(
         type=list, default=CONF_DEFAULT_IRRIGATION_START_TRIGGERS
     )
+    skip_irrigation_on_precipitation = attr.ib(
+        type=bool, default=CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
+    )
+    precipitation_threshold_mm = attr.ib(
+        type=float, default=CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
+    )
 
 
 class MigratableStore(Store):
     """Store subclass that supports migration for Smart Irrigation storage."""
 
     async def _async_migrate_func(self, old_version, data: dict):
+        """
+        Migration function for Smart Irrigation storage.
+        
+        This function ALWAYS runs on version mismatch to ensure config compatibility.
+        It performs critical tasks:
+        1. Migrates old config keys to new format
+        2. Adds missing required fields with defaults
+        3. Strips unrecognized config keys to prevent TypeError on Config initialization
+        
+        The stripping step is essential because old versions or corrupted configs
+        may contain keys that don't match the current Config class attributes,
+        which would cause TypeError during Config(**config_data) calls.
+        """
         if old_version == 3:
             if "config" in data:
                 if "use_owm" in data["config"]:
@@ -190,6 +209,34 @@ class MigratableStore(Store):
                     data["config"][CONF_SKIP_IRRIGATION_ON_PRECIPITATION] = CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
                 if CONF_PRECIPITATION_THRESHOLD_MM not in data["config"]:
                     data["config"][CONF_PRECIPITATION_THRESHOLD_MM] = CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
+                    
+        # CRITICAL: Always ensure required fields are present and strip unrecognized keys
+        # This prevents TypeError when Config(**config_data) is called
+        if "config" in data:
+            # Ensure all required fields are present with defaults
+            if CONF_IRRIGATION_START_TRIGGERS not in data["config"]:
+                data["config"][CONF_IRRIGATION_START_TRIGGERS] = CONF_DEFAULT_IRRIGATION_START_TRIGGERS
+            if CONF_SKIP_IRRIGATION_ON_PRECIPITATION not in data["config"]:
+                data["config"][CONF_SKIP_IRRIGATION_ON_PRECIPITATION] = CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
+            if CONF_PRECIPITATION_THRESHOLD_MM not in data["config"]:
+                data["config"][CONF_PRECIPITATION_THRESHOLD_MM] = CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
+                
+            # Get valid field names from Config class to filter out unrecognized keys
+            valid_fields = set(attr.fields_dict(Config).keys())
+            original_keys = set(data["config"].keys())
+            
+            # Filter config to only include recognized fields
+            filtered_config = {k: v for k, v in data["config"].items() if k in valid_fields}
+            removed_keys = original_keys - set(filtered_config.keys())
+            
+            if removed_keys:
+                _LOGGER.warning(
+                    "Removed unrecognized config keys during migration: %s", 
+                    list(removed_keys)
+                )
+            
+            data["config"] = filtered_config
+                    
         return data
 
 
@@ -279,6 +326,12 @@ class SmartIrrigationStorage:
                 ),
                 irrigation_start_triggers=data["config"].get(
                     CONF_IRRIGATION_START_TRIGGERS, CONF_DEFAULT_IRRIGATION_START_TRIGGERS
+                ),
+                skip_irrigation_on_precipitation=data["config"].get(
+                    CONF_SKIP_IRRIGATION_ON_PRECIPITATION, CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
+                ),
+                precipitation_threshold_mm=data["config"].get(
+                    CONF_PRECIPITATION_THRESHOLD_MM, CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
                 ),
             )
 
