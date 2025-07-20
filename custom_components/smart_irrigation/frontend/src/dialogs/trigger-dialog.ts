@@ -4,6 +4,7 @@ import { HomeAssistant } from "custom-card-helpers";
 import { mdiClose } from "@mdi/js";
 import { localize } from "../../localize/localize";
 import { IrrigationStartTrigger, TriggerType } from "../types";
+import { dialogStyle } from "../styles/global-style";
 import {
   TRIGGER_TYPE_SUNRISE,
   TRIGGER_TYPE_SUNSET,
@@ -155,7 +156,7 @@ export class TriggerDialog extends LitElement {
           </ha-header-bar>
         </div>
 
-        <div class="content">
+        <div class="wrapper">
           <ha-form
             .data=${this._trigger}
             .schema=${this._getFormSchema()}
@@ -165,29 +166,29 @@ export class TriggerDialog extends LitElement {
         </div>
 
         <div slot="primaryAction">
-          <ha-button @click=${this._saveTrigger}>
+          <mwc-button @click=${this._saveTrigger}>
             ${localize(
               "irrigation_start_triggers.dialog.save",
               this.hass.language,
             )}
-          </ha-button>
+          </mwc-button>
         </div>
 
         <div slot="secondaryAction">
-          <ha-button @click=${this._closeDialog}>
+          <mwc-button @click=${this._closeDialog}>
             ${localize(
               "irrigation_start_triggers.dialog.cancel",
               this.hass.language,
             )}
-          </ha-button>
+          </mwc-button>
           ${!isCreate
             ? html`
-                <ha-button @click=${this._deleteTrigger} class="warning">
+                <mwc-button @click=${this._deleteTrigger} class="warning">
                   ${localize(
                     "irrigation_start_triggers.dialog.delete",
                     this.hass.language,
                   )}
-                </ha-button>
+                </mwc-button>
               `
             : ""}
         </div>
@@ -283,19 +284,21 @@ export class TriggerDialog extends LitElement {
   }
 
   static get styles(): CSSResultGroup {
-    return css`
-      .content {
-        padding: 20px;
-        max-width: 500px;
-      }
+    return [
+      dialogStyle,
+      css`
+        .wrapper {
+          color: var(--primary-text-color);
+        }
 
-      .warning {
-        --mdc-theme-primary: var(--error-color);
-      }
+        .warning {
+          --mdc-theme-primary: var(--error-color);
+        }
 
-      ha-form {
-        width: 100%;
-      }
-    `;
+        ha-form {
+          width: 100%;
+        }
+      `,
+    ];
   }
 }
