@@ -1,0 +1,62 @@
+Smart Irrigation - Location Coordinates UI Mockup
+==================================================
+
+This describes what the new coordinate configuration UI will look like in the Smart Irrigation general settings panel:
+
+┌─────────────────────────────────────────────────────────────┐
+│ Location Coordinates                                        │
+├─────────────────────────────────────────────────────────────┤
+│ Configure location coordinates for weather data retrieval.  │
+│ You can use manual coordinates different from your Home     │
+│ Assistant location if needed.                               │
+│                                                             │
+│ ○ Use manual coordinates                                    │
+│ ● Use Home Assistant location                               │
+│                                                             │
+│ Current Home Assistant coordinates:                         │
+│ Latitude: 52.370216                                        │
+│ Longitude: 4.895168                                        │
+│ Elevation: 12m                                             │
+└─────────────────────────────────────────────────────────────┘
+
+When "Use manual coordinates" is selected:
+
+┌─────────────────────────────────────────────────────────────┐
+│ Location Coordinates                                        │
+├─────────────────────────────────────────────────────────────┤
+│ Configure location coordinates for weather data retrieval.  │
+│ You can use manual coordinates different from your Home     │
+│ Assistant location if needed.                               │
+│                                                             │
+│ ● Use manual coordinates                                    │
+│ ○ Use Home Assistant location                               │
+│                                                             │
+│ Latitude (decimal degrees):     [40.712800     ]           │
+│ Longitude (decimal degrees):    [-74.006000    ]           │
+│ Elevation (meters above sea):   [100           ]           │
+└─────────────────────────────────────────────────────────────┘
+
+Options Flow - Coordinate Configuration Step:
+
+┌─────────────────────────────────────────────────────────────┐
+│ Location coordinates                                        │
+├─────────────────────────────────────────────────────────────┤
+│ Configure location coordinates for weather data retrieval.  │
+│ You can use manual coordinates different from your Home     │
+│ Assistant location if needed.                               │
+│                                                             │
+│ Use manual coordinates instead of Home Assistant location   │
+│ ○ Yes  ● No                                                │
+│                                                             │
+│ [If Yes is selected, coordinate input fields appear]        │
+│                                                             │
+│                               [Back] [Next]                 │
+└─────────────────────────────────────────────────────────────┘
+
+Features:
+- Real-time toggle between manual and HA coordinates
+- Input validation with proper ranges
+- Display of current HA coordinates when manual mode disabled
+- Responsive layout that works on mobile and desktop
+- Consistent styling with other Smart Irrigation cards
+- Localized text in 8 languages
