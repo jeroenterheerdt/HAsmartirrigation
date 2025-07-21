@@ -248,5 +248,15 @@
       "title": "Zonen"
     }
   },
-  "title": "Smart Irrigation"
+  "title": "Smart Irrigation",
+  "coordinate_config": {
+    "title": "Standortkoordinaten",
+    "description": "Konfigurieren Sie Standortkoordinaten für den Abruf von Wetterdaten. Sie können manuelle Koordinaten verwenden, die sich von Ihrem Home Assistant Standort unterscheiden.",
+    "manual_enabled": "Manuelle Koordinaten verwenden",
+    "use_ha_location": "Home Assistant Standort verwenden",
+    "latitude": "Breitengrad (Dezimalgrad)",
+    "longitude": "Längengrad (Dezimalgrad)",
+    "elevation": "Höhe (Meter über dem Meeresspiegel)",
+    "current_ha_coords": "Aktuelle Home Assistant Koordinaten"
+  }
 }
