@@ -40,6 +40,13 @@ CONF_WEATHER_SERVICE = "weather_service"
 CONF_WEATHER_SERVICE_API_KEY = "weather_service_api_key"
 CONF_WEATHER_SERVICE_API_VERSION = "weather_service_api_version"
 CONF_INSTANCE_NAME = "name"
+
+# Manual coordinate configuration
+CONF_MANUAL_COORDINATES_ENABLED = "manual_coordinates_enabled"
+CONF_MANUAL_LATITUDE = "manual_latitude"
+CONF_MANUAL_LONGITUDE = "manual_longitude" 
+CONF_MANUAL_ELEVATION = "manual_elevation"
+CONF_DEFAULT_MANUAL_COORDINATES_ENABLED = False
 CONF_REFERENCE_ET = "reference_evapotranspiration"
 CONF_REFERENCE_ET_1 = "reference_evapotranspiration_1"
 CONF_REFERENCE_ET_2 = "reference_evapotranspiration_2"

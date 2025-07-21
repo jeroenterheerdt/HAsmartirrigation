@@ -402,5 +402,15 @@
     "description": "Automatically skip irrigation when precipitation is forecasted. This feature requires a weather service to be configured.",
     "threshold_label": "Precipitation Threshold",
     "threshold_description": "Minimum amount of precipitation (in mm) forecasted for today and tomorrow to skip irrigation."
+  },
+  "coordinate_config": {
+    "title": "Location Coordinates",
+    "description": "Configure location coordinates for weather data retrieval. You can use manual coordinates different from your Home Assistant location if needed.",
+    "manual_enabled": "Use manual coordinates",
+    "use_ha_location": "Use Home Assistant location",
+    "latitude": "Latitude (decimal degrees)",
+    "longitude": "Longitude (decimal degrees)",
+    "elevation": "Elevation (meters above sea level)",
+    "current_ha_coords": "Current Home Assistant coordinates"
   }
 }

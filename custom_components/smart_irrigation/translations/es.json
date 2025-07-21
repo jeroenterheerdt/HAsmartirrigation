@@ -29,7 +29,8 @@
   },
   "options": {
     "error": {
-      "auth": "Weather service API key or version incorrect"
+      "auth": "Weather service API key or version incorrect",
+      "invalid_coordinates": "Coordenadas inválidas. Verifique los valores de latitud (-90 a 90) y longitud (-180 a 180)."
     },
     "step": {
       "init": {
@@ -47,6 +48,16 @@
           "weather_service_api_key": "API key for weather service",
           "weather_service_api_version": "Weather service API version"
         }
+      },
+      "coordinates": {
+        "title": "Coordenadas de ubicación",
+        "description": "Configure las coordenadas de ubicación para obtener datos meteorológicos. Puede usar coordenadas manuales diferentes a la ubicación de Home Assistant si es necesario.",
+        "data": {
+          "manual_coordinates_enabled": "Usar coordenadas manuales en lugar de la ubicación de Home Assistant",
+          "manual_latitude": "Latitud (grados decimales, -90 a 90)",
+          "manual_longitude": "Longitud (grados decimales, -180 a 180)",
+          "manual_elevation": "Elevación sobre el nivel del mar (metros, opcional)"
+        }
       }
     }
   },
@@ -54,7 +65,7 @@
     "calculate_all_zones": {
       "name": "Calculate all zones",
       "description": "Calculate all zones in automatic mode",
-      "fields":{
+      "fields": {
         "delete_weather_data": {
           "name": "Delete weather data",
           "description": "Delete weather data after calculation"

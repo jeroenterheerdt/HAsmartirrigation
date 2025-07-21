@@ -29,7 +29,8 @@
   },
   "options": {
     "error": {
-      "auth": "Weather service API key or version incorrect"
+      "auth": "Weather service API key or version incorrect",
+      "invalid_coordinates": "Invalid coordinates provided. Please check latitude (-90 to 90) and longitude (-180 to 180) values."
     },
     "step": {
       "init": {
@@ -46,6 +47,16 @@
           "weather_service": "Weather service to use",
           "weather_service_api_key": "API key for weather service",
           "weather_service_api_version": "Weather service API version"
+        }
+      },
+      "coordinates": {
+        "title": "Location coordinates",
+        "description": "Configure location coordinates for weather data retrieval. You can use manual coordinates different from your Home Assistant location if needed.",
+        "data": {
+          "manual_coordinates_enabled": "Use manual coordinates instead of Home Assistant location",
+          "manual_latitude": "Latitude (decimal degrees, -90 to 90)",
+          "manual_longitude": "Longitude (decimal degrees, -180 to 180)",
+          "manual_elevation": "Elevation above sea level (meters, optional)"
         }
       }
     }
