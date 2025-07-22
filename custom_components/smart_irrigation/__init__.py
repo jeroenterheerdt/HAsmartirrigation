@@ -608,22 +608,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if not mapping.get(const.MAPPING_MAPPINGS):
                 continue
             for key, val in mapping.get(const.MAPPING_MAPPINGS).items():
-                if (
-                    isinstance(val, str) or val.get(const.MAPPING_CONF_SENSOR) != entity
-                ) and val.get(
-                    const.MAPPING_CONF_SOURCE
-                ) != const.MAPPING_CONF_SOURCE_STATIC_VALUE:
+                if isinstance(val, str) or val.get(const.MAPPING_CONF_SENSOR) != entity:
                     continue
 
-                if (
-                    val.get(const.MAPPING_CONF_SOURCE)
-                    == const.MAPPING_CONF_SOURCE_STATIC_VALUE
-                ):
-                    the_new_state = val.get(const.MAPPING_CONF_STATIC_VALUE)
                 # add the mapping data with the new sensor value
-                if the_new_state is None:
-                    continue
-
                 # conversion to metric
                 mapping_data = mapping.get(const.MAPPING_DATA) or []
                 mapping_data.append(
@@ -703,11 +691,34 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             "[async_continuous_update_for_mapping] considering sensor group %s",
             mapping_id,
         )
-        if self.check_mapping_sources(mapping_id)[0]:
+        (
+            weather_service_in_mapping,
+            sensor_in_mapping,
+            static_in_mapping,
+        ) = self.check_mapping_sources(mapping_id)
+        if weather_service_in_mapping:
             _LOGGER.info(
                 "[async_continuous_update_for_mapping] sensor group uses weather service, skipping automatic update to avoid API calls that can incur costs"
             )
             return
+
+        # add static sensor values
+        if static_in_mapping:
+            static_values = self.build_static_values_for_mapping(mapping)
+            mapping_data = mapping.get(const.MAPPING_DATA) or []
+            mapping_data.append(static_values)
+            await self.store.async_update_mapping(
+                mapping_id,
+                {
+                    const.MAPPING_DATA: mapping_data,
+                },
+            )
+            _LOGGER.debug(
+                "[async_continuous_update_for_mapping]: added static values %s",
+                static_values,
+            )
+
+        # TODO: convert relative pressure to absolute?
 
         # if there is sensor data for this mapping, apply aggregates to it.
         sensor_values = await self.apply_aggregates_to_mapping_data(mapping, True)
@@ -1405,6 +1416,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # no need to filter, continue with unfiltered zones
             zones = unfiltered_zones
 
+        # TODO: convert relative pressure to absolute?
+
         # apply aggregates to sensor data for each mapping
         mapping_ids = await self._get_unique_mappings_for_automatic_zones(zones)
         aggregated_mapping_data = {}
@@ -2042,10 +2055,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         static_values = {}
         for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
             if not isinstance(the_map, str):
-                if the_map.get(
-                    const.MAPPING_CONF_SOURCE
-                ) == const.MAPPING_CONF_SOURCE_STATIC_VALUE and the_map.get(
-                    const.MAPPING_CONF_STATIC_VALUE
+                if (
+                    the_map.get(const.MAPPING_CONF_SOURCE)
+                    == const.MAPPING_CONF_SOURCE_STATIC_VALUE
+                    and the_map.get(const.MAPPING_CONF_STATIC_VALUE) is not None
                 ):
                     # this mapping maps to a static value, so return its value
                     val = float(the_map.get(const.MAPPING_CONF_STATIC_VALUE))
