@@ -261,7 +261,7 @@ UNIT_W_SQFT = "W/sq ft"
 UNIT_MJ_DAY_M2 = "MJ/day/m2"
 UNIT_MJ_DAY_SQFT = "MJ/day/sq ft"
 UNIT_MMH = "mm/h"
-UNIT_INCHH = "inch/h"
+UNIT_INCHH = "in/h"
 
 # METRIC TO IMPERIAL (US) FACTORS
 MM_TO_INCH_FACTOR = 0.03937008  # mm * factor = inch

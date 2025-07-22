@@ -31,6 +31,7 @@ from .const import (
     MAPPING_HUMIDITY,
     MAPPING_MAX_TEMP,
     MAPPING_MIN_TEMP,
+    MAPPING_CURRENT_PRECIPITATION,
     MAPPING_PRECIPITATION,
     MAPPING_PRESSURE,
     MAPPING_SOLRAD,
@@ -49,6 +50,7 @@ from .const import (
     UNIT_GPM,
     UNIT_HPA,
     UNIT_INCH,
+    UNIT_INCHH,
     UNIT_INHG,
     UNIT_KMH,
     UNIT_LPM,
@@ -59,6 +61,7 @@ from .const import (
     UNIT_MJ_DAY_M2,
     UNIT_MJ_DAY_SQFT,
     UNIT_MM,
+    UNIT_MMH,
     UNIT_MS,
     UNIT_PERCENT,
     UNIT_PSI,
@@ -174,6 +177,14 @@ def convert_mapping_to_metric(val, mapping, unit, system_is_metric):
             return val
         # assume the unit is in inch
         return convert_between(from_unit=UNIT_INCH, to_unit=UNIT_MM, val=val)
+    if mapping == MAPPING_CURRENT_PRECIPITATION:
+        # either mm/h or inch/h. If mm/h no need to convert.
+        if unit:
+            return convert_between(from_unit=unit, to_unit=UNIT_MMH, val=val)
+        if system_is_metric:
+            return val
+        # assume the unit is in inch/h
+        return convert_between(from_unit=UNIT_INCHH, to_unit=UNIT_MMH, val=val)
     if mapping == MAPPING_PRESSURE:
         # either: mbar, hpa (default for metric), psi or inhg (default for imperial)
         if unit:
@@ -254,6 +265,10 @@ def convert_between(from_unit, to_unit, val):
     if from_unit in [UNIT_MM, UNIT_INCH]:
         _LOGGER.debug("[convert_between]: Converting lengths")
         return convert_length(from_unit, to_unit, val)
+    # convert precip rates
+    if from_unit in [UNIT_MMH, UNIT_INCHH]:
+        _LOGGER.debug("[convert_between]: Converting precip rates")
+        return convert_precip_rate(from_unit, to_unit, val)
     # convert volumes
     if from_unit in [UNIT_LPM, UNIT_GPM]:
         _LOGGER.debug("[convert_between]: Converting volumes")
@@ -560,6 +575,30 @@ def convert_length(from_unit, to_unit, val):
     # unknown conversion
     return None
 
+def convert_precip_rate(from_unit, to_unit, val):
+    """Convert precipitation rate values between different units.
+
+    Args:
+        from_unit: The unit of the input value.
+        to_unit: The unit to convert the value to.
+        val: The value to be converted.
+
+    Returns:
+        The converted value, or None if conversion is not possible.
+
+    """
+    if val in (None, STATE_UNKNOWN, STATE_UNAVAILABLE):
+        return None
+    if to_unit == from_unit:
+        return val
+    if to_unit == UNIT_MMH:
+        if from_unit == UNIT_INCHH:
+            return float(float(val) * INCH_TO_MM_FACTOR)
+    elif to_unit == UNIT_INCHH:
+        if from_unit == UNIT_MMH:
+            return float(float(val) * MM_TO_INCH_FACTOR)
+    # unknown conversion
+    return None
 
 def convert_temperatures(from_unit, to_unit, val):
     """Convert temperature values between different units.
