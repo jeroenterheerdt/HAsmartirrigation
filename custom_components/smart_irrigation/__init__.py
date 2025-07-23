@@ -1,11 +1,11 @@
 """The Smart Irrigation Integration."""
 
 import contextlib
-from datetime import datetime, timedelta
 import logging
 import math
 import re
 import statistics
+from datetime import datetime, timedelta
 
 from homeassistant.components.sensor import DOMAIN as PLATFORM
 from homeassistant.config_entries import ConfigEntry
@@ -17,11 +17,9 @@ from homeassistant.const import (
     STATE_UNKNOWN,
 )
 from homeassistant.core import Event, HomeAssistant, State, asyncio, callback
-from homeassistant.helpers import (
-    config_validation as cv,
-    device_registry as dr,
-    entity_registry as er,
-)
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
@@ -43,7 +41,6 @@ from .helpers import (
     altitudeToPressure,
     check_time,
     convert_between,
-    convert_list_to_dict,
     convert_mapping_to_metric,
     find_next_solar_azimuth_time,
     loadModules,
@@ -53,8 +50,8 @@ from .helpers import (
 )
 from .localize import localize
 from .panel import async_register_panel, remove_panel
-from .weathermodules.KNMIClient import KNMIClient
 from .store import SmartIrrigationStorage, async_get_registry
+from .weathermodules.KNMIClient import KNMIClient
 from .weathermodules.OWMClient import OWMClient
 from .weathermodules.PirateWeatherClient import PirateWeatherClient
 from .websockets import async_register_websockets
@@ -2263,7 +2260,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         unsub = async_track_sunrise(
             self.hass,
             self._fire_start_event,
-            datetime.timedelta(seconds=offset_seconds),
+            timedelta(seconds=offset_seconds),
         )
         self._track_irrigation_triggers_unsub.append(unsub)
 
@@ -2301,7 +2298,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         unsub = async_track_sunset(
             self.hass,
             self._fire_start_event,
-            datetime.timedelta(seconds=offset_seconds),
+            timedelta(seconds=offset_seconds),
         )
         self._track_irrigation_triggers_unsub.append(unsub)
 
@@ -2350,14 +2347,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             # Account for duration: subtract total duration from offset to finish at the target time
             trigger_time = (
                 next_azimuth_time
-                + datetime.timedelta(minutes=offset_minutes)
-                - datetime.timedelta(seconds=total_duration)
+                + timedelta(minutes=offset_minutes)
+                - timedelta(seconds=total_duration)
             )
         else:
             # Start exactly at the specified time
-            trigger_time = next_azimuth_time + datetime.timedelta(
-                minutes=offset_minutes
-            )
+            trigger_time = next_azimuth_time + timedelta(minutes=offset_minutes)
 
         # Schedule the trigger
         from homeassistant.helpers.event import async_track_point_in_utc_time

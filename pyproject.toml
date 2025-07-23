@@ -1,0 +1,15 @@
+[tool.ruff]
+
+lint.select = [
+  "E",  # pycodestyle
+  "F",  # Pyflakes
+  "B",  # flake‑bugbear
+  "I",  # isort‑style import ordering
+  "UP", # pyupgrade
+  "SIM" # flake‑simplicity
+]
+
+lint.ignore = [
+  "E501",  # line‑length
+  "SIM102" # nested if statements
+]
