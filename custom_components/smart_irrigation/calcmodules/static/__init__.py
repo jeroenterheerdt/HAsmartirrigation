@@ -45,6 +45,6 @@ class Static(SmartIrrigationCalculationModule):
             else:
                 self._delta = float(config.get(CONF_DELTA, DEFAULT_DELTA))
 
-    def calculate(self):
+    def calculate(self) -> float:
         """Return the static delta value for irrigation calculation."""
         return self._delta

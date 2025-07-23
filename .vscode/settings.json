@@ -1,8 +1,11 @@
 {
-    "python.linting.pylintEnabled": false,
-    "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true,
+    "ruff.enable": true,
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+    },
     "editor.formatOnSave": true,
     "editor.formatOnSaveMode": "modifications",
-    "python.formatting.provider": "ruff",
 }
