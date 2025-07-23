@@ -12,7 +12,6 @@ from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN, UnitOfTemperat
 from homeassistant.core import HomeAssistant
 
 from .const import (
-    CONF_WEATHER_SERVICE_KNMI,
     CONF_WEATHER_SERVICE_OWM,
     CONF_WEATHER_SERVICE_PW,
     CUSTOM_COMPONENTS,
@@ -70,7 +69,6 @@ from .const import (
     W_SQ_FT_TO_W_M2_FACTOR,
     W_TO_MJ_DAY_FACTOR,
 )
-from .weathermodules.KNMIClient import KNMIClient
 from .weathermodules.OWMClient import OWMClient
 from .weathermodules.PirateWeatherClient import PirateWeatherClient
 
@@ -651,14 +649,6 @@ async def test_api_key(hass: HomeAssistant, weather_service, api_key):
         )
     elif weather_service == CONF_WEATHER_SERVICE_PW:
         client = PirateWeatherClient(
-            api_key=api_key.strip(),
-            api_version="1",
-            latitude=test_lat,
-            longitude=test_lon,
-            elevation=test_elev,
-        )
-    elif weather_service == CONF_WEATHER_SERVICE_KNMI:
-        client = KNMIClient(
             api_key=api_key.strip(),
             api_version="1",
             latitude=test_lat,
