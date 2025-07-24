@@ -54,7 +54,6 @@ from .helpers import (
 from .localize import localize
 from .panel import async_register_panel, remove_panel
 from .store import async_get_registry
-from .weathermodules.KNMIClient import KNMIClient
 from .weathermodules.OWMClient import OWMClient
 from .weathermodules.PirateWeatherClient import PirateWeatherClient
 from .websockets import async_register_websockets
@@ -274,16 +273,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 self._WeatherServiceClient = PirateWeatherClient(
                     api_key=hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY],
                     api_version="1",
-                    latitude=self.hass.config.as_dict().get(CONF_LATITUDE),
-                    longitude=self.hass.config.as_dict().get(CONF_LONGITUDE),
-                    elevation=self.hass.config.as_dict().get(CONF_ELEVATION),
-                )
-            elif self.weather_service == const.CONF_WEATHER_SERVICE_KNMI:
-                self._WeatherServiceClient = KNMIClient(
-                    api_key=hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY],
-                    api_version=hass.data[const.DOMAIN].get(
-                        const.CONF_WEATHER_SERVICE_API_VERSION, "1"
-                    ),
                     latitude=self.hass.config.as_dict().get(CONF_LATITUDE),
                     longitude=self.hass.config.as_dict().get(CONF_LONGITUDE),
                     elevation=self.hass.config.as_dict().get(CONF_ELEVATION),
@@ -2422,8 +2411,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 weather_client = self._OWMClient
             elif weather_service == const.CONF_WEATHER_SERVICE_PW:
                 weather_client = self._PirateWeatherClient
-            elif weather_service == const.CONF_WEATHER_SERVICE_KNMI:
-                weather_client = self._KNMIClient
 
             if weather_client is None:
                 _LOGGER.debug("Weather client not available")

@@ -39,12 +39,6 @@
 ```bash
 # Run all tests
 pytest
-
-# Run KNMI integration test
-make test-knmi
-
-# Run specific test file
-python tests/integration/test_knmi_integration.py
 ```
 
 ### Code Quality
@@ -88,17 +82,3 @@ deactivate
 - `test_*.py` - Integration test scripts
 - `requirements-dev.txt` - Development dependencies
 - `requirements.test.txt` - Testing dependencies
-
-## Testing Weather Modules
-
-Each weather module can be tested independently:
-
-```bash
-# Test KNMI integration
-python test_knmi_with_env.py
-
-# Test other integrations
-python test_knmi_standalone.py
-```
-
-Make sure to set up your `.env` file with the required API keys before running integration tests.

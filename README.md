@@ -47,7 +47,6 @@ make setup
 ```bash
 make help        # Show all available commands
 make test        # Run all tests
-make test-knmi   # Test KNMI integration
 make format      # Format code
 make lint        # Run linting
 ```

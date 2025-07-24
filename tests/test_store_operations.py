@@ -12,11 +12,11 @@ import sys
 sys.modules['homeassistant.helpers.storage'] = MagicMock()
 sys.modules['homeassistant.helpers.deprecation'] = MagicMock()
 
-from custom_components.smart_irrigation.store import SmartIrrigationStore
+from custom_components.smart_irrigation.store import SmartIrrigationStorage
 from custom_components.smart_irrigation import const
 
 
-class TestSmartIrrigationStoreBasics:
+class TestSmartIrrigationStorageBasics:
     """Test basic store functionality."""
 
     @pytest.fixture
@@ -37,9 +37,9 @@ class TestSmartIrrigationStoreBasics:
 
     @pytest.fixture
     def store_instance(self, mock_hass, mock_storage):
-        """Create a SmartIrrigationStore instance for testing."""
+        """Create a SmartIrrigationStorage instance for testing."""
         with patch('custom_components.smart_irrigation.store.Store', return_value=mock_storage):
-            store = SmartIrrigationStore(mock_hass, "test_version")
+            store = SmartIrrigationStorage(mock_hass, "test_version")
             store._config = {}
             store._zones = {}
             store._mappings = {}
@@ -49,7 +49,7 @@ class TestSmartIrrigationStoreBasics:
     def test_store_initialization(self, mock_hass):
         """Test store initialization."""
         with patch('custom_components.smart_irrigation.store.Store'):
-            store = SmartIrrigationStore(mock_hass, "1.0")
+            store = SmartIrrigationStorage(mock_hass, "1.0")
             assert store.hass == mock_hass
             assert store.version == "1.0"
 
@@ -91,7 +91,7 @@ class TestConfigOperations:
     def store_with_config(self, mock_hass, mock_storage):
         """Create store with sample configuration."""
         with patch('custom_components.smart_irrigation.store.Store', return_value=mock_storage):
-            store = SmartIrrigationStore(mock_hass, "test_version")
+            store = SmartIrrigationStorage(mock_hass, "test_version")
             store._config = {
                 const.CONF_AUTO_UPDATE_ENABLED: True,
                 const.CONF_AUTO_CALC_ENABLED: False,
@@ -142,7 +142,7 @@ class TestZoneOperations:
     def store_with_zones(self, mock_hass, mock_storage):
         """Create store with sample zones."""
         with patch('custom_components.smart_irrigation.store.Store', return_value=mock_storage):
-            store = SmartIrrigationStore(mock_hass, "test_version")
+            store = SmartIrrigationStorage(mock_hass, "test_version")
             store._zones = {
                 "zone1": {
                     "name": "Front Lawn",
@@ -252,7 +252,7 @@ class TestMappingOperations:
     def store_with_mappings(self, mock_hass, mock_storage):
         """Create store with sample mappings."""
         with patch('custom_components.smart_irrigation.store.Store', return_value=mock_storage):
-            store = SmartIrrigationStore(mock_hass, "test_version")
+            store = SmartIrrigationStorage(mock_hass, "test_version")
             store._mappings = {
                 "temp_sensor": {
                     "source": "sensor.outdoor_temperature",
@@ -307,7 +307,7 @@ class TestModuleOperations:
     def store_with_modules(self, mock_hass, mock_storage):
         """Create store with sample modules."""
         with patch('custom_components.smart_irrigation.store.Store', return_value=mock_storage):
-            store = SmartIrrigationStore(mock_hass, "test_version")
+            store = SmartIrrigationStorage(mock_hass, "test_version")
             store._modules = {
                 "pyeto": {
                     "name": "PyETO",
@@ -366,7 +366,7 @@ class TestErrorHandling:
         failing_storage.async_save = AsyncMock(side_effect=Exception("Save error"))
         
         with patch('custom_components.smart_irrigation.store.Store', return_value=failing_storage):
-            store = SmartIrrigationStore(mock_hass, "test_version")
+            store = SmartIrrigationStorage(mock_hass, "test_version")
             return store
 
     @pytest.mark.asyncio
@@ -395,7 +395,7 @@ class TestDataValidation:
         mock_storage.async_save = AsyncMock()
         
         with patch('custom_components.smart_irrigation.store.Store', return_value=mock_storage):
-            store = SmartIrrigationStore(mock_hass, "test_version")
+            store = SmartIrrigationStorage(mock_hass, "test_version")
             store._config = {}
             store._zones = {}
             store._mappings = {}

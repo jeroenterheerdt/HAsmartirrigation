@@ -13,7 +13,7 @@
         "description": "Ak potrebujete pomoc s konfiguráciou, pozrite si https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Jedinečný názov integrácie",
-          "use_weather_service": "Use a weather service (Open Weather Map, Pirate Weather, or KNMI) for weather data or forecasting. Enable this option if you intent to use one of the supported weather services for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
+          "use_weather_service": "Use a weather service (Open Weather Map or Pirate Weather) for weather data or forecasting. Enable this option if you intent to use one of the supported weather services for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
         }
       },
       "step1": {
@@ -36,7 +36,7 @@
         "title": "Weather service API set up",
         "description": "Ak potrebujete pomoc s konfiguráciou, pozrite si https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "use_weather_service": "Use a weather service (Open Weather Map, Pirate Weather, or KNMI) for weather data or forecasting. Enable this option if you intent to use one of the supported weather services for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
+          "use_weather_service": "Use a weather service (Open Weather Map or Pirate Weather) for weather data or forecasting. Enable this option if you intent to use one of the supported weather services for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
         }
       },
       "step1": {

@@ -18,7 +18,6 @@ from custom_components.smart_irrigation.helpers import (
 from custom_components.smart_irrigation.const import (
     CONF_WEATHER_SERVICE_OWM,
     CONF_WEATHER_SERVICE_PW,
-    CONF_WEATHER_SERVICE_KNMI,
 )
 
 
@@ -138,17 +137,6 @@ class TestHelperFunctions:
 
         result = await test_api_key(
             mock_session, CONF_WEATHER_SERVICE_PW, "valid_api_key", None, 52.0, 5.0
-        )
-
-        assert result is True
-
-    async def test_test_api_key_knmi_success(self) -> None:
-        """Test KNMI API key validation success."""
-        # KNMI doesn't require API key validation
-        mock_session = AsyncMock()
-
-        result = await test_api_key(
-            mock_session, CONF_WEATHER_SERVICE_KNMI, None, None, 52.0, 5.0
         )
 
         assert result is True

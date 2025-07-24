@@ -15,7 +15,7 @@ Let's walk through the wizard:
 ![](assets/images/installation-weatherservice-1.png)
 
 
-5. On this page, select the [weather service you want to use (Open Weather Map, Pirate Weather, or KNMI)](installation-weatherservice.md) and enter the API key for the weather service (see below on how to get an API key).
+5. On this page, select the [weather service you want to use (Open Weather Map, Pirate Weather)](installation-weatherservice.md) and enter the API key for the weather service (see below on how to get an API key).
 ![](assets/images/installation-weatherservice-2.png)
 6. If the API key is correct you will see a success message. If you get an error you need to double check you have the right API key. Especially for Open Weather Map it can take a long time for an API key to become active.
 
@@ -31,10 +31,6 @@ Go to [OpenWeatherMap](https://openweathermap.org) and create an account. You ca
 
 ## Getting Pirate Weather API key
 Follow the instructions on this page (see `API Key` section): https://docs.pirateweather.net/en/latest/API/.
-
-## Getting KNMI Data Platform API key
-
-Go to [KNMI Data Platform](https://dataplatform.knmi.nl) and create an account. Once logged in, go to API Management and generate a new API key. The KNMI Data Platform provides free access to Dutch weather data including current observations and HARMONIE-AROME forecast model data. This service is particularly useful for users in the Netherlands and surrounding areas.
 
 > Main page: [Installation](installation.md)<br/>
 > Previous: [Downloading the integration](installation-download.md)<br/>
