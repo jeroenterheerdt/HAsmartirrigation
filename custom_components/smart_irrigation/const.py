@@ -16,7 +16,7 @@ START_EVENT_FIRED_TODAY = "starteventfiredtoday"
 CONF_IRRIGATION_START_TRIGGERS = "irrigation_start_triggers"
 CONF_DEFAULT_IRRIGATION_START_TRIGGERS = []
 
-# Weather-based skip configuration  
+# Weather-based skip configuration
 CONF_SKIP_IRRIGATION_ON_PRECIPITATION = "skip_irrigation_on_precipitation"
 CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION = False
 CONF_PRECIPITATION_THRESHOLD_MM = "precipitation_threshold_mm"

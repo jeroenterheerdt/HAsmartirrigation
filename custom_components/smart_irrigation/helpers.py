@@ -790,11 +790,11 @@ def calculate_solar_azimuth(latitude: float, longitude: float, timestamp: dateti
     solar_time = time_decimal - longitude_correction
     hour_angle = math.radians((solar_time - 12) * 15)
     
-    # Solar elevation
-    elevation = math.asin(
-        math.sin(lat_rad) * math.sin(declination) + 
-        math.cos(lat_rad) * math.cos(declination) * math.cos(hour_angle)
-    )
+    # Solar elevation (calculated but not used in this function)
+    # elevation = math.asin(
+    #     math.sin(lat_rad) * math.sin(declination) + 
+    #     math.cos(lat_rad) * math.cos(declination) * math.cos(hour_angle)
+    # )
     
     # Solar azimuth
     azimuth = math.atan2(
@@ -827,7 +827,6 @@ def find_next_solar_azimuth_time(
     Returns:
         Next datetime when sun will be at target azimuth, or None if not found
     """
-    import math
     from datetime import timedelta
     
     # Search in 15-minute intervals for the next 24 hours by default
