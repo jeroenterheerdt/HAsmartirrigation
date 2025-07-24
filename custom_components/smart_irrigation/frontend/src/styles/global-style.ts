@@ -19,6 +19,16 @@ export const globalStyle = css`
     text-overflow: ellipsis;
   }
 
+  span.dialog-header {
+    font-size: 24px;
+    letter-spacing: -0.012em;
+    line-height: 48px;
+    padding: 12px 16px 16px;
+    display: block;
+    margin-block: 0px;
+    font-weight: 400;
+  }
+
   div.warning {
     color: var(--error-color);
     margin-top: 20px;

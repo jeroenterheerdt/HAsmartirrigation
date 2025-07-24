@@ -6,5 +6,15 @@
 # Component-specific dependency
 aiofiles
 
-# Use HA's full test requirements (from local clone)
--r core/requirements_test_all.txt
+# Home Assistant and testing framework
+homeassistant>=2023.1.0
+pytest>=7.0.0
+pytest-homeassistant-custom-component>=0.13.0
+pytest-asyncio>=0.21.0
+pytest-aiohttp>=1.0.0
+pytest-cov>=4.0.0
+
+# Additional testing utilities
+freezegun>=1.2.0
+respx>=0.20.0
+syrupy>=4.0.0

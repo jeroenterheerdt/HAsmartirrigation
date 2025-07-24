@@ -38,6 +38,9 @@ export class SmartIrrigationConfig {
   autoclearenabled: boolean;
   continuousupdates: boolean;
   sensor_debounce: number;
+  irrigation_start_triggers: IrrigationStartTrigger[];
+  skip_irrigation_on_precipitation: boolean;
+  precipitation_threshold_mm: number;
 
   constructor() {
     this.calctime = "23:00";
@@ -53,7 +56,25 @@ export class SmartIrrigationConfig {
     // continuousupdates are disabled by default
     this.continuousupdates = false;
     this.sensor_debounce = 100;
+    this.irrigation_start_triggers = [];
+    this.skip_irrigation_on_precipitation = false;
+    this.precipitation_threshold_mm = 2.0;
   }
+}
+
+export interface IrrigationStartTrigger {
+  type: string;
+  name: string;
+  enabled: boolean;
+  offset_minutes: number;
+  azimuth_angle?: number;
+  account_for_duration: boolean;
+}
+
+export enum TriggerType {
+  Sunrise = "sunrise",
+  Sunset = "sunset", 
+  SolarAzimuth = "solar_azimuth",
 }
 
 export enum SmartIrrigationZoneState {

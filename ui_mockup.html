@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Irrigation - Irrigation Start Triggers</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .card-header {
+            background: #03a9f4;
+            color: white;
+            padding: 16px;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+        .card-content {
+            padding: 16px;
+        }
+        .triggers-list {
+            margin: 16px 0;
+        }
+        .trigger-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .trigger-item.disabled {
+            opacity: 0.6;
+        }
+        .trigger-main {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            gap: 16px;
+        }
+        .trigger-info {
+            flex: 1;
+        }
+        .trigger-name {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .trigger-details {
+            font-size: 0.875rem;
+            color: #666;
+        }
+        .trigger-status {
+            font-size: 0.875rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #4caf50;
+            color: white;
+            min-width: 60px;
+            text-align: center;
+        }
+        .trigger-item.disabled .trigger-status {
+            background: #757575;
+        }
+        .trigger-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #03a9f4;
+            color: white;
+        }
+        .btn-icon {
+            background: transparent;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .add-trigger-section {
+            margin-top: 16px;
+            text-align: center;
+        }
+        .info-icon {
+            width: 20px;
+            height: 20px;
+            margin-bottom: 8px;
+            opacity: 0.7;
+            cursor: pointer;
+        }
+        .description {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div style="max-width: 800px; margin: 0 auto;">
+        <h1>Smart Irrigation - General Settings</h1>
+        
+        <!-- Main description card -->
+        <div class="card">
+            <div class="card-header">General Settings</div>
+            <div class="card-content">
+                <div class="description">
+                    Configure general settings for your Smart Irrigation system including automatic calculations, updates, and irrigation start triggers.
+                </div>
+            </div>
+        </div>
+
+        <!-- Irrigation Start Triggers Card -->
+        <div class="card">
+            <div class="card-header">Irrigation Start Triggers</div>
+            <div class="card-content">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                    <svg class="info-icon" viewBox="0 0 24 24" fill="#666">
+                        <path d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"/>
+                    </svg>
+                </div>
+                
+                <div class="description">
+                    Configure when irrigation should start based on solar events. You can add multiple triggers for different schedules. For sunrise triggers, leaving offset at 0 will automatically use the total duration of all enabled zones.
+                </div>
+
+                <div class="triggers-list">
+                    <!-- Trigger 1: Early Morning -->
+                    <div class="trigger-item enabled">
+                        <div class="trigger-main">
+                            <div class="trigger-info">
+                                <div class="trigger-name">Early Morning</div>
+                                <div class="trigger-details">Sunrise - Auto (calculated from total zone duration)</div>
+                            </div>
+                            <div class="trigger-status">Enabled</div>
+                        </div>
+                        <div class="trigger-actions">
+                            <button class="btn-icon" title="Edit trigger">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#666">
+                                    <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="Delete trigger">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#f44336">
+                                    <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Trigger 2: Evening Watering -->
+                    <div class="trigger-item enabled">
+                        <div class="trigger-main">
+                            <div class="trigger-info">
+                                <div class="trigger-name">Evening Watering</div>
+                                <div class="trigger-details">Sunset - 30m after</div>
+                            </div>
+                            <div class="trigger-status">Enabled</div>
+                        </div>
+                        <div class="trigger-actions">
+                            <button class="btn-icon" title="Edit trigger">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#666">
+                                    <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="Delete trigger">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#f44336">
+                                    <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Trigger 3: Solar Azimuth (Disabled) -->
+                    <div class="trigger-item disabled">
+                        <div class="trigger-main">
+                            <div class="trigger-info">
+                                <div class="trigger-name">Hot Weather Emergency</div>
+                                <div class="trigger-details">Solar Azimuth (270°) - 30m before</div>
+                            </div>
+                            <div class="trigger-status">Disabled</div>
+                        </div>
+                        <div class="trigger-actions">
+                            <button class="btn-icon" title="Edit trigger">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#666">
+                                    <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
+                                </svg>
+                            </button>
+                            <button class="btn-icon" title="Delete trigger">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#f44336">
+                                    <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="add-trigger-section">
+                    <button class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                        </svg>
+                        Add Trigger
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dialog Mockup (normally would be a modal) -->
+        <div class="card" style="border: 2px solid #03a9f4;">
+            <div class="card-header">Add Irrigation Start Trigger</div>
+            <div class="card-content">
+                <div style="display: grid; gap: 16px; max-width: 400px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 4px; font-weight: 500;">Trigger Name</label>
+                        <input type="text" placeholder="e.g., Early Morning" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 4px; font-weight: 500;">Trigger Type</label>
+                        <select style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                            <option value="sunrise">Sunrise</option>
+                            <option value="sunset">Sunset</option>
+                            <option value="solar_azimuth">Solar Azimuth</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 4px; font-weight: 500;">
+                            <input type="checkbox" checked style="margin-right: 8px;">
+                            Enabled
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 4px; font-weight: 500;">Offset (minutes)</label>
+                        <input type="number" value="0" min="-1440" max="1440" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                        <small style="color: #666;">For sunrise triggers, use 0 for automatic timing based on total zone duration.</small>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; margin-top: 16px;">
+                        <button class="btn btn-primary">Save</button>
+                        <button class="btn" style="background: #f5f5f5; color: #333;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

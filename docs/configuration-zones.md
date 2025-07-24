@@ -68,12 +68,14 @@ This recommendation is based on the soil water holding capacity. See [this discu
 
 ![](assets/images/configuration-zones-2.png)
 
-Below each zone there are some buttons, to perform the following tasks (from left to right):
+Below each zone there are some buttons, to perform the following tasks:
 
 * update weather data. This collects weather data from the sensor group for the zone.
 * calculate irrigation duration. Note that if you calculate irrigation duration using the buttons per zone, the weather data for the sensor group for that zone is deleted. 
-* delete the zone. 
 * after a calculation there is also a button to get some information how duration was calculated, which gives insight into how the bucket was updated, and how the lead time and multiplier influenced the calculated duration.
+* view weather data. View the last 10 records of the associated sensor group.
+* view watering calendar. View a yearly watering calendar based on the location and normal weather patterns.
+* delete the zone. 
 
 > Main page: [Configuration](configuration.md)<br/>
 > Previous: [General configuration](configuration-general.md)<br/>

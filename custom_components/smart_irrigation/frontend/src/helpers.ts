@@ -4,6 +4,7 @@ import { HassEntity } from "home-assistant-js-websocket";
 import {
   CONF_IMPERIAL,
   CONF_METRIC,
+  CONF_PRECIPITATION_THRESHOLD_MM,
   MAPPING_CURRENT_PRECIPITATION,
   MAPPING_DEWPOINT,
   MAPPING_EVAPOTRANSPIRATION,
@@ -72,6 +73,7 @@ export function output_unit(config, arg0: string): TemplateResult {
         return html`${unsafeHTML(UNIT_MMH)}`;
       } else return html`${unsafeHTML(UNIT_INCHH)}`;
       break;
+    case CONF_PRECIPITATION_THRESHOLD_MM:
     case ZONE_BUCKET:
       if (config.units == CONF_METRIC) {
         return html`${unsafeHTML(UNIT_MM)}`;
