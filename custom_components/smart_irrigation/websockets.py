@@ -417,9 +417,9 @@ async def websocket_get_irrigation_info(hass: HomeAssistant, connection, msg):
         )
 
         irrigation_info = {
-            "next_irrigation_start": next_irrigation_start.isoformat()
-            if next_irrigation_start
-            else None,
+            "next_irrigation_start": (
+                next_irrigation_start.isoformat() if next_irrigation_start else None
+            ),
             "next_irrigation_duration": int(total_duration),
             "next_irrigation_zones": irrigation_zones,
             "irrigation_reason": irrigation_reason,
