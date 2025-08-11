@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2025.7.2"
+VERSION = "v2025.8.0"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -44,7 +44,7 @@ CONF_INSTANCE_NAME = "name"
 # Manual coordinate configuration
 CONF_MANUAL_COORDINATES_ENABLED = "manual_coordinates_enabled"
 CONF_MANUAL_LATITUDE = "manual_latitude"
-CONF_MANUAL_LONGITUDE = "manual_longitude" 
+CONF_MANUAL_LONGITUDE = "manual_longitude"
 CONF_MANUAL_ELEVATION = "manual_elevation"
 CONF_DEFAULT_MANUAL_COORDINATES_ENABLED = False
 CONF_REFERENCE_ET = "reference_evapotranspiration"

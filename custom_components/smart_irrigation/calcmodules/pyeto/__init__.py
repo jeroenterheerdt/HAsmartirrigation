@@ -9,16 +9,35 @@ import voluptuous as vol
 from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE
 from homeassistant.core import HomeAssistant
 
-from custom_components.smart_irrigation.calcmodules.calcmodule import \
-    SmartIrrigationCalculationModule
+from custom_components.smart_irrigation.calcmodules.calcmodule import (
+    SmartIrrigationCalculationModule,
+)
 from custom_components.smart_irrigation.const import (
-    CONF_PYETO_COASTAL, CONF_PYETO_FORECAST_DAYS, CONF_PYETO_SOLRAD_BEHAVIOR)
+    CONF_PYETO_COASTAL,
+    CONF_PYETO_FORECAST_DAYS,
+    CONF_PYETO_SOLRAD_BEHAVIOR,
+)
 
-from .pyeto import (avp_from_tdew, convert, cs_rad, daylight_hours, deg2rad,
-                    delta_svp, et_rad, fao56_penman_monteith,
-                    inv_rel_dist_earth_sun, net_in_sol_rad, net_out_lw_rad,
-                    net_rad, psy_const, sol_dec, sol_rad_from_sun_hours,
-                    sol_rad_from_t, sunset_hour_angle, svp_from_t)
+from .pyeto import (
+    avp_from_tdew,
+    convert,
+    cs_rad,
+    daylight_hours,
+    deg2rad,
+    delta_svp,
+    et_rad,
+    fao56_penman_monteith,
+    inv_rel_dist_earth_sun,
+    net_in_sol_rad,
+    net_out_lw_rad,
+    net_rad,
+    psy_const,
+    sol_dec,
+    sol_rad_from_sun_hours,
+    sol_rad_from_t,
+    sunset_hour_angle,
+    svp_from_t,
+)
 
 # v1 only, no longer used in v2
 # from ...const import CONF_MAXIMUM_ET, DEFAULT_MAXIMUM_ET
@@ -105,7 +124,10 @@ class PyETO(SmartIrrigationCalculationModule):
                 CONF_PYETO_FORECAST_DAYS, DEFAULT_FORECAST_DAYS
             )
             if not isinstance(self.forecast_days, int):
-                self.forecast_days = DEFAULT_FORECAST_DAYS
+                try:
+                    self.forecast_days = int(self.forecast_days)
+                except ValueError:
+                    self.forecast_days = DEFAULT_FORECAST_DAYS
 
     def calculate(self, weather_data, forecast_data, hour_multiplier):
         """Calculate the average evapotranspiration delta for the given weather and forecast data.
@@ -122,7 +144,11 @@ class PyETO(SmartIrrigationCalculationModule):
         delta = 0.0
         deltas = []
         if weather_data:
-            deltas.append(self.calculate_et_for_day(weather_data=weather_data, hour_multiplier=hour_multiplier))
+            deltas.append(
+                self.calculate_et_for_day(
+                    weather_data=weather_data, hour_multiplier=hour_multiplier
+                )
+            )
             # loop over the forecast days
             for x in range(self.forecast_days):
                 _LOGGER.debug(
@@ -130,7 +156,12 @@ class PyETO(SmartIrrigationCalculationModule):
                     x,
                 )
                 if len(forecast_data) - 1 >= x:
-                    deltas.append(self.calculate_et_for_day(weather_data=forecast_data[x], hour_multiplier=hour_multiplier))
+                    deltas.append(
+                        self.calculate_et_for_day(
+                            weather_data=forecast_data[x],
+                            hour_multiplier=hour_multiplier,
+                        )
+                    )
         # return average of the collected deltas
         _LOGGER.debug("[pyETO: calculate_et_for_day] collected deltas: %s", deltas)
         if deltas:
@@ -278,13 +309,13 @@ class PyETO(SmartIrrigationCalculationModule):
                     precip = 0
                 if eto is None:
                     eto = 0
-                
+
                 et_scaled = eto * hour_multiplier
                 _LOGGER.debug(
                     "[pyETO: calculate_et_for_day] Daily ETO: %.2f, hour_multiplier: %.4f, Scaled ETO for interval: %.2f",
                     eto,
                     hour_multiplier,
-                    et_scaled
+                    et_scaled,
                 )
                 delta = precip - et_scaled
 

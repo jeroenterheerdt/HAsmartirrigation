@@ -28,6 +28,7 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
     async_dispatcher_send,
 )
+
 from homeassistant.helpers.event import (
     async_call_later,
     async_track_state_change_event,
@@ -35,6 +36,7 @@ from homeassistant.helpers.event import (
     async_track_sunset,
     async_track_time_change,
     async_track_time_interval,
+    async_track_point_in_utc_time,
 )
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util.unit_system import METRIC_SYSTEM
@@ -260,8 +262,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self._WeatherServiceClient = None
         if self.use_weather_service:
             # Get effective coordinates before creating weather service clients
-            effective_lat, effective_lon, effective_elev = self._get_effective_coordinates()
-            
+            effective_lat, effective_lon, effective_elev = (
+                self._get_effective_coordinates()
+            )
+
             if self.weather_service == const.CONF_WEATHER_SERVICE_OWM:
                 self._WeatherServiceClient = OWMClient(
                     api_key=hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY],
@@ -282,8 +286,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
 
         # Initialize coordinates for weather services and other features
-        self._effective_latitude, self._effective_longitude, self._effective_elevation = self._get_effective_coordinates()
-        
+        (
+            self._effective_latitude,
+            self._effective_longitude,
+            self._effective_elevation,
+        ) = self._get_effective_coordinates()
+
         # Keep latitude and elevation properties for backward compatibility
         self._latitude = self._effective_latitude
         self._elevation = self._effective_elevation
@@ -348,6 +356,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         Returns:
             The configuration value or default_value if not found
+
         """
         # Try Home Assistant config first (most reliable)
         value = self.hass.config.as_dict().get(key)
@@ -367,42 +376,48 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     def _get_effective_coordinates(self):
         """Get the effective coordinates to use for weather services and calculations.
-        
+
         Returns manual coordinates if enabled, otherwise falls back to Home Assistant config.
-        
+
         Returns:
             tuple: (latitude, longitude, elevation)
+
         """
         # Check if manual coordinates are enabled
-        manual_enabled = self._get_config_value(const.CONF_MANUAL_COORDINATES_ENABLED, False)
-        
+        manual_enabled = self._get_config_value(
+            const.CONF_MANUAL_COORDINATES_ENABLED, False
+        )
+
         if manual_enabled:
             # Use manual coordinates
             latitude = self._get_config_value(const.CONF_MANUAL_LATITUDE, None)
             longitude = self._get_config_value(const.CONF_MANUAL_LONGITUDE, None)
             elevation = self._get_config_value(const.CONF_MANUAL_ELEVATION, 0)
-            
+
             if latitude is not None and longitude is not None:
                 _LOGGER.info(
                     "Using manual coordinates: lat=%.6f, lon=%.6f, elevation=%sm",
-                    latitude, longitude, elevation
+                    latitude,
+                    longitude,
+                    elevation,
                 )
                 return latitude, longitude, elevation
-            else:
-                _LOGGER.warning(
-                    "Manual coordinates enabled but latitude or longitude not set, falling back to Home Assistant config"
-                )
-        
+            _LOGGER.warning(
+                "Manual coordinates enabled but latitude or longitude not set, falling back to Home Assistant config"
+            )
+
         # Fall back to Home Assistant configuration
         ha_lat = self.hass.config.as_dict().get(CONF_LATITUDE, 45.0)
         ha_lon = self.hass.config.as_dict().get(CONF_LONGITUDE, 0.0)
         ha_elev = self.hass.config.as_dict().get(CONF_ELEVATION, 0)
-        
+
         _LOGGER.info(
             "Using Home Assistant coordinates: lat=%.6f, lon=%.6f, elevation=%sm",
-            ha_lat, ha_lon, ha_elev
+            ha_lat,
+            ha_lon,
+            ha_elev,
         )
-        
+
         # Log warnings for default coordinates
         if ha_lat == 45.0 and self.hass.config.as_dict().get(CONF_LATITUDE) is None:
             _LOGGER.warning(
@@ -412,7 +427,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             _LOGGER.warning(
                 "Elevation not configured in Home Assistant, using default elevation of 0m"
             )
-        
+
         return ha_lat, ha_lon, ha_elev
 
     async def setup_SmartIrrigation_entities(self):  # noqa: D102
@@ -991,6 +1006,104 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             for z in await self.store.async_get_zones()
             if z.get(const.ZONE_MAPPING) == mapping
         ]
+
+    async def _async_update_zone(self, zone_id):
+        # update the weather data for the mapping for the zone
+        _LOGGER.info("Updating weather data for zone %s", zone_id)
+        zone = self.store.get_zone(zone_id)
+        if not zone:
+            raise SmartIrrigationError(f"Zone {zone_id} not found")
+        mapping_id = zone.get(const.ZONE_MAPPING)
+        if mapping_id is not None:
+            mapping = self.store.get_mapping(mapping_id)
+            (
+                owm_in_mapping,
+                sensor_in_mapping,
+                static_in_mapping,
+            ) = self.check_mapping_sources(mapping_id=mapping_id)
+            weatherdata = None
+            if self.use_weather_service and owm_in_mapping:
+                # retrieve data from OWM
+                weatherdata = await self.hass.async_add_executor_job(
+                    self._WeatherServiceClient.get_data
+                )
+
+            if sensor_in_mapping:
+                sensor_values = self.build_sensor_values_for_mapping(mapping)
+                weatherdata = await self.merge_weatherdata_and_sensor_values(
+                    weatherdata, sensor_values
+                )
+            if static_in_mapping:
+                static_values = self.build_static_values_for_mapping(mapping)
+                weatherdata = await self.merge_weatherdata_and_sensor_values(
+                    weatherdata, static_values
+                )
+            if sensor_in_mapping or static_in_mapping:
+                # if pressure type is set to relative, replace it with absolute. not necessary for OWM as it already happened
+                # convert the relative pressure to absolute or estimate from height
+                if (
+                    mapping.get(const.MAPPING_MAPPINGS)
+                    .get(const.MAPPING_PRESSURE)
+                    .get(const.MAPPING_CONF_PRESSURE_TYPE)
+                    == const.MAPPING_CONF_PRESSURE_RELATIVE
+                ):
+                    if const.MAPPING_PRESSURE in weatherdata:
+                        weatherdata[const.MAPPING_PRESSURE] = (
+                            relative_to_absolute_pressure(
+                                weatherdata[const.MAPPING_PRESSURE],
+                                self.hass.config.as_dict().get(CONF_ELEVATION),
+                            )
+                        )
+                    else:
+                        weatherdata[const.MAPPING_PRESSURE] = altitudeToPressure(
+                            self.hass.config.as_dict().get(CONF_ELEVATION)
+                        )
+
+            # add the weatherdata value to the mappings sensor values
+            if mapping is not None and weatherdata is not None:
+                weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
+                mapping_data = mapping[const.MAPPING_DATA]
+                if isinstance(mapping_data, list):
+                    mapping_data.append(weatherdata)
+                elif isinstance(mapping_data, str):
+                    mapping_data = [weatherdata]
+                else:
+                    _LOGGER.error(
+                        "[async_update_all]: sensor group is unexpected type: %s",
+                        mapping_data,
+                    )
+                _LOGGER.debug(
+                    "async_update_all for mapping %s new weatherdata: %s",
+                    mapping_id,
+                    weatherdata,
+                )
+                changes = {
+                    "data": mapping_data,
+                    const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now(),
+                }
+                await self.store.async_update_mapping(mapping_id, changes)
+                # store last updated and number of data points in the zone here.
+                changes_to_zone = {
+                    const.ZONE_LAST_UPDATED: changes[const.MAPPING_DATA_LAST_UPDATED],
+                    const.ZONE_NUMBER_OF_DATA_POINTS: len(mapping_data) - 1,
+                }
+                await self.store.async_update_zone(zone_id, changes_to_zone)
+                async_dispatcher_send(
+                    self.hass,
+                    const.DOMAIN + "_config_updated",
+                    zone,
+                )
+            else:
+                if mapping is None:
+                    _LOGGER.warning(
+                        "[async_update_all] Unable to find sensor group with id: %s",
+                        mapping_id,
+                    )
+                if weatherdata is None:
+                    _LOGGER.warning(
+                        "[async_update_all] No weather data to parse for sensor group %s",
+                        mapping_id,
+                    )
 
     async def _async_update_all(self, *args):
         # update the weather data for all mappings for all zones that are automatic here and store it.
@@ -1675,7 +1788,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 "module.calculation.explanation.module-returned-evapotranspiration-deficiency",
                 self.hass.config.language,
             )
-            + f" {data[const.ZONE_DELTA]:.2f}. "
+            + f" {data[const.ZONE_DELTA]:.2f}."
         )
         explanation += (
             await localize(
@@ -1745,7 +1858,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         )
 
         if maximum_bucket is not None and maximum_bucket > 0:
-            explanation += f" min([{old_bucket_loc}] + [{delta_loc}], {max_bucket_loc}) - [{drainage_loc}] = min({data[const.ZONE_OLD_BUCKET]:.2f}{data[const.ZONE_DELTA]:+.2f}, {maximum_bucket:.1f}) - {drainage:.2f} = {newbucket:.2f}.<br/>"
+            explanation += f" max(0, min([{old_bucket_loc}] + [{delta_loc}], {max_bucket_loc}) - [{drainage_loc}]) = max(0, min({data[const.ZONE_OLD_BUCKET]:.2f}{data[const.ZONE_DELTA]:+.2f}, {maximum_bucket:.1f}) - {drainage:.2f}) = {newbucket:.2f}.<br/>"
         else:
             explanation += f" [{old_bucket_loc}] + [{delta_loc}] - [{drainage_loc}] = {data[const.ZONE_OLD_BUCKET]:.2f} + {data[const.ZONE_DELTA]:.2f} - {drainage:.2f} = {newbucket:.2f}.<br/>"
 
@@ -2130,7 +2243,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             await self._async_calculate_all()
 
         elif const.ATTR_UPDATE in data:
-            await self._async_update_zone_weatherdata(zone_id, data)
+            _LOGGER.info("Updating zone %s", zone_id)
+            await self._async_update_zone(zone_id)
         elif const.ATTR_UPDATE_ALL in data:
             _LOGGER.info("Updating all zones")
             await self._async_update_all()
@@ -2369,7 +2483,6 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             )
 
         # Schedule the trigger
-        from homeassistant.helpers.event import async_track_point_in_utc_time
 
         unsub = async_track_point_in_utc_time(
             self.hass,
@@ -2415,6 +2528,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         Returns:
             bool: True if irrigation should be skipped due to precipitation, False otherwise.
+
         """
         config = await self.store.async_get_config()
 
@@ -2830,6 +2944,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         Returns:
             dict: Dictionary mapping zone IDs to their 12-month watering calendars.
+
         """
         _LOGGER.debug(
             "[async_generate_watering_calendar]: generating calendar for zone %s",
@@ -2898,6 +3013,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         Returns:
             list: List of 12 monthly estimates with watering volumes.
+
         """
         mapping_id = zone.get(const.ZONE_MAPPING)
         module_id = zone.get(const.ZONE_MODULE)
@@ -2980,6 +3096,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         Returns:
             list: List of 12 monthly climate data dictionaries.
+
         """
         # Get latitude for seasonal variation (default to temperate zone if not available)
         latitude = abs(self._latitude or 45.0)
@@ -3059,6 +3176,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         Returns:
             float: Monthly ET estimate in mm.
+
         """
         # Create weather data in the format expected by PyETO
         weather_data = {
@@ -3084,9 +3202,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         # Convert daily ET delta to monthly total (remove precipitation since we want just ET)
         daily_et = abs(daily_et_delta) + month_data["precipitation"] / days_in_month
-        monthly_et = daily_et * days_in_month
-
-        return monthly_et
+        return daily_et * days_in_month
 
     def _calculate_monthly_watering_volume(self, zone, et_mm, month_data):
         """Calculate monthly watering volume in liters for a zone.
@@ -3098,6 +3214,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         Returns:
             float: Watering volume in liters.
+
         """
         zone_size_m2 = zone.get(const.ZONE_SIZE, 1.0)  # Default 1 m²
         multiplier = zone.get(const.ZONE_MULTIPLIER, 1.0)
@@ -3117,9 +3234,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         adjusted_water_need_mm = net_water_need_mm * multiplier
 
         # Convert mm over area to liters (1mm over 1m² = 1 liter)
-        volume_liters = adjusted_water_need_mm * zone_size_m2
-
-        return volume_liters
+        return adjusted_water_need_mm * zone_size_m2
 
     def _get_zone_calculation_method(self, zone):
         """Get the calculation method description for a zone.
@@ -3129,6 +3244,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         Returns:
             str: Description of the calculation method used.
+
         """
         module_id = zone.get(const.ZONE_MODULE)
         if module_id is None:

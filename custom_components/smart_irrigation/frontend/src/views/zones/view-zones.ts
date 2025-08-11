@@ -683,10 +683,11 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
   private handleZoneFormBlur(): void {
     // Check if any form field has content
-    const hasContent = this.nameInput?.value?.trim() || 
-                      this.sizeInput?.value || 
-                      this.throughputInput?.value;
-    
+    const hasContent =
+      this.nameInput?.value?.trim() ||
+      this.sizeInput?.value ||
+      this.throughputInput?.value;
+
     // Only clear the flag if all fields are empty
     if (!hasContent) {
       this.isCreatingZone = false;
@@ -1278,9 +1279,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 this.hass.language,
               )}:</label
             >
-            <input 
-              id="nameInput" 
-              type="text" 
+            <input
+              id="nameInput"
+              type="text"
               @focus="${this.handleZoneFormFocus}"
               @blur="${this.handleZoneFormBlur}"
             />
@@ -1292,9 +1293,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 this.hass.language,
               )}:</label
             >
-            <input 
-              id="sizeInput" 
-              type="number" 
+            <input
+              id="sizeInput"
+              type="number"
               @focus="${this.handleZoneFormFocus}"
               @blur="${this.handleZoneFormBlur}"
             />
@@ -1306,9 +1307,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                 this.hass.language,
               )}:</label
             >
-            <input 
-              id="throughputInput" 
-              type="number" 
+            <input
+              id="throughputInput"
+              type="number"
               @focus="${this.handleZoneFormFocus}"
               @blur="${this.handleZoneFormBlur}"
             />
@@ -1391,7 +1392,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
     // Clear the zone cache
     this.zoneCache.clear();
-    
+
     // Clear zone creation state when component is disconnected
     this.isCreatingZone = false;
   }

@@ -254,24 +254,31 @@ async def websocket_get_config(hass: HomeAssistant, connection, msg):
     config = await coordinator.store.async_get_config()
 
     # Convert precipitation threshold from internal mm to user's preferred units
-    if const.CONF_PRECIPITATION_THRESHOLD_MM in config and config[const.CONF_PRECIPITATION_THRESHOLD_MM] is not None:
+    if (
+        const.CONF_PRECIPITATION_THRESHOLD_MM in config
+        and config[const.CONF_PRECIPITATION_THRESHOLD_MM] is not None
+    ):
         threshold_mm = config[const.CONF_PRECIPITATION_THRESHOLD_MM]
         ha_config_is_metric = hass.config.units is METRIC_SYSTEM
 
         if not ha_config_is_metric:
             # Convert from mm to inches for imperial users
             from .helpers import convert_between
-            threshold_inches = convert_between(const.UNIT_MM, const.UNIT_INCH, threshold_mm)
+
+            threshold_inches = convert_between(
+                const.UNIT_MM, const.UNIT_INCH, threshold_mm
+            )
             config = config.copy()  # Make a copy to avoid modifying the stored config
             config[const.CONF_PRECIPITATION_THRESHOLD_MM] = threshold_inches
             _LOGGER.debug(
                 "Converted precipitation threshold from %.2f mm to %.2f inches for frontend (imperial mode)",
-                threshold_mm, threshold_inches
+                threshold_mm,
+                threshold_inches,
             )
         else:
             _LOGGER.debug(
                 "Precipitation threshold %.2f mm sent directly to frontend (metric mode)",
-                threshold_mm
+                threshold_mm,
             )
 
     connection.send_result(msg["id"], config)
@@ -476,6 +483,8 @@ async def websocket_get_weather_records(hass: HomeAssistant, connection, msg):
 
         # Process and format the weather records
         records = []
+        # Remove all non-dicts
+        mapping_data = [d for d in mapping_data if isinstance(d, dict)]
 
         # Sort by timestamp (most recent first) and limit
         sorted_data = sorted(

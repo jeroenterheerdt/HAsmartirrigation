@@ -621,7 +621,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
             ${this.renderSimpleRadioOptions(index, value, mappingline)}
           </div>
         </div>
-        ${this.renderMappingInputsSimple(index, value, mappingline)}
+        ${this.renderMappingInputs(index, value, mappingline)}
       </div>
     `;
   }
@@ -708,7 +708,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     `;
   }
 
-  private renderMappingInputsSimple(
+  /*private renderMappingInputsSimple(
     index: number,
     value: string,
     mappingline: any,
@@ -766,7 +766,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     }
 
     return html``;
-  }
+  }*/
 
   private handleSimpleSourceChange(
     index: number,
