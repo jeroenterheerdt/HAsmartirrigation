@@ -9,7 +9,6 @@ from custom_components.smart_irrigation.weathermodules.OWMClient import OWMClien
 from custom_components.smart_irrigation.weathermodules.PirateWeatherClient import (
     PirateWeatherClient,
 )
-from custom_components.smart_irrigation.weathermodules.KNMIClient import KNMIClient
 
 
 class TestOWMClient:
@@ -160,79 +159,6 @@ class TestPirateWeatherClient:
         assert forecast_data[0]["min_temp"] == 20.0
 
 
-class TestKNMIClient:
-    """Test KNMI client."""
-
-    def test_knmi_client_init(self) -> None:
-        """Test KNMI client initialization."""
-        session = AsyncMock()
-
-        client = KNMIClient(session)
-
-        assert client.session == session
-
-    async def test_knmi_client_get_current_weather_success(self) -> None:
-        """Test KNMI client get current weather success."""
-        session = AsyncMock()
-        mock_response = AsyncMock()
-        mock_response.status = 200
-        mock_response.text.return_value = """
-        # KNMI weather data
-        260,20230101,12,25.0,60,1013.25,5.0,0.0
-        """
-        session.get.return_value.__aenter__.return_value = mock_response
-
-        client = KNMIClient(session)
-
-        # Mock the coordinate to station mapping
-        with patch.object(client, "_get_nearest_station", return_value="260"):
-            weather_data = await client.get_current_weather(52.0, 5.0)
-
-            assert isinstance(weather_data, dict)
-            # The exact structure depends on KNMI response parsing
-
-    async def test_knmi_client_coordinate_validation(self) -> None:
-        """Test KNMI client coordinate validation."""
-        session = AsyncMock()
-        client = KNMIClient(session)
-
-        # Test valid Dutch coordinates
-        assert client._is_valid_dutch_coordinates(52.0, 5.0) is True
-
-        # Test invalid coordinates (outside Netherlands)
-        assert client._is_valid_dutch_coordinates(40.0, -74.0) is False
-
-    async def test_knmi_client_invalid_coordinates(self) -> None:
-        """Test KNMI client with invalid coordinates."""
-        session = AsyncMock()
-        client = KNMIClient(session)
-
-        # Test with coordinates outside Netherlands
-        with pytest.raises(ValueError, match="not within Netherlands"):
-            await client.get_current_weather(40.0, -74.0)
-
-    async def test_knmi_client_get_forecast_success(self) -> None:
-        """Test KNMI client get forecast success."""
-        session = AsyncMock()
-        mock_response = AsyncMock()
-        mock_response.status = 200
-        mock_response.text.return_value = """
-        # KNMI forecast data
-        20230101,260,30,20,60,1013,5,0
-        20230102,260,28,18,65,1015,3,2
-        """
-        session.get.return_value.__aenter__.return_value = mock_response
-
-        client = KNMIClient(session)
-
-        # Mock the coordinate to station mapping
-        with patch.object(client, "_get_nearest_station", return_value="260"):
-            forecast_data = await client.get_forecast(52.0, 5.0, days=2)
-
-            assert isinstance(forecast_data, list)
-            # The exact structure depends on KNMI response parsing
-
-
 class TestWeatherModuleErrorHandling:
     """Test weather module error handling."""
 
@@ -260,18 +186,3 @@ class TestWeatherModuleErrorHandling:
 
         with pytest.raises(Exception):  # Specific exception depends on implementation
             await client.get_current_weather(52.0, 5.0)
-
-    async def test_knmi_client_service_unavailable(self) -> None:
-        """Test KNMI client with service unavailable."""
-        session = AsyncMock()
-        mock_response = AsyncMock()
-        mock_response.status = 503
-        session.get.return_value.__aenter__.return_value = mock_response
-
-        client = KNMIClient(session)
-
-        with patch.object(client, "_get_nearest_station", return_value="260"):
-            with pytest.raises(
-                Exception
-            ):  # Specific exception depends on implementation
-                await client.get_current_weather(52.0, 5.0)

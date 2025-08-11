@@ -13,7 +13,7 @@
         "description": "Se hai bisogno di aiuto con la configurazione, dai un'occhiata qui https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Nome univoco per questa istanza",
-          "use_weather_service": "Use a weather service (Open Weather Map, Pirate Weather, or KNMI) for weather data or forecasting. Enable this option if you intent to use one of the supported weather services for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
+          "use_weather_service": "Use a weather service (Open Weather Map or Pirate Weather) for weather data or forecasting. Enable this option if you intent to use one of the supported weather services for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
         }
       },
       "step1": {
@@ -29,15 +29,14 @@
   },
   "options": {
     "error": {
-      "auth": "Weather service API key or version incorrect",
-      "invalid_coordinates": "Coordinate non valide. Controllare i valori di latitudine (-90 a 90) e longitudine (-180 a 180)."
+      "auth": "Weather service API key or version incorrect"
     },
     "step": {
       "init": {
         "title": "Weather service API set up",
         "description": "Se hai bisogno di aiuto con la configurazione, dai un'occhiata qui https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "use_weather_service": "Use a weather service (Open Weather Map, Pirate Weather, or KNMI) for weather data or forecasting. Enable this option if you intent to use one of the supported weather services for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
+          "use_weather_service": "Use a weather service (Open Weather Map or Pirate Weather) for weather data or forecasting. Enable this option if you intent to use one of the supported weather services for at least part of the weather data, including forecasting. Disable this option if you want to use another source, such as your own weather station, exclusively. In this case, Smart Irigation will not be able to use forecasts."
         }
       },
       "step1": {
@@ -48,16 +47,6 @@
           "weather_service_api_key": "API key for weather service",
           "weather_service_api_version": "Weather service API version"
         }
-      },
-      "coordinates": {
-        "title": "Coordinate di posizione",
-        "description": "Configura le coordinate di posizione per il recupero dei dati meteorologici. Puoi usare coordinate manuali diverse dalla tua posizione Home Assistant se necessario.",
-        "data": {
-          "manual_coordinates_enabled": "Usa coordinate manuali invece della posizione di Home Assistant",
-          "manual_latitude": "Latitudine (gradi decimali, -90 a 90)",
-          "manual_longitude": "Longitudine (gradi decimali, -180 a 180)",
-          "manual_elevation": "Elevazione sul livello del mare (metri, opzionale)"
-        }
       }
     }
   },
@@ -65,7 +54,7 @@
     "calculate_all_zones": {
       "name": "Calcola tutte le zone",
       "description": "Calcola tutte le zone in modalità automatica",
-      "fields": {
+      "fields":{
         "delete_weather_data": {
           "name": "Cancellare i dati meteo",
           "description": "Cancellare i dati meteo dopo il calcolo"
@@ -163,7 +152,7 @@
         "new_multiplier_value": {
           "name": "Nuovo valore di moltiplicazione",
           "description": "nuovo valore di moltiplicazione"
-        }
+          }
       }
     },
     "set_state": {

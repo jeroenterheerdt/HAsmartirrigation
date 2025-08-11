@@ -1,6 +1,6 @@
 # Smart Irrigation Development Makefile
 
-.PHONY: help setup test lint format clean install-dev test-knmi
+.PHONY: help setup test lint format clean install-dev
 
 # Default target
 help:
@@ -12,7 +12,6 @@ help:
 	@echo ""
 	@echo "Testing:"
 	@echo "  test        - Run all tests"
-	@echo "  test-knmi   - Run KNMI integration test"
 	@echo ""
 	@echo "Code Quality:"
 	@echo "  lint        - Run linting (flake8)"
@@ -38,14 +37,6 @@ install-dev:
 # Run all tests (exclude integration tests which have fixtures)
 test:
 	./venv/bin/python -m pytest tests/ -v --ignore=tests/integration/
-
-# Run KNMI integration test
-test-knmi:
-	@if [ ! -f .env ]; then \
-		echo "❌ .env file not found. Copy .env.example to .env and add your API key"; \
-		exit 1; \
-	fi
-	./venv/bin/python tests/integration/test_knmi_integration.py
 
 # Code formatting
 format:

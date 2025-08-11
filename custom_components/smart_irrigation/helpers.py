@@ -12,7 +12,6 @@ from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN, UnitOfTemperat
 from homeassistant.core import HomeAssistant
 
 from .const import (
-    CONF_WEATHER_SERVICE_KNMI,
     CONF_WEATHER_SERVICE_OWM,
     CONF_WEATHER_SERVICE_PW,
     CUSTOM_COMPONENTS,
@@ -70,7 +69,6 @@ from .const import (
     W_SQ_FT_TO_W_M2_FACTOR,
     W_TO_MJ_DAY_FACTOR,
 )
-from .weathermodules.KNMIClient import KNMIClient
 from .weathermodules.OWMClient import OWMClient
 from .weathermodules.PirateWeatherClient import PirateWeatherClient
 
@@ -657,14 +655,6 @@ async def test_api_key(hass: HomeAssistant, weather_service, api_key):
             longitude=test_lon,
             elevation=test_elev,
         )
-    elif weather_service == CONF_WEATHER_SERVICE_KNMI:
-        client = KNMIClient(
-            api_key=api_key.strip(),
-            api_version="1",
-            latitude=test_lat,
-            longitude=test_lon,
-            elevation=test_elev,
-        )
     if client:
         try:
             await hass.async_add_executor_job(client.get_data)
@@ -800,11 +790,11 @@ def calculate_solar_azimuth(latitude: float, longitude: float, timestamp: dateti
     solar_time = time_decimal - longitude_correction
     hour_angle = math.radians((solar_time - 12) * 15)
     
-    # Solar elevation
-    elevation = math.asin(
-        math.sin(lat_rad) * math.sin(declination) + 
-        math.cos(lat_rad) * math.cos(declination) * math.cos(hour_angle)
-    )
+    # Solar elevation (calculated but not used in this function)
+    # elevation = math.asin(
+    #     math.sin(lat_rad) * math.sin(declination) + 
+    #     math.cos(lat_rad) * math.cos(declination) * math.cos(hour_angle)
+    # )
     
     # Solar azimuth
     azimuth = math.atan2(
@@ -837,7 +827,6 @@ def find_next_solar_azimuth_time(
     Returns:
         Next datetime when sun will be at target azimuth, or None if not found
     """
-    import math
     from datetime import timedelta
     
     # Search in 15-minute intervals for the next 24 hours by default
