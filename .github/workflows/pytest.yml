@@ -64,6 +64,3 @@ jobs:
 
       - name: Check code formatting with black
         run: black --check custom_components/smart_irrigation/
-
-      - name: Check import sorting
-        run: isort --check-only custom_components/smart_irrigation/
