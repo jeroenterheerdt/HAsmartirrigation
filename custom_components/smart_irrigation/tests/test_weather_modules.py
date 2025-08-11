@@ -1,8 +1,7 @@
 """Test Smart Irrigation weather modules."""
 
 import pytest
-from unittest.mock import AsyncMock, Mock, patch
-from homeassistant.core import HomeAssistant
+from unittest.mock import AsyncMock
 from aiohttp import ClientError
 
 from custom_components.smart_irrigation.weathermodules.OWMClient import OWMClient

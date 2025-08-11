@@ -1,7 +1,6 @@
 """Test Smart Irrigation store functionality."""
 
-import pytest
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 from homeassistant.core import HomeAssistant
 
 from custom_components.smart_irrigation.store import async_get_registry

@@ -2,7 +2,6 @@
 
 import pytest
 from unittest.mock import AsyncMock, Mock, patch
-from pathlib import Path
 
 from homeassistant.core import HomeAssistant
 

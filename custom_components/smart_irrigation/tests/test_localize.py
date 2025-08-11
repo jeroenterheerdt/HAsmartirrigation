@@ -1,9 +1,8 @@
 """Test the Smart Irrigation localization utilities."""
 
 import pytest
-from unittest.mock import AsyncMock, Mock, mock_open, patch
+from unittest.mock import AsyncMock, mock_open, patch
 import json
-import aiofiles
 
 from custom_components.smart_irrigation.localize import (
     localize,

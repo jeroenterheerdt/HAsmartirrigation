@@ -3,7 +3,7 @@
 import pytest
 import asyncio
 import time
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from custom_components.smart_irrigation.performance import (
     performance_timer,

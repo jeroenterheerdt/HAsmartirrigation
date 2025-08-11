@@ -2,7 +2,6 @@
 
 import pytest
 import attr
-from unittest.mock import Mock
 
 from custom_components.smart_irrigation.store import Config, MigratableStore
 from custom_components.smart_irrigation.const import (

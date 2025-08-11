@@ -1,9 +1,8 @@
 """Test Smart Irrigation helper functions."""
 
 import pytest
-from unittest.mock import AsyncMock, patch
-from datetime import datetime, time
-from homeassistant.core import HomeAssistant
+from unittest.mock import AsyncMock
+from datetime import time
 from homeassistant.const import UnitOfTemperature
 
 from custom_components.smart_irrigation.helpers import (

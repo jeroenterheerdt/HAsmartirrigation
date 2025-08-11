@@ -1,6 +1,5 @@
 """Test Smart Irrigation sensor platform."""
 
-import pytest
 from unittest.mock import AsyncMock, Mock, patch
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry

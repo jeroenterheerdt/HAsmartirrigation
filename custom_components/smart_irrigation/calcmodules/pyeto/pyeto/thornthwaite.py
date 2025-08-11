@@ -69,10 +69,10 @@ def thornthwaite(monthly_t, monthly_mean_dlh, year=None):
     adj_monthly_t = [t * (t >= 0) for t in monthly_t]
 
     # Calculate the heat index (I)
-    I = 0.0
+    I = 0.0  # noqa: E741
     for Tai in adj_monthly_t:
         if Tai / 5.0 > 0.0:
-            I += (Tai / 5.0) ** 1.514
+            I += (Tai / 5.0) ** 1.514  # noqa: E741
 
     a = (6.75e-07 * I**3) - (7.71e-05 * I**2) + (1.792e-02 * I) + 0.49239
 

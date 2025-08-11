@@ -1,10 +1,9 @@
 """Test Smart Irrigation integration initialization."""
 
 import pytest
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.exceptions import ConfigEntryNotReady
 
 from custom_components.smart_irrigation import (
     async_setup,
