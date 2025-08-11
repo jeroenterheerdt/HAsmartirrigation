@@ -29,7 +29,8 @@
   },
   "options": {
     "error": {
-      "auth": "Weather service API key or version incorrect"
+      "auth": "Weather service API key or version incorrect",
+      "invalid_coordinates": "Neplatné súradnice. Skontrolujte hodnoty zemepisnej šírky (-90 až 90) a zemepisnej dĺžky (-180 až 180)."
     },
     "step": {
       "init": {
@@ -46,6 +47,16 @@
           "weather_service": "Využitie meteorologickej služby",
           "weather_service_api_key": "API kľúč pre meteorologickú službu",
           "weather_service_api_version": "Verzia API meteorologickej služby"
+        }
+      },
+      "coordinates": {
+        "title": "Súradnice polohy",
+        "description": "Nakonfigurujte súradnice polohy pre získavanie meteorologických údajov. Môžete použiť manuálne súradnice odlišné od vašej polohy Home Assistant ak je to potrebné.",
+        "data": {
+          "manual_coordinates_enabled": "Použiť manuálne súradnice namiesto polohy Home Assistant",
+          "manual_latitude": "Zemepisná šírka (desatinné stupne, -90 až 90)",
+          "manual_longitude": "Zemepisná dĺžka (desatinné stupne, -180 až 180)",
+          "manual_elevation": "Nadmorská výška (metre, voliteľné)"
         }
       }
     }

@@ -248,5 +248,15 @@
       "title": "Zóny"
     }
   },
-  "title": "Inteligentné zavlažovanie"
+  "title": "Inteligentné zavlažovanie",
+  "coordinate_config": {
+    "title": "Súradnice Polohy",
+    "description": "Nakonfigurujte súradnice polohy pre získavanie meteorologických údajov. Môžete použiť manuálne súradnice odlišné od vašej polohy Home Assistant ak je to potrebné.",
+    "manual_enabled": "Použiť manuálne súradnice",
+    "use_ha_location": "Použiť polohu Home Assistant",
+    "latitude": "Zemepisná šírka (desatinné stupne)",
+    "longitude": "Zemepisná dĺžka (desatinné stupne)",
+    "elevation": "Nadmorská výška (metre nad morom)",
+    "current_ha_coords": "Aktuálne súradnice Home Assistant"
+  }
 }

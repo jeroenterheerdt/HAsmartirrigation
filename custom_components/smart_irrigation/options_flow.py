@@ -2,6 +2,7 @@
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.helpers.selector import selector
 
 from . import const
@@ -56,6 +57,27 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             self._owm_api_version = self.config_entry.data.get(
                 const.CONF_WEATHER_SERVICE_API_VERSION
             )
+
+        # Initialize manual coordinate settings
+        self._manual_coordinates_enabled = self.config_entry.options.get(
+            const.CONF_MANUAL_COORDINATES_ENABLED,
+            self.config_entry.data.get(
+                const.CONF_MANUAL_COORDINATES_ENABLED,
+                const.CONF_DEFAULT_MANUAL_COORDINATES_ENABLED
+            )
+        )
+        self._manual_latitude = self.config_entry.options.get(
+            const.CONF_MANUAL_LATITUDE,
+            self.config_entry.data.get(const.CONF_MANUAL_LATITUDE)
+        )
+        self._manual_longitude = self.config_entry.options.get(
+            const.CONF_MANUAL_LONGITUDE,
+            self.config_entry.data.get(const.CONF_MANUAL_LONGITUDE)
+        )
+        self._manual_elevation = self.config_entry.options.get(
+            const.CONF_MANUAL_ELEVATION,
+            self.config_entry.data.get(const.CONF_MANUAL_ELEVATION)
+        )
 
     async def async_step_init(self, user_input=None):  # pylint: disable=unused-argument
         """Manage the options."""
@@ -133,7 +155,8 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                 await test_api_key(
                     self.hass, self._weather_service, self._weather_service_api_key
                 )
-                return self.async_create_entry(title="", data=user_input)
+                # After weather service configuration, go to coordinate step
+                return await self._show_coordinate_step(user_input)
 
             except InvalidAuth:
                 self._errors["base"] = "auth"
@@ -142,3 +165,74 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
 
             return await self._show_step_1(user_input)
         return await self._show_step_1(user_input)
+
+    async def _show_coordinate_step(self, user_input):
+        """Show the coordinate configuration step."""
+        # Get current Home Assistant coordinates for display
+        ha_lat = self.hass.config.as_dict().get(CONF_LATITUDE)
+        ha_lon = self.hass.config.as_dict().get(CONF_LONGITUDE) 
+        ha_elev = self.hass.config.as_dict().get(CONF_ELEVATION)
+
+        # Build data schema with defaults
+        schema_dict = {
+            vol.Required(
+                const.CONF_MANUAL_COORDINATES_ENABLED,
+                default=self._manual_coordinates_enabled
+            ): bool,
+        }
+
+        # Add coordinate fields only if manual coordinates are enabled
+        if self._manual_coordinates_enabled:
+            schema_dict.update({
+                vol.Required(
+                    const.CONF_MANUAL_LATITUDE,
+                    default=self._manual_latitude or ha_lat
+                ): vol.All(vol.Coerce(float), vol.Range(min=-90, max=90)),
+                vol.Required(
+                    const.CONF_MANUAL_LONGITUDE,
+                    default=self._manual_longitude or ha_lon
+                ): vol.All(vol.Coerce(float), vol.Range(min=-180, max=180)),
+                vol.Optional(
+                    const.CONF_MANUAL_ELEVATION,
+                    default=self._manual_elevation or ha_elev or 0
+                ): vol.All(vol.Coerce(float), vol.Range(min=-1000, max=9000)),
+            })
+
+        return self.async_show_form(
+            step_id="coordinates",
+            data_schema=vol.Schema(schema_dict),
+            errors=self._errors,
+        )
+
+    async def async_step_coordinates(self, user_input=None):
+        """Handle the coordinate configuration step."""
+        if user_input is not None:
+            try:
+                # Store coordinate settings
+                self._manual_coordinates_enabled = user_input[const.CONF_MANUAL_COORDINATES_ENABLED]
+                
+                # Merge weather service data with coordinate data
+                final_data = {
+                    const.CONF_USE_WEATHER_SERVICE: self._use_weather_service,
+                    const.CONF_WEATHER_SERVICE: self._weather_service,
+                    const.CONF_WEATHER_SERVICE_API_KEY: self._weather_service_api_key,
+                    const.CONF_MANUAL_COORDINATES_ENABLED: self._manual_coordinates_enabled,
+                }
+
+                if self._manual_coordinates_enabled:
+                    self._manual_latitude = user_input[const.CONF_MANUAL_LATITUDE]
+                    self._manual_longitude = user_input[const.CONF_MANUAL_LONGITUDE]
+                    self._manual_elevation = user_input.get(const.CONF_MANUAL_ELEVATION, 0)
+                    
+                    final_data.update({
+                        const.CONF_MANUAL_LATITUDE: self._manual_latitude,
+                        const.CONF_MANUAL_LONGITUDE: self._manual_longitude,
+                        const.CONF_MANUAL_ELEVATION: self._manual_elevation,
+                    })
+
+                return self.async_create_entry(title="", data=final_data)
+
+            except Exception as e:
+                self._errors["base"] = "invalid_coordinates"
+
+        return await self._show_coordinate_step(user_input)

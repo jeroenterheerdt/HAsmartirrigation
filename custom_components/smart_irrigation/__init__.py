@@ -259,39 +259,34 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         )
         self._WeatherServiceClient = None
         if self.use_weather_service:
+            # Get effective coordinates before creating weather service clients
+            effective_lat, effective_lon, effective_elev = self._get_effective_coordinates()
+            
             if self.weather_service == const.CONF_WEATHER_SERVICE_OWM:
                 self._WeatherServiceClient = OWMClient(
                     api_key=hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY],
                     api_version=hass.data[const.DOMAIN].get(
                         const.CONF_WEATHER_SERVICE_API_VERSION
                     ),
-                    latitude=self.hass.config.as_dict().get(CONF_LATITUDE),
-                    longitude=self.hass.config.as_dict().get(CONF_LONGITUDE),
-                    elevation=self.hass.config.as_dict().get(CONF_ELEVATION),
+                    latitude=effective_lat,
+                    longitude=effective_lon,
+                    elevation=effective_elev,
                 )
             elif self.weather_service == const.CONF_WEATHER_SERVICE_PW:
                 self._WeatherServiceClient = PirateWeatherClient(
                     api_key=hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY],
                     api_version="1",
-                    latitude=self.hass.config.as_dict().get(CONF_LATITUDE),
-                    longitude=self.hass.config.as_dict().get(CONF_LONGITUDE),
-                    elevation=self.hass.config.as_dict().get(CONF_ELEVATION),
+                    latitude=effective_lat,
+                    longitude=effective_lon,
+                    elevation=effective_elev,
                 )
 
-        # Initialize latitude and elevation for calendar generation and other features
-        # Try to get from Home Assistant config first, then entry data, then options, then defaults
-        self._latitude = self._get_config_value(CONF_LATITUDE, 45.0)
-        self._elevation = self._get_config_value(CONF_ELEVATION, 0)
-
-        # Log a warning if using default values for user awareness
-        if self._latitude == 45.0 and hass.config.as_dict().get(CONF_LATITUDE) is None:
-            _LOGGER.warning(
-                "Latitude not configured in Home Assistant, using default latitude of 45.0 for watering calendar calculations"
-            )
-        if self._elevation == 0 and hass.config.as_dict().get(CONF_ELEVATION) is None:
-            _LOGGER.warning(
-                "Elevation not configured in Home Assistant, using default elevation of 0m for watering calendar calculations"
-            )
+        # Initialize coordinates for weather services and other features
+        self._effective_latitude, self._effective_longitude, self._effective_elevation = self._get_effective_coordinates()
+        
+        # Keep latitude and elevation properties for backward compatibility
+        self._latitude = self._effective_latitude
+        self._elevation = self._effective_elevation
 
         self._subscriptions = []
 
@@ -369,6 +364,56 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         # Fall back to default
         return default_value
+
+    def _get_effective_coordinates(self):
+        """Get the effective coordinates to use for weather services and calculations.
+        
+        Returns manual coordinates if enabled, otherwise falls back to Home Assistant config.
+        
+        Returns:
+            tuple: (latitude, longitude, elevation)
+        """
+        # Check if manual coordinates are enabled
+        manual_enabled = self._get_config_value(const.CONF_MANUAL_COORDINATES_ENABLED, False)
+        
+        if manual_enabled:
+            # Use manual coordinates
+            latitude = self._get_config_value(const.CONF_MANUAL_LATITUDE, None)
+            longitude = self._get_config_value(const.CONF_MANUAL_LONGITUDE, None)
+            elevation = self._get_config_value(const.CONF_MANUAL_ELEVATION, 0)
+            
+            if latitude is not None and longitude is not None:
+                _LOGGER.info(
+                    "Using manual coordinates: lat=%.6f, lon=%.6f, elevation=%sm",
+                    latitude, longitude, elevation
+                )
+                return latitude, longitude, elevation
+            else:
+                _LOGGER.warning(
+                    "Manual coordinates enabled but latitude or longitude not set, falling back to Home Assistant config"
+                )
+        
+        # Fall back to Home Assistant configuration
+        ha_lat = self.hass.config.as_dict().get(CONF_LATITUDE, 45.0)
+        ha_lon = self.hass.config.as_dict().get(CONF_LONGITUDE, 0.0)
+        ha_elev = self.hass.config.as_dict().get(CONF_ELEVATION, 0)
+        
+        _LOGGER.info(
+            "Using Home Assistant coordinates: lat=%.6f, lon=%.6f, elevation=%sm",
+            ha_lat, ha_lon, ha_elev
+        )
+        
+        # Log warnings for default coordinates
+        if ha_lat == 45.0 and self.hass.config.as_dict().get(CONF_LATITUDE) is None:
+            _LOGGER.warning(
+                "Latitude not configured in Home Assistant, using default latitude of 45.0"
+            )
+        if ha_elev == 0 and self.hass.config.as_dict().get(CONF_ELEVATION) is None:
+            _LOGGER.warning(
+                "Elevation not configured in Home Assistant, using default elevation of 0m"
+            )
+        
+        return ha_lat, ha_lon, ha_elev
 
     async def setup_SmartIrrigation_entities(self):  # noqa: D102
         zones = await self.store.async_get_zones()
