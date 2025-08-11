@@ -6,38 +6,18 @@ from enum import Enum
 from statistics import mean
 
 import voluptuous as vol
+from custom_components.smart_irrigation.calcmodules.calcmodule import \
+    SmartIrrigationCalculationModule
+from custom_components.smart_irrigation.const import (
+    CONF_PYETO_COASTAL, CONF_PYETO_FORECAST_DAYS, CONF_PYETO_SOLRAD_BEHAVIOR)
 from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE
 from homeassistant.core import HomeAssistant
 
-from custom_components.smart_irrigation.calcmodules.calcmodule import (
-    SmartIrrigationCalculationModule,
-)
-from custom_components.smart_irrigation.const import (
-    CONF_PYETO_COASTAL,
-    CONF_PYETO_FORECAST_DAYS,
-    CONF_PYETO_SOLRAD_BEHAVIOR,
-)
-
-from .pyeto import (
-    avp_from_tdew,
-    convert,
-    cs_rad,
-    daylight_hours,
-    deg2rad,
-    delta_svp,
-    et_rad,
-    fao56_penman_monteith,
-    inv_rel_dist_earth_sun,
-    net_in_sol_rad,
-    net_out_lw_rad,
-    net_rad,
-    psy_const,
-    sol_dec,
-    sol_rad_from_sun_hours,
-    sol_rad_from_t,
-    sunset_hour_angle,
-    svp_from_t,
-)
+from .pyeto import (avp_from_tdew, convert, cs_rad, daylight_hours, deg2rad,
+                    delta_svp, et_rad, fao56_penman_monteith,
+                    inv_rel_dist_earth_sun, net_in_sol_rad, net_out_lw_rad,
+                    net_rad, psy_const, sol_dec, sol_rad_from_sun_hours,
+                    sol_rad_from_t, sunset_hour_angle, svp_from_t)
 
 # v1 only, no longer used in v2
 # from ...const import CONF_MAXIMUM_ET, DEFAULT_MAXIMUM_ET

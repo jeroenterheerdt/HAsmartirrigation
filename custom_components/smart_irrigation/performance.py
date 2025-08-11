@@ -1,10 +1,10 @@
 """Performance monitoring utilities for Smart Irrigation."""
 
-from collections.abc import Callable
-from functools import wraps
 import inspect
 import logging
 import time
+from collections.abc import Callable
+from functools import wraps
 from typing import Any
 
 _LOGGER = logging.getLogger(__name__)

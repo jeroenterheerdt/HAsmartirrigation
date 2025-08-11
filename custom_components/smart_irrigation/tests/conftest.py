@@ -1,15 +1,15 @@
 """Fixtures for testing Smart Irrigation integration."""
 
-from pathlib import Path
 import sys
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
-from custom_components.smart_irrigation import const
 import pytest
-from pytest_homeassistant_custom_component.syrupy import HomeAssistantSnapshotExtension
-from syrupy.assertion import SnapshotAssertion
-
+from custom_components.smart_irrigation import const
 from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE
+from pytest_homeassistant_custom_component.syrupy import \
+    HomeAssistantSnapshotExtension
+from syrupy.assertion import SnapshotAssertion
 
 # Add the repository root to Python path so imports work
 repo_root = Path(__file__).parent.parent.parent.parent

@@ -8,17 +8,12 @@ from dateutil import parser as dateutil_parser
 from homeassistant.components import websocket_api
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.components.http.data_validator import RequestDataValidator
-from homeassistant.components.websocket_api import (
-    async_register_command,
-    async_response,
-    decorators,
-)
+from homeassistant.components.websocket_api import (async_register_command,
+                                                    async_response, decorators)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.dispatcher import (
-    async_dispatcher_connect,
-    async_dispatcher_send,
-)
+from homeassistant.helpers.dispatcher import (async_dispatcher_connect,
+                                              async_dispatcher_send)
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from . import const

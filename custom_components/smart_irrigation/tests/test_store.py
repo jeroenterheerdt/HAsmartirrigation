@@ -1,10 +1,10 @@
 """Test Smart Irrigation store functionality."""
 
 from unittest.mock import AsyncMock, patch
-from homeassistant.core import HomeAssistant
 
-from custom_components.smart_irrigation.store import async_get_registry
 from custom_components.smart_irrigation import const
+from custom_components.smart_irrigation.store import async_get_registry
+from homeassistant.core import HomeAssistant
 
 
 class TestSmartIrrigationStore:

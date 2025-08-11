@@ -4,11 +4,12 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from custom_components.smart_irrigation import const
-from custom_components.smart_irrigation.config_flow import CannotConnect, InvalidAuth
-
+from custom_components.smart_irrigation.config_flow import (CannotConnect,
+                                                            InvalidAuth)
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+
 from tests.common import MockConfigEntry
 
 # Patch all problematic modules BEFORE any Home Assistant imports

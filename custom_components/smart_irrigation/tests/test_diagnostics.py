@@ -1,15 +1,12 @@
 """Test the Smart Irrigation diagnostics."""
 
-import pytest
 from unittest.mock import AsyncMock, Mock
 
-from custom_components.smart_irrigation.diagnostics import (
-    async_get_config_entry_diagnostics,
-)
+import pytest
 from custom_components.smart_irrigation.const import (
-    DOMAIN,
-    CONF_WEATHER_SERVICE_API_KEY,
-)
+    CONF_WEATHER_SERVICE_API_KEY, DOMAIN)
+from custom_components.smart_irrigation.diagnostics import \
+    async_get_config_entry_diagnostics
 
 
 class TestSmartIrrigationDiagnostics:

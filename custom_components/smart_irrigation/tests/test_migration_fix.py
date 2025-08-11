@@ -1,17 +1,14 @@
 """Test to verify the storage migration fix for issue with TypeError during upgrades."""
 
-import pytest
 import attr
-
-from custom_components.smart_irrigation.store import Config, MigratableStore
+import pytest
 from custom_components.smart_irrigation.const import (
-    CONF_IRRIGATION_START_TRIGGERS,
-    CONF_SKIP_IRRIGATION_ON_PRECIPITATION,
-    CONF_PRECIPITATION_THRESHOLD_MM,
     CONF_DEFAULT_IRRIGATION_START_TRIGGERS,
-    CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION,
     CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM,
-)
+    CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION,
+    CONF_IRRIGATION_START_TRIGGERS, CONF_PRECIPITATION_THRESHOLD_MM,
+    CONF_SKIP_IRRIGATION_ON_PRECIPITATION)
+from custom_components.smart_irrigation.store import Config, MigratableStore
 
 
 class TestMigratableStore(MigratableStore):

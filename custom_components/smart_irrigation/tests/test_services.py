@@ -1,10 +1,10 @@
 """Test Smart Irrigation services."""
 
-import pytest
 from unittest.mock import AsyncMock, patch
-from homeassistant.core import HomeAssistant, ServiceCall
 
+import pytest
 from custom_components.smart_irrigation import const
+from homeassistant.core import HomeAssistant, ServiceCall
 
 
 class TestSmartIrrigationServices:

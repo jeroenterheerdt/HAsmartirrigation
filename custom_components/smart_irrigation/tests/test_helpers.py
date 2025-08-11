@@ -1,23 +1,15 @@
 """Test Smart Irrigation helper functions."""
 
-import pytest
-from unittest.mock import AsyncMock
 from datetime import time
-from homeassistant.const import UnitOfTemperature
+from unittest.mock import AsyncMock
 
+import pytest
+from custom_components.smart_irrigation.const import (CONF_WEATHER_SERVICE_OWM,
+                                                      CONF_WEATHER_SERVICE_PW)
 from custom_components.smart_irrigation.helpers import (
-    altitudeToPressure,
-    check_time,
-    convert_between,
-    relative_to_absolute_pressure,
-    test_api_key,
-    CannotConnect,
-    InvalidAuth,
-)
-from custom_components.smart_irrigation.const import (
-    CONF_WEATHER_SERVICE_OWM,
-    CONF_WEATHER_SERVICE_PW,
-)
+    CannotConnect, InvalidAuth, altitudeToPressure, check_time,
+    convert_between, relative_to_absolute_pressure, test_api_key)
+from homeassistant.const import UnitOfTemperature
 
 
 class TestHelperFunctions:
@@ -143,12 +135,8 @@ class TestHelperFunctions:
     def test_convert_between_pressure_units(self) -> None:
         """Test pressure unit conversions."""
         from custom_components.smart_irrigation.const import (
-            UNIT_HPA,
-            UNIT_INHG,
-            UNIT_PSI,
-            HPA_TO_INHG_FACTOR,
-            HPA_TO_PSI_FACTOR,
-        )
+            HPA_TO_INHG_FACTOR, HPA_TO_PSI_FACTOR, UNIT_HPA, UNIT_INHG,
+            UNIT_PSI)
 
         # Test hPa to inHg conversion
         hpa_value = 1013.25
@@ -164,11 +152,7 @@ class TestHelperFunctions:
     def test_convert_between_length_units(self) -> None:
         """Test length unit conversions."""
         from custom_components.smart_irrigation.const import (
-            UNIT_MM,
-            UNIT_INCH,
-            MM_TO_INCH_FACTOR,
-            INCH_TO_MM_FACTOR,
-        )
+            INCH_TO_MM_FACTOR, MM_TO_INCH_FACTOR, UNIT_INCH, UNIT_MM)
 
         # Test mm to inch conversion
         mm_value = 25.4
@@ -185,12 +169,8 @@ class TestHelperFunctions:
     def test_convert_between_speed_units(self) -> None:
         """Test speed unit conversions."""
         from custom_components.smart_irrigation.const import (
-            UNIT_MS,
-            UNIT_KMH,
-            UNIT_MILESH,
-            MS_TO_KMH_FACTOR,
-            MS_TO_MILESH_FACTOR,
-        )
+            MS_TO_KMH_FACTOR, MS_TO_MILESH_FACTOR, UNIT_KMH, UNIT_MILESH,
+            UNIT_MS)
 
         # Test m/s to km/h conversion
         ms_value = 10.0
