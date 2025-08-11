@@ -10,30 +10,46 @@ from datetime import timedelta
 
 from homeassistant.components.sensor import DOMAIN as PLATFORM
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE,
-                                 STATE_UNAVAILABLE, STATE_UNKNOWN)
+from homeassistant.const import (
+    CONF_ELEVATION,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    STATE_UNAVAILABLE,
+    STATE_UNKNOWN,
+)
 from homeassistant.core import Event, HomeAssistant, State, asyncio, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.dispatcher import (async_dispatcher_connect,
-                                              async_dispatcher_send)
-from homeassistant.helpers.event import (async_call_later,
-                                         async_track_point_in_utc_time,
-                                         async_track_state_change_event,
-                                         async_track_sunrise,
-                                         async_track_sunset,
-                                         async_track_time_change,
-                                         async_track_time_interval)
+from homeassistant.helpers.dispatcher import (
+    async_dispatcher_connect,
+    async_dispatcher_send,
+)
+from homeassistant.helpers.event import (
+    async_call_later,
+    async_track_point_in_utc_time,
+    async_track_state_change_event,
+    async_track_sunrise,
+    async_track_sunset,
+    async_track_time_change,
+    async_track_time_interval,
+)
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from . import const
-from .helpers import (altitudeToPressure, check_time, convert_between,
-                      convert_list_to_dict, convert_mapping_to_metric,
-                      find_next_solar_azimuth_time, loadModules,
-                      normalize_azimuth_angle, relative_to_absolute_pressure)
+from .helpers import (
+    altitudeToPressure,
+    check_time,
+    convert_between,
+    convert_list_to_dict,
+    convert_mapping_to_metric,
+    find_next_solar_azimuth_time,
+    loadModules,
+    normalize_azimuth_angle,
+    relative_to_absolute_pressure,
+)
 from .localize import localize
 from .panel import async_register_panel, remove_panel
 from .store import async_get_registry

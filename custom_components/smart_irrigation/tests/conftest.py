@@ -7,8 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 from custom_components.smart_irrigation import const
 from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE
-from pytest_homeassistant_custom_component.syrupy import \
-    HomeAssistantSnapshotExtension
+from pytest_homeassistant_custom_component.syrupy import HomeAssistantSnapshotExtension
 from syrupy.assertion import SnapshotAssertion
 
 # Add the repository root to Python path so imports work

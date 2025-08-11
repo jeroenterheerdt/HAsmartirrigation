@@ -4,7 +4,9 @@ from unittest.mock import AsyncMock, Mock, patch
 
 from custom_components.smart_irrigation import const
 from custom_components.smart_irrigation.sensor import (
-    SmartIrrigationZoneEntity, async_setup_entry)
+    SmartIrrigationZoneEntity,
+    async_setup_entry,
+)
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant

@@ -3,11 +3,15 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from custom_components.smart_irrigation import (SmartIrrigationCoordinator,
-                                                SmartIrrigationError,
-                                                async_remove_entry,
-                                                async_setup, async_setup_entry,
-                                                async_unload_entry, const)
+from custom_components.smart_irrigation import (
+    SmartIrrigationCoordinator,
+    SmartIrrigationError,
+    async_remove_entry,
+    async_setup,
+    async_setup_entry,
+    async_unload_entry,
+    const,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 

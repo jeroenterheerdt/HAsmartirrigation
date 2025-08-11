@@ -6,7 +6,11 @@ from unittest.mock import patch
 
 import pytest
 from custom_components.smart_irrigation.performance import (
-    AsyncPerformanceMonitor, _log_duration, async_timer, performance_timer)
+    AsyncPerformanceMonitor,
+    _log_duration,
+    async_timer,
+    performance_timer,
+)
 
 
 class TestPerformanceTimer:

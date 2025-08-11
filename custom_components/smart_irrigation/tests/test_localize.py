@@ -4,8 +4,7 @@ import json
 from unittest.mock import AsyncMock, mock_open, patch
 
 import pytest
-from custom_components.smart_irrigation.localize import (get_string_from_data,
-                                                         localize)
+from custom_components.smart_irrigation.localize import get_string_from_data, localize
 
 
 class TestSmartIrrigationLocalize:

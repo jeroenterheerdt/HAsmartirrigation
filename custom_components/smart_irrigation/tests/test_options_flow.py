@@ -4,13 +4,16 @@ from unittest.mock import Mock, patch
 
 import pytest
 from custom_components.smart_irrigation.const import (
-    CONF_USE_WEATHER_SERVICE, CONF_WEATHER_SERVICE,
-    CONF_WEATHER_SERVICE_API_KEY, CONF_WEATHER_SERVICE_API_VERSION,
-    CONF_WEATHER_SERVICE_OWM)
-from custom_components.smart_irrigation.helpers import (CannotConnect,
-                                                        InvalidAuth)
-from custom_components.smart_irrigation.options_flow import \
-    SmartIrrigationOptionsFlowHandler
+    CONF_USE_WEATHER_SERVICE,
+    CONF_WEATHER_SERVICE,
+    CONF_WEATHER_SERVICE_API_KEY,
+    CONF_WEATHER_SERVICE_API_VERSION,
+    CONF_WEATHER_SERVICE_OWM,
+)
+from custom_components.smart_irrigation.helpers import CannotConnect, InvalidAuth
+from custom_components.smart_irrigation.options_flow import (
+    SmartIrrigationOptionsFlowHandler,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.data_entry_flow import FlowResultType
 

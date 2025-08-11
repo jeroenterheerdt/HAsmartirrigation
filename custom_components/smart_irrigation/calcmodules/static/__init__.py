@@ -3,8 +3,9 @@
 import logging
 
 import voluptuous as vol
-from custom_components.smart_irrigation.calcmodules.calcmodule import \
-    SmartIrrigationCalculationModule
+from custom_components.smart_irrigation.calcmodules.calcmodule import (
+    SmartIrrigationCalculationModule,
+)
 from homeassistant.core import HomeAssistant
 
 # v1 only, no longer used in v2
