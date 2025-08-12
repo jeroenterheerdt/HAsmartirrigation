@@ -412,5 +412,11 @@
     "longitude": "Longitude (decimal degrees)",
     "elevation": "Elevation (meters above sea level)",
     "current_ha_coords": "Current Home Assistant coordinates"
+  },
+  "days_between_irrigation": {
+    "title": "Days Between Irrigation",
+    "description": "Configure the minimum number of days that must pass between irrigation events. This helps control watering frequency for water conservation and plant health management.\n\nTypical real-world use cases:\n• Lawn care: 1-2 day intervals prevent overwatering\n• Drought restrictions: 6+ day intervals for weekly watering\n• Deep-rooted plants: 3-7 day intervals for less frequent watering\n• Water conservation: Customizable based on climate and soil conditions",
+    "label": "Minimum days between irrigation",
+    "help_text": "Set to 0 to disable this feature. Values from 1-365 days are supported. This setting works alongside existing precipitation forecasting logic."
   }
 }

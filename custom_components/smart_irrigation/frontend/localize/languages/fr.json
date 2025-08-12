@@ -259,5 +259,11 @@
     "longitude": "Longitude (degrés décimaux)",
     "elevation": "Élévation (mètres au-dessus du niveau de la mer)",
     "current_ha_coords": "Coordonnées actuelles de Home Assistant"
+  },
+  "days_between_irrigation": {
+    "title": "Jours Entre Irrigations",
+    "description": "Configurez le nombre minimum de jours qui doivent s'écouler entre les événements d'irrigation. Cela aide à contrôler la fréquence d'arrosage pour la conservation de l'eau et la gestion de la santé des plantes.\n\nCas d'usage typiques:\n• Entretien de pelouse: intervalles de 1-2 jours préviennent l'arrosage excessif\n• Restrictions de sécheresse: intervalles de 6+ jours pour arrosage hebdomadaire\n• Plantes à racines profondes: intervalles de 3-7 jours pour arrosage moins fréquent\n• Conservation de l'eau: personnalisable selon le climat et les conditions du sol",
+    "label": "Jours minimum entre irrigations",
+    "help_text": "Définir à 0 pour désactiver cette fonction. Les valeurs de 1-365 jours sont prises en charge. Ce paramètre fonctionne avec la logique de prévision de précipitation existante."
   }
 }

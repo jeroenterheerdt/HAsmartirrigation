@@ -88,8 +88,9 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             try:
                 # store values entered
                 self._use_weather_service = user_input[const.CONF_USE_WEATHER_SERVICE]
+                
                 if not self._use_weather_service:
-                    # update the entry right away and remove the API info
+                    # update the entry right away and remove the API info, include days setting
                     user_input[const.CONF_WEATHER_SERVICE_API_KEY] = None
                     # forcing it to be 3.0 because of sunsetting of 2.5 API by OWM in June 2024
                     # user_input[const.CONF_WEATHER_SERVICE_API_VERSION] = "3.0"

@@ -45,6 +45,7 @@ export class SmartIrrigationConfig {
   manual_latitude?: number;
   manual_longitude?: number;
   manual_elevation?: number;
+  days_between_irrigation: number;
 
   constructor() {
     this.calctime = "23:00";
@@ -67,6 +68,7 @@ export class SmartIrrigationConfig {
     this.manual_latitude = undefined;
     this.manual_longitude = undefined;
     this.manual_elevation = undefined;
+    this.days_between_irrigation = 0;
   }
 }
 

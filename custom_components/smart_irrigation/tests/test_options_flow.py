@@ -257,3 +257,52 @@ class TestSmartIrrigationOptionsFlow:
         flow = SmartIrrigationOptionsFlowHandler(mock_config_entry)
 
         assert flow._weather_service_api_key == "api_key_with_spaces"
+
+    def test_days_between_irrigation_initialization(self, mock_hass):
+        """Test that days between irrigation setting is properly initialized."""
+        from custom_components.smart_irrigation.const import (
+            CONF_DAYS_BETWEEN_IRRIGATION,
+            CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION,
+        )
+        
+        # Test with no existing setting (should use default)
+        mock_config_entry = ConfigEntry(
+            version=1,
+            domain="smart_irrigation",
+            title="Smart Irrigation",
+            data={},
+            options={},
+            source="user",
+            entry_id="test_entry_id",
+        )
+
+        flow = SmartIrrigationOptionsFlowHandler(mock_config_entry)
+        assert flow._days_between_irrigation == CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
+
+        # Test with existing setting in data
+        mock_config_entry_with_data = ConfigEntry(
+            version=1,
+            domain="smart_irrigation",
+            title="Smart Irrigation",
+            data={CONF_DAYS_BETWEEN_IRRIGATION: 5},
+            options={},
+            source="user",
+            entry_id="test_entry_id",
+        )
+
+        flow_with_data = SmartIrrigationOptionsFlowHandler(mock_config_entry_with_data)
+        assert flow_with_data._days_between_irrigation == 5
+
+        # Test with existing setting in options (should override data)
+        mock_config_entry_with_options = ConfigEntry(
+            version=1,
+            domain="smart_irrigation",
+            title="Smart Irrigation",
+            data={CONF_DAYS_BETWEEN_IRRIGATION: 5},
+            options={CONF_DAYS_BETWEEN_IRRIGATION: 3},
+            source="user",
+            entry_id="test_entry_id",
+        )
+
+        flow_with_options = SmartIrrigationOptionsFlowHandler(mock_config_entry_with_options)
+        assert flow_with_options._days_between_irrigation == 3

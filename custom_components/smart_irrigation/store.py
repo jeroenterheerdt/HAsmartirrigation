@@ -24,6 +24,8 @@ from .const import (
     CONF_CALC_TIME,
     CONF_CLEAR_TIME,
     CONF_CONTINUOUS_UPDATES,
+    CONF_DAYS_BETWEEN_IRRIGATION,
+    CONF_DAYS_SINCE_LAST_IRRIGATION,
     CONF_DEFAULT_AUTO_CALC_ENABLED,
     CONF_DEFAULT_AUTO_CLEAR_ENABLED,
     CONF_DEFAULT_AUTO_UPDATE_DELAY,
@@ -33,6 +35,8 @@ from .const import (
     CONF_DEFAULT_CALC_TIME,
     CONF_DEFAULT_CLEAR_TIME,
     CONF_DEFAULT_CONTINUOUS_UPDATES,
+    CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION,
+    CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION,
     CONF_DEFAULT_DRAINAGE_RATE,
     CONF_DEFAULT_IRRIGATION_START_TRIGGERS,
     CONF_DEFAULT_MAXIMUM_BUCKET,
@@ -200,6 +204,12 @@ class Config:
     precipitation_threshold_mm = attr.ib(
         type=float, default=CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
     )
+    days_between_irrigation = attr.ib(
+        type=int, default=CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
+    )
+    days_since_last_irrigation = attr.ib(
+        type=int, default=CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
+    )
 
 
 class MigratableStore(Store):
@@ -264,6 +274,16 @@ class MigratableStore(Store):
                         CONF_PRECIPITATION_THRESHOLD_MM
                     ] = CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
 
+                # Add days between irrigation configuration if missing
+                if CONF_DAYS_BETWEEN_IRRIGATION not in data["config"]:
+                    data["config"][
+                        CONF_DAYS_BETWEEN_IRRIGATION
+                    ] = CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
+                if CONF_DAYS_SINCE_LAST_IRRIGATION not in data["config"]:
+                    data["config"][
+                        CONF_DAYS_SINCE_LAST_IRRIGATION
+                    ] = CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
+
         # CRITICAL: Always ensure required fields are present and strip unrecognized keys
         # This prevents TypeError when Config(**config_data) is called
         if "config" in data:
@@ -280,6 +300,14 @@ class MigratableStore(Store):
                 data["config"][
                     CONF_PRECIPITATION_THRESHOLD_MM
                 ] = CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
+            if CONF_DAYS_BETWEEN_IRRIGATION not in data["config"]:
+                data["config"][
+                    CONF_DAYS_BETWEEN_IRRIGATION
+                ] = CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
+            if CONF_DAYS_SINCE_LAST_IRRIGATION not in data["config"]:
+                data["config"][
+                    CONF_DAYS_SINCE_LAST_IRRIGATION
+                ] = CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
 
             # Get valid field names from Config class to filter out unrecognized keys
             valid_fields = set(attr.fields_dict(Config).keys())
@@ -397,6 +425,14 @@ class SmartIrrigationStorage:
                 precipitation_threshold_mm=data["config"].get(
                     CONF_PRECIPITATION_THRESHOLD_MM,
                     CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM,
+                ),
+                days_between_irrigation=data["config"].get(
+                    CONF_DAYS_BETWEEN_IRRIGATION,
+                    CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION,
+                ),
+                days_since_last_irrigation=data["config"].get(
+                    CONF_DAYS_SINCE_LAST_IRRIGATION,
+                    CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION,
                 ),
             )
 
