@@ -474,6 +474,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # Update sensor entities to refresh their unit display
         async_dispatcher_send(self.hass, const.DOMAIN + "_unit_system_changed")
         
+        # Update frontend/websocket clients
+        async_dispatcher_send(self.hass, const.DOMAIN + "_update_frontend")
+        
         # Convert stored precipitation threshold if needed
         await self._convert_precipitation_threshold()
         
