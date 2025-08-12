@@ -198,6 +198,131 @@ class TestSmartIrrigationError:
     def test_exception_creation(self) -> None:
         """Test exception can be created and raised."""
         error_message = "Test error message"
+        error = SmartIrrigationError(error_message)
+        assert str(error) == error_message
+
+        with pytest.raises(SmartIrrigationError) as exc_info:
+            raise SmartIrrigationError(error_message)
+        assert str(exc_info.value) == error_message
+
+
+class TestDaysBetweenIrrigation:
+    """Test days between irrigation functionality."""
+
+    @pytest.fixture
+    def mock_store_with_days_config(self):
+        """Mock store with days between irrigation configuration."""
+        store = AsyncMock()
+        store.async_get_config.return_value = {
+            const.CONF_DAYS_BETWEEN_IRRIGATION: 3,
+            const.CONF_DAYS_SINCE_LAST_IRRIGATION: 1,
+            const.CONF_SKIP_IRRIGATION_ON_PRECIPITATION: False,
+            const.CONF_USE_WEATHER_SERVICE: False,
+        }
+        return store
+
+    async def test_check_days_between_irrigation_default(
+        self, 
+        hass: HomeAssistant,
+        mock_config_entry: ConfigEntry,
+        mock_session: AsyncMock,
+    ) -> None:
+        """Test days between irrigation check with default settings (no restriction)."""
+        # Mock store with default settings
+        mock_store = AsyncMock()
+        mock_store.async_get_config.return_value = {
+            const.CONF_DAYS_BETWEEN_IRRIGATION: 0,
+            const.CONF_DAYS_SINCE_LAST_IRRIGATION: 5,
+        }
+
+        hass.data[const.DOMAIN] = {
+            const.CONF_USE_WEATHER_SERVICE: False,
+            const.CONF_WEATHER_SERVICE: None,
+        }
+
+        coordinator = SmartIrrigationCoordinator(
+            hass, mock_session, mock_config_entry, mock_store
+        )
+
+        # With default settings (0 days between), should not skip
+        should_skip = await coordinator._check_days_between_irrigation()
+        assert should_skip is False
+
+    async def test_check_days_between_irrigation_restriction(
+        self, 
+        hass: HomeAssistant,
+        mock_config_entry: ConfigEntry,
+        mock_session: AsyncMock,
+        mock_store_with_days_config: AsyncMock,
+    ) -> None:
+        """Test days between irrigation check with restriction."""
+        hass.data[const.DOMAIN] = {
+            const.CONF_USE_WEATHER_SERVICE: False,
+            const.CONF_WEATHER_SERVICE: None,
+        }
+
+        coordinator = SmartIrrigationCoordinator(
+            hass, mock_session, mock_config_entry, mock_store_with_days_config
+        )
+
+        # With 3 days required and only 1 day passed, should skip
+        should_skip = await coordinator._check_days_between_irrigation()
+        assert should_skip is True
+
+        # Test when enough days have passed
+        mock_store_with_days_config.async_get_config.return_value[
+            const.CONF_DAYS_SINCE_LAST_IRRIGATION
+        ] = 3
+        should_skip = await coordinator._check_days_between_irrigation()
+        assert should_skip is False
+
+    async def test_increment_days_since_irrigation(
+        self, 
+        hass: HomeAssistant,
+        mock_config_entry: ConfigEntry,
+        mock_session: AsyncMock,
+        mock_store_with_days_config: AsyncMock,
+    ) -> None:
+        """Test incrementing days since last irrigation."""
+        hass.data[const.DOMAIN] = {
+            const.CONF_USE_WEATHER_SERVICE: False,
+            const.CONF_WEATHER_SERVICE: None,
+        }
+
+        coordinator = SmartIrrigationCoordinator(
+            hass, mock_session, mock_config_entry, mock_store_with_days_config
+        )
+
+        await coordinator._increment_days_since_irrigation()
+        
+        # Should have called update with incremented value
+        mock_store_with_days_config.async_update_config.assert_called_with(
+            {const.CONF_DAYS_SINCE_LAST_IRRIGATION: 2}
+        )
+
+    async def test_reset_days_since_irrigation(
+        self, 
+        hass: HomeAssistant,
+        mock_config_entry: ConfigEntry,
+        mock_session: AsyncMock,
+        mock_store_with_days_config: AsyncMock,
+    ) -> None:
+        """Test resetting days since last irrigation."""
+        hass.data[const.DOMAIN] = {
+            const.CONF_USE_WEATHER_SERVICE: False,
+            const.CONF_WEATHER_SERVICE: None,
+        }
+
+        coordinator = SmartIrrigationCoordinator(
+            hass, mock_session, mock_config_entry, mock_store_with_days_config
+        )
+
+        await coordinator._reset_days_since_irrigation()
+        
+        # Should have called update with 0
+        mock_store_with_days_config.async_update_config.assert_called_with(
+            {const.CONF_DAYS_SINCE_LAST_IRRIGATION: 0}
+        )
 
         with pytest.raises(SmartIrrigationError) as exc_info:
             raise SmartIrrigationError(error_message)
