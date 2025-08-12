@@ -1639,7 +1639,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 if continuous_updates:
                     calc_data[const.ZONE_LAST_UPDATED] = datetime.datetime.now()
                 # check if data contains delete data true, if so delete the weather data
-                if data.get(const.ATTR_DELETE_WEATHER_DATA, False):
+                if data is not None and data.get(const.ATTR_DELETE_WEATHER_DATA, False):
                     # remove sensor data from mapping
                     changes = {}
                     changes[const.MAPPING_DATA] = []
