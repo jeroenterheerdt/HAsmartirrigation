@@ -1,0 +1,448 @@
+# Smart Irrigation Enhanced Scheduling Examples
+
+This file contains example automations and configurations demonstrating the enhanced scheduling capabilities of Smart Irrigation.
+
+## Recurring Schedule Examples
+
+### Example 1: Daily Early Morning Calculation
+```yaml
+automation:
+  - alias: "Smart Irrigation Daily Calculation"
+    trigger:
+      - platform: time
+        at: "05:30:00"
+    action:
+      - service: smart_irrigation.create_recurring_schedule
+        data:
+          name: "Daily ET Calculation"
+          type: "daily"
+          time: "05:30"
+          action: "calculate"
+          zones: "all"
+          enabled: true
+```
+
+### Example 2: Weekend Deep Watering Schedule
+```yaml
+automation:
+  - alias: "Weekend Deep Watering Setup"
+    trigger:
+      - platform: time
+        at: "00:01:00"
+    condition:
+      - condition: time
+        weekday:
+          - sat
+          - sun
+    action:
+      - service: smart_irrigation.create_recurring_schedule
+        data:
+          name: "Weekend Deep Watering"
+          type: "weekly"
+          time: "06:00"
+          days_of_week: ["saturday", "sunday"]
+          action: "irrigate"
+          zones: "all"
+          enabled: true
+```
+
+### Example 3: Monthly Maintenance Check
+```yaml
+automation:
+  - alias: "Monthly System Check"
+    trigger:
+      - platform: time
+        at: "08:00:00"
+    condition:
+      - condition: template
+        value_template: "{{ now().day == 1 }}"
+    action:
+      - service: smart_irrigation.create_recurring_schedule
+        data:
+          name: "Monthly Maintenance"
+          type: "monthly"
+          time: "08:00"
+          day_of_month: 1
+          action: "update"
+          zones: "all"
+          enabled: true
+```
+
+## Seasonal Adjustment Examples
+
+### Example 1: Four-Season Multiplier Adjustments
+```yaml
+automation:
+  # Spring adjustment
+  - alias: "Spring Irrigation Adjustment"
+    trigger:
+      - platform: template
+        value_template: "{{ now().month == 3 and now().day == 1 }}"
+    action:
+      - service: smart_irrigation.create_seasonal_adjustment
+        data:
+          name: "Spring Growth Boost"
+          month_start: 3
+          month_end: 5
+          multiplier_adjustment: 1.2
+          zones: "all"
+          enabled: true
+
+  # Summer adjustment
+  - alias: "Summer Irrigation Adjustment"
+    trigger:
+      - platform: template
+        value_template: "{{ now().month == 6 and now().day == 1 }}"
+    action:
+      - service: smart_irrigation.create_seasonal_adjustment
+        data:
+          name: "Summer Heat Protection"
+          month_start: 6
+          month_end: 8
+          multiplier_adjustment: 1.5
+          threshold_adjustment: -3.0
+          zones: "all"
+          enabled: true
+
+  # Autumn adjustment
+  - alias: "Autumn Irrigation Adjustment"
+    trigger:
+      - platform: template
+        value_template: "{{ now().month == 9 and now().day == 1 }}"
+    action:
+      - service: smart_irrigation.create_seasonal_adjustment
+        data:
+          name: "Autumn Reduction"
+          month_start: 9
+          month_end: 11
+          multiplier_adjustment: 0.8
+          zones: "all"
+          enabled: true
+
+  # Winter adjustment
+  - alias: "Winter Irrigation Adjustment"
+    trigger:
+      - platform: template
+        value_template: "{{ now().month == 12 and now().day == 1 }}"
+    action:
+      - service: smart_irrigation.create_seasonal_adjustment
+        data:
+          name: "Winter Dormancy"
+          month_start: 12
+          month_end: 2
+          multiplier_adjustment: 0.3
+          zones: "all"
+          enabled: true
+```
+
+### Example 2: Zone-Specific Seasonal Adjustments
+```yaml
+automation:
+  - alias: "Lawn vs Garden Seasonal Adjustment"
+    trigger:
+      - platform: template
+        value_template: "{{ now().month in [6, 7, 8] and now().day == 1 }}"
+    action:
+      # Lawn zones need more water in summer
+      - service: smart_irrigation.create_seasonal_adjustment
+        data:
+          name: "Summer Lawn Boost"
+          month_start: 6
+          month_end: 8
+          multiplier_adjustment: 1.8
+          zones: [1, 2]  # Lawn zones
+          enabled: true
+      
+      # Garden zones are more drought-tolerant
+      - service: smart_irrigation.create_seasonal_adjustment
+        data:
+          name: "Summer Garden Adjustment"
+          month_start: 6
+          month_end: 8
+          multiplier_adjustment: 1.3
+          zones: [3, 4, 5]  # Garden zones
+          enabled: true
+```
+
+## Irrigation Unlimited Integration Examples
+
+### Example 1: Basic Zone Synchronization
+```yaml
+automation:
+  - alias: "Daily IU Sync"
+    trigger:
+      - platform: time
+        at: "23:30:00"
+    action:
+      - service: smart_irrigation.calculate_all_zones
+      - delay:
+          seconds: 30
+      - service: smart_irrigation.sync_with_irrigation_unlimited
+
+  - alias: "Smart Irrigation to IU Execution"
+    trigger:
+      - platform: event
+        event_type: smart_irrigation_irrigation_unlimited_sync_completed
+    condition:
+      - condition: template
+        value_template: "{{ trigger.event.data.synchronized_count > 0 }}"
+    action:
+      - repeat:
+          for_each: "{{ trigger.event.data.results.synchronized }}"
+          sequence:
+            - service: switch.turn_on
+              entity_id: "{{ repeat.item.iu_entity }}"
+            - delay:
+                seconds: "{{ repeat.item.duration }}"
+            - service: switch.turn_off
+              entity_id: "{{ repeat.item.iu_entity }}"
+            - service: smart_irrigation.reset_bucket
+              target:
+                entity_id: "sensor.smart_irrigation_zone_{{ repeat.item.zone_id }}"
+```
+
+### Example 2: Real-time Duration Updates
+```yaml
+automation:
+  - alias: "Real-time Duration Sync to IU"
+    trigger:
+      - platform: state
+        entity_id: 
+          - sensor.smart_irrigation_zone_1
+          - sensor.smart_irrigation_zone_2
+          - sensor.smart_irrigation_zone_3
+        attribute: duration
+    condition:
+      - condition: template
+        value_template: "{{ states(trigger.entity_id) | int > 0 }}"
+    action:
+      - service: smart_irrigation.send_zone_data_to_irrigation_unlimited
+        data:
+          zone_id: "{{ state_attr(trigger.entity_id, 'zone_id') }}"
+          data:
+            duration: "{{ states(trigger.entity_id) | int }}"
+            state: "ready"
+```
+
+### Example 3: IU Status Monitoring
+```yaml
+automation:
+  - alias: "Monitor IU Status"
+    trigger:
+      - platform: time_pattern
+        minutes: "/15"  # Every 15 minutes
+    action:
+      - service: smart_irrigation.get_irrigation_unlimited_status
+      - condition: template
+        value_template: "{{ states('sensor.smart_irrigation_iu_entities') | int > 0 }}"
+      - service: notify.home_assistant
+        data:
+          title: "Irrigation Status"
+          message: >
+            IU Integration Status: 
+            {{ state_attr('sensor.smart_irrigation_iu_entities', 'total_entities') }} entities found,
+            {{ state_attr('sensor.smart_irrigation_iu_entities', 'active_count') }} currently active
+```
+
+## Weather-Responsive Examples
+
+### Example 1: Temperature-Based Scheduling
+```yaml
+automation:
+  - alias: "Temperature Responsive Irrigation"
+    trigger:
+      - platform: time
+        at: "06:00:00"
+    condition:
+      - condition: numeric_state
+        entity_id: weather.home
+        attribute: temperature
+        above: 20
+    action:
+      - variables:
+          temp: "{{ state_attr('weather.home', 'temperature') }}"
+          temp_multiplier: >
+            {% if temp > 35 %}
+              1.8
+            {% elif temp > 30 %}
+              1.5
+            {% elif temp > 25 %}
+              1.2
+            {% else %}
+              1.0
+            {% endif %}
+      
+      - service: smart_irrigation.create_seasonal_adjustment
+        data:
+          name: "Daily Temperature Adjustment"
+          month_start: "{{ now().month }}"
+          month_end: "{{ now().month }}"
+          multiplier_adjustment: "{{ temp_multiplier }}"
+          zones: "all"
+          enabled: true
+      
+      - service: smart_irrigation.calculate_all_zones
+```
+
+### Example 2: Rain Delay Integration
+```yaml
+automation:
+  - alias: "Rain Delay Management"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.rain_sensor
+        to: "on"
+    action:
+      # Disable all recurring schedules when it starts raining
+      - service: smart_irrigation.update_recurring_schedule
+        data:
+          schedule_id: "daily_irrigation"
+          enabled: false
+      
+      # Re-enable after rain stops and delay period
+      - wait_for_trigger:
+          - platform: state
+            entity_id: binary_sensor.rain_sensor
+            to: "off"
+            for:
+              hours: 2
+      
+      - service: smart_irrigation.update_recurring_schedule
+        data:
+          schedule_id: "daily_irrigation"
+          enabled: true
+```
+
+## Advanced Multi-Zone Examples
+
+### Example 1: Staggered Zone Irrigation
+```yaml
+automation:
+  - alias: "Staggered Zone Irrigation"
+    trigger:
+      - platform: event
+        event_type: smart_irrigation_recurring_schedule_triggered
+        event_data:
+          action: "irrigate"
+    action:
+      - repeat:
+          count: 5  # Assuming 5 zones
+          sequence:
+            - variables:
+                zone_id: "{{ repeat.index }}"
+                zone_entity: "sensor.smart_irrigation_zone_{{ zone_id }}"
+                duration: "{{ states(zone_entity) | int }}"
+            
+            - condition: template
+              value_template: "{{ duration > 0 }}"
+            
+            - service: smart_irrigation.send_zone_data_to_irrigation_unlimited
+              data:
+                zone_id: "{{ zone_id }}"
+                data:
+                  duration: "{{ duration }}"
+                  state: "on"
+            
+            - service: switch.turn_on
+              entity_id: "switch.irrigation_unlimited_c1_z{{ zone_id }}"
+            
+            - delay:
+                seconds: "{{ duration }}"
+            
+            - service: switch.turn_off
+              entity_id: "switch.irrigation_unlimited_c1_z{{ zone_id }}"
+            
+            - service: smart_irrigation.reset_bucket
+              target:
+                entity_id: "{{ zone_entity }}"
+            
+            # 5-minute gap between zones
+            - condition: template
+              value_template: "{{ repeat.index < 5 }}"
+            - delay:
+                minutes: 5
+```
+
+### Example 2: Priority-Based Irrigation
+```yaml
+automation:
+  - alias: "Priority-Based Irrigation"
+    trigger:
+      - platform: event
+        event_type: smart_irrigation_start_irrigation_all_zones
+    action:
+      - variables:
+          # Define zone priorities (1 = highest)
+          zone_priorities:
+            1: 1  # Lawn
+            2: 1  # Lawn
+            3: 2  # Vegetable garden
+            4: 3  # Flower beds
+            5: 4  # Trees/shrubs
+      
+      # High priority zones first (lawn)
+      - repeat:
+          for_each: [1, 2]
+          sequence:
+            - variables:
+                zone_entity: "sensor.smart_irrigation_zone_{{ repeat.item }}"
+                duration: "{{ states(zone_entity) | int }}"
+            - condition: template
+              value_template: "{{ duration > 0 }}"
+            - service: smart_irrigation.sync_with_irrigation_unlimited
+              data:
+                zone_ids: ["{{ repeat.item }}"]
+      
+      # Wait for high priority zones to complete
+      - delay:
+          minutes: 30
+      
+      # Medium priority zones (vegetables)
+      - service: smart_irrigation.sync_with_irrigation_unlimited
+        data:
+          zone_ids: [3]
+      
+      # Low priority zones last
+      - delay:
+          minutes: 20
+      - service: smart_irrigation.sync_with_irrigation_unlimited
+        data:
+          zone_ids: [4, 5]
+```
+
+## Troubleshooting Automations
+
+### Example 1: Schedule Health Check
+```yaml
+automation:
+  - alias: "Schedule Health Check"
+    trigger:
+      - platform: time
+        at: "23:45:00"
+    action:
+      - variables:
+          schedules: "{{ state_attr('sensor.smart_irrigation_schedules', 'schedules') }}"
+          enabled_count: "{{ schedules | selectattr('enabled', 'equalto', true) | list | length }}"
+      
+      - condition: template
+        value_template: "{{ enabled_count == 0 }}"
+      
+      - service: notify.mobile_app_your_phone
+        data:
+          title: "Smart Irrigation Alert"
+          message: "No enabled schedules found! Check your irrigation configuration."
+
+  - alias: "Failed Calculation Alert"
+    trigger:
+      - platform: event
+        event_type: smart_irrigation_calculation_failed
+    action:
+      - service: notify.home_assistant
+        data:
+          title: "Irrigation Calculation Failed"
+          message: >
+            Zone {{ trigger.event.data.zone_name }} calculation failed: 
+            {{ trigger.event.data.error }}
+```
+
+These examples provide a comprehensive foundation for implementing advanced irrigation scheduling with Smart Irrigation's enhanced capabilities.

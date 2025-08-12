@@ -52,6 +52,8 @@ from .helpers import (
 )
 from .localize import localize
 from .panel import async_register_panel, remove_panel
+from .scheduler import RecurringScheduleManager, SeasonalAdjustmentManager
+from .irrigation_unlimited import IrrigationUnlimitedIntegration
 from .store import async_get_registry
 from .weathermodules.OWMClient import OWMClient
 from .weathermodules.PirateWeatherClient import PirateWeatherClient
@@ -179,6 +181,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # Finish up by setting factory defaults if needed for zones, mappings and modules
     await store.set_up_factory_defaults()
+
+    # Initialize enhanced scheduling managers
+    await coordinator.recurring_schedule_manager.async_load_schedules()
+    await coordinator.seasonal_adjustment_manager.async_load_adjustments() 
+    await coordinator.irrigation_unlimited_integration.async_initialize()
 
     await coordinator.update_subscriptions()
     return True
@@ -326,6 +333,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             self._start_event_fired_today = True
         else:
             self._start_event_fired_today = False
+
+        # Initialize enhanced scheduling managers
+        self.recurring_schedule_manager = RecurringScheduleManager(hass, self)
+        self.seasonal_adjustment_manager = SeasonalAdjustmentManager(hass, self)
+        self.irrigation_unlimited_integration = IrrigationUnlimitedIntegration(hass, self)
 
         # WIP v2024.6.X:
         # experiment with subscriptions on sensors
@@ -1617,11 +1629,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 calc_data = await self.calculate_module(
                     zone, weatherdata=sensor_values, forecastdata=forecastdata
                 )
+                
+                # Apply seasonal adjustments before updating the zone
+                calc_data = await self.seasonal_adjustment_manager.apply_seasonal_adjustments(
+                    calc_data, zone_id
+                )
+                
                 # if continuous updates are on, add the current date time to set the last updated time
                 if continuous_updates:
                     calc_data[const.ZONE_LAST_UPDATED] = datetime.datetime.now()
                 # check if data contains delete data true, if so delete the weather data
-                if data.get(const.ATTR_DELETE_WEATHER_DATA, False):
+                if data is not None and data.get(const.ATTR_DELETE_WEATHER_DATA, False):
                     # remove sensor data from mapping
                     changes = {}
                     changes[const.MAPPING_DATA] = []
@@ -2945,6 +2963,169 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 },
             )
 
+    # Enhanced Scheduling Service Handlers
+    async def handle_create_recurring_schedule(self, call):
+        """Create recurring schedule service handler."""
+        schedule_data = dict(call.data)
+        _LOGGER.info("Create recurring schedule service called: %s", schedule_data.get("name", "Unnamed"))
+        
+        try:
+            await self.recurring_schedule_manager.async_create_schedule(schedule_data)
+            _LOGGER.info("Successfully created recurring schedule")
+        except Exception as e:
+            _LOGGER.error("Failed to create recurring schedule: %s", e)
+            raise
+
+    async def handle_update_recurring_schedule(self, call):
+        """Update recurring schedule service handler."""
+        schedule_id = call.data.get("schedule_id")
+        schedule_data = dict(call.data)
+        schedule_data.pop("schedule_id", None)
+        
+        _LOGGER.info("Update recurring schedule service called for ID: %s", schedule_id)
+        
+        try:
+            await self.recurring_schedule_manager.async_update_schedule(schedule_id, schedule_data)
+            _LOGGER.info("Successfully updated recurring schedule")
+        except Exception as e:
+            _LOGGER.error("Failed to update recurring schedule: %s", e)
+            raise
+
+    async def handle_delete_recurring_schedule(self, call):
+        """Delete recurring schedule service handler."""
+        schedule_id = call.data.get("schedule_id")
+        
+        _LOGGER.info("Delete recurring schedule service called for ID: %s", schedule_id)
+        
+        try:
+            await self.recurring_schedule_manager.async_delete_schedule(schedule_id)
+            _LOGGER.info("Successfully deleted recurring schedule")
+        except Exception as e:
+            _LOGGER.error("Failed to delete recurring schedule: %s", e)
+            raise
+
+    async def handle_create_seasonal_adjustment(self, call):
+        """Create seasonal adjustment service handler."""
+        adjustment_data = dict(call.data)
+        _LOGGER.info("Create seasonal adjustment service called: %s", adjustment_data.get("name", "Unnamed"))
+        
+        try:
+            await self.seasonal_adjustment_manager.async_create_adjustment(adjustment_data)
+            _LOGGER.info("Successfully created seasonal adjustment")
+        except Exception as e:
+            _LOGGER.error("Failed to create seasonal adjustment: %s", e)
+            raise
+
+    async def handle_update_seasonal_adjustment(self, call):
+        """Update seasonal adjustment service handler."""
+        adjustment_id = call.data.get("adjustment_id")
+        adjustment_data = dict(call.data)
+        adjustment_data.pop("adjustment_id", None)
+        
+        _LOGGER.info("Update seasonal adjustment service called for ID: %s", adjustment_id)
+        
+        try:
+            await self.seasonal_adjustment_manager.async_update_adjustment(adjustment_id, adjustment_data)
+            _LOGGER.info("Successfully updated seasonal adjustment")
+        except Exception as e:
+            _LOGGER.error("Failed to update seasonal adjustment: %s", e)
+            raise
+
+    async def handle_delete_seasonal_adjustment(self, call):
+        """Delete seasonal adjustment service handler."""
+        adjustment_id = call.data.get("adjustment_id")
+        
+        _LOGGER.info("Delete seasonal adjustment service called for ID: %s", adjustment_id)
+        
+        try:
+            await self.seasonal_adjustment_manager.async_delete_adjustment(adjustment_id)
+            _LOGGER.info("Successfully deleted seasonal adjustment")
+        except Exception as e:
+            _LOGGER.error("Failed to delete seasonal adjustment: %s", e)
+            raise
+
+    # Irrigation Unlimited Integration Service Handlers
+    async def handle_sync_with_irrigation_unlimited(self, call):
+        """Sync with Irrigation Unlimited service handler."""
+        zone_ids = call.data.get("zone_ids")
+        
+        _LOGGER.info("Sync with Irrigation Unlimited service called for zones: %s", zone_ids)
+        
+        try:
+            result = await self.irrigation_unlimited_integration.async_sync_zones_to_iu(zone_ids)
+            
+            # Fire event with results
+            self.hass.bus.fire(
+                f"{const.DOMAIN}_iu_sync_result",
+                {
+                    "success": True,
+                    "result": result,
+                    "timestamp": datetime.datetime.now().isoformat(),
+                }
+            )
+            
+            _LOGGER.info("Successfully synced with Irrigation Unlimited")
+        except Exception as e:
+            _LOGGER.error("Failed to sync with Irrigation Unlimited: %s", e)
+            
+            # Fire error event
+            self.hass.bus.fire(
+                f"{const.DOMAIN}_iu_sync_result",
+                {
+                    "success": False,
+                    "error": str(e),
+                    "timestamp": datetime.datetime.now().isoformat(),
+                }
+            )
+            raise
+
+    async def handle_send_zone_data_to_iu(self, call):
+        """Send zone data to Irrigation Unlimited service handler."""
+        zone_id = call.data.get("zone_id")
+        zone_data = call.data.get("data", {})
+        
+        _LOGGER.info("Send zone data to IU service called for zone: %s", zone_id)
+        
+        try:
+            success = await self.irrigation_unlimited_integration.async_send_zone_data_to_iu(zone_id, zone_data)
+            
+            if success:
+                _LOGGER.info("Successfully sent zone data to Irrigation Unlimited")
+            else:
+                _LOGGER.warning("Failed to send zone data to Irrigation Unlimited")
+                
+        except Exception as e:
+            _LOGGER.error("Error sending zone data to Irrigation Unlimited: %s", e)
+            raise
+
+    async def handle_get_iu_schedule_status(self, call):
+        """Get Irrigation Unlimited schedule status service handler."""
+        _LOGGER.info("Get IU schedule status service called")
+        
+        try:
+            status = await self.irrigation_unlimited_integration.async_get_iu_status()
+            
+            # Store status in hass.data for retrieval
+            if "iu_status" not in self.hass.data[const.DOMAIN]:
+                self.hass.data[const.DOMAIN]["iu_status"] = {}
+            
+            self.hass.data[const.DOMAIN]["iu_status"]["last_status"] = status
+            
+            # Fire event with status
+            self.hass.bus.fire(
+                f"{const.DOMAIN}_iu_status",
+                {
+                    "status": status,
+                    "timestamp": datetime.datetime.now().isoformat(),
+                }
+            )
+            
+            _LOGGER.info("Successfully retrieved IU schedule status")
+            
+        except Exception as e:
+            _LOGGER.error("Failed to get IU schedule status: %s", e)
+            raise
+
     async def async_generate_watering_calendar(self, zone_id: int | None = None):
         """Generate a 12-month watering calendar for a zone or all zones.
 
@@ -3339,4 +3520,60 @@ def register_services(hass: HomeAssistant):
         const.DOMAIN,
         const.SERVICE_GENERATE_WATERING_CALENDAR,
         coordinator.handle_generate_watering_calendar,
+    )
+
+    # Enhanced scheduling services
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_CREATE_RECURRING_SCHEDULE,
+        coordinator.handle_create_recurring_schedule,
+    )
+
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_UPDATE_RECURRING_SCHEDULE,
+        coordinator.handle_update_recurring_schedule,
+    )
+
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_DELETE_RECURRING_SCHEDULE,
+        coordinator.handle_delete_recurring_schedule,
+    )
+
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_CREATE_SEASONAL_ADJUSTMENT,
+        coordinator.handle_create_seasonal_adjustment,
+    )
+
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_UPDATE_SEASONAL_ADJUSTMENT,
+        coordinator.handle_update_seasonal_adjustment,
+    )
+
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_DELETE_SEASONAL_ADJUSTMENT,
+        coordinator.handle_delete_seasonal_adjustment,
+    )
+
+    # Irrigation Unlimited integration services
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_SYNC_WITH_IRRIGATION_UNLIMITED,
+        coordinator.handle_sync_with_irrigation_unlimited,
+    )
+
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_SEND_ZONE_DATA_TO_IU,
+        coordinator.handle_send_zone_data_to_iu,
+    )
+
+    hass.services.async_register(
+        const.DOMAIN,
+        const.SERVICE_GET_IU_SCHEDULE_STATUS,
+        coordinator.handle_get_iu_schedule_status,
     )

@@ -124,3 +124,248 @@ generate_watering_calendar:
   target:
     entity:
       domain: sensor
+
+# Enhanced Scheduling Services
+create_recurring_schedule:
+  name: Create recurring schedule
+  description: Create a new recurring irrigation schedule.
+  fields:
+    name:
+      required: true
+      example: "Morning Watering"
+      description: "Name of the schedule"
+      selector:
+        text:
+    type:
+      required: true
+      example: "daily"
+      description: "Schedule type (daily, weekly, monthly, interval)"
+      selector:
+        select:
+          options:
+            - "daily"
+            - "weekly"
+            - "monthly"
+            - "interval"
+    enabled:
+      required: false
+      example: true
+      default: true
+      description: "Enable the schedule"
+      selector:
+        boolean:
+    time:
+      required: false
+      example: "06:00"
+      description: "Time to run (HH:MM format)"
+      selector:
+        time:
+    days_of_week:
+      required: false
+      example: ["monday", "wednesday", "friday"]
+      description: "Days of week for weekly schedules"
+      selector:
+        select:
+          options:
+            - "monday"
+            - "tuesday"
+            - "wednesday"
+            - "thursday"
+            - "friday"
+            - "saturday"
+            - "sunday"
+          multiple: true
+    day_of_month:
+      required: false
+      example: 15
+      description: "Day of month for monthly schedules (1-31)"
+      selector:
+        number:
+          min: 1
+          max: 31
+    interval_hours:
+      required: false
+      example: 24
+      description: "Interval in hours for interval schedules"
+      selector:
+        number:
+          min: 1
+          max: 168
+    zones:
+      required: false
+      example: "all"
+      description: "Zone IDs to include or 'all'"
+      selector:
+        text:
+    action:
+      required: false
+      example: "calculate"
+      default: "calculate"
+      description: "Action to perform (calculate, update, irrigate)"
+      selector:
+        select:
+          options:
+            - "calculate"
+            - "update"
+            - "irrigate"
+
+update_recurring_schedule:
+  name: Update recurring schedule
+  description: Update an existing recurring irrigation schedule.
+  fields:
+    schedule_id:
+      required: true
+      example: "schedule_abc123"
+      description: "ID of the schedule to update"
+      selector:
+        text:
+    name:
+      required: false
+      example: "Evening Watering"
+      description: "Name of the schedule"
+      selector:
+        text:
+    enabled:
+      required: false
+      example: false
+      description: "Enable/disable the schedule"
+      selector:
+        boolean:
+
+delete_recurring_schedule:
+  name: Delete recurring schedule
+  description: Delete a recurring irrigation schedule.
+  fields:
+    schedule_id:
+      required: true
+      example: "schedule_abc123"
+      description: "ID of the schedule to delete"
+      selector:
+        text:
+
+create_seasonal_adjustment:
+  name: Create seasonal adjustment
+  description: Create a new seasonal adjustment for irrigation zones.
+  fields:
+    name:
+      required: true
+      example: "Summer Boost"
+      description: "Name of the adjustment"
+      selector:
+        text:
+    enabled:
+      required: false
+      example: true
+      default: true
+      description: "Enable the adjustment"
+      selector:
+        boolean:
+    month_start:
+      required: true
+      example: 6
+      description: "Starting month (1-12)"
+      selector:
+        number:
+          min: 1
+          max: 12
+    month_end:
+      required: true
+      example: 8
+      description: "Ending month (1-12)"
+      selector:
+        number:
+          min: 1
+          max: 12
+    multiplier_adjustment:
+      required: false
+      example: 1.5
+      default: 1.0
+      description: "Multiplier adjustment factor"
+      selector:
+        number:
+          min: 0.1
+          max: 5.0
+          step: 0.1
+    threshold_adjustment:
+      required: false
+      example: -5.0
+      default: 0.0
+      description: "Threshold adjustment in mm"
+      selector:
+        number:
+          min: -50.0
+          max: 50.0
+          step: 0.5
+    zones:
+      required: false
+      example: "all"
+      description: "Zone IDs to include or 'all'"
+      selector:
+        text:
+
+update_seasonal_adjustment:
+  name: Update seasonal adjustment
+  description: Update an existing seasonal adjustment.
+  fields:
+    adjustment_id:
+      required: true
+      example: "adjustment_xyz789"
+      description: "ID of the adjustment to update"
+      selector:
+        text:
+    name:
+      required: false
+      example: "Winter Reduction"
+      description: "Name of the adjustment"
+      selector:
+        text:
+    enabled:
+      required: false
+      example: false
+      description: "Enable/disable the adjustment"
+      selector:
+        boolean:
+
+delete_seasonal_adjustment:
+  name: Delete seasonal adjustment
+  description: Delete a seasonal adjustment.
+  fields:
+    adjustment_id:
+      required: true
+      example: "adjustment_xyz789"
+      description: "ID of the adjustment to delete"
+      selector:
+        text:
+
+# Irrigation Unlimited Integration Services
+sync_with_irrigation_unlimited:
+  name: Sync with Irrigation Unlimited
+  description: Synchronize Smart Irrigation zones with Irrigation Unlimited entities.
+  fields:
+    zone_ids:
+      required: false
+      example: [1, 2, 3]
+      description: "Specific zone IDs to sync (leave empty for all zones)"
+      selector:
+        text:
+
+send_zone_data_to_irrigation_unlimited:
+  name: Send zone data to Irrigation Unlimited
+  description: Send specific zone data to corresponding Irrigation Unlimited entity.
+  fields:
+    zone_id:
+      required: true
+      example: 1
+      description: "Zone ID to send data for"
+      selector:
+        number:
+    data:
+      required: true
+      example: '{"duration": 300, "state": "on"}'
+      description: "Data to send (JSON format)"
+      selector:
+        text:
+
+get_irrigation_unlimited_status:
+  name: Get Irrigation Unlimited status
+  description: Get the current status of Irrigation Unlimited entities and schedules.
