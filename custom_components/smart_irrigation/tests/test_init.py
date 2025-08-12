@@ -191,6 +191,83 @@ class TestSmartIrrigationCoordinator:
             await coordinator.update_subscriptions()
             mock_update.assert_called_once()
 
+    async def test_unit_system_change_handler(
+        self,
+        hass: HomeAssistant,
+        mock_config_entry: ConfigEntry,
+        mock_store: AsyncMock,
+        mock_session: AsyncMock,
+    ) -> None:
+        """Test unit system change handling."""
+        from homeassistant.util.unit_system import METRIC_SYSTEM, US_CUSTOMARY_SYSTEM
+        from custom_components.smart_irrigation import handle_core_config_change
+        
+        hass.data[const.DOMAIN] = {
+            const.CONF_USE_WEATHER_SERVICE: False,
+            const.CONF_WEATHER_SERVICE: None,
+        }
+
+        coordinator = SmartIrrigationCoordinator(
+            hass, mock_session, mock_config_entry, mock_store
+        )
+        
+        hass.data[const.DOMAIN]["coordinator"] = coordinator
+        
+        # Mock the async_handle_unit_system_change method
+        coordinator.async_handle_unit_system_change = AsyncMock()
+        
+        # Test initial setup - no previous unit system
+        hass.config.units = METRIC_SYSTEM
+        coordinator._previous_unit_system = METRIC_SYSTEM
+        
+        event = {}
+        await handle_core_config_change(hass, event)
+        
+        # Should not call handler for same unit system
+        coordinator.async_handle_unit_system_change.assert_not_called()
+        
+        # Test unit system change
+        hass.config.units = US_CUSTOMARY_SYSTEM
+        await handle_core_config_change(hass, event)
+        
+        # Should call handler for unit system change
+        coordinator.async_handle_unit_system_change.assert_called_once()
+        assert coordinator._previous_unit_system == US_CUSTOMARY_SYSTEM
+
+    async def test_async_handle_unit_system_change(
+        self,
+        hass: HomeAssistant,
+        mock_config_entry: ConfigEntry,
+        mock_store: AsyncMock,
+        mock_session: AsyncMock,
+    ) -> None:
+        """Test the unit system change handler method."""
+        hass.data[const.DOMAIN] = {
+            const.CONF_USE_WEATHER_SERVICE: False,
+            const.CONF_WEATHER_SERVICE: None,
+        }
+
+        coordinator = SmartIrrigationCoordinator(
+            hass, mock_session, mock_config_entry, mock_store
+        )
+        
+        # Mock dispatchers and methods
+        with (
+            patch("custom_components.smart_irrigation.async_dispatcher_send") as mock_dispatch,
+            patch.object(coordinator, "_convert_precipitation_threshold", new_callable=AsyncMock) as mock_convert,
+            patch.object(coordinator, "_refresh_unit_dependent_data", new_callable=AsyncMock) as mock_refresh,
+        ):
+            await coordinator.async_handle_unit_system_change()
+            
+            # Verify correct dispatchers were called
+            assert mock_dispatch.call_count == 2
+            mock_dispatch.assert_any_call(hass, const.DOMAIN + "_unit_system_changed")
+            mock_dispatch.assert_any_call(hass, const.DOMAIN + "_update_frontend")
+            
+            # Verify helper methods were called
+            mock_convert.assert_called_once()
+            mock_refresh.assert_called_once()
+
 
 class TestSmartIrrigationError:
     """Test SmartIrrigationError exception."""

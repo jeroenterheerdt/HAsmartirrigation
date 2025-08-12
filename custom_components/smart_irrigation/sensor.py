@@ -150,6 +150,11 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         async_dispatcher_connect(
             hass, const.DOMAIN + "_config_updated", self.async_update_sensor_entity
         )
+        
+        # Listen for unit system changes
+        async_dispatcher_connect(
+            hass, const.DOMAIN + "_unit_system_changed", self.async_handle_unit_system_change
+        )
 
     def _format_timestamp(self, val):
         """Format timestamp for display - cached for performance."""
@@ -204,6 +209,15 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
 
             # Ensure state change notification is properly sent
             self.async_schedule_update_ha_state(force_refresh=True)
+
+    @callback
+    def async_handle_unit_system_change(self):
+        """Handle unit system changes by refreshing the entity state."""
+        _LOGGER.debug("[async_handle_unit_system_change]: refreshing zone %s", self._id)
+        
+        # Force a state update to refresh any unit-dependent attributes
+        # The actual unit conversions are handled in the attribute display logic
+        self.async_schedule_update_ha_state(force_refresh=True)
 
     @property
     def device_info(self) -> dict:

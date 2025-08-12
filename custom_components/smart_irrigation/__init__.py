@@ -66,10 +66,38 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(const.DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config):
     """Track states and offer events for sensors."""
-    # this did not work. Users will have to reload the integration / i.e. restart HA if they make this change.
-    # listener for core config changes (for unit changes)
-    # hass.bus.listen("core_config_updated", handle_core_config_change)
     return True
+
+
+async def handle_core_config_change(hass: HomeAssistant, event):
+    """Handle Home Assistant core configuration changes, specifically unit system changes."""
+    if const.DOMAIN not in hass.data or "coordinator" not in hass.data[const.DOMAIN]:
+        return
+    
+    # Check if unit system has changed by comparing current vs coordinator's cached unit system
+    coordinator = hass.data[const.DOMAIN]["coordinator"]
+    current_unit_system = hass.config.units
+    
+    # Store the previous unit system in coordinator if not already stored
+    if not hasattr(coordinator, '_previous_unit_system'):
+        coordinator._previous_unit_system = current_unit_system
+        return
+    
+    # Check if unit system actually changed
+    if coordinator._previous_unit_system != current_unit_system:
+        _LOGGER.info(
+            "Home Assistant unit system changed from %s to %s, updating Smart Irrigation",
+            coordinator._previous_unit_system.name,
+            current_unit_system.name
+        )
+        
+        # Update coordinator's cached unit system
+        coordinator._previous_unit_system = current_unit_system
+        
+        # Trigger unit system update
+        await coordinator.async_handle_unit_system_change()
+    else:
+        _LOGGER.debug("Core config updated but unit system unchanged")
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
@@ -155,6 +183,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.data[const.DOMAIN]["coordinator"] = coordinator
     hass.data[const.DOMAIN]["zones"] = {}
+
+    # Set up unit system change listener
+    coordinator._previous_unit_system = hass.config.units
+    hass.bus.async_listen("core_config_updated", lambda event: handle_core_config_change(hass, event))
+    _LOGGER.info("Registered listener for Home Assistant core config changes (unit system)")
 
     # make sure we capture the use_owm state
     await store.async_update_config(
@@ -445,6 +478,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         for zone in zones:
             # self.async_create_zone(zone)
             async_dispatcher_send(self.hass, const.DOMAIN + "_register_entity", zone)
+
+    async def async_handle_unit_system_change(self):
+        """Handle changes to the Home Assistant unit system."""
+        _LOGGER.info("Processing unit system change for Smart Irrigation")
+        
+        # Update sensor entities to refresh their unit display
+        async_dispatcher_send(self.hass, const.DOMAIN + "_unit_system_changed")
+        
+        # Update frontend/websocket clients
+        async_dispatcher_send(self.hass, const.DOMAIN + "_update_frontend")
+        
+        _LOGGER.info("Unit system change processing complete")
 
     async def async_update_config(self, data):  # noqa: D102
         _LOGGER.debug("[async_update_config]: config changed: %s", data)
