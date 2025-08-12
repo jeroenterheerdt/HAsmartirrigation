@@ -2544,7 +2544,7 @@ i.version="2.30.1",n(Za),i.fn=ds,i.min=Ja,i.max=Qa,i.now=ei,i.utc=m,i.unix=us,i.
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${pn("title",this.hass.language)}</div>
-          <div class="version">${"v2025.8.0"}</div>
+          <div class="version">${"v2025.8.1"}</div>
         </div>
 
         <sl-tab-group

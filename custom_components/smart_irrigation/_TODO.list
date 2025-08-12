@@ -1,8 +1,0 @@
-General:
-    add some sort of automation / irrigate every X days counter?
-
-    hOW TO Listen to unit changes from HA?
-        Was unable to make that work.
-Wishlist:
-- calculation algorithm: PyEto / PenMon /  ET_calc. See: https://github.com/jeroenterheerdt/HAsmartirrigation/issues/127
-- scheduler? or just use something like https://github.com/rgc99/irrigation_unlimited?

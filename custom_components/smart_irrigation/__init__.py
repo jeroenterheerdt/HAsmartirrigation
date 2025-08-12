@@ -1576,7 +1576,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("calling register start event from async_calculate_all")
         await self.register_start_event()
 
-    async def async_calculate_zone(self, zone_id, continuous_updates=False):
+    async def async_calculate_zone(self, zone_id, data=None, continuous_updates=False):
         """Calculate irrigation values for a specific zone.
 
         Args:
@@ -1614,14 +1614,23 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
             if sensor_values:
                 # make sure we convert forecast data pressure to absolute!
-                data = await self.calculate_module(
+                calc_data = await self.calculate_module(
                     zone, weatherdata=sensor_values, forecastdata=forecastdata
                 )
                 # if continuous updates are on, add the current date time to set the last updated time
                 if continuous_updates:
-                    data[const.ZONE_LAST_UPDATED] = datetime.datetime.now()
+                    calc_data[const.ZONE_LAST_UPDATED] = datetime.datetime.now()
+                # check if data contains delete data true, if so delete the weather data
+                if data.get(const.ATTR_DELETE_WEATHER_DATA, False):
+                    # remove sensor data from mapping
+                    changes = {}
+                    changes[const.MAPPING_DATA] = []
+                    if mapping_id is not None:
+                        await self.store.async_update_mapping(
+                            mapping_id, changes=changes
+                        )
 
-                await self.store.async_update_zone(zone.get(const.ZONE_ID), data)
+                await self.store.async_update_zone(zone.get(const.ZONE_ID), calc_data)
                 async_dispatcher_send(
                     self.hass,
                     const.DOMAIN + "_config_updated",
@@ -2232,7 +2241,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             await self.async_remove_entity(zone_id)
 
         elif const.ATTR_CALCULATE in data:
-            await self.async_calculate_zone(zone_id, data)
+            # calculate a specific zone
+            _LOGGER.info("Calculating zone %s", zone_id)
+            data.pop(const.ATTR_CALCULATE)
+            await self.async_calculate_zone(zone_id, data=data)
         elif const.ATTR_CALCULATE_ALL in data:
             # calculate all zones
             _LOGGER.info("Calculating all zones")
@@ -2903,9 +2915,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if "watering_calendars" not in self.hass.data[const.DOMAIN]:
                 self.hass.data[const.DOMAIN]["watering_calendars"] = {}
 
-            self.hass.data[const.DOMAIN]["watering_calendars"][
-                "last_generated"
-            ] = calendar_data
+            self.hass.data[const.DOMAIN]["watering_calendars"]["last_generated"] = (
+                calendar_data
+            )
 
             # Fire an event with the calendar data
             self.hass.bus.fire(

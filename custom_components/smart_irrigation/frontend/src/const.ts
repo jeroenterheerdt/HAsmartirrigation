@@ -1,4 +1,4 @@
-export const VERSION = "v2025.8.0";
+export const VERSION = "v2025.8.1";
 export const REPO = "https://github.com/jeroenterheerdt/HASmartIrrigation;";
 export const ISSUES_URL = REPO + "/issues";
 
@@ -24,7 +24,8 @@ export const CONF_MANUAL_LONGITUDE = "manual_longitude";
 export const CONF_MANUAL_ELEVATION = "manual_elevation";
 
 // Weather-based skip configuration
-export const CONF_SKIP_IRRIGATION_ON_PRECIPITATION = "skip_irrigation_on_precipitation";
+export const CONF_SKIP_IRRIGATION_ON_PRECIPITATION =
+  "skip_irrigation_on_precipitation";
 export const CONF_PRECIPITATION_THRESHOLD_MM = "precipitation_threshold_mm";
 
 // Irrigation start trigger configuration
