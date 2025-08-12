@@ -29,6 +29,18 @@ If it rains or snows less than the amount of moisture lost, then irrigation is r
 The integration can take into account weather forecasts for the coming days and also keeps track of the total moisture lost or added ('bucket')
 Multiple zones are supported with each zone having it own configuration and set up.
 
+## Enhanced Features
+
+Smart Irrigation now includes enhanced scheduling capabilities and Irrigation Unlimited integration:
+
+- **Recurring Schedules**: Create flexible daily, weekly, monthly, or interval-based irrigation schedules
+- **Seasonal Adjustments**: Automatically adjust irrigation parameters based on the season
+- **Irrigation Unlimited Integration**: Seamless bidirectional integration with the Irrigation Unlimited component
+- **Weather-Responsive Scheduling**: Advanced scheduling that adapts to weather conditions and forecasts
+- **Automation Blueprints**: Ready-to-use blueprints for common irrigation scenarios
+
+See the [enhanced scheduling documentation](docs/enhanced-scheduling-integration.md) for detailed information and examples.
+
 ## Development
 
 For contributors and developers:
