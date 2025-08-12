@@ -2915,9 +2915,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if "watering_calendars" not in self.hass.data[const.DOMAIN]:
                 self.hass.data[const.DOMAIN]["watering_calendars"] = {}
 
-            self.hass.data[const.DOMAIN]["watering_calendars"]["last_generated"] = (
-                calendar_data
-            )
+            self.hass.data[const.DOMAIN]["watering_calendars"][
+                "last_generated"
+            ] = calendar_data
 
             # Fire an event with the calendar data
             self.hass.bus.fire(
