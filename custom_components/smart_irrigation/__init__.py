@@ -477,42 +477,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # Update frontend/websocket clients
         async_dispatcher_send(self.hass, const.DOMAIN + "_update_frontend")
         
-        # Convert stored precipitation threshold if needed
-        await self._convert_precipitation_threshold()
-        
-        # Refresh any cached unit-dependent data
-        await self._refresh_unit_dependent_data()
-        
         _LOGGER.info("Unit system change processing complete")
-
-    async def _convert_precipitation_threshold(self):
-        """Convert stored precipitation threshold when unit system changes."""
-        try:
-            config = await self.store.async_get_config()
-            threshold_mm = config.get(const.CONF_PRECIPITATION_THRESHOLD_MM)
-            
-            if threshold_mm is not None:
-                # The threshold is stored internally in mm, but we need to trigger UI refresh
-                # to show the correct units to the user
-                _LOGGER.debug(
-                    "Precipitation threshold stored value: %.2f mm (will be displayed in user's units)", 
-                    threshold_mm
-                )
-                
-        except Exception as e:
-            _LOGGER.warning("Error handling precipitation threshold unit conversion: %s", e)
-
-    async def _refresh_unit_dependent_data(self):
-        """Refresh any cached data that depends on unit system."""
-        try:
-            # Trigger update of websocket data to refresh UI
-            if hasattr(self.hass.data[const.DOMAIN], 'websocket_clients'):
-                # This will be handled by the websocket module when it detects unit changes
-                pass
-                
-            _LOGGER.debug("Unit-dependent data refresh completed")
-        except Exception as e:
-            _LOGGER.warning("Error refreshing unit-dependent data: %s", e)
 
     async def async_update_config(self, data):  # noqa: D102
         _LOGGER.debug("[async_update_config]: config changed: %s", data)
