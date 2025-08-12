@@ -2615,18 +2615,88 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
         return False
 
+    async def _check_days_between_irrigation(self) -> bool:
+        """Check if enough days have passed since the last irrigation event.
+        
+        Returns:
+            bool: True if irrigation should be skipped due to insufficient days passed, False otherwise.
+        """
+        config = await self.store.async_get_config()
+        
+        # Get the configured minimum days between irrigation
+        days_between = config.get(
+            const.CONF_DAYS_BETWEEN_IRRIGATION,
+            const.CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION,
+        )
+        
+        # If days_between is 0, no restriction (always allow irrigation)
+        if days_between <= 0:
+            return False
+            
+        # Get days since last irrigation
+        days_since_last = config.get(
+            const.CONF_DAYS_SINCE_LAST_IRRIGATION,
+            const.CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION,
+        )
+        
+        if days_since_last < days_between:
+            _LOGGER.info(
+                "Skipping irrigation: only %d days since last irrigation, need %d days minimum",
+                days_since_last,
+                days_between,
+            )
+            return True
+            
+        return False
+
+    async def _increment_days_since_irrigation(self):
+        """Increment the counter for days since last irrigation."""
+        config = await self.store.async_get_config()
+        current_days = config.get(
+            const.CONF_DAYS_SINCE_LAST_IRRIGATION,
+            const.CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION,
+        )
+        
+        new_days = current_days + 1
+        await self.store.async_update_config(
+            {const.CONF_DAYS_SINCE_LAST_IRRIGATION: new_days}
+        )
+        
+        _LOGGER.debug("Incremented days since last irrigation to %d", new_days)
+
+    async def _reset_days_since_irrigation(self):
+        """Reset the counter for days since last irrigation to 0."""
+        await self.store.async_update_config(
+            {const.CONF_DAYS_SINCE_LAST_IRRIGATION: 0}
+        )
+        
+        _LOGGER.debug("Reset days since last irrigation to 0")
+
     @callback
     def _fire_start_event(self, *args):
         """Fire the irrigation start event if conditions are met."""
         if not self._start_event_fired_today:
-            # Check for precipitation forecast asynchronously
+            # Check for precipitation forecast and days between irrigation asynchronously
             async def check_and_fire():
                 try:
-                    should_skip = await self._check_precipitation_forecast()
-                    if should_skip:
+                    # Check precipitation forecast
+                    should_skip_precipitation = await self._check_precipitation_forecast()
+                    if should_skip_precipitation:
                         _LOGGER.info(
                             "Irrigation start event skipped due to forecasted precipitation"
                         )
+                        # Still increment days counter even if skipped due to precipitation
+                        await self._increment_days_since_irrigation()
+                        return
+
+                    # Check days between irrigation
+                    should_skip_days = await self._check_days_between_irrigation()
+                    if should_skip_days:
+                        _LOGGER.info(
+                            "Irrigation start event skipped due to insufficient days since last irrigation"
+                        )
+                        # Increment days counter when skipped due to days restriction
+                        await self._increment_days_since_irrigation()
                         return
 
                     # Fire the event
@@ -2635,13 +2705,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     _LOGGER.info("Fired start event: %s", event_to_fire)
                     self._start_event_fired_today = True
 
+                    # Reset days since last irrigation counter
+                    await self._reset_days_since_irrigation()
+
                     # Save config asynchronously
                     await self.store.async_update_config(
                         {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
                     )
                 except Exception as e:
                     _LOGGER.error(
-                        "Error in precipitation check, firing irrigation event anyway: %s",
+                        "Error checking irrigation conditions, firing irrigation event anyway: %s",
                         e,
                     )
                     # Fire the event as fallback
@@ -2649,6 +2722,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     self.hass.bus.fire(event_to_fire, {})
                     _LOGGER.info("Fired start event (fallback): %s", event_to_fire)
                     self._start_event_fired_today = True
+
+                    # Reset days since last irrigation counter
+                    await self._reset_days_since_irrigation()
 
                     # Save config asynchronously
                     await self.store.async_update_config(
@@ -2671,6 +2747,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
                 )
             )
+        
+        # Increment days since last irrigation at midnight
+        # Fire-and-forget async task
+        self.hass.async_create_task(self._increment_days_since_irrigation())
 
     async def async_get_all_modules(self):
         """Get all ModuleEntries."""

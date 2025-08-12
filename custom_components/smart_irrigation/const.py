@@ -22,6 +22,12 @@ CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION = False
 CONF_PRECIPITATION_THRESHOLD_MM = "precipitation_threshold_mm"
 CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM = 2.0  # 2mm threshold
 
+# Days between irrigation configuration
+CONF_DAYS_BETWEEN_IRRIGATION = "days_between_irrigation"
+CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION = 0  # 0 = no restriction (default behavior)
+CONF_DAYS_SINCE_LAST_IRRIGATION = "days_since_last_irrigation"
+CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION = 0
+
 # Trigger types
 TRIGGER_TYPE_SUNRISE = "sunrise"
 TRIGGER_TYPE_SUNSET = "sunset"

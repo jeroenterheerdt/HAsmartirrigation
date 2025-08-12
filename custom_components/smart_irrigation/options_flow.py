@@ -78,6 +78,15 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             const.CONF_MANUAL_ELEVATION,
             self.config_entry.data.get(const.CONF_MANUAL_ELEVATION),
         )
+        
+        # Initialize days between irrigation setting
+        self._days_between_irrigation = self.config_entry.options.get(
+            const.CONF_DAYS_BETWEEN_IRRIGATION,
+            self.config_entry.data.get(
+                const.CONF_DAYS_BETWEEN_IRRIGATION,
+                const.CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION,
+            ),
+        )
 
     async def async_step_init(self, user_input=None):  # pylint: disable=unused-argument
         """Manage the options."""
@@ -88,8 +97,13 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             try:
                 # store values entered
                 self._use_weather_service = user_input[const.CONF_USE_WEATHER_SERVICE]
+                self._days_between_irrigation = user_input.get(
+                    const.CONF_DAYS_BETWEEN_IRRIGATION, 
+                    const.CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
+                )
+                
                 if not self._use_weather_service:
-                    # update the entry right away and remove the API info
+                    # update the entry right away and remove the API info, include days setting
                     user_input[const.CONF_WEATHER_SERVICE_API_KEY] = None
                     # forcing it to be 3.0 because of sunsetting of 2.5 API by OWM in June 2024
                     # user_input[const.CONF_WEATHER_SERVICE_API_VERSION] = "3.0"
@@ -110,12 +124,20 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                         const.CONF_USE_WEATHER_SERVICE,
                         default=self._use_weather_service,
                     ): bool,
+                    vol.Optional(
+                        const.CONF_DAYS_BETWEEN_IRRIGATION,
+                        default=self._days_between_irrigation,
+                    ): vol.All(vol.Coerce(int), vol.Range(min=0, max=365)),
                 }
             ),
             errors=self._errors,
         )
 
     async def _show_step_1(self, user_input):
+        # Store the days_between_irrigation from the previous step
+        if user_input and const.CONF_DAYS_BETWEEN_IRRIGATION in user_input:
+            self._days_between_irrigation = user_input[const.CONF_DAYS_BETWEEN_IRRIGATION]
+            
         return self.async_show_form(
             step_id="step1",
             data_schema=vol.Schema(
@@ -221,6 +243,7 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                     const.CONF_WEATHER_SERVICE: self._weather_service,
                     const.CONF_WEATHER_SERVICE_API_KEY: self._weather_service_api_key,
                     const.CONF_MANUAL_COORDINATES_ENABLED: self._manual_coordinates_enabled,
+                    const.CONF_DAYS_BETWEEN_IRRIGATION: self._days_between_irrigation,
                 }
 
                 if self._manual_coordinates_enabled:
