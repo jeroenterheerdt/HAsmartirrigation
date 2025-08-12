@@ -238,5 +238,11 @@
     "longitude": "Longitud (grados decimales)",
     "elevation": "Elevación (metros sobre el nivel del mar)",
     "current_ha_coords": "Coordenadas actuales de Home Assistant"
+  },
+  "days_between_irrigation": {
+    "title": "Días Entre Riegos",
+    "description": "Configure el número mínimo de días que deben pasar entre eventos de riego. Esto ayuda a controlar la frecuencia de riego para la conservación del agua y el manejo de la salud de las plantas.",
+    "label": "Días mínimos entre riegos",
+    "help_text": "Establezca en 0 para desactivar esta función. Se admiten valores de 1-365 días. Esta configuración funciona junto con la lógica de pronóstico de precipitación existente."
   }
 }

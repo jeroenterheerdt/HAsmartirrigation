@@ -238,5 +238,11 @@
     "longitude": "Lengdegrad (desimalgrader)",
     "elevation": "Høyde (meter over havet)",
     "current_ha_coords": "Gjeldende Home Assistant koordinater"
+  },
+  "days_between_irrigation": {
+    "title": "Dager Mellom Vanninger",
+    "description": "Konfigurer minimum antall dager som må gå mellom vanningshendelser. Dette hjelper med å kontrollere vanningsfrekvensen for vannsparing og plantehelse.",
+    "label": "Minimum dager mellom vanninger",
+    "help_text": "Sett til 0 for å deaktivere denne funksjonen. Verdier fra 1-365 dager støttes. Denne innstillingen fungerer sammen med eksisterende nedbørprognosering logikk."
   }
 }

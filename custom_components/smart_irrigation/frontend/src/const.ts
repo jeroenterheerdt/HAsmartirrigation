@@ -28,6 +28,9 @@ export const CONF_SKIP_IRRIGATION_ON_PRECIPITATION =
   "skip_irrigation_on_precipitation";
 export const CONF_PRECIPITATION_THRESHOLD_MM = "precipitation_threshold_mm";
 
+// Days between irrigation configuration
+export const CONF_DAYS_BETWEEN_IRRIGATION = "days_between_irrigation";
+
 // Irrigation start trigger configuration
 export const CONF_IRRIGATION_START_TRIGGERS = "irrigation_start_triggers";
 export const TRIGGER_TYPE_SUNRISE = "sunrise";

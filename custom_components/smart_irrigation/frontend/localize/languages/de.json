@@ -258,5 +258,11 @@
     "longitude": "Längengrad (Dezimalgrad)",
     "elevation": "Höhe (Meter über dem Meeresspiegel)",
     "current_ha_coords": "Aktuelle Home Assistant Koordinaten"
+  },
+  "days_between_irrigation": {
+    "title": "Tage zwischen Bewässerungen",
+    "description": "Konfigurieren Sie die Mindestanzahl von Tagen, die zwischen Bewässerungsereignissen vergehen müssen. Dies hilft bei der Kontrolle der Bewässerungshäufigkeit für Wassereinsparung und Pflanzengesundheit.",
+    "label": "Mindest-Tage zwischen Bewässerungen",
+    "help_text": "Setzen Sie auf 0, um diese Funktion zu deaktivieren. Werte von 1-365 Tagen werden unterstützt. Diese Einstellung funktioniert zusammen mit der bestehenden Niederschlagsprognose-Logik."
   }
 }

@@ -33,6 +33,7 @@ import {
   CONF_MANUAL_LATITUDE,
   CONF_MANUAL_LONGITUDE,
   CONF_MANUAL_ELEVATION,
+  CONF_DAYS_BETWEEN_IRRIGATION,
   TRIGGER_TYPE_SUNRISE,
   TRIGGER_TYPE_SUNSET,
   TRIGGER_TYPE_SOLAR_AZIMUTH,
@@ -126,6 +127,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
         CONF_MANUAL_LATITUDE,
         CONF_MANUAL_LONGITUDE,
         CONF_MANUAL_ELEVATION,
+        CONF_DAYS_BETWEEN_IRRIGATION,
       ]);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -646,13 +648,16 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       // Coordinate Configuration Card
       const r7 = this.renderCoordinateCard();
 
+      // Days Between Irrigation Card
+      const r8 = this.renderDaysBetweenIrrigationCard();
+
       const r = html`<ha-card
           header="${localize("panels.general.title", this.hass.language)}"
         >
           <div class="card-content">
             ${localize("panels.general.description", this.hass.language)}
           </div> </ha-card
-        >${r2}${r1}${r3}${r4}${r5}${r6}${r7}`;
+        >${r2}${r1}${r3}${r4}${r5}${r6}${r7}${r8}`;
 
       return r;
     }
@@ -1081,6 +1086,71 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                     ${localize("coordinate_config.elevation", this.hass.language)}: ${haElevation}m
                   </div>
                 `}
+          </div>
+        </div>
+      </ha-card>
+    `;
+  }
+
+  renderDaysBetweenIrrigationCard() {
+    if (!this.config || !this.data || !this.hass) return html``;
+
+    return html`
+      <ha-card header="${localize("days_between_irrigation.title", this.hass.language)}">
+        <div class="card-content">
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showdaysbetweenirrigationdescription"
+            @click="${() => this.toggleInformation("daysbetweenirrigationdescription")}"
+          >
+            <title>
+              ${localize(
+                "panels.zones.actions.information",
+                this.hass.language,
+              )}
+            </title>
+            <path fill="#404040" d="${mdiInformationOutline}" />
+          </svg>
+        </div>
+
+        <div class="card-content">
+          <label class="hidden" id="daysbetweenirrigationdescription">
+            ${localize(
+              "days_between_irrigation.description",
+              this.hass.language,
+            )}
+          </label>
+        </div>
+
+        <div class="card-content">
+          <div class="zoneline">
+            <label for="days_between_irrigation"
+              >${localize(
+                "days_between_irrigation.label",
+                this.hass.language,
+              )}:</label>
+            <input
+              id="days_between_irrigation"
+              type="number"
+              class="shortinput"
+              min="0"
+              max="365"
+              step="1"
+              .value="${this.config.days_between_irrigation || 0}"
+              @input=${(e: Event) => {
+                this.handleConfigChange({
+                  days_between_irrigation: parseInt(
+                    (e.target as HTMLInputElement).value,
+                  ),
+                });
+              }}
+            />
+          </div>
+          <div class="card-content">
+            <div style="color: var(--secondary-text-color); font-size: 0.875rem; margin-top: 8px;">
+              ${localize("days_between_irrigation.help_text", this.hass.language)}
+            </div>
           </div>
         </div>
       </ha-card>

@@ -257,5 +257,11 @@
     "longitude": "Lengtegraad (decimale graden)",
     "elevation": "Hoogte (meters boven zeeniveau)",
     "current_ha_coords": "Huidige Home Assistant coördinaten"
+  },
+  "days_between_irrigation": {
+    "title": "Dagen Tussen Irrigaties",
+    "description": "Configureer het minimum aantal dagen dat moet verstrijken tussen irrigatie gebeurtenissen. Dit helpt bij het controleren van de bevloeiingsfrequentie voor waterbesparing en plantgezondheid beheer.",
+    "label": "Minimum dagen tussen irrigaties",
+    "help_text": "Stel in op 0 om deze functie uit te schakelen. Waarden van 1-365 dagen worden ondersteund. Deze instelling werkt samen met de bestaande neerslagvoorspelling logica."
   }
 }

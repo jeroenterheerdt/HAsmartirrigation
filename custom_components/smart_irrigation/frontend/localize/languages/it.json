@@ -325,5 +325,11 @@
     "longitude": "Longitudine (gradi decimali)",
     "elevation": "Elevazione (metri sul livello del mare)",
     "current_ha_coords": "Coordinate attuali di Home Assistant"
+  },
+  "days_between_irrigation": {
+    "title": "Giorni Tra Irrigazioni",
+    "description": "Configura il numero minimo di giorni che devono passare tra gli eventi di irrigazione. Questo aiuta a controllare la frequenza di irrigazione per la conservazione dell'acqua e la gestione della salute delle piante.",
+    "label": "Giorni minimi tra irrigazioni",
+    "help_text": "Imposta a 0 per disabilitare questa funzione. Sono supportati valori da 1-365 giorni. Questa impostazione funziona insieme alla logica di previsione delle precipitazioni esistente."
   }
 }
