@@ -3,8 +3,9 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from custom_components.smart_irrigation import const
 from homeassistant.core import HomeAssistant, ServiceCall
+
+from custom_components.smart_irrigation import const
 
 
 class TestSmartIrrigationServices:

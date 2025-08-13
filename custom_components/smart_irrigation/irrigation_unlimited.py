@@ -4,9 +4,9 @@ import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import STATE_ON
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_registry import async_get as async_get_entity_registry
-from homeassistant.const import STATE_ON, STATE_OFF
 
 from . import const
 

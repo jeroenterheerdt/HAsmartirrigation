@@ -3,6 +3,8 @@
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from homeassistant.core import HomeAssistant
+
 from custom_components.smart_irrigation.const import (
     DOMAIN,
     PANEL_ICON,
@@ -11,7 +13,6 @@ from custom_components.smart_irrigation.const import (
     PANEL_URL,
 )
 from custom_components.smart_irrigation.panel import async_register_panel, remove_panel
-from homeassistant.core import HomeAssistant
 
 
 class TestSmartIrrigationPanel:

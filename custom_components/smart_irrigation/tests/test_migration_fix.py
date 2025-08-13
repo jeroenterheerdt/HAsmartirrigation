@@ -2,6 +2,7 @@
 
 import attr
 import pytest
+
 from custom_components.smart_irrigation.const import (
     CONF_DEFAULT_IRRIGATION_START_TRIGGERS,
     CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM,

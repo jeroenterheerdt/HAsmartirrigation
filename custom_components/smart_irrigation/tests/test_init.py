@@ -3,6 +3,9 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+
 from custom_components.smart_irrigation import (
     SmartIrrigationCoordinator,
     SmartIrrigationError,
@@ -12,8 +15,6 @@ from custom_components.smart_irrigation import (
     async_unload_entry,
     const,
 )
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 
 
 class TestSmartIrrigationIntegration:
@@ -200,6 +201,7 @@ class TestSmartIrrigationCoordinator:
     ) -> None:
         """Test unit system change handling."""
         from homeassistant.util.unit_system import METRIC_SYSTEM, US_CUSTOMARY_SYSTEM
+
         from custom_components.smart_irrigation import handle_core_config_change
         
         hass.data[const.DOMAIN] = {

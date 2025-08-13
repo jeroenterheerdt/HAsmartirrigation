@@ -3,6 +3,9 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.data_entry_flow import FlowResultType
+
 from custom_components.smart_irrigation.const import (
     CONF_USE_WEATHER_SERVICE,
     CONF_WEATHER_SERVICE,
@@ -14,8 +17,6 @@ from custom_components.smart_irrigation.helpers import CannotConnect, InvalidAut
 from custom_components.smart_irrigation.options_flow import (
     SmartIrrigationOptionsFlowHandler,
 )
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.data_entry_flow import FlowResultType
 
 
 class TestSmartIrrigationOptionsFlow:
