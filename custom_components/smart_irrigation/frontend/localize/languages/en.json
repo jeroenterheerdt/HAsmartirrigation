@@ -200,7 +200,8 @@
             "median": "Median",
             "minimum": "Minimum",
             "riemannsum": "Riemann sum",
-            "sum": "Sum"
+            "sum": "Sum",
+            "delta": "Delta"
           },
           "errors": {
             "cannot-delete-mapping-because-zones-use-it": "You cannot delete this sensor group because there is at least one zone using it.",
