@@ -1700,14 +1700,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 if continuous_updates:
                     calc_data[const.ZONE_LAST_UPDATED] = datetime.datetime.now()
                 # check if data contains delete data true, if so delete the weather data
-                if data is not None and data.get(const.ATTR_DELETE_WEATHER_DATA, False):
-                    # remove sensor data from mapping
-                    changes = {}
-                    changes[const.MAPPING_DATA] = []
-                    if mapping_id is not None:
-                        await self.store.async_update_mapping(
-                            mapping_id, changes=changes
-                        )
+                if data is not None:
+                    if data.get(const.ATTR_DELETE_WEATHER_DATA, False):
+                        # remove sensor data from mapping
+                        changes = {}
+                        changes[const.MAPPING_DATA] = []
+                        if mapping_id is not None:
+                            await self.store.async_update_mapping(
+                                mapping_id, changes=changes
+                            )
 
                 await self.store.async_update_zone(zone.get(const.ZONE_ID), calc_data)
                 async_dispatcher_send(
@@ -2322,7 +2323,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         elif const.ATTR_CALCULATE in data:
             # calculate a specific zone
             _LOGGER.info("Calculating zone %s", zone_id)
-            data.pop(const.ATTR_CALCULATE)
+            if data is not None:
+                data.pop(const.ATTR_CALCULATE)
             await self.async_calculate_zone(zone_id, data=data)
         elif const.ATTR_CALCULATE_ALL in data:
             # calculate all zones
