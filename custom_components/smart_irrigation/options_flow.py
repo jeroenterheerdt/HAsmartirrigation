@@ -17,34 +17,33 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
 
     def __init__(self, config_entry) -> None:
         """Initialize HACS options flow."""
-        self.config_entry = config_entry
+        # removing this as it's going be deprated in HA 2025.12
+        # self.config_entry = config_entry
         self.options = dict(config_entry.options)
         self._errors = {}
         # migrate from use_owm to weather_service
-        if "use_owm" in self.config_entry.data:
-            self._use_weather_service = self.config_entry.data.get("use_owm")
+        if "use_owm" in config_entry.data:
+            self._use_weather_service = config_entry.data.get("use_owm")
             self._weather_service = const.CONF_WEATHER_SERVICE_OWM
-            self._weather_service_api_key = self.config_entry.data.get("owm_api_key")
+            self._weather_service_api_key = config_entry.data.get("owm_api_key")
         if const.CONF_USE_WEATHER_SERVICE in self.options and self.options.get(
             const.CONF_USE_WEATHER_SERVICE
-        ) != self.config_entry.data.get(const.CONF_USE_WEATHER_SERVICE):
+        ) != config_entry.data.get(const.CONF_USE_WEATHER_SERVICE):
             self._use_weather_service = self.options.get(const.CONF_USE_WEATHER_SERVICE)
         else:
-            self._use_weather_service = self.config_entry.data.get(
+            self._use_weather_service = config_entry.data.get(
                 const.CONF_USE_WEATHER_SERVICE
             )
         if const.CONF_WEATHER_SERVICE in self.options:
             self._weather_service = self.options.get(const.CONF_WEATHER_SERVICE)
         else:
-            self._weather_service = self.config_entry.data.get(
-                const.CONF_WEATHER_SERVICE
-            )
+            self._weather_service = config_entry.data.get(const.CONF_WEATHER_SERVICE)
         if const.CONF_WEATHER_SERVICE_API_KEY in self.options:
             self._weather_service_api_key = self.options.get(
                 const.CONF_WEATHER_SERVICE_API_KEY
             )
         else:
-            self._weather_service_api_key = self.config_entry.data.get(
+            self._weather_service_api_key = config_entry.data.get(
                 const.CONF_WEATHER_SERVICE_API_KEY
             )
         if self._weather_service_api_key is not None:
@@ -54,29 +53,29 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                 const.CONF_WEATHER_SERVICE_API_VERSION
             )
         else:
-            self._owm_api_version = self.config_entry.data.get(
+            self._owm_api_version = config_entry.data.get(
                 const.CONF_WEATHER_SERVICE_API_VERSION
             )
 
         # Initialize manual coordinate settings
-        self._manual_coordinates_enabled = self.config_entry.options.get(
+        self._manual_coordinates_enabled = config_entry.options.get(
             const.CONF_MANUAL_COORDINATES_ENABLED,
-            self.config_entry.data.get(
+            config_entry.data.get(
                 const.CONF_MANUAL_COORDINATES_ENABLED,
                 const.CONF_DEFAULT_MANUAL_COORDINATES_ENABLED,
             ),
         )
-        self._manual_latitude = self.config_entry.options.get(
+        self._manual_latitude = config_entry.options.get(
             const.CONF_MANUAL_LATITUDE,
-            self.config_entry.data.get(const.CONF_MANUAL_LATITUDE),
+            config_entry.data.get(const.CONF_MANUAL_LATITUDE),
         )
-        self._manual_longitude = self.config_entry.options.get(
+        self._manual_longitude = config_entry.options.get(
             const.CONF_MANUAL_LONGITUDE,
-            self.config_entry.data.get(const.CONF_MANUAL_LONGITUDE),
+            config_entry.data.get(const.CONF_MANUAL_LONGITUDE),
         )
-        self._manual_elevation = self.config_entry.options.get(
+        self._manual_elevation = config_entry.options.get(
             const.CONF_MANUAL_ELEVATION,
-            self.config_entry.data.get(const.CONF_MANUAL_ELEVATION),
+            config_entry.data.get(const.CONF_MANUAL_ELEVATION),
         )
 
     async def async_step_init(self, user_input=None):  # pylint: disable=unused-argument
@@ -88,7 +87,7 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
             try:
                 # store values entered
                 self._use_weather_service = user_input[const.CONF_USE_WEATHER_SERVICE]
-                
+
                 if not self._use_weather_service:
                     # update the entry right away and remove the API info, include days setting
                     user_input[const.CONF_WEATHER_SERVICE_API_KEY] = None

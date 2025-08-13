@@ -893,13 +893,12 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
 
     return html`
       <ha-card header="${localize("weather_skip.title", this.hass.language)}">
-      <div class="card-content">
+        <div class="card-content">
           <svg
             style="width:24px;height:24px"
             viewBox="0 0 24 24"
             id="showweatherskipdescription"
-            @click="${() =>
-              this.toggleInformation("weather_skipdescription")}"
+            @click="${() => this.toggleInformation("weather_skipdescription")}"
           >
             <title>
               ${localize(
@@ -1060,108 +1059,112 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                 )}</label
               >
             </div>
-
-            ${this.config.manual_coordinates_enabled
-              ? html`
-                  <div class="zoneline">
-                    <label for="manual_latitude"
-                      >${localize(
+            </div>
+            <div class="card-content">
+            ${
+              this.config.manual_coordinates_enabled
+                ? html`
+                    <div class="zoneline">
+                      <label for="manual_latitude"
+                        >${localize(
+                          "coordinate_config.latitude",
+                          this.hass.language,
+                        )}:</label
+                      >
+                      <input
+                        id="manual_latitude"
+                        type="number"
+                        class="shortinput"
+                        min="-90"
+                        max="90"
+                        step="0.000001"
+                        .value="${this.config.manual_latitude || haLatitude}"
+                        @input=${(e: Event) => {
+                          this.handleConfigChange({
+                            manual_latitude: parseFloat(
+                              (e.target as HTMLInputElement).value,
+                            ),
+                          });
+                        }}
+                      />
+                    </div>
+                    <div class="zoneline">
+                      <label for="manual_longitude"
+                        >${localize(
+                          "coordinate_config.longitude",
+                          this.hass.language,
+                        )}:</label
+                      >
+                      <input
+                        id="manual_longitude"
+                        type="number"
+                        class="shortinput"
+                        min="-180"
+                        max="180"
+                        step="0.000001"
+                        .value="${this.config.manual_longitude || haLongitude}"
+                        @input=${(e: Event) => {
+                          this.handleConfigChange({
+                            manual_longitude: parseFloat(
+                              (e.target as HTMLInputElement).value,
+                            ),
+                          });
+                        }}
+                      />
+                    </div>
+                    <div class="zoneline">
+                      <label for="manual_elevation"
+                        >${localize(
+                          "coordinate_config.elevation",
+                          this.hass.language,
+                        )}:</label
+                      >
+                      <input
+                        id="manual_elevation"
+                        type="number"
+                        class="shortinput"
+                        min="-1000"
+                        max="9000"
+                        step="1"
+                        .value="${this.config.manual_elevation || haElevation}"
+                        @input=${(e: Event) => {
+                          this.handleConfigChange({
+                            manual_elevation: parseFloat(
+                              (e.target as HTMLInputElement).value,
+                            ),
+                          });
+                        }}
+                      />
+                    </div>
+                  `
+                : html`
+                    <div
+                      class="zoneline"
+                      style="color: var(--secondary-text-color); font-style: italic;"
+                    >
+                      ${localize(
+                        "coordinate_config.current_ha_coords",
+                        this.hass.language,
+                      )}:<br />
+                      ${localize(
                         "coordinate_config.latitude",
                         this.hass.language,
-                      )}:</label
-                    >
-                    <input
-                      id="manual_latitude"
-                      type="number"
-                      class="shortinput"
-                      min="-90"
-                      max="90"
-                      step="0.000001"
-                      .value="${this.config.manual_latitude || haLatitude}"
-                      @input=${(e: Event) => {
-                        this.handleConfigChange({
-                          manual_latitude: parseFloat(
-                            (e.target as HTMLInputElement).value,
-                          ),
-                        });
-                      }}
-                    />
-                  </div>
-                  <div class="zoneline">
-                    <label for="manual_longitude"
-                      >${localize(
+                      )}:
+                      ${haLatitude}<br />
+                      ${localize(
                         "coordinate_config.longitude",
                         this.hass.language,
-                      )}:</label
-                    >
-                    <input
-                      id="manual_longitude"
-                      type="number"
-                      class="shortinput"
-                      min="-180"
-                      max="180"
-                      step="0.000001"
-                      .value="${this.config.manual_longitude || haLongitude}"
-                      @input=${(e: Event) => {
-                        this.handleConfigChange({
-                          manual_longitude: parseFloat(
-                            (e.target as HTMLInputElement).value,
-                          ),
-                        });
-                      }}
-                    />
-                  </div>
-                  <div class="zoneline">
-                    <label for="manual_elevation"
-                      >${localize(
+                      )}:
+                      ${haLongitude}<br />
+                      ${localize(
                         "coordinate_config.elevation",
                         this.hass.language,
-                      )}:</label
-                    >
-                    <input
-                      id="manual_elevation"
-                      type="number"
-                      class="shortinput"
-                      min="-1000"
-                      max="9000"
-                      step="1"
-                      .value="${this.config.manual_elevation || haElevation}"
-                      @input=${(e: Event) => {
-                        this.handleConfigChange({
-                          manual_elevation: parseFloat(
-                            (e.target as HTMLInputElement).value,
-                          ),
-                        });
-                      }}
-                    />
-                  </div>
-                `
-              : html`
-                  <div
-                    class="zoneline"
-                    style="color: var(--secondary-text-color); font-style: italic;"
-                  >
-                    ${localize(
-                      "coordinate_config.current_ha_coords",
-                      this.hass.language,
-                    )}:<br />
-                    ${localize(
-                      "coordinate_config.latitude",
-                      this.hass.language,
-                    )}:
-                    ${haLatitude}<br />
-                    ${localize(
-                      "coordinate_config.longitude",
-                      this.hass.language,
-                    )}:
-                    ${haLongitude}<br />
-                    ${localize(
-                      "coordinate_config.elevation",
-                      this.hass.language,
-                    )}:
-                    ${haElevation}m
-                  </div>
-                `}
+                      )}:
+                      ${haElevation}m
+                    </div>
+                  `
+            }
+                </div>
           </div>
         </div>
       </ha-card>
