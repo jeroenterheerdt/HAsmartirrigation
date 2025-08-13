@@ -141,26 +141,34 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         self._number_of_data_points = number_of_data_points
         self._delta = delta
         self._drainage_rate = drainage_rate
-        self._current_drainage = current_drainage        # Cache formatted timestamps for performance
+        self._current_drainage = (
+            current_drainage  # Cache formatted timestamps for performance
+        )
         self._last_updated_formatted = self._format_timestamp(self._last_updated)
         self._last_calculated_formatted = self._format_timestamp(self._last_calculated)
-        
+
         async_dispatcher_connect(
             hass, const.DOMAIN + "_config_updated", self.async_update_sensor_entity
+        )
+        
+        # Listen for unit system changes
+        async_dispatcher_connect(
+            hass, const.DOMAIN + "_unit_system_changed", self.async_handle_unit_system_change
         )
 
     def _format_timestamp(self, val):
         """Format timestamp for display - cached for performance."""
         if val is None:
             return None
-        
+
         outputformat = "%Y-%m-%d %H:%M:%S"
-        
+
         # Optimize timestamp formatting to avoid string parsing
         if isinstance(val, str):
             try:
                 # Try direct parsing without calling convert_timestamp
                 from datetime import datetime
+
                 return datetime.fromisoformat(val).strftime(outputformat)
             except (ValueError, TypeError):
                 return val
@@ -202,6 +210,15 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             # Ensure state change notification is properly sent
             self.async_schedule_update_ha_state(force_refresh=True)
 
+    @callback
+    def async_handle_unit_system_change(self):
+        """Handle unit system changes by refreshing the entity state."""
+        _LOGGER.debug("[async_handle_unit_system_change]: refreshing zone %s", self._id)
+        
+        # Force a state update to refresh any unit-dependent attributes
+        # The actual unit conversions are handled in the attribute display logic
+        self.async_schedule_update_ha_state(force_refresh=True)
+
     @property
     def device_info(self) -> dict:
         """Return info for device registry."""
@@ -210,14 +227,14 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
 
         # Only access hass.data if we're certain it's available and won't block
         if (
-            hasattr(self, 'hass')
+            hasattr(self, "hass")
             and self.hass is not None
-            and hasattr(self.hass, 'data')
+            and hasattr(self.hass, "data")
             and const.DOMAIN in self.hass.data
         ):
             try:
                 coordinator = self.hass.data[const.DOMAIN].get("coordinator")
-                if coordinator and hasattr(coordinator, 'id'):
+                if coordinator and hasattr(coordinator, "id"):
                     coordinator_id = coordinator.id
             except (KeyError, AttributeError, RuntimeError):
                 # Fall back to default if anything goes wrong
@@ -281,11 +298,19 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
     def extra_state_attributes(self):
         """Return the data of the entity."""
         # Ensure cached timestamps are available
-        if not hasattr(self, '_last_updated_formatted') or self._last_updated_formatted is None:
+        if (
+            not hasattr(self, "_last_updated_formatted")
+            or self._last_updated_formatted is None
+        ):
             self._last_updated_formatted = self._format_timestamp(self._last_updated)
-        if not hasattr(self, '_last_calculated_formatted') or self._last_calculated_formatted is None:
-            self._last_calculated_formatted = self._format_timestamp(self._last_calculated)
-            
+        if (
+            not hasattr(self, "_last_calculated_formatted")
+            or self._last_calculated_formatted is None
+        ):
+            self._last_calculated_formatted = self._format_timestamp(
+                self._last_calculated
+            )
+
         return {
             "id": self._id,
             "size": self._size,

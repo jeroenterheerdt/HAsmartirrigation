@@ -8,72 +8,29 @@ from datetime import datetime
 from pathlib import Path
 
 from homeassistant import exceptions
-from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN, UnitOfTemperature
+from homeassistant.const import (STATE_UNAVAILABLE, STATE_UNKNOWN,
+                                 UnitOfTemperature)
 from homeassistant.core import HomeAssistant
 
-from .const import (
-    CONF_WEATHER_SERVICE_KNMI,
-    CONF_WEATHER_SERVICE_OWM,
-    CONF_WEATHER_SERVICE_PW,
-    CUSTOM_COMPONENTS,
-    DOMAIN,
-    GALLON_TO_LITER_FACTOR,
-    INCH_TO_MM_FACTOR,
-    INHG_TO_HPA_FACTOR,
-    INHG_TO_PSI_FACTOR,
-    K_TO_C_FACTOR,
-    KMH_TO_MILESH_FACTOR,
-    KMH_TO_MS_FACTOR,
-    LITER_TO_GALLON_FACTOR,
-    M2_TO_SQ_FT_FACTOR,
-    MAPPING_DEWPOINT,
-    MAPPING_EVAPOTRANSPIRATION,
-    MAPPING_HUMIDITY,
-    MAPPING_MAX_TEMP,
-    MAPPING_MIN_TEMP,
-    MAPPING_CURRENT_PRECIPITATION,
-    MAPPING_PRECIPITATION,
-    MAPPING_PRESSURE,
-    MAPPING_SOLRAD,
-    MAPPING_TEMPERATURE,
-    MAPPING_WINDSPEED,
-    MBAR_TO_INHG_FACTOR,
-    MBAR_TO_PSI_FACTOR,
-    MILESH_TO_KMH_FACTOR,
-    MILESH_TO_MS_FACTOR,
-    MM_TO_INCH_FACTOR,
-    MS_TO_KMH_FACTOR,
-    MS_TO_MILESH_FACTOR,
-    PSI_TO_HPA_FACTOR,
-    PSI_TO_INHG_FACTOR,
-    SQ_FT_TO_M2_FACTOR,
-    UNIT_GPM,
-    UNIT_HPA,
-    UNIT_INCH,
-    UNIT_INCHH,
-    UNIT_INHG,
-    UNIT_KMH,
-    UNIT_LPM,
-    UNIT_M2,
-    UNIT_MBAR,
-    UNIT_MH,
-    UNIT_MILLIBAR,
-    UNIT_MJ_DAY_M2,
-    UNIT_MJ_DAY_SQFT,
-    UNIT_MM,
-    UNIT_MMH,
-    UNIT_MS,
-    UNIT_PERCENT,
-    UNIT_PSI,
-    UNIT_SECONDS,
-    UNIT_SQ_FT,
-    UNIT_W_M2,
-    UNIT_W_SQFT,
-    W_M2_TO_W_SQ_FT_FACTOR,
-    W_SQ_FT_TO_W_M2_FACTOR,
-    W_TO_MJ_DAY_FACTOR,
-)
-from .weathermodules.KNMIClient import KNMIClient
+from .const import (CONF_WEATHER_SERVICE_OWM, CONF_WEATHER_SERVICE_PW,
+                    CUSTOM_COMPONENTS, DOMAIN, GALLON_TO_LITER_FACTOR,
+                    INCH_TO_MM_FACTOR, INHG_TO_HPA_FACTOR, INHG_TO_PSI_FACTOR,
+                    K_TO_C_FACTOR, KMH_TO_MILESH_FACTOR, KMH_TO_MS_FACTOR,
+                    LITER_TO_GALLON_FACTOR, M2_TO_SQ_FT_FACTOR,
+                    MAPPING_CURRENT_PRECIPITATION, MAPPING_DEWPOINT,
+                    MAPPING_EVAPOTRANSPIRATION, MAPPING_HUMIDITY,
+                    MAPPING_MAX_TEMP, MAPPING_MIN_TEMP, MAPPING_PRECIPITATION,
+                    MAPPING_PRESSURE, MAPPING_SOLRAD, MAPPING_TEMPERATURE,
+                    MAPPING_WINDSPEED, MBAR_TO_INHG_FACTOR, MBAR_TO_PSI_FACTOR,
+                    MILESH_TO_KMH_FACTOR, MILESH_TO_MS_FACTOR,
+                    MM_TO_INCH_FACTOR, MS_TO_KMH_FACTOR, MS_TO_MILESH_FACTOR,
+                    PSI_TO_HPA_FACTOR, PSI_TO_INHG_FACTOR, SQ_FT_TO_M2_FACTOR,
+                    UNIT_GPM, UNIT_HPA, UNIT_INCH, UNIT_INCHH, UNIT_INHG,
+                    UNIT_KMH, UNIT_LPM, UNIT_M2, UNIT_MBAR, UNIT_MH,
+                    UNIT_MILLIBAR, UNIT_MJ_DAY_M2, UNIT_MJ_DAY_SQFT, UNIT_MM,
+                    UNIT_MMH, UNIT_MS, UNIT_PERCENT, UNIT_PSI, UNIT_SECONDS,
+                    UNIT_SQ_FT, UNIT_W_M2, UNIT_W_SQFT, W_M2_TO_W_SQ_FT_FACTOR,
+                    W_SQ_FT_TO_W_M2_FACTOR, W_TO_MJ_DAY_FACTOR)
 from .weathermodules.OWMClient import OWMClient
 from .weathermodules.PirateWeatherClient import PirateWeatherClient
 
@@ -696,14 +653,6 @@ async def test_api_key(hass: HomeAssistant, weather_service, api_key):
             longitude=test_lon,
             elevation=test_elev,
         )
-    elif weather_service == CONF_WEATHER_SERVICE_KNMI:
-        client = KNMIClient(
-            api_key=api_key.strip(),
-            api_version="1",
-            latitude=test_lat,
-            longitude=test_lon,
-            elevation=test_elev,
-        )
     if client:
         try:
             await hass.async_add_executor_job(client.get_data)
@@ -807,13 +756,13 @@ class InvalidAuth(exceptions.HomeAssistantError):
 
 def normalize_azimuth_angle(angle: float) -> float:
     """Normalize any azimuth angle to 0-360 degree range.
-    
+
     Args:
         angle: Input angle in degrees (can be any value)
-        
+
     Returns:
         Normalized angle in 0-360 degree range
-        
+
     Examples:
         normalize_azimuth_angle(450) -> 90
         normalize_azimuth_angle(-30) -> 330
@@ -822,100 +771,109 @@ def normalize_azimuth_angle(angle: float) -> float:
     return angle % 360
 
 
-def calculate_solar_azimuth(latitude: float, longitude: float, timestamp: datetime) -> float:
+def calculate_solar_azimuth(
+    latitude: float, longitude: float, timestamp: datetime
+) -> float:
     """Calculate solar azimuth angle for a given location and time.
-    
+
     Args:
         latitude: Latitude in degrees
-        longitude: Longitude in degrees  
+        longitude: Longitude in degrees
         timestamp: UTC datetime object
-        
+
     Returns:
         Solar azimuth angle in degrees (0-360, 0=North, 90=East, 180=South, 270=West)
     """
     import math
-    
+
     # Convert to radians
     lat_rad = math.radians(latitude)
-    
+
     # Day of year
     day_of_year = timestamp.timetuple().tm_yday
-    
+
     # Solar declination (simplified)
-    declination = math.radians(23.45 * math.sin(math.radians(360 * (284 + day_of_year) / 365)))
-    
+    declination = math.radians(
+        23.45 * math.sin(math.radians(360 * (284 + day_of_year) / 365))
+    )
+
     # Hour angle
     time_decimal = timestamp.hour + timestamp.minute / 60.0 + timestamp.second / 3600.0
     # Longitude correction for local solar time
     longitude_correction = longitude / 15.0
     solar_time = time_decimal - longitude_correction
     hour_angle = math.radians((solar_time - 12) * 15)
-    
-    # Solar elevation
-    elevation = math.asin(
-        math.sin(lat_rad) * math.sin(declination) + 
-        math.cos(lat_rad) * math.cos(declination) * math.cos(hour_angle)
-    )
-    
+
+    # Solar elevation (calculated but not used in this function)
+    # elevation = math.asin(
+    #     math.sin(lat_rad) * math.sin(declination) +
+    #     math.cos(lat_rad) * math.cos(declination) * math.cos(hour_angle)
+    # )
+
     # Solar azimuth
     azimuth = math.atan2(
         math.sin(hour_angle),
-        math.cos(hour_angle) * math.sin(lat_rad) - math.tan(declination) * math.cos(lat_rad)
+        math.cos(hour_angle) * math.sin(lat_rad)
+        - math.tan(declination) * math.cos(lat_rad),
     )
-    
+
     # Convert to degrees and normalize to 0-360 (0=North, 90=East, 180=South, 270=West)
     azimuth_degrees = (math.degrees(azimuth) + 180) % 360
-    
+
     return azimuth_degrees
 
 
 def find_next_solar_azimuth_time(
-    latitude: float, 
-    longitude: float, 
-    target_azimuth: float, 
+    latitude: float,
+    longitude: float,
+    target_azimuth: float,
     start_time: datetime,
-    max_days: int = 1
+    max_days: int = 1,
 ) -> datetime | None:
     """Find the next time when the sun will be at a specific azimuth angle.
-    
+
     Args:
         latitude: Latitude in degrees
         longitude: Longitude in degrees
         target_azimuth: Target azimuth angle in degrees (0-360)
         start_time: Starting datetime to search from
         max_days: Maximum days to search ahead
-        
+
     Returns:
         Next datetime when sun will be at target azimuth, or None if not found
     """
-    import math
     from datetime import timedelta
-    
+
     # Search in 15-minute intervals for the next 24 hours by default
     search_interval = timedelta(minutes=15)
     max_search_time = start_time + timedelta(days=max_days)
-    
+
     current_time = start_time
     prev_azimuth = calculate_solar_azimuth(latitude, longitude, current_time)
-    
+
     while current_time < max_search_time:
         current_time += search_interval
         current_azimuth = calculate_solar_azimuth(latitude, longitude, current_time)
-        
+
         # Check if we've crossed the target azimuth
         if _azimuth_crossed_target(prev_azimuth, current_azimuth, target_azimuth):
             # Refine to minute precision
             return _refine_azimuth_time(
-                latitude, longitude, target_azimuth, 
-                current_time - search_interval, current_time
+                latitude,
+                longitude,
+                target_azimuth,
+                current_time - search_interval,
+                current_time,
             )
-        
+
         prev_azimuth = current_azimuth
-    
+
     return None
 
 
-def _azimuth_crossed_target(prev_azimuth: float, current_azimuth: float, target: float) -> bool:
+def _azimuth_crossed_target(
+    prev_azimuth: float, current_azimuth: float, target: float
+) -> bool:
     """Check if azimuth crossed the target between two measurements."""
     # Handle wraparound case (359° -> 1°)
     if abs(prev_azimuth - current_azimuth) > 180:
@@ -927,26 +885,29 @@ def _azimuth_crossed_target(prev_azimuth: float, current_azimuth: float, target:
             return target <= prev_azimuth or target >= current_azimuth
     else:
         # Normal case
-        return min(prev_azimuth, current_azimuth) <= target <= max(prev_azimuth, current_azimuth)
+        return (
+            min(prev_azimuth, current_azimuth)
+            <= target
+            <= max(prev_azimuth, current_azimuth)
+        )
 
 
 def _refine_azimuth_time(
-    latitude: float, 
-    longitude: float, 
+    latitude: float,
+    longitude: float,
     target_azimuth: float,
-    start_time: datetime, 
-    end_time: datetime
+    start_time: datetime,
+    end_time: datetime,
 ) -> datetime:
     """Refine azimuth time to minute precision using binary search."""
     while (end_time - start_time).total_seconds() > 60:
         mid_time = start_time + (end_time - start_time) / 2
         mid_azimuth = calculate_solar_azimuth(latitude, longitude, mid_time)
-        
+
         start_azimuth = calculate_solar_azimuth(latitude, longitude, start_time)
-        
+
         if _azimuth_crossed_target(start_azimuth, mid_azimuth, target_azimuth):
             end_time = mid_time
         else:
             start_time = mid_time
-    
     return start_time

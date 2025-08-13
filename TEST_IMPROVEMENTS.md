@@ -44,7 +44,6 @@
 - **Weather Modules**
   - OWM client functionality
   - Pirate Weather integration
-  - KNMI weather service
   - Error handling and retries
 
 #### New Unit Tests to Add

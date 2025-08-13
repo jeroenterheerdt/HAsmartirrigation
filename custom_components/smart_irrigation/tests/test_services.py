@@ -1,11 +1,10 @@
 """Test Smart Irrigation services."""
 
-import pytest
-from unittest.mock import AsyncMock, Mock, patch
-from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.exceptions import ServiceValidationError
+from unittest.mock import AsyncMock, patch
 
+import pytest
 from custom_components.smart_irrigation import const
+from homeassistant.core import HomeAssistant, ServiceCall
 
 
 class TestSmartIrrigationServices:
@@ -46,7 +45,7 @@ class TestSmartIrrigationServices:
             "delete_weather_data": True,
         }
 
-        call = ServiceCall(
+        ServiceCall(
             domain=const.DOMAIN,
             service="calculate_zone",
             data=service_data,
@@ -72,7 +71,7 @@ class TestSmartIrrigationServices:
         # Mock service call
         service_data = {"delete_weather_data": False}
 
-        call = ServiceCall(
+        ServiceCall(
             domain=const.DOMAIN,
             service="calculate_all_zones",
             data=service_data,
@@ -135,7 +134,7 @@ class TestSmartIrrigationServices:
             "new_bucket_value": 15.5,
         }
 
-        call = ServiceCall(
+        ServiceCall(
             domain=const.DOMAIN,
             service="set_bucket",
             data=service_data,
@@ -166,7 +165,7 @@ class TestSmartIrrigationServices:
 
         # Test that service call handles invalid entities gracefully
         # (Actual behavior depends on service implementation)
-        call = ServiceCall(
+        ServiceCall(
             domain=const.DOMAIN,
             service="calculate_zone",
             data=service_data,

@@ -1,22 +1,17 @@
 """Test the Smart Irrigation panel registration."""
 
-import pytest
 from unittest.mock import AsyncMock, Mock, patch
-from pathlib import Path
 
-from homeassistant.core import HomeAssistant
-
-from custom_components.smart_irrigation.panel import (
-    async_register_panel,
-    remove_panel,
-)
+import pytest
 from custom_components.smart_irrigation.const import (
     DOMAIN,
-    PANEL_TITLE,
     PANEL_ICON,
     PANEL_NAME,
+    PANEL_TITLE,
     PANEL_URL,
 )
+from custom_components.smart_irrigation.panel import async_register_panel, remove_panel
+from homeassistant.core import HomeAssistant
 
 
 class TestSmartIrrigationPanel:

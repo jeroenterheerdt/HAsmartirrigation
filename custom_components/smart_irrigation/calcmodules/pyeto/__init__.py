@@ -105,7 +105,10 @@ class PyETO(SmartIrrigationCalculationModule):
                 CONF_PYETO_FORECAST_DAYS, DEFAULT_FORECAST_DAYS
             )
             if not isinstance(self.forecast_days, int):
-                self.forecast_days = DEFAULT_FORECAST_DAYS
+                try:
+                    self.forecast_days = int(self.forecast_days)
+                except ValueError:
+                    self.forecast_days = DEFAULT_FORECAST_DAYS
 
     def calculate(self, weather_data, forecast_data) -> float:
         """Calculate the average evapotranspiration delta for the given weather and forecast data.
@@ -298,4 +301,5 @@ class PyETO(SmartIrrigationCalculationModule):
                     "[pyETO: calculate_et_for_day] missing %s", MAPPING_PRESSURE
                 )
         _LOGGER.debug("[pyETO: calculate_et_for_day] returned: 0!")
+        return 0
         return 0

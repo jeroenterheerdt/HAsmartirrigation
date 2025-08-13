@@ -201,13 +201,6 @@ class TestAPIKeyValidation:
             assert result is True
 
     @pytest.mark.asyncio
-    async def test_api_key_knmi_success(self):
-        """Test successful KNMI API key validation."""
-        # KNMI doesn't require API key validation
-        result = await test_api_key("", "knmi", 52.0, 4.0)
-        assert result is True
-
-    @pytest.mark.asyncio
     async def test_api_key_invalid_service(self):
         """Test API key validation with invalid service."""
         with pytest.raises(ValueError):

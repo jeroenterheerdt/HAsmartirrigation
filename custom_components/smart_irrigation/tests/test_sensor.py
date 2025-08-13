@@ -1,17 +1,16 @@
 """Test Smart Irrigation sensor platform."""
 
-import pytest
 from unittest.mock import AsyncMock, Mock, patch
-from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 
 from custom_components.smart_irrigation import const
 from custom_components.smart_irrigation.sensor import (
-    async_setup_entry,
     SmartIrrigationZoneEntity,
+    async_setup_entry,
 )
+from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 
 class TestSensorPlatform:
@@ -176,3 +175,38 @@ class TestSmartIrrigationZoneEntity:
         await entity.async_will_remove_from_hass()
 
         entity._unsubscriber.assert_called_once()
+
+    def test_async_handle_unit_system_change(
+        self,
+        hass: HomeAssistant,
+        mock_zone_config: dict,
+    ) -> None:
+        """Test unit system change handling in sensor entity."""
+        entity_id = f"{SENSOR_DOMAIN}.{const.DOMAIN}_test_zone"
+
+        entity = SmartIrrigationZoneEntity(
+            hass=hass,
+            entity_id=entity_id,
+            name=mock_zone_config["name"],
+            id=mock_zone_config["id"],
+            size=mock_zone_config["size"],
+            throughput=mock_zone_config["throughput"],
+            state=mock_zone_config["state"],
+            duration=mock_zone_config["duration"],
+            bucket=mock_zone_config["bucket"],
+            last_updated=mock_zone_config["last_updated"],
+            last_calculated=mock_zone_config["last_calculated"],
+            number_of_data_points=mock_zone_config["number_of_data_points"],
+            delta=mock_zone_config["delta"],
+            drainage_rate=mock_zone_config["drainage_rate"],
+            current_drainage=mock_zone_config["current_drainage"],
+        )
+
+        # Mock the async_schedule_update_ha_state method
+        entity.async_schedule_update_ha_state = Mock()
+
+        # Call the unit system change handler
+        entity.async_handle_unit_system_change()
+
+        # Verify state update was scheduled
+        entity.async_schedule_update_ha_state.assert_called_once_with(force_refresh=True)

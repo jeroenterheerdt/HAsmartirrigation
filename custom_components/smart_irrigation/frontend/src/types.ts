@@ -41,6 +41,11 @@ export class SmartIrrigationConfig {
   irrigation_start_triggers: IrrigationStartTrigger[];
   skip_irrigation_on_precipitation: boolean;
   precipitation_threshold_mm: number;
+  manual_coordinates_enabled: boolean;
+  manual_latitude?: number;
+  manual_longitude?: number;
+  manual_elevation?: number;
+  days_between_irrigation: number;
 
   constructor() {
     this.calctime = "23:00";
@@ -59,6 +64,11 @@ export class SmartIrrigationConfig {
     this.irrigation_start_triggers = [];
     this.skip_irrigation_on_precipitation = false;
     this.precipitation_threshold_mm = 2.0;
+    this.manual_coordinates_enabled = false;
+    this.manual_latitude = undefined;
+    this.manual_longitude = undefined;
+    this.manual_elevation = undefined;
+    this.days_between_irrigation = 0;
   }
 }
 

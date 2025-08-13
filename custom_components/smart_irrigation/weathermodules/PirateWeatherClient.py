@@ -10,9 +10,16 @@ import requests
 
 # DO NOT USE THESE FOR TESTING, INSTEAD DEFINE THE CONSTS IN THIS FILE
 from ..const import MAPPING_CURRENT_PRECIPITATION  # noqa: TID252
-from ..const import (MAPPING_DEWPOINT, MAPPING_HUMIDITY, MAPPING_MAX_TEMP,
-                     MAPPING_MIN_TEMP, MAPPING_PRECIPITATION, MAPPING_PRESSURE,
-                     MAPPING_TEMPERATURE, MAPPING_WINDSPEED)
+from ..const import (
+    MAPPING_DEWPOINT,
+    MAPPING_HUMIDITY,
+    MAPPING_MAX_TEMP,
+    MAPPING_MIN_TEMP,
+    MAPPING_PRECIPITATION,
+    MAPPING_PRESSURE,
+    MAPPING_TEMPERATURE,
+    MAPPING_WINDSPEED,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -144,9 +151,9 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
                             )
                         )
 
-                        parsed_data[MAPPING_HUMIDITY] = data[
-                            PirateWeather_humidity_key_name
-                        ]
+                        parsed_data[MAPPING_HUMIDITY] = (
+                            data[PirateWeather_humidity_key_name] * 100.0
+                        )  # update since humidity reported by PirateWeather is how reported on a scale from 0-1
                         parsed_data[MAPPING_TEMPERATURE] = (
                             data[PirateWeather_max_temp_key_name]
                             + data[PirateWeather_min_temp_key_name] / 2.0
@@ -268,9 +275,9 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
                     parsed_data[MAPPING_PRESSURE] = data[
                         PirateWeather_pressure_key_name
                     ]
-                    parsed_data[MAPPING_HUMIDITY] = data[
-                        PirateWeather_humidity_key_name
-                    ]
+                    parsed_data[MAPPING_HUMIDITY] = (
+                        data[PirateWeather_humidity_key_name] * 100.0
+                    )  # update since humidity reported by PirateWeather is how reported on a scale from 0-1
                     parsed_data[MAPPING_TEMPERATURE] = data[PirateWeather_temp_key_name]
                     parsed_data[MAPPING_DEWPOINT] = data[
                         PirateWeather_dew_point_key_name

@@ -1,15 +1,15 @@
 """Test the Smart Irrigation performance monitoring utilities."""
 
-import pytest
 import asyncio
 import time
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
+import pytest
 from custom_components.smart_irrigation.performance import (
-    performance_timer,
-    async_timer,
     AsyncPerformanceMonitor,
     _log_duration,
+    async_timer,
+    performance_timer,
 )
 
 

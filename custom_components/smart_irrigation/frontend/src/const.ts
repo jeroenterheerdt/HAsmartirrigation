@@ -1,4 +1,4 @@
-export const VERSION = "v2025.7.2";
+export const VERSION = "v2025.8.1";
 export const REPO = "https://github.com/jeroenterheerdt/HASmartIrrigation;";
 export const ISSUES_URL = REPO + "/issues";
 
@@ -17,9 +17,19 @@ export const CONF_CLEAR_TIME = "cleardatatime";
 export const CONF_CONTINUOUS_UPDATES = "continuousupdates";
 export const CONF_SENSOR_DEBOUNCE = "sensor_debounce";
 
+// Manual coordinate configuration
+export const CONF_MANUAL_COORDINATES_ENABLED = "manual_coordinates_enabled";
+export const CONF_MANUAL_LATITUDE = "manual_latitude";
+export const CONF_MANUAL_LONGITUDE = "manual_longitude";
+export const CONF_MANUAL_ELEVATION = "manual_elevation";
+
 // Weather-based skip configuration
-export const CONF_SKIP_IRRIGATION_ON_PRECIPITATION = "skip_irrigation_on_precipitation";
+export const CONF_SKIP_IRRIGATION_ON_PRECIPITATION =
+  "skip_irrigation_on_precipitation";
 export const CONF_PRECIPITATION_THRESHOLD_MM = "precipitation_threshold_mm";
+
+// Days between irrigation configuration
+export const CONF_DAYS_BETWEEN_IRRIGATION = "days_between_irrigation";
 
 // Irrigation start trigger configuration
 export const CONF_IRRIGATION_START_TRIGGERS = "irrigation_start_triggers";

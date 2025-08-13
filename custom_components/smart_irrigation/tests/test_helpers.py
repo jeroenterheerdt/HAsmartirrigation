@@ -1,25 +1,23 @@
 """Test Smart Irrigation helper functions."""
 
-import pytest
-from unittest.mock import AsyncMock, patch
-from datetime import datetime, time
-from homeassistant.core import HomeAssistant
-from homeassistant.const import UnitOfTemperature
+from datetime import time
+from unittest.mock import AsyncMock
 
+import pytest
+from custom_components.smart_irrigation.const import (
+    CONF_WEATHER_SERVICE_OWM,
+    CONF_WEATHER_SERVICE_PW,
+)
 from custom_components.smart_irrigation.helpers import (
+    CannotConnect,
+    InvalidAuth,
     altitudeToPressure,
     check_time,
     convert_between,
     relative_to_absolute_pressure,
     test_api_key,
-    CannotConnect,
-    InvalidAuth,
 )
-from custom_components.smart_irrigation.const import (
-    CONF_WEATHER_SERVICE_OWM,
-    CONF_WEATHER_SERVICE_PW,
-    CONF_WEATHER_SERVICE_KNMI,
-)
+from homeassistant.const import UnitOfTemperature
 
 
 class TestHelperFunctions:
@@ -142,25 +140,14 @@ class TestHelperFunctions:
 
         assert result is True
 
-    async def test_test_api_key_knmi_success(self) -> None:
-        """Test KNMI API key validation success."""
-        # KNMI doesn't require API key validation
-        mock_session = AsyncMock()
-
-        result = await test_api_key(
-            mock_session, CONF_WEATHER_SERVICE_KNMI, None, None, 52.0, 5.0
-        )
-
-        assert result is True
-
     def test_convert_between_pressure_units(self) -> None:
         """Test pressure unit conversions."""
         from custom_components.smart_irrigation.const import (
+            HPA_TO_INHG_FACTOR,
+            HPA_TO_PSI_FACTOR,
             UNIT_HPA,
             UNIT_INHG,
             UNIT_PSI,
-            HPA_TO_INHG_FACTOR,
-            HPA_TO_PSI_FACTOR,
         )
 
         # Test hPa to inHg conversion
@@ -177,10 +164,10 @@ class TestHelperFunctions:
     def test_convert_between_length_units(self) -> None:
         """Test length unit conversions."""
         from custom_components.smart_irrigation.const import (
-            UNIT_MM,
-            UNIT_INCH,
-            MM_TO_INCH_FACTOR,
             INCH_TO_MM_FACTOR,
+            MM_TO_INCH_FACTOR,
+            UNIT_INCH,
+            UNIT_MM,
         )
 
         # Test mm to inch conversion
@@ -198,11 +185,11 @@ class TestHelperFunctions:
     def test_convert_between_speed_units(self) -> None:
         """Test speed unit conversions."""
         from custom_components.smart_irrigation.const import (
-            UNIT_MS,
-            UNIT_KMH,
-            UNIT_MILESH,
             MS_TO_KMH_FACTOR,
             MS_TO_MILESH_FACTOR,
+            UNIT_KMH,
+            UNIT_MILESH,
+            UNIT_MS,
         )
 
         # Test m/s to km/h conversion

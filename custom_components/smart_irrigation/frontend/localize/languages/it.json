@@ -103,7 +103,7 @@
           "labels": {
             "automatic-clear-enabled": "Cancella automaticamente i dati meteorologici raccolti",
             "automatic-clear-time": "Cancella dati meteo a"
-            }
+          }
         },
         "continuousupdates": {
           "header": "Aggiornamenti continui per i sensori (sperimentale)",
@@ -128,8 +128,8 @@
           "community-forum": "Forum della Comunità",
           "or-open-a": "oppure apri un",
           "github-issue": "Problema su Github",
-          "english-only": "soltanto in Inglese"      
-        }    
+          "english-only": "soltanto in Inglese"
+        }
       }
     },
     "info": {
@@ -225,7 +225,7 @@
         "title": "Record meteo (ultimi 10)",
         "timestamp": "Tempo",
         "temperature": "Temp",
-        "humidity": "Umidità", 
+        "humidity": "Umidità",
         "precipitation": "Precip",
         "retrieval-time": "Recuperato",
         "no-data": "Non sono disponibili dati meteo per questo gruppo di sensori"
@@ -315,5 +315,21 @@
       "title": "Zone"
     }
   },
-  "title": "Smart Irrigation"
+  "title": "Smart Irrigation",
+  "coordinate_config": {
+    "title": "Coordinate di Posizione",
+    "description": "Configura le coordinate di posizione per il recupero dei dati meteorologici. Puoi usare coordinate manuali diverse dalla tua posizione Home Assistant se necessario.",
+    "manual_enabled": "Usa coordinate manuali",
+    "use_ha_location": "Usa posizione di Home Assistant",
+    "latitude": "Latitudine (gradi decimali)",
+    "longitude": "Longitudine (gradi decimali)",
+    "elevation": "Elevazione (metri sul livello del mare)",
+    "current_ha_coords": "Coordinate attuali di Home Assistant"
+  },
+  "days_between_irrigation": {
+    "title": "Giorni Tra Irrigazioni",
+    "description": "Configura il numero minimo di giorni che devono passare tra gli eventi di irrigazione. Questo aiuta a controllare la frequenza di irrigazione per la conservazione dell'acqua e la gestione della salute delle piante.\n\nCasi d'uso tipici:\n• Cura del prato: intervalli di 1-2 giorni prevengono l'eccesso di irrigazione\n• Restrizioni di siccità: intervalli di 6+ giorni per irrigazione settimanale\n• Piante a radici profonde: intervalli di 3-7 giorni per irrigazione meno frequente\n• Conservazione dell'acqua: personalizzabile in base al clima e alle condizioni del suolo",
+    "label": "Giorni minimi tra irrigazioni",
+    "help_text": "Imposta a 0 per disabilitare questa funzione. Sono supportati valori da 1-365 giorni. Questa impostazione funziona insieme alla logica di previsione delle precipitazioni esistente."
+  }
 }

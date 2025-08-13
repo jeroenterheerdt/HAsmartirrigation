@@ -1,7 +1,15 @@
 """Test Smart Irrigation config flow."""
 
 import sys
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from custom_components.smart_irrigation import const
+from custom_components.smart_irrigation.config_flow import CannotConnect, InvalidAuth
+from homeassistant import config_entries
+from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import FlowResultType
+
+from tests.common import MockConfigEntry
 
 # Patch all problematic modules BEFORE any Home Assistant imports
 sys.modules["homeassistant.helpers.trigger"] = MagicMock()
@@ -25,20 +33,6 @@ sys.modules["homeassistant.components.frontend"] = frontend_mock
 websocket_mock = MagicMock()
 websocket_mock.async_register_command = MagicMock()
 sys.modules["homeassistant.components.websocket_api"] = websocket_mock
-
-import pytest
-from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResultType
-
-from custom_components.smart_irrigation import const
-from custom_components.smart_irrigation.config_flow import (
-    SmartIrrigationConfigFlow,
-    CannotConnect,
-    InvalidAuth,
-)
-
-from tests.common import MockConfigEntry
 
 
 class TestSmartIrrigationConfigFlow:

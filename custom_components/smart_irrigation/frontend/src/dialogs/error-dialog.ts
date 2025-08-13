@@ -27,7 +27,7 @@ export class ErrorDialog extends LitElement {
         @closed=${this.closeDialog}
         @close-dialog=${this.closeDialog}
       >
-        <div  slot="heading">
+        <div slot="heading">
           <ha-header-bar>
             <ha-icon-button
               slot="navigationIcon"

@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2025.7.2"
+VERSION = "v2025.8.1"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -16,11 +16,64 @@ START_EVENT_FIRED_TODAY = "starteventfiredtoday"
 CONF_IRRIGATION_START_TRIGGERS = "irrigation_start_triggers"
 CONF_DEFAULT_IRRIGATION_START_TRIGGERS = []
 
-# Weather-based skip configuration  
+# Weather-based skip configuration
 CONF_SKIP_IRRIGATION_ON_PRECIPITATION = "skip_irrigation_on_precipitation"
 CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION = False
 CONF_PRECIPITATION_THRESHOLD_MM = "precipitation_threshold_mm"
 CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM = 2.0  # 2mm threshold
+
+# Days between irrigation configuration
+CONF_DAYS_BETWEEN_IRRIGATION = "days_between_irrigation"
+CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION = 0  # 0 = no restriction (default behavior)
+CONF_DAYS_SINCE_LAST_IRRIGATION = "days_since_last_irrigation"
+CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION = 0
+
+# Enhanced Scheduling Configuration
+CONF_RECURRING_SCHEDULES = "recurring_schedules"
+CONF_DEFAULT_RECURRING_SCHEDULES = []
+CONF_SEASONAL_ADJUSTMENTS = "seasonal_adjustments"
+CONF_DEFAULT_SEASONAL_ADJUSTMENTS = []
+
+# Recurring Schedule Configuration
+SCHEDULE_TYPE_DAILY = "daily"
+SCHEDULE_TYPE_WEEKLY = "weekly"
+SCHEDULE_TYPE_MONTHLY = "monthly"
+SCHEDULE_TYPE_INTERVAL = "interval"
+SCHEDULE_TYPES = [SCHEDULE_TYPE_DAILY, SCHEDULE_TYPE_WEEKLY, SCHEDULE_TYPE_MONTHLY, SCHEDULE_TYPE_INTERVAL]
+
+# Recurring Schedule Keys
+SCHEDULE_CONF_ID = "id"
+SCHEDULE_CONF_NAME = "name"
+SCHEDULE_CONF_TYPE = "type"
+SCHEDULE_CONF_ENABLED = "enabled"
+SCHEDULE_CONF_TIME = "time"
+SCHEDULE_CONF_DAYS_OF_WEEK = "days_of_week"
+SCHEDULE_CONF_DAY_OF_MONTH = "day_of_month"
+SCHEDULE_CONF_INTERVAL_HOURS = "interval_hours"
+SCHEDULE_CONF_START_DATE = "start_date"
+SCHEDULE_CONF_END_DATE = "end_date"
+SCHEDULE_CONF_ZONES = "zones"  # List of zone IDs or "all"
+SCHEDULE_CONF_ACTION = "action"  # "calculate", "update", or "irrigate"
+
+# Seasonal Adjustment Configuration
+SEASONAL_CONF_ID = "id"
+SEASONAL_CONF_NAME = "name"
+SEASONAL_CONF_ENABLED = "enabled"
+SEASONAL_CONF_MONTH_START = "month_start"
+SEASONAL_CONF_MONTH_END = "month_end"
+SEASONAL_CONF_MULTIPLIER_ADJUSTMENT = "multiplier_adjustment"
+SEASONAL_CONF_THRESHOLD_ADJUSTMENT = "threshold_adjustment"
+SEASONAL_CONF_ZONES = "zones"  # List of zone IDs or "all"
+
+# Irrigation Unlimited Integration
+CONF_IRRIGATION_UNLIMITED_INTEGRATION = "irrigation_unlimited_integration"
+CONF_DEFAULT_IRRIGATION_UNLIMITED_INTEGRATION = False
+CONF_IU_ENTITY_PREFIX = "iu_entity_prefix"
+CONF_DEFAULT_IU_ENTITY_PREFIX = "switch.irrigation_unlimited"
+CONF_IU_SYNC_SCHEDULES = "iu_sync_schedules"
+CONF_DEFAULT_IU_SYNC_SCHEDULES = False
+CONF_IU_SHARE_ZONE_DATA = "iu_share_zone_data"
+CONF_DEFAULT_IU_SHARE_ZONE_DATA = False
 
 # Trigger types
 TRIGGER_TYPE_SUNRISE = "sunrise"
@@ -40,6 +93,13 @@ CONF_WEATHER_SERVICE = "weather_service"
 CONF_WEATHER_SERVICE_API_KEY = "weather_service_api_key"
 CONF_WEATHER_SERVICE_API_VERSION = "weather_service_api_version"
 CONF_INSTANCE_NAME = "name"
+
+# Manual coordinate configuration
+CONF_MANUAL_COORDINATES_ENABLED = "manual_coordinates_enabled"
+CONF_MANUAL_LATITUDE = "manual_latitude"
+CONF_MANUAL_LONGITUDE = "manual_longitude"
+CONF_MANUAL_ELEVATION = "manual_elevation"
+CONF_DEFAULT_MANUAL_COORDINATES_ENABLED = False
 CONF_REFERENCE_ET = "reference_evapotranspiration"
 CONF_REFERENCE_ET_1 = "reference_evapotranspiration_1"
 CONF_REFERENCE_ET_2 = "reference_evapotranspiration_2"
@@ -309,3 +369,17 @@ SERVICE_SET_ZONE = "set_zone"
 SERVICE_ENTITY_ID = "entity_id"
 SERVICE_CLEAR_WEATHERDATA = "clear_all_weather_data"
 SERVICE_GENERATE_WATERING_CALENDAR = "generate_watering_calendar"
+SERVICE_CREATE_RECURRING_SCHEDULE = "create_recurring_schedule"
+SERVICE_UPDATE_RECURRING_SCHEDULE = "update_recurring_schedule"
+SERVICE_DELETE_RECURRING_SCHEDULE = "delete_recurring_schedule"
+SERVICE_CREATE_SEASONAL_ADJUSTMENT = "create_seasonal_adjustment"
+SERVICE_UPDATE_SEASONAL_ADJUSTMENT = "update_seasonal_adjustment"
+SERVICE_DELETE_SEASONAL_ADJUSTMENT = "delete_seasonal_adjustment"
+SERVICE_SYNC_WITH_IRRIGATION_UNLIMITED = "sync_with_irrigation_unlimited"
+SERVICE_SEND_ZONE_DATA_TO_IU = "send_zone_data_to_irrigation_unlimited"
+SERVICE_GET_IU_SCHEDULE_STATUS = "get_irrigation_unlimited_status"
+
+# Events
+EVENT_RECURRING_SCHEDULE_TRIGGERED = "recurring_schedule_triggered"
+EVENT_SEASONAL_ADJUSTMENT_APPLIED = "seasonal_adjustment_applied"
+EVENT_IU_SYNC_COMPLETED = "irrigation_unlimited_sync_completed"

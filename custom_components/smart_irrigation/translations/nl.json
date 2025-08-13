@@ -13,7 +13,7 @@
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
           "name": "Unieke naam",
-          "use_weather_service": "Gebruik een weersdient (Open Weather Map, Pirate Weather of KNMI) voor weergegevens en voorspellingen. Zet dit aan als je van plan bent dit te gebruiken voor in ieder geval een deel van de benodigde weersinformatie of voorspellingen. Zet het uit als je een andere weersdienst of een andere bron (zoals een eigen weersstation) wilt gebruiken. In dat geval zijn er geen voorspellingen beschikbaar."
+          "use_weather_service": "Gebruik een weersdient (Open Weather Map of Pirate Weather) voor weergegevens en voorspellingen. Zet dit aan als je van plan bent dit te gebruiken voor in ieder geval een deel van de benodigde weersinformatie of voorspellingen. Zet het uit als je een andere weersdienst of een andere bron (zoals een eigen weersstation) wilt gebruiken. In dat geval zijn er geen voorspellingen beschikbaar."
         }
       },
       "step1": {
@@ -29,14 +29,15 @@
   },
   "options": {
     "error": {
-      "auth": "Weerdienst API sleutel of versie is verkeerd"
+      "auth": "Weerdienst API sleutel of versie is verkeerd",
+      "invalid_coordinates": "Ongeldige coördinaten. Controleer breedtegraad (-90 tot 90) en lengtegraad (-180 tot 180) waarden."
     },
     "step": {
       "init": {
         "title": "Weerdienst API instellingen",
         "description": "Als je hulp nodig hebt, zie https://github.com/jeroenterheerdt/HASmartIrrigation",
         "data": {
-          "use_weather_service": "Gebruik een weersdient (Open Weather Map, Pirate Weather of KNMI) voor weergegevens en voorspellingen. Zet dit aan als je van plan bent dit te gebruiken voor in ieder geval een deel van de benodigde weersinformatie of voorspellingen. Zet het uit als je een andere weersdienst of een andere bron (zoals een eigen weersstation) wilt gebruiken. In dat geval zijn er geen voorspellingen beschikbaar."
+          "use_weather_service": "Gebruik een weersdient (Open Weather Map of Pirate Weather) voor weergegevens en voorspellingen. Zet dit aan als je van plan bent dit te gebruiken voor in ieder geval een deel van de benodigde weersinformatie of voorspellingen. Zet het uit als je een andere weersdienst of een andere bron (zoals een eigen weersstation) wilt gebruiken. In dat geval zijn er geen voorspellingen beschikbaar."
         }
       },
       "step1": {
@@ -47,6 +48,16 @@
           "weather_service_api_key": "API sleutel",
           "weather_service_api_version": "API versie"
         }
+      },
+      "coordinates": {
+        "title": "Locatie coördinaten",
+        "description": "Configureer locatie coördinaten voor het ophalen van weergegevens. Je kunt handmatige coördinaten gebruiken die verschillen van je Home Assistant locatie indien nodig.",
+        "data": {
+          "manual_coordinates_enabled": "Gebruik handmatige coördinaten in plaats van Home Assistant locatie",
+          "manual_latitude": "Breedtegraad (decimale graden, -90 tot 90)",
+          "manual_longitude": "Lengtegraad (decimale graden, -180 tot 180)",
+          "manual_elevation": "Hoogte boven zeeniveau (meters, optioneel)"
+        }
       }
     }
   },
@@ -54,7 +65,7 @@
     "calculate_all_zones": {
       "name": "Calculate all zones",
       "description": "Calculate all zones in automatic mode",
-      "fields":{
+      "fields": {
         "delete_weather_data": {
           "name": "Delete weather data",
           "description": "Delete weather data after calculation"
