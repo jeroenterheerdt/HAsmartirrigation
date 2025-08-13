@@ -69,39 +69,11 @@ async def async_setup(hass: HomeAssistant, config):
     return True
 
 
-async def handle_core_config_change(hass: HomeAssistant, event):
-    """Handle Home Assistant core configuration changes, specifically unit system changes."""
-    if const.DOMAIN not in hass.data or "coordinator" not in hass.data[const.DOMAIN]:
-        return
-    
-    # Check if unit system has changed by comparing current vs coordinator's cached unit system
-    coordinator = hass.data[const.DOMAIN]["coordinator"]
-    current_unit_system = hass.config.units
-    
-    # Store the previous unit system in coordinator if not already stored
-    if not hasattr(coordinator, '_previous_unit_system'):
-        coordinator._previous_unit_system = current_unit_system
-        return
-    
-    # Check if unit system actually changed
-    if coordinator._previous_unit_system != current_unit_system:
-        _LOGGER.info(
-            "Home Assistant unit system changed from %s to %s, updating Smart Irrigation",
-            coordinator._previous_unit_system.name,
-            current_unit_system.name
-        )
-        
-        # Update coordinator's cached unit system
-        coordinator._previous_unit_system = current_unit_system
-        
-        # Trigger unit system update
-        await coordinator.async_handle_unit_system_change()
-    else:
-        _LOGGER.debug("Core config updated but unit system unchanged")
-
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Smart Irrigation from a config entry."""
+
+    _LOGGER.info("async_setup_entry called for %s", entry.entry_id)
+
     session = async_get_clientsession(hass)
 
     store = await async_get_registry(hass)
@@ -185,9 +157,48 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     hass.data[const.DOMAIN]["zones"] = {}
 
     # Set up unit system change listener
-    coordinator._previous_unit_system = hass.config.units
-    hass.bus.async_listen("core_config_updated", lambda event: handle_core_config_change(hass, event))
-    _LOGGER.info("Registered listener for Home Assistant core config changes (unit system)")
+    async def handle_core_config_change(event):
+        """Handle Home Assistant core configuration changes, specifically unit system changes."""
+        _LOGGER.debug("Core_config_updated fired: %s", event.data)
+        if (
+            const.DOMAIN not in hass.data
+            or "coordinator" not in hass.data[const.DOMAIN]
+        ):
+            return
+
+        # Check if unit system has changed by comparing current vs coordinator's cached unit system
+        coordinator = hass.data[const.DOMAIN]["coordinator"]
+        current_unit_system = hass.config.units
+
+        # Store the previous unit system in coordinator if not already stored
+        if not hasattr(coordinator, "_previous_unit_system"):
+            coordinator.previous_unit_system = current_unit_system
+            return
+
+        # Check if unit system actually changed
+        if coordinator.previous_unit_system != current_unit_system:
+            _LOGGER.info(
+                "Home Assistant unit system changed from %s to %s, updating Smart Irrigation",
+                coordinator.previous_unit_system.name,
+                current_unit_system.name,
+            )
+
+            # Update coordinator's cached unit system
+            coordinator.previous_unit_system = current_unit_system
+
+            # Trigger unit system update
+            await coordinator.async_handle_unit_system_change()
+        else:
+            _LOGGER.debug("Core config updated but unit system unchanged")
+
+    coordinator.previous_unit_system = hass.config.units
+    # hass.bus.async_listen(
+    #    "core_config_updated", core_config_updated_listener_factory(hass)
+    # )
+    hass.bus.async_listen("core_config_updated", handle_core_config_change)
+    _LOGGER.info(
+        "Registered listener for Home Assistant core config changes (unit system)"
+    )
 
     # make sure we capture the use_owm state
     await store.async_update_config(
@@ -217,7 +228,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # Initialize enhanced scheduling managers
     await coordinator.recurring_schedule_manager.async_load_schedules()
-    await coordinator.seasonal_adjustment_manager.async_load_adjustments() 
+    await coordinator.seasonal_adjustment_manager.async_load_adjustments()
     await coordinator.irrigation_unlimited_integration.async_initialize()
 
     await coordinator.update_subscriptions()
@@ -289,6 +300,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self.hass = hass
         self.entry = entry
         self.store = store
+        self.previous_unit_system = hass.config.units
         self.use_weather_service = hass.data[const.DOMAIN][
             const.CONF_USE_WEATHER_SERVICE
         ]
@@ -370,7 +382,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         # Initialize enhanced scheduling managers
         self.recurring_schedule_manager = RecurringScheduleManager(hass, self)
         self.seasonal_adjustment_manager = SeasonalAdjustmentManager(hass, self)
-        self.irrigation_unlimited_integration = IrrigationUnlimitedIntegration(hass, self)
+        self.irrigation_unlimited_integration = IrrigationUnlimitedIntegration(
+            hass, self
+        )
 
         # WIP v2024.6.X:
         # experiment with subscriptions on sensors
@@ -482,13 +496,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def async_handle_unit_system_change(self):
         """Handle changes to the Home Assistant unit system."""
         _LOGGER.info("Processing unit system change for Smart Irrigation")
-        
+
         # Update sensor entities to refresh their unit display
         async_dispatcher_send(self.hass, const.DOMAIN + "_unit_system_changed")
-        
+
         # Update frontend/websocket clients
         async_dispatcher_send(self.hass, const.DOMAIN + "_update_frontend")
-        
+
         _LOGGER.info("Unit system change processing complete")
 
     async def async_update_config(self, data):  # noqa: D102
@@ -1674,12 +1688,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 calc_data = await self.calculate_module(
                     zone, weatherdata=sensor_values, forecastdata=forecastdata
                 )
-                
+
                 # Apply seasonal adjustments before updating the zone
-                calc_data = await self.seasonal_adjustment_manager.apply_seasonal_adjustments(
-                    calc_data, zone_id
+                calc_data = (
+                    await self.seasonal_adjustment_manager.apply_seasonal_adjustments(
+                        calc_data, zone_id
+                    )
                 )
-                
+
                 # if continuous updates are on, add the current date time to set the last updated time
                 if continuous_updates:
                     calc_data[const.ZONE_LAST_UPDATED] = datetime.datetime.now()
@@ -2680,28 +2696,28 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
     async def _check_days_between_irrigation(self) -> bool:
         """Check if enough days have passed since the last irrigation event.
-        
+
         Returns:
             bool: True if irrigation should be skipped due to insufficient days passed, False otherwise.
         """
         config = await self.store.async_get_config()
-        
+
         # Get the configured minimum days between irrigation
         days_between = config.get(
             const.CONF_DAYS_BETWEEN_IRRIGATION,
             const.CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION,
         )
-        
+
         # If days_between is 0, no restriction (always allow irrigation)
         if days_between <= 0:
             return False
-            
+
         # Get days since last irrigation
         days_since_last = config.get(
             const.CONF_DAYS_SINCE_LAST_IRRIGATION,
             const.CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION,
         )
-        
+
         if days_since_last < days_between:
             _LOGGER.info(
                 "Skipping irrigation: only %d days since last irrigation, need %d days minimum",
@@ -2709,7 +2725,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 days_between,
             )
             return True
-            
+
         return False
 
     async def _increment_days_since_irrigation(self):
@@ -2719,20 +2735,18 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             const.CONF_DAYS_SINCE_LAST_IRRIGATION,
             const.CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION,
         )
-        
+
         new_days = current_days + 1
         await self.store.async_update_config(
             {const.CONF_DAYS_SINCE_LAST_IRRIGATION: new_days}
         )
-        
+
         _LOGGER.debug("Incremented days since last irrigation to %d", new_days)
 
     async def _reset_days_since_irrigation(self):
         """Reset the counter for days since last irrigation to 0."""
-        await self.store.async_update_config(
-            {const.CONF_DAYS_SINCE_LAST_IRRIGATION: 0}
-        )
-        
+        await self.store.async_update_config({const.CONF_DAYS_SINCE_LAST_IRRIGATION: 0})
+
         _LOGGER.debug("Reset days since last irrigation to 0")
 
     @callback
@@ -2743,7 +2757,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             async def check_and_fire():
                 try:
                     # Check precipitation forecast
-                    should_skip_precipitation = await self._check_precipitation_forecast()
+                    should_skip_precipitation = (
+                        await self._check_precipitation_forecast()
+                    )
                     if should_skip_precipitation:
                         _LOGGER.info(
                             "Irrigation start event skipped due to forecasted precipitation"
@@ -2810,7 +2826,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     {const.START_EVENT_FIRED_TODAY: self._start_event_fired_today}
                 )
             )
-        
+
         # Increment days since last irrigation at midnight
         # Fire-and-forget async task
         self.hass.async_create_task(self._increment_days_since_irrigation())
@@ -3058,9 +3074,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if "watering_calendars" not in self.hass.data[const.DOMAIN]:
                 self.hass.data[const.DOMAIN]["watering_calendars"] = {}
 
-            self.hass.data[const.DOMAIN]["watering_calendars"][
-                "last_generated"
-            ] = calendar_data
+            self.hass.data[const.DOMAIN]["watering_calendars"]["last_generated"] = (
+                calendar_data
+            )
 
             # Fire an event with the calendar data
             self.hass.bus.fire(
@@ -3092,8 +3108,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def handle_create_recurring_schedule(self, call):
         """Create recurring schedule service handler."""
         schedule_data = dict(call.data)
-        _LOGGER.info("Create recurring schedule service called: %s", schedule_data.get("name", "Unnamed"))
-        
+        _LOGGER.info(
+            "Create recurring schedule service called: %s",
+            schedule_data.get("name", "Unnamed"),
+        )
+
         try:
             await self.recurring_schedule_manager.async_create_schedule(schedule_data)
             _LOGGER.info("Successfully created recurring schedule")
@@ -3106,11 +3125,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         schedule_id = call.data.get("schedule_id")
         schedule_data = dict(call.data)
         schedule_data.pop("schedule_id", None)
-        
+
         _LOGGER.info("Update recurring schedule service called for ID: %s", schedule_id)
-        
+
         try:
-            await self.recurring_schedule_manager.async_update_schedule(schedule_id, schedule_data)
+            await self.recurring_schedule_manager.async_update_schedule(
+                schedule_id, schedule_data
+            )
             _LOGGER.info("Successfully updated recurring schedule")
         except Exception as e:
             _LOGGER.error("Failed to update recurring schedule: %s", e)
@@ -3119,9 +3140,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def handle_delete_recurring_schedule(self, call):
         """Delete recurring schedule service handler."""
         schedule_id = call.data.get("schedule_id")
-        
+
         _LOGGER.info("Delete recurring schedule service called for ID: %s", schedule_id)
-        
+
         try:
             await self.recurring_schedule_manager.async_delete_schedule(schedule_id)
             _LOGGER.info("Successfully deleted recurring schedule")
@@ -3132,10 +3153,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def handle_create_seasonal_adjustment(self, call):
         """Create seasonal adjustment service handler."""
         adjustment_data = dict(call.data)
-        _LOGGER.info("Create seasonal adjustment service called: %s", adjustment_data.get("name", "Unnamed"))
-        
+        _LOGGER.info(
+            "Create seasonal adjustment service called: %s",
+            adjustment_data.get("name", "Unnamed"),
+        )
+
         try:
-            await self.seasonal_adjustment_manager.async_create_adjustment(adjustment_data)
+            await self.seasonal_adjustment_manager.async_create_adjustment(
+                adjustment_data
+            )
             _LOGGER.info("Successfully created seasonal adjustment")
         except Exception as e:
             _LOGGER.error("Failed to create seasonal adjustment: %s", e)
@@ -3146,11 +3172,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         adjustment_id = call.data.get("adjustment_id")
         adjustment_data = dict(call.data)
         adjustment_data.pop("adjustment_id", None)
-        
-        _LOGGER.info("Update seasonal adjustment service called for ID: %s", adjustment_id)
-        
+
+        _LOGGER.info(
+            "Update seasonal adjustment service called for ID: %s", adjustment_id
+        )
+
         try:
-            await self.seasonal_adjustment_manager.async_update_adjustment(adjustment_id, adjustment_data)
+            await self.seasonal_adjustment_manager.async_update_adjustment(
+                adjustment_id, adjustment_data
+            )
             _LOGGER.info("Successfully updated seasonal adjustment")
         except Exception as e:
             _LOGGER.error("Failed to update seasonal adjustment: %s", e)
@@ -3159,11 +3189,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def handle_delete_seasonal_adjustment(self, call):
         """Delete seasonal adjustment service handler."""
         adjustment_id = call.data.get("adjustment_id")
-        
-        _LOGGER.info("Delete seasonal adjustment service called for ID: %s", adjustment_id)
-        
+
+        _LOGGER.info(
+            "Delete seasonal adjustment service called for ID: %s", adjustment_id
+        )
+
         try:
-            await self.seasonal_adjustment_manager.async_delete_adjustment(adjustment_id)
+            await self.seasonal_adjustment_manager.async_delete_adjustment(
+                adjustment_id
+            )
             _LOGGER.info("Successfully deleted seasonal adjustment")
         except Exception as e:
             _LOGGER.error("Failed to delete seasonal adjustment: %s", e)
@@ -3173,12 +3207,16 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def handle_sync_with_irrigation_unlimited(self, call):
         """Sync with Irrigation Unlimited service handler."""
         zone_ids = call.data.get("zone_ids")
-        
-        _LOGGER.info("Sync with Irrigation Unlimited service called for zones: %s", zone_ids)
-        
+
+        _LOGGER.info(
+            "Sync with Irrigation Unlimited service called for zones: %s", zone_ids
+        )
+
         try:
-            result = await self.irrigation_unlimited_integration.async_sync_zones_to_iu(zone_ids)
-            
+            result = await self.irrigation_unlimited_integration.async_sync_zones_to_iu(
+                zone_ids
+            )
+
             # Fire event with results
             self.hass.bus.fire(
                 f"{const.DOMAIN}_iu_sync_result",
@@ -3186,13 +3224,13 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "success": True,
                     "result": result,
                     "timestamp": datetime.datetime.now().isoformat(),
-                }
+                },
             )
-            
+
             _LOGGER.info("Successfully synced with Irrigation Unlimited")
         except Exception as e:
             _LOGGER.error("Failed to sync with Irrigation Unlimited: %s", e)
-            
+
             # Fire error event
             self.hass.bus.fire(
                 f"{const.DOMAIN}_iu_sync_result",
@@ -3200,7 +3238,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     "success": False,
                     "error": str(e),
                     "timestamp": datetime.datetime.now().isoformat(),
-                }
+                },
             )
             raise
 
@@ -3208,17 +3246,21 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         """Send zone data to Irrigation Unlimited service handler."""
         zone_id = call.data.get("zone_id")
         zone_data = call.data.get("data", {})
-        
+
         _LOGGER.info("Send zone data to IU service called for zone: %s", zone_id)
-        
+
         try:
-            success = await self.irrigation_unlimited_integration.async_send_zone_data_to_iu(zone_id, zone_data)
-            
+            success = (
+                await self.irrigation_unlimited_integration.async_send_zone_data_to_iu(
+                    zone_id, zone_data
+                )
+            )
+
             if success:
                 _LOGGER.info("Successfully sent zone data to Irrigation Unlimited")
             else:
                 _LOGGER.warning("Failed to send zone data to Irrigation Unlimited")
-                
+
         except Exception as e:
             _LOGGER.error("Error sending zone data to Irrigation Unlimited: %s", e)
             raise
@@ -3226,27 +3268,27 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def handle_get_iu_schedule_status(self, call):
         """Get Irrigation Unlimited schedule status service handler."""
         _LOGGER.info("Get IU schedule status service called")
-        
+
         try:
             status = await self.irrigation_unlimited_integration.async_get_iu_status()
-            
+
             # Store status in hass.data for retrieval
             if "iu_status" not in self.hass.data[const.DOMAIN]:
                 self.hass.data[const.DOMAIN]["iu_status"] = {}
-            
+
             self.hass.data[const.DOMAIN]["iu_status"]["last_status"] = status
-            
+
             # Fire event with status
             self.hass.bus.fire(
                 f"{const.DOMAIN}_iu_status",
                 {
                     "status": status,
                     "timestamp": datetime.datetime.now().isoformat(),
-                }
+                },
             )
-            
+
             _LOGGER.info("Successfully retrieved IU schedule status")
-            
+
         except Exception as e:
             _LOGGER.error("Failed to get IU schedule status: %s", e)
             raise
