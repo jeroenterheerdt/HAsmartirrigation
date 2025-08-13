@@ -893,12 +893,31 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
 
     return html`
       <ha-card header="${localize("weather_skip.title", this.hass.language)}">
+      <div class="card-content">
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showweatherskipdescription"
+            @click="${() =>
+              this.toggleInformation("weather_skipdescription")}"
+          >
+            <title>
+              ${localize(
+                "panels.zones.actions.information",
+                this.hass.language,
+              )}
+            </title>
+            <path fill="#404040" d="${mdiInformationOutline}" />
+          </svg>
+        </div>
+
+        <div class="card-content">
+          <label class="hidden" id="weather_skipdescription">
+            ${localize("weather_skip.description", this.hass.language)}
+          </label>
+        </div>
         <div class="card-content">
           <div class="zoneline">
-            <div style="margin-bottom: 16px;">
-              ${localize("weather_skip.description", this.hass.language)}
-            </div>
-
             <div class="switch-container" style="margin-bottom: 16px;">
               <input
                 type="radio"
@@ -973,17 +992,38 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
     // Get current Home Assistant coordinates for display
     const haCoords = this.hass.config as any;
     const haLatitude = haCoords?.latitude || 0;
-    const haLongitude = haCoords?.longitude || 0; 
+    const haLongitude = haCoords?.longitude || 0;
     const haElevation = haCoords?.elevation || 0;
 
     return html`
-      <ha-card header="${localize("coordinate_config.title", this.hass.language)}">
+      <ha-card
+        header="${localize("coordinate_config.title", this.hass.language)}"
+      >
+        <div class="card-content">
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showmanualcoordinatesdescription"
+            @click="${() =>
+              this.toggleInformation("coordinate_configdescription")}"
+          >
+            <title>
+              ${localize(
+                "panels.zones.actions.information",
+                this.hass.language,
+              )}
+            </title>
+            <path fill="#404040" d="${mdiInformationOutline}" />
+          </svg>
+        </div>
+
+        <div class="card-content">
+          <label class="hidden" id="coordinate_configdescription">
+            ${localize("coordinate_config.description", this.hass.language)}
+          </label>
+        </div>
         <div class="card-content">
           <div class="zoneline">
-            <div style="margin-bottom: 16px;">
-              ${localize("coordinate_config.description", this.hass.language)}
-            </div>
-
             <div class="switch-container" style="margin-bottom: 16px;">
               <input
                 type="radio"
@@ -997,12 +1037,15 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                   });
                 }}
               /><label for="manualcoordson"
-                >${localize("coordinate_config.manual_enabled", this.hass.language)}</label
+                >${localize(
+                  "coordinate_config.manual_enabled",
+                  this.hass.language,
+                )}</label
               >
               <input
                 type="radio"
                 id="manualcoordsoff"
-                name="manual_coordinates_enabled" 
+                name="manual_coordinates_enabled"
                 value="false"
                 ?checked="${!this.config.manual_coordinates_enabled}"
                 @change=${() => {
@@ -1011,7 +1054,10 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                   });
                 }}
               /><label for="manualcoordsoff"
-                >${localize("coordinate_config.use_ha_location", this.hass.language)}</label
+                >${localize(
+                  "coordinate_config.use_ha_location",
+                  this.hass.language,
+                )}</label
               >
             </div>
 
@@ -1019,7 +1065,11 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
               ? html`
                   <div class="zoneline">
                     <label for="manual_latitude"
-                      >${localize("coordinate_config.latitude", this.hass.language)}:</label>
+                      >${localize(
+                        "coordinate_config.latitude",
+                        this.hass.language,
+                      )}:</label
+                    >
                     <input
                       id="manual_latitude"
                       type="number"
@@ -1039,7 +1089,11 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                   </div>
                   <div class="zoneline">
                     <label for="manual_longitude"
-                      >${localize("coordinate_config.longitude", this.hass.language)}:</label>
+                      >${localize(
+                        "coordinate_config.longitude",
+                        this.hass.language,
+                      )}:</label
+                    >
                     <input
                       id="manual_longitude"
                       type="number"
@@ -1059,7 +1113,11 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                   </div>
                   <div class="zoneline">
                     <label for="manual_elevation"
-                      >${localize("coordinate_config.elevation", this.hass.language)}:</label>
+                      >${localize(
+                        "coordinate_config.elevation",
+                        this.hass.language,
+                      )}:</label
+                    >
                     <input
                       id="manual_elevation"
                       type="number"
@@ -1079,11 +1137,29 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                   </div>
                 `
               : html`
-                  <div class="zoneline" style="color: var(--secondary-text-color); font-style: italic;">
-                    ${localize("coordinate_config.current_ha_coords", this.hass.language)}:<br/>
-                    ${localize("coordinate_config.latitude", this.hass.language)}: ${haLatitude}<br/>
-                    ${localize("coordinate_config.longitude", this.hass.language)}: ${haLongitude}<br/>
-                    ${localize("coordinate_config.elevation", this.hass.language)}: ${haElevation}m
+                  <div
+                    class="zoneline"
+                    style="color: var(--secondary-text-color); font-style: italic;"
+                  >
+                    ${localize(
+                      "coordinate_config.current_ha_coords",
+                      this.hass.language,
+                    )}:<br />
+                    ${localize(
+                      "coordinate_config.latitude",
+                      this.hass.language,
+                    )}:
+                    ${haLatitude}<br />
+                    ${localize(
+                      "coordinate_config.longitude",
+                      this.hass.language,
+                    )}:
+                    ${haLongitude}<br />
+                    ${localize(
+                      "coordinate_config.elevation",
+                      this.hass.language,
+                    )}:
+                    ${haElevation}m
                   </div>
                 `}
           </div>
@@ -1096,13 +1172,19 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
     if (!this.config || !this.data || !this.hass) return html``;
 
     return html`
-      <ha-card header="${localize("days_between_irrigation.title", this.hass.language)}">
+      <ha-card
+        header="${localize(
+          "days_between_irrigation.title",
+          this.hass.language,
+        )}"
+      >
         <div class="card-content">
           <svg
             style="width:24px;height:24px"
             viewBox="0 0 24 24"
             id="showdaysbetweenirrigationdescription"
-            @click="${() => this.toggleInformation("daysbetweenirrigationdescription")}"
+            @click="${() =>
+              this.toggleInformation("daysbetweenirrigationdescription")}"
           >
             <title>
               ${localize(
@@ -1129,7 +1211,8 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
               >${localize(
                 "days_between_irrigation.label",
                 this.hass.language,
-              )}:</label>
+              )}:</label
+            >
             <input
               id="days_between_irrigation"
               type="number"
@@ -1148,8 +1231,13 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
             />
           </div>
           <div class="card-content">
-            <div style="color: var(--secondary-text-color); font-size: 0.875rem; margin-top: 8px;">
-              ${localize("days_between_irrigation.help_text", this.hass.language)}
+            <div
+              style="color: var(--secondary-text-color); font-size: 0.875rem; margin-top: 8px;"
+            >
+              ${localize(
+                "days_between_irrigation.help_text",
+                this.hass.language,
+              )}
             </div>
           </div>
         </div>
