@@ -85,7 +85,7 @@ export const MAPPING_CONF_AGGREGATE_OPTIONS = [
   "minimum",
   "riemannsum",
   "sum",
-  "delta"
+  "delta",
 ];
 
 export const UNIT_M2 = "m<sup>2</sup>";

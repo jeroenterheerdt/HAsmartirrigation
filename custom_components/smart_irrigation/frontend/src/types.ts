@@ -1,10 +1,3 @@
-import { formatTimeWithSeconds } from "custom-card-helpers";
-import {
-  HassEntity,
-  HassEntityAttributeBase,
-} from "home-assistant-js-websocket";
-import { textSpanIsEmpty } from "typescript";
-
 export interface Dictionary<TValue> {
   [id: string]: TValue;
 }
@@ -83,7 +76,7 @@ export interface IrrigationStartTrigger {
 
 export enum TriggerType {
   Sunrise = "sunrise",
-  Sunset = "sunset", 
+  Sunset = "sunset",
   SolarAzimuth = "solar_azimuth",
 }
 
