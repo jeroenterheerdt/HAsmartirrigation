@@ -38,7 +38,6 @@ from .localize import localize
 from .panel import async_register_panel, remove_panel
 from .scheduler import RecurringScheduleManager, SeasonalAdjustmentManager
 from .store import SmartIrrigationStorage, async_get_registry
-from .weathermodules.KNMIClient import KNMIClient
 from .weathermodules.OWMClient import OWMClient
 from .weathermodules.PirateWeatherClient import PirateWeatherClient
 from .websockets import async_register_websockets
@@ -614,10 +613,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 static_in_mapping,
             ) = self.check_mapping_sources(mapping_id=mapping_id)
             mapping = self.store.get_mapping(mapping_id)
+            if mapping is None:
+                _LOGGER.debug(
+                    "[get_sensors_to_subscribe_to]: mapping %s: is None",
+                    mapping_id,
+                )
+                continue
+
             _LOGGER.debug(
                 "[get_sensors_to_subscribe_to]: mapping %s: %s",
                 mapping_id,
-                mapping[const.MAPPING_MAPPINGS], # TODO: this errors if mapping is None
+                mapping[const.MAPPING_MAPPINGS],
             )
             if sensor_in_mapping:
                 for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
@@ -1111,7 +1117,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
             # add the weatherdata value to the mappings sensor values
             if mapping is not None and weatherdata is not None:
-                weatherdata[const.RETRIEVED_AT] = datetime.datetime.now()
+                weatherdata[const.RETRIEVED_AT] = datetime.now()
                 mapping_data = mapping[const.MAPPING_DATA]
                 if isinstance(mapping_data, list):
                     mapping_data.append(weatherdata)
@@ -1129,7 +1135,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 )
                 changes = {
                     "data": mapping_data,
-                    const.MAPPING_DATA_LAST_UPDATED: datetime.datetime.now(),
+                    const.MAPPING_DATA_LAST_UPDATED: datetime.now(),
                 }
                 await self.store.async_update_mapping(mapping_id, changes)
                 # store last updated and number of data points in the zone here.
@@ -3220,8 +3226,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 {
                     "success": True,
                     "result": result,
-                    "timestamp": datetime.datetime.now().isoformat(),
-                }
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
             
             _LOGGER.info("Successfully synced with Irrigation Unlimited")
@@ -3234,8 +3240,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 {
                     "success": False,
                     "error": str(e),
-                    "timestamp": datetime.datetime.now().isoformat(),
-                }
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
             raise
 
@@ -3276,8 +3282,8 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 f"{const.DOMAIN}_iu_status",
                 {
                     "status": status,
-                    "timestamp": datetime.datetime.now().isoformat(),
-                }
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
             
             _LOGGER.info("Successfully retrieved IU schedule status")
