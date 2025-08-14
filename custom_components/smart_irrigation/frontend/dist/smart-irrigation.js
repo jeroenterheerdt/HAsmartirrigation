@@ -1127,11 +1127,26 @@ function me(e,t){return(({finisher:e,descriptor:t})=>(a,i)=>{var n;if(void 0===i
     `}_addTrigger(){this._showTriggerDialog({createTrigger:!0})}_editTrigger(e){var t,a;const i=null===(a=null===(t=this.config)||void 0===t?void 0:t.irrigation_start_triggers)||void 0===a?void 0:a[e];i&&this._showTriggerDialog({trigger:i,triggerIndex:e})}_deleteTrigger(e){var t,a;if(!(null===(t=this.config)||void 0===t?void 0:t.irrigation_start_triggers)||!this.hass)return;const i=(null===(a=this.config.irrigation_start_triggers[e])||void 0===a?void 0:a.name)||"Unknown";if(confirm(wn("irrigation_start_triggers.confirm_delete",this.hass.language).replace("{name}",i))){const t=[...this.config.irrigation_start_triggers];t.splice(e,1),this.handleConfigChange({[xe]:t})}}_showTriggerDialog(e){if(!this.hass)return;const t=document.createElement("trigger-dialog");t.hass=this.hass,t.addEventListener("trigger-save",(e=>{this._handleTriggerSave(e.detail)})),t.addEventListener("trigger-delete",(e=>{this._handleTriggerDelete(e.detail)})),document.body.appendChild(t),t.showDialog(e),t.addEventListener("closed",(()=>{document.body.removeChild(t)}))}_handleTriggerSave(e){if(!this.config)return;const t=this.config.irrigation_start_triggers?[...this.config.irrigation_start_triggers]:[];e.isNew?t.push(e.trigger):void 0!==e.index&&(t[e.index]=e.trigger),this.handleConfigChange({[xe]:t})}_handleTriggerDelete(e){var t;if(!(null===(t=this.config)||void 0===t?void 0:t.irrigation_start_triggers)||void 0===e.index)return;const a=[...this.config.irrigation_start_triggers];a.splice(e.index,1),this.handleConfigChange({[xe]:a})}renderWeatherSkipCard(){return this.config&&this.data&&this.hass?F`
       <ha-card header="${wn("weather_skip.title",this.hass.language)}">
         <div class="card-content">
-          <div class="zoneline">
-            <div style="margin-bottom: 16px;">
-              ${wn("weather_skip.description",this.hass.language)}
-            </div>
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showweatherskipdescription"
+            @click="${()=>this.toggleInformation("weather_skipdescription")}"
+          >
+            <title>
+              ${wn("panels.zones.actions.information",this.hass.language)}
+            </title>
+            <path fill="#404040" d="${Cn}" />
+          </svg>
+        </div>
 
+        <div class="card-content">
+          <label class="hidden" id="weather_skipdescription">
+            ${wn("weather_skip.description",this.hass.language)}
+          </label>
+        </div>
+        <div class="card-content">
+          <div class="zoneline">
             <div class="switch-container" style="margin-bottom: 16px;">
               <input
                 type="radio"
@@ -1180,11 +1195,26 @@ function me(e,t){return(({finisher:e,descriptor:t})=>(a,i)=>{var n;if(void 0===i
         header="${wn("coordinate_config.title",this.hass.language)}"
       >
         <div class="card-content">
-          <div class="zoneline">
-            <div style="margin-bottom: 16px;">
-              ${wn("coordinate_config.description",this.hass.language)}
-            </div>
+          <svg
+            style="width:24px;height:24px"
+            viewBox="0 0 24 24"
+            id="showmanualcoordinatesdescription"
+            @click="${()=>this.toggleInformation("coordinate_configdescription")}"
+          >
+            <title>
+              ${wn("panels.zones.actions.information",this.hass.language)}
+            </title>
+            <path fill="#404040" d="${Cn}" />
+          </svg>
+        </div>
 
+        <div class="card-content">
+          <label class="hidden" id="coordinate_configdescription">
+            ${wn("coordinate_config.description",this.hass.language)}
+          </label>
+        </div>
+        <div class="card-content">
+          <div class="zoneline">
             <div class="switch-container" style="margin-bottom: 16px;">
               <input
                 type="radio"
@@ -1207,67 +1237,69 @@ function me(e,t){return(({finisher:e,descriptor:t})=>(a,i)=>{var n;if(void 0===i
                 >${wn("coordinate_config.use_ha_location",this.hass.language)}</label
               >
             </div>
-
+            </div>
+            <div class="card-content">
             ${this.config.manual_coordinates_enabled?F`
-                  <div class="zoneline">
-                    <label for="manual_latitude"
-                      >${wn("coordinate_config.latitude",this.hass.language)}:</label
+                    <div class="zoneline">
+                      <label for="manual_latitude"
+                        >${wn("coordinate_config.latitude",this.hass.language)}:</label
+                      >
+                      <input
+                        id="manual_latitude"
+                        type="number"
+                        class="shortinput"
+                        min="-90"
+                        max="90"
+                        step="0.000001"
+                        .value="${this.config.manual_latitude||t}"
+                        @input=${e=>{this.handleConfigChange({manual_latitude:parseFloat(e.target.value)})}}
+                      />
+                    </div>
+                    <div class="zoneline">
+                      <label for="manual_longitude"
+                        >${wn("coordinate_config.longitude",this.hass.language)}:</label
+                      >
+                      <input
+                        id="manual_longitude"
+                        type="number"
+                        class="shortinput"
+                        min="-180"
+                        max="180"
+                        step="0.000001"
+                        .value="${this.config.manual_longitude||a}"
+                        @input=${e=>{this.handleConfigChange({manual_longitude:parseFloat(e.target.value)})}}
+                      />
+                    </div>
+                    <div class="zoneline">
+                      <label for="manual_elevation"
+                        >${wn("coordinate_config.elevation",this.hass.language)}:</label
+                      >
+                      <input
+                        id="manual_elevation"
+                        type="number"
+                        class="shortinput"
+                        min="-1000"
+                        max="9000"
+                        step="1"
+                        .value="${this.config.manual_elevation||i}"
+                        @input=${e=>{this.handleConfigChange({manual_elevation:parseFloat(e.target.value)})}}
+                      />
+                    </div>
+                  `:F`
+                    <div
+                      class="zoneline"
+                      style="color: var(--secondary-text-color); font-style: italic;"
                     >
-                    <input
-                      id="manual_latitude"
-                      type="number"
-                      class="shortinput"
-                      min="-90"
-                      max="90"
-                      step="0.000001"
-                      .value="${this.config.manual_latitude||t}"
-                      @input=${e=>{this.handleConfigChange({manual_latitude:parseFloat(e.target.value)})}}
-                    />
-                  </div>
-                  <div class="zoneline">
-                    <label for="manual_longitude"
-                      >${wn("coordinate_config.longitude",this.hass.language)}:</label
-                    >
-                    <input
-                      id="manual_longitude"
-                      type="number"
-                      class="shortinput"
-                      min="-180"
-                      max="180"
-                      step="0.000001"
-                      .value="${this.config.manual_longitude||a}"
-                      @input=${e=>{this.handleConfigChange({manual_longitude:parseFloat(e.target.value)})}}
-                    />
-                  </div>
-                  <div class="zoneline">
-                    <label for="manual_elevation"
-                      >${wn("coordinate_config.elevation",this.hass.language)}:</label
-                    >
-                    <input
-                      id="manual_elevation"
-                      type="number"
-                      class="shortinput"
-                      min="-1000"
-                      max="9000"
-                      step="1"
-                      .value="${this.config.manual_elevation||i}"
-                      @input=${e=>{this.handleConfigChange({manual_elevation:parseFloat(e.target.value)})}}
-                    />
-                  </div>
-                `:F`
-                  <div
-                    class="zoneline"
-                    style="color: var(--secondary-text-color); font-style: italic;"
-                  >
-                    ${wn("coordinate_config.current_ha_coords",this.hass.language)}:<br />
-                    ${wn("coordinate_config.latitude",this.hass.language)}:
-                    ${t}<br />
-                    ${wn("coordinate_config.longitude",this.hass.language)}:
-                    ${a}<br />
-                    ${wn("coordinate_config.elevation",this.hass.language)}:
-                    ${i}m
-                  </div>
-                `}
+                      ${wn("coordinate_config.current_ha_coords",this.hass.language)}:<br />
+                      ${wn("coordinate_config.latitude",this.hass.language)}:
+                      ${t}<br />
+                      ${wn("coordinate_config.longitude",this.hass.language)}:
+                      ${a}<br />
+                      ${wn("coordinate_config.elevation",this.hass.language)}:
+                      ${i}m
+                    </div>
+                  `}
+                </div>
           </div>
         </div>
       </ha-card>
@@ -2615,7 +2647,7 @@ i.version="2.30.1",n(qa),i.fn=ds,i.min=Ja,i.max=Qa,i.now=ei,i.utc=g,i.unix=us,i.
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${wn("title",this.hass.language)}</div>
-          <div class="version">${"v2025.8.1"}</div>
+          <div class="version">${"v2025.8.2"}</div>
         </div>
 
         <sl-tab-group
