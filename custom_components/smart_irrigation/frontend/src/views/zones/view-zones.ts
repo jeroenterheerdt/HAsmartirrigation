@@ -267,7 +267,6 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       duration: 0,
       bucket: 0,
       module: undefined,
-      old_bucket: 0,
       delta: 0,
       explanation: "",
       multiplier: 1,
@@ -852,18 +851,13 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
         </svg>
       </div>`;
 
-      //get mapping last updated and datapoints
+      //get number of datapoints
       let the_mapping;
-      const mapping_last_updated = "-";
-      const mapping_number_of_datapoints = 0;
       if (zone.mapping != undefined) {
         the_mapping = this.mappings.filter((o) => o.id === zone.mapping)[0];
         if (the_mapping != undefined) {
-          if (the_mapping.data_last_updated != undefined) {
-            zone.last_updated = the_mapping.data_last_updated;
-            if (the_mapping.data != undefined) {
-              zone.number_of_data_points = the_mapping.data.length;
-            }
+          if (the_mapping.data != undefined) {
+            zone.number_of_data_points = the_mapping.data.length;
           }
         }
       }
@@ -1392,7 +1386,6 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
 
     // Clear the zone cache
     this.zoneCache.clear();
-
     // Clear zone creation state when component is disconnected
     this.isCreatingZone = false;
   }

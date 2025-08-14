@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+
 from custom_components.smart_irrigation.const import (
     CONF_WEATHER_SERVICE_API_KEY,
     DOMAIN,

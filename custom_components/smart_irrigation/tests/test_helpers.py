@@ -4,6 +4,8 @@ from datetime import time
 from unittest.mock import AsyncMock
 
 import pytest
+from homeassistant.const import UnitOfTemperature
+
 from custom_components.smart_irrigation.const import (
     CONF_WEATHER_SERVICE_OWM,
     CONF_WEATHER_SERVICE_PW,
@@ -17,7 +19,6 @@ from custom_components.smart_irrigation.helpers import (
     relative_to_absolute_pressure,
     test_api_key,
 )
-from homeassistant.const import UnitOfTemperature
 
 
 class TestHelperFunctions:

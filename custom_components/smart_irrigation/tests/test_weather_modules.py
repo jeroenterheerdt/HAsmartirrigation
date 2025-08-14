@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 from aiohttp import ClientError
+
 from custom_components.smart_irrigation.weathermodules.OWMClient import OWMClient
 from custom_components.smart_irrigation.weathermodules.PirateWeatherClient import (
     PirateWeatherClient,

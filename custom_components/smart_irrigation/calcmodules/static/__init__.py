@@ -3,10 +3,11 @@
 import logging
 
 import voluptuous as vol
+from homeassistant.core import HomeAssistant
+
 from custom_components.smart_irrigation.calcmodules.calcmodule import (
     SmartIrrigationCalculationModule,
 )
-from homeassistant.core import HomeAssistant
 
 # v1 only, no longer used in v2
 # from ...const import CONF_MAXIMUM_ET, DEFAULT_MAXIMUM_ET
@@ -45,6 +46,6 @@ class Static(SmartIrrigationCalculationModule):
             else:
                 self._delta = float(config.get(CONF_DELTA, DEFAULT_DELTA))
 
-    def calculate(self):
+    def calculate(self) -> float:
         """Return the static delta value for irrigation calculation."""
         return self._delta

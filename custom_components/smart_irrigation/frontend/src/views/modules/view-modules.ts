@@ -270,12 +270,14 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
           ${numberofzonesusingthismodule
             ? html`<div class="weather-note">
                 ${localize(
-                "panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it",
-                this.hass.language,
-              )}
+                  "panels.modules.cards.module.errors.cannot-delete-module-because-zones-use-it",
+                  this.hass.language,
+                )}
               </div>`
-            : html`
-              <div class="action-button" @click="${(e: Event) => this.handleRemoveModule(e, index)}">
+            : html` <div
+                class="action-button"
+                @click="${(e: Event) => this.handleRemoveModule(e, index)}"
+              >
                 <svg style="width:24px;height:24px" viewBox="0 0 24 24">
                   <path fill="#404040" d="${mdiDelete}" />
                 </svg>
@@ -443,7 +445,12 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
       >
         <div class="card-content">
           ${this.isLoading
-            ? html`<div class="loading-indicator">${localize("common.loading-messages.general", this.hass.language)}</div>`
+            ? html`<div class="loading-indicator">
+                ${localize(
+                  "common.loading-messages.general",
+                  this.hass.language,
+                )}
+              </div>`
             : html`
                 <div class="zoneline">
                   <label for="moduleInput"
@@ -455,7 +462,9 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
                   <select id="moduleInput" ?disabled="${this.isSaving}">
                     ${Object.entries(this.allmodules).map(
                       ([key, value]) =>
-                        html`<option value="${value.id}">${value.name}</option>`,
+                        html`<option value="${value.id}">
+                          ${value.name}
+                        </option>`,
                     )}
                   </select>
                 </div>
@@ -467,7 +476,10 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
                     class="${this.isSaving ? "saving" : ""}"
                   >
                     ${this.isSaving
-                      ? localize("common.saving-messages.adding", this.hass.language)
+                      ? localize(
+                          "common.saving-messages.adding",
+                          this.hass.language,
+                        )
                       : localize(
                           "panels.modules.cards.add-module.actions.add",
                           this.hass.language,
@@ -479,7 +491,9 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
       </ha-card>
 
       ${this.isLoading
-        ? html`<div class="loading-indicator">${localize("common.loading-messages.modules", this.hass.language)}</div>`
+        ? html`<div class="loading-indicator">
+            ${localize("common.loading-messages.modules", this.hass.language)}
+          </div>`
         : Object.entries(this.modules).map(([key, value]) =>
             this.renderModule(value, parseInt(key)),
           )}
@@ -506,8 +520,7 @@ class SmartIrrigationViewModules extends SubscribeMixin(LitElement) {
 
   static get styles(): CSSResultGroup {
     return css`
-      ${globalStyle}
-      /* View-specific styles only - most common styles are now in globalStyle */
+      ${globalStyle}/* View-specific styles only - most common styles are now in globalStyle */
     `;
   }
 }

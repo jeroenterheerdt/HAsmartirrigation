@@ -164,11 +164,11 @@ class SmartIrrigationMappingView(HomeAssistantView):
                 vol.Optional(const.MAPPING_MAPPINGS): vol.Coerce(dict),
                 vol.Optional(const.ATTR_REMOVE): cv.boolean,
                 vol.Optional(const.MAPPING_DATA): vol.Coerce(list),
-                vol.Optional(const.MAPPING_DATA_LAST_UPDATED): vol.Or(
-                    None, str, datetime.datetime
-                ),
                 vol.Optional(const.MAPPING_DATA_LAST_ENTRY): vol.Or(
-                    None, vol.Coerce(list)
+                    None, vol.Coerce(dict)
+                ),
+                vol.Optional(const.MAPPING_DATA_LAST_CALCULATION): vol.Or(
+                    None, vol.Coerce(dict)
                 ),
             }
         )
@@ -204,7 +204,6 @@ class SmartIrrigationZoneView(HomeAssistantView):
                 vol.Optional(const.ZONE_STATE): vol.In(const.ZONE_STATES),
                 vol.Optional(const.ZONE_DURATION): vol.Or(float, int, str, None),
                 vol.Optional(const.ZONE_BUCKET): vol.Or(float, int, str, None),
-                vol.Optional(const.ZONE_OLD_BUCKET): vol.Or(float, int, str, None),
                 vol.Optional(const.ZONE_DELTA): vol.Or(float, int, str, None),
                 vol.Optional(const.ZONE_MODULE): vol.Or(int, str, None),
                 vol.Optional(const.ATTR_REMOVE): cv.boolean,

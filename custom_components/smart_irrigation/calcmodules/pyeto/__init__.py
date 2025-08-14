@@ -6,6 +6,9 @@ from enum import Enum
 from statistics import mean
 
 import voluptuous as vol
+from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE
+from homeassistant.core import HomeAssistant
+
 from custom_components.smart_irrigation.calcmodules.calcmodule import (
     SmartIrrigationCalculationModule,
 )
@@ -14,8 +17,6 @@ from custom_components.smart_irrigation.const import (
     CONF_PYETO_FORECAST_DAYS,
     CONF_PYETO_SOLRAD_BEHAVIOR,
 )
-from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE
-from homeassistant.core import HomeAssistant
 
 from .pyeto import (
     avp_from_tdew,
@@ -128,13 +129,12 @@ class PyETO(SmartIrrigationCalculationModule):
                 except ValueError:
                     self.forecast_days = DEFAULT_FORECAST_DAYS
 
-    def calculate(self, weather_data, forecast_data, hour_multiplier):
+    def calculate(self, weather_data, forecast_data) -> float:
         """Calculate the average evapotranspiration delta for the given weather and forecast data.
 
         Args:
             weather_data: Dictionary containing current weather data.
             forecast_data: List of dictionaries containing forecasted weather data for upcoming days.
-            hour_multiplier: fraction of a full 24-hour day that the current calculation period covers.
 
         Returns:
             The mean evapotranspiration delta as a float.
@@ -143,11 +143,7 @@ class PyETO(SmartIrrigationCalculationModule):
         delta = 0.0
         deltas = []
         if weather_data:
-            deltas.append(
-                self.calculate_et_for_day(
-                    weather_data=weather_data, hour_multiplier=hour_multiplier
-                )
-            )
+            deltas.append(self.calculate_et_for_day(weather_data))
             # loop over the forecast days
             for x in range(self.forecast_days):
                 _LOGGER.debug(
@@ -155,12 +151,7 @@ class PyETO(SmartIrrigationCalculationModule):
                     x,
                 )
                 if len(forecast_data) - 1 >= x:
-                    deltas.append(
-                        self.calculate_et_for_day(
-                            weather_data=forecast_data[x],
-                            hour_multiplier=hour_multiplier,
-                        )
-                    )
+                    deltas.append(self.calculate_et_for_day(forecast_data[x]))
         # return average of the collected deltas
         _LOGGER.debug("[pyETO: calculate_et_for_day] collected deltas: %s", deltas)
         if deltas:
@@ -168,12 +159,11 @@ class PyETO(SmartIrrigationCalculationModule):
             _LOGGER.debug("[pyETO: calculate]: mean of deltas returned: %s", delta)
         return delta
 
-    def calculate_et_for_day(self, weather_data, hour_multiplier):
+    def calculate_et_for_day(self, weather_data):
         """Calculate the evapotranspiration delta for a single day's weather data.
 
         Args:
             weather_data: Dictionary containing weather data for the day..
-            hour_multiplier: fraction of a full 24-hour day that the current calculation period covers.
 
         Returns:
             The evapotranspiration delta as a float.
@@ -187,7 +177,6 @@ class PyETO(SmartIrrigationCalculationModule):
             wind_m_s = weather_data.get(MAPPING_WINDSPEED)
             atmos_pres = weather_data.get(MAPPING_PRESSURE)
             sol_rad = weather_data.get(MAPPING_SOLRAD)
-            precip = weather_data.get(MAPPING_PRECIPITATION)
             if (
                 tdew is not None
                 and temp_c_min is not None
@@ -208,7 +197,7 @@ class PyETO(SmartIrrigationCalculationModule):
                 cs_radvar = cs_rad(self._elevation, et_radvar)
                 _LOGGER.debug("[pyETO: calculate_et_for_day] cs_radvar: %s", cs_radvar)
                 _LOGGER.debug(
-                    "[pyETO: solrad_behavior: %s and sol_rad: %s",
+                    "[pyETO: calculate_et_for_day]: solrad_behavior: %s and sol_rad: %s",
                     self._solrad_behavior,
                     sol_rad,
                 )
@@ -300,23 +289,9 @@ class PyETO(SmartIrrigationCalculationModule):
                     ),  # value stored is in hPa, but needs to be provided in kPa
                 )
                 _LOGGER.debug("[pyETO: calculate_et_for_day] eto: %s", eto)
-
-                # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
-                # delta = round(precip-eto,1)
-                _LOGGER.debug("[pyETO: calculate_et_for_day] precip: %s", precip)
-                if precip is None:
-                    precip = 0
                 if eto is None:
                     eto = 0
-
-                et_scaled = eto * hour_multiplier
-                _LOGGER.debug(
-                    "[pyETO: calculate_et_for_day] Daily ETO: %.2f, hour_multiplier: %.4f, Scaled ETO for interval: %.2f",
-                    eto,
-                    hour_multiplier,
-                    et_scaled,
-                )
-                delta = precip - et_scaled
+                delta = -eto
 
                 _LOGGER.debug("[pyETO: calculate_et_for_day] delta returned: %s", delta)
                 return delta
