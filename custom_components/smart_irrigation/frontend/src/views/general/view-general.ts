@@ -1,6 +1,6 @@
 import { CSSResultGroup, LitElement, css, html } from "lit";
 import { property, customElement } from "lit/decorators.js";
-import { HomeAssistant } from "custom-card-helpers";
+import { HomeAssistant, fireEvent } from "custom-card-helpers";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
 
 import { fetchConfig, saveConfig } from "../../data/websockets";
@@ -839,7 +839,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
     }
   }
 
-  private _showTriggerDialog(params: any) {
+  private async _showTriggerDialog(params: any) {
     if (!this.hass) return;
 
     const dialog = document.createElement("trigger-dialog") as any;
@@ -855,12 +855,26 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
 
     // Add to DOM and show dialog
     document.body.appendChild(dialog);
-    dialog.showDialog(params);
+    await dialog.showDialog(params);
 
     // Clean up when dialog closes
-    dialog.addEventListener("closed", () => {
+    dialog.addEventListener("closed", (ev: Event) => {
+      // Only react when the closed event originates from the dialog itself.
+      // Ignore "closed" emitted by nested overlays (mwc-menu / ha-select).
+      const origin = ev.target as Element | null;
+      if (!origin) return;
+      if (origin.tagName.toLowerCase() !== "ha-dialog") {
+        return;
+      }
+
       document.body.removeChild(dialog);
     });
+
+    /*fireEvent(this, "show-dialog", {
+      dialogTag: "trigger-dialog",
+      dialogImport: () => import("../../dialogs/trigger-dialog"),
+      dialogParams: params,
+    });*/
   }
 
   private _handleTriggerSave(detail: any) {
@@ -876,7 +890,20 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       triggers[detail.index] = detail.trigger;
     }
 
-    this.handleConfigChange({ [CONF_IRRIGATION_START_TRIGGERS]: triggers });
+    // Log for debugging so you can see what we received
+    console.log("RECEIVED trigger-save in view-general", { detail, triggers });
+
+    // Optimistic update so UI immediately reflects change
+    this.config = { ...this.config, irrigation_start_triggers: triggers };
+
+    // Save immediately (no debounce) to avoid stale data if dialog is reopened quickly
+    this.saveData({ [CONF_IRRIGATION_START_TRIGGERS]: triggers }).catch(
+      (err) => {
+        console.error("Error saving triggers:", err);
+        // Optionally re-fetch data on error to restore authoritative state
+        this._fetchData().catch(() => {});
+      },
+    );
   }
 
   private _handleTriggerDelete(detail: any) {

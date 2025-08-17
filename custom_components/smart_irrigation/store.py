@@ -42,6 +42,7 @@ from .const import (
     CONF_DEFAULT_MAXIMUM_BUCKET,
     CONF_DEFAULT_MAXIMUM_DURATION,
     CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM,
+    CONF_DEFAULT_SEASONAL_ADJUSTMENTS,
     CONF_DEFAULT_SENSOR_DEBOUNCE,
     CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION,
     CONF_DEFAULT_USE_WEATHER_SERVICE,
@@ -208,6 +209,7 @@ class Config:
     days_since_last_irrigation = attr.ib(
         type=int, default=CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
     )
+    seasonal_adjustments = attr.ib(type=list, default=CONF_DEFAULT_SEASONAL_ADJUSTMENTS)
 
 
 class MigratableStore(Store):
@@ -264,48 +266,48 @@ class MigratableStore(Store):
 
                 # Add weather skip configuration if missing
                 if CONF_SKIP_IRRIGATION_ON_PRECIPITATION not in data["config"]:
-                    data["config"][
-                        CONF_SKIP_IRRIGATION_ON_PRECIPITATION
-                    ] = CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
+                    data["config"][CONF_SKIP_IRRIGATION_ON_PRECIPITATION] = (
+                        CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
+                    )
                 if CONF_PRECIPITATION_THRESHOLD_MM not in data["config"]:
-                    data["config"][
-                        CONF_PRECIPITATION_THRESHOLD_MM
-                    ] = CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
+                    data["config"][CONF_PRECIPITATION_THRESHOLD_MM] = (
+                        CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
+                    )
 
                 # Add days between irrigation configuration if missing
                 if CONF_DAYS_BETWEEN_IRRIGATION not in data["config"]:
-                    data["config"][
-                        CONF_DAYS_BETWEEN_IRRIGATION
-                    ] = CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
+                    data["config"][CONF_DAYS_BETWEEN_IRRIGATION] = (
+                        CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
+                    )
                 if CONF_DAYS_SINCE_LAST_IRRIGATION not in data["config"]:
-                    data["config"][
-                        CONF_DAYS_SINCE_LAST_IRRIGATION
-                    ] = CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
+                    data["config"][CONF_DAYS_SINCE_LAST_IRRIGATION] = (
+                        CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
+                    )
 
         # CRITICAL: Always ensure required fields are present and strip unrecognized keys
         # This prevents TypeError when Config(**config_data) is called
         if "config" in data:
             # Ensure all required fields are present with defaults
             if CONF_IRRIGATION_START_TRIGGERS not in data["config"]:
-                data["config"][
-                    CONF_IRRIGATION_START_TRIGGERS
-                ] = CONF_DEFAULT_IRRIGATION_START_TRIGGERS
+                data["config"][CONF_IRRIGATION_START_TRIGGERS] = (
+                    CONF_DEFAULT_IRRIGATION_START_TRIGGERS
+                )
             if CONF_SKIP_IRRIGATION_ON_PRECIPITATION not in data["config"]:
-                data["config"][
-                    CONF_SKIP_IRRIGATION_ON_PRECIPITATION
-                ] = CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
+                data["config"][CONF_SKIP_IRRIGATION_ON_PRECIPITATION] = (
+                    CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
+                )
             if CONF_PRECIPITATION_THRESHOLD_MM not in data["config"]:
-                data["config"][
-                    CONF_PRECIPITATION_THRESHOLD_MM
-                ] = CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
+                data["config"][CONF_PRECIPITATION_THRESHOLD_MM] = (
+                    CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
+                )
             if CONF_DAYS_BETWEEN_IRRIGATION not in data["config"]:
-                data["config"][
-                    CONF_DAYS_BETWEEN_IRRIGATION
-                ] = CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
+                data["config"][CONF_DAYS_BETWEEN_IRRIGATION] = (
+                    CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
+                )
             if CONF_DAYS_SINCE_LAST_IRRIGATION not in data["config"]:
-                data["config"][
-                    CONF_DAYS_SINCE_LAST_IRRIGATION
-                ] = CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
+                data["config"][CONF_DAYS_SINCE_LAST_IRRIGATION] = (
+                    CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
+                )
 
             # Get valid field names from Config class to filter out unrecognized keys
             valid_fields = set(attr.fields_dict(Config).keys())
