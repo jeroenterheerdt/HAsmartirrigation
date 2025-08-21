@@ -68,6 +68,7 @@ from .const import (
     MAPPING_DATA,
     MAPPING_DATA_LAST_CALCULATION,
     MAPPING_DATA_LAST_ENTRY,
+    MAPPING_DATA_LAST_UPDATED,
     MAPPING_DEWPOINT,
     MAPPING_EVAPOTRANSPIRATION,
     MAPPING_HUMIDITY,
@@ -170,6 +171,7 @@ class MappingEntry:
     name = attr.ib(type=str, default=None)
     mappings = attr.ib(type=str, default=None)
     data = attr.ib(type=str, default="[]")
+    data_last_updated = attr.ib(type=datetime, default=None)
     data_last_entry = attr.ib(type=str, default={})
     data_last_calculation = attr.ib(type=str, default={})
 
@@ -502,6 +504,7 @@ class SmartIrrigationStorage:
                         name=mapping[MAPPING_NAME],
                         mappings=the_map,
                         data=mapping.get(MAPPING_DATA),
+                        data_last_updated=mapping.get(MAPPING_DATA_LAST_UPDATED, None),
                         data_last_entry=mapping.get(MAPPING_DATA_LAST_ENTRY, {}),
                         data_last_calculation=mapping.get(
                             MAPPING_DATA_LAST_CALCULATION, {}

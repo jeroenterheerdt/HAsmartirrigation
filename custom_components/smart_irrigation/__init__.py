@@ -757,7 +757,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     const.MAPPING_DATA: mapping_data,
                     const.MAPPING_DATA_LAST_ENTRY: data_last_entry,
                 }
-                await self.store.async_update_mapping(mapping.get(const.MAPPING_ID), changes)
+                await self.store.async_update_mapping(
+                    mapping.get(const.MAPPING_ID), changes
+                )
                 _LOGGER.debug(
                     "[async_sensor_state_changed]: updated sensor group %s %s",
                     mapping.get(const.MAPPING_ID),
@@ -945,9 +947,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     mapping_id,
                     zone.get(const.ZONE_ID),
                 )
-                await self.async_calculate_zone(
-                    z, sensor_values
-                )
+                await self.async_calculate_zone(z, sensor_values)
                 zones_to_calculate.remove(z)
             else:
                 _LOGGER.info(
@@ -1465,7 +1465,10 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 d,
             )
 
-            if key == const.MAPPING_PRECIPITATION or aggregate == const.MAPPING_CONF_AGGREGATE_DELTA:
+            if (
+                key == const.MAPPING_PRECIPITATION
+                or aggregate == const.MAPPING_CONF_AGGREGATE_DELTA
+            ):
                 # Fetch value from last calculation
                 last_calc_value = last_calc_data.get(key)
                 if last_calc_value is None:
@@ -1600,9 +1603,11 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             changes = {}
             changes[const.MAPPING_DATA] = []
             changes[const.MAPPING_DATA_LAST_CALCULATION] = {}
-            await self.store.async_update_mapping(mapping.get(const.MAPPING_ID), changes)
+            await self.store.async_update_mapping(
+                mapping.get(const.MAPPING_ID), changes
+            )
 
-    async def _async_calculate_all(self, *args):
+    async def _async_calculate_all(self, delete_weather_data):
         _LOGGER.info("Calculating all automatic zones")
         # get all zones that are in automatic and for all of those, loop over the unique list of mappings
         # are any modules using OWM / sensors?
@@ -1683,20 +1688,21 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 await self.async_calculate_zone(
                     zone.get(const.ZONE_ID), weatherdata, forecastdata
                 )
-                
+
         # remove mapping data from all mappings used
-        async with asyncio.TaskGroup() as tg:
-            for mapping_id in mapping_ids:
-                changes = {}
-                changes[const.MAPPING_DATA] = []
-                if mapping_id is not None:
-                    _LOGGER.debug(
-                        "[async_calculate_all] Clearing sensor data for mapping %s",
-                        mapping_id,
-                    )
-                    tg.create_task(
-                        self.store.async_update_mapping(mapping_id, changes)
-                    )
+        if delete_weather_data:
+            async with asyncio.TaskGroup() as tg:
+                for mapping_id in mapping_ids:
+                    changes = {}
+                    changes[const.MAPPING_DATA] = []
+                    if mapping_id is not None:
+                        _LOGGER.debug(
+                            "[async_calculate_all] Clearing sensor data for mapping %s",
+                            mapping_id,
+                        )
+                        tg.create_task(
+                            self.store.async_update_mapping(mapping_id, changes)
+                        )
 
         # update start_event
         _LOGGER.debug("calling register start event from async_calculate_all")
@@ -1737,9 +1743,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if mapping_id is not None:
                 changes = {}
                 changes[const.MAPPING_DATA] = []
-                await self.store.async_update_mapping(
-                    mapping_id, changes=changes
-                )
+                await self.store.async_update_mapping(mapping_id, changes=changes)
 
         await self.store.async_update_zone(zone.get(const.ZONE_ID), calc_data)
         async_dispatcher_send(
@@ -2336,7 +2340,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             _LOGGER.info("Calculating zone %s", zone_id)
             if data is not None:
                 data.pop(const.ATTR_CALCULATE)
-            delete_weather_data = data.get(const.ATTR_DELETE_WEATHER_DATA, False)
+            delete_weather_data = data.get(const.ATTR_DELETE_WEATHER_DATA, True)
 
             # aggregate sensor data
             weatherdata = None
@@ -2368,12 +2372,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     )
                     return
 
-            await self.async_calculate_zone(zone_id, weatherdata, forecastdata, delete_weather_data)
+            await self.async_calculate_zone(
+                zone_id, weatherdata, forecastdata, delete_weather_data
+            )
         elif const.ATTR_CALCULATE_ALL in data:
             # calculate all zones
             _LOGGER.info("Calculating all zones")
             data.pop(const.ATTR_CALCULATE_ALL)
-            await self._async_calculate_all()
+            await self._async_calculate_all(delete_weather_data=True)
 
         elif const.ATTR_UPDATE in data:
             _LOGGER.info("Updating zone %s", zone_id)
@@ -2965,7 +2971,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
     async def handle_calculate_all_zones(self, call):
         """Calculate all zones."""
         _LOGGER.info("Calculate all zones service called")
-        await self._async_calculate_all()
+        await self._async_calculate_all(
+            call.data.get(const.ATTR_DELETE_WEATHER_DATA, True)
+        )
 
     async def handle_calculate_zone(self, call):
         """Calculate specific zone."""
@@ -2980,6 +2988,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                     if zone_id is not None:
                         data = {}
                         data[const.ATTR_CALCULATE] = const.ATTR_CALCULATE
+                        data[const.ATTR_DELETE_WEATHER_DATA] = call.data.get(
+                            const.ATTR_DELETE_WEATHER_DATA, True
+                        )
                         await self.async_update_zone_config(zone_id=zone_id, data=data)
 
     async def handle_update_all_zones(self, call):

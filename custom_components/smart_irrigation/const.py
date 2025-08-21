@@ -1,6 +1,6 @@
 """Store constants."""
 
-VERSION = "v2025.8.3"
+VERSION = "v2025.8.4"
 NAME = "Smart Irrigation"
 MANUFACTURER = "@jeroenterheerdt"
 
@@ -246,6 +246,7 @@ CONF_METRIC = "metric"
 MAPPING_ID = "id"
 MAPPING_NAME = "name"
 MAPPING_DATA = "data"
+MAPPING_DATA_LAST_UPDATED = "data_last_updated"
 MAPPING_DATA_LAST_ENTRY = "data_last_entry"
 MAPPING_DATA_LAST_CALCULATION = "data_last_calculation"
 MAPPING_DATA_MULTIPLIER = "data_multiplier"
