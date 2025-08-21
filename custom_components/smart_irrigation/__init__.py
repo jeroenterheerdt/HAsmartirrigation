@@ -782,11 +782,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 self._debounced_update_cancel = async_call_later(
                     self.hass,
                     timedelta(milliseconds=debounce),
-                    # This callback may run off-loop, so use call_soon_threadsafe
-                    lambda now, mid=mapping_id: self.hass.loop.call_soon_threadsafe(
-                        self.hass.async_create_task,
-                        self.async_continuous_update_for_mapping(mid),
-                    ),
+                    lambda now, mid=mapping_id: (
+                        _LOGGER.debug("[debounce lambda] Fired for mapping_id=%s", mid),
+                        self.hass.loop.call_soon_threadsafe(
+                            lambda: self.hass.async_create_task(
+                                self.async_continuous_update_for_mapping(mid)
+                            )
+                        ),
+                    )[-1],  # Return the result of call_soon_threadsafe
                 )
             else:
                 _LOGGER.debug(
