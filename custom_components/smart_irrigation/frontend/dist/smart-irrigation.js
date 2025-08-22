@@ -2663,7 +2663,7 @@ i.version="2.30.1",n(qa),i.fn=ds,i.min=Ja,i.max=Qa,i.now=ei,i.utc=g,i.unix=us,i.
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${kn("title",this.hass.language)}</div>
-          <div class="version">${"v2025.8.5"}</div>
+          <div class="version">${"v2025.8.6"}</div>
         </div>
 
         <sl-tab-group

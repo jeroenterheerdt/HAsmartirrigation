@@ -77,17 +77,13 @@ async def async_setup_entry(
 
 def check_zone_entity_in_hass_data(hass: HomeAssistant | None, entity_id: str) -> bool:
     """Check if the entity_id is already in hass data."""
-    if (
+    return (
         hass
         and const.DOMAIN in hass.data
         and "zones" in hass.data[const.DOMAIN]
         and entity_id
         in [z.entity_id for z in hass.data[const.DOMAIN]["zones"].values()]
-    ):
-        # for z in self._hass.data[const.DOMAIN]["zones"].values():
-        #    if z.entity_id == entity_id:
-        return True
-    return False
+    )
 
 
 class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
@@ -150,10 +146,12 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         async_dispatcher_connect(
             hass, const.DOMAIN + "_config_updated", self.async_update_sensor_entity
         )
-        
+
         # Listen for unit system changes
         async_dispatcher_connect(
-            hass, const.DOMAIN + "_unit_system_changed", self.async_handle_unit_system_change
+            hass,
+            const.DOMAIN + "_unit_system_changed",
+            self.async_handle_unit_system_change,
         )
 
     def _format_timestamp(self, val):
@@ -214,7 +212,7 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
     def async_handle_unit_system_change(self):
         """Handle unit system changes by refreshing the entity state."""
         _LOGGER.debug("[async_handle_unit_system_change]: refreshing zone %s", self._id)
-        
+
         # Force a state update to refresh any unit-dependent attributes
         # The actual unit conversions are handled in the attribute display logic
         self.async_schedule_update_ha_state(force_refresh=True)

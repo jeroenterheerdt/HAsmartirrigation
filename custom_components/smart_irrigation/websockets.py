@@ -133,11 +133,7 @@ class SmartIrrigationModuleView(HomeAssistantView):
         _LOGGER.debug("[websocket]: request: %s %s", request, data)
         hass = request.app["hass"]
         coordinator = hass.data[const.DOMAIN]["coordinator"]
-        if const.MODULE_ID in data:
-            module = int(data[const.MODULE_ID])
-            # del data[const.ZONE_ID]
-        else:
-            module = None
+        module = int(data[const.MODULE_ID]) if const.MODULE_ID in data else None
         await coordinator.async_update_module_config(module, data)
         async_dispatcher_send(hass, const.DOMAIN + "_update_frontend")
         return self.json({"success": True})
@@ -181,11 +177,7 @@ class SmartIrrigationMappingView(HomeAssistantView):
         _LOGGER.debug("[websocket]: request: %s %s", request, data)
         hass = request.app["hass"]
         coordinator = hass.data[const.DOMAIN]["coordinator"]
-        if const.MAPPING_ID in data:
-            mapping = int(data[const.MAPPING_ID])
-            # del data[const.ZONE_ID]
-        else:
-            mapping = None
+        mapping = int(data[const.MAPPING_ID]) if const.MAPPING_ID in data else None
         await coordinator.async_update_mapping_config(mapping, data)
         async_dispatcher_send(hass, const.DOMAIN + "_update_frontend")
         return self.json({"success": True})
@@ -240,11 +232,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
         _LOGGER.debug("[websocket]: request: %s %s", request, data)
         hass = request.app["hass"]
         coordinator = hass.data[const.DOMAIN]["coordinator"]
-        if const.ZONE_ID in data:
-            zone = int(data[const.ZONE_ID])
-            # del data[const.ZONE_ID]
-        else:
-            zone = None
+        zone = int(data[const.ZONE_ID]) if const.ZONE_ID in data else None
         await coordinator.async_update_zone_config(zone, data)
         async_dispatcher_send(hass, const.DOMAIN + "_update_frontend")
         return self.json({"success": True})
