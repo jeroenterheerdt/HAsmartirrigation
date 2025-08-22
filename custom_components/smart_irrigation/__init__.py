@@ -361,7 +361,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         self._track_sunrise_event_unsub = None
         self._track_irrigation_triggers_unsub = []  # List to track multiple triggers
         self._track_midnight_time_unsub = None
-        self._debounced_update_cancel = None
+        self._debounced_update_cancel = {}  # mapping_id -> cancel callback
         # set up auto calc time and auto update time from data
         the_config = self.store.get_config()
         the_config[const.CONF_USE_WEATHER_SERVICE] = self.use_weather_service
@@ -768,18 +768,19 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
 
             mapping_id = mapping.get(const.MAPPING_ID)
             if debounce > 0:
-                # Cancel any previously scheduled update
-                if self._debounced_update_cancel:
+                # Cancel any previously scheduled update for this mapping
+                if mapping_id in self._debounced_update_cancel:
                     _LOGGER.debug(
-                        "[async_sensor_state_changed]: cancelling previously scheduled update"
+                        "[async_sensor_state_changed]: cancelling previously scheduled update for mapping_id=%s", mapping_id
                     )
-                    self._debounced_update_cancel()
+                    self._debounced_update_cancel[mapping_id]()
+                    del self._debounced_update_cancel[mapping_id]
 
-                # Schedule the update
+                # Schedule the update for this mapping
                 _LOGGER.debug(
-                    "[async_sensor_state_changed]: scheduling update in %s ms", debounce
+                    "[async_sensor_state_changed]: scheduling update in %s ms for mapping_id=%s", debounce, mapping_id
                 )
-                self._debounced_update_cancel = async_call_later(
+                self._debounced_update_cancel[mapping_id] = async_call_later(
                     self.hass,
                     timedelta(milliseconds=debounce),
                     lambda now, mid=mapping_id: (
@@ -789,11 +790,12 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 self.async_continuous_update_for_mapping(mid)
                             )
                         ),
-                    )[-1],  # Return the result of call_soon_threadsafe
+                        self._debounced_update_cancel.pop(mid, None),  # Remove after firing
+                    )[-1],
                 )
             else:
                 _LOGGER.debug(
-                    "[async_sensor_state_changed]: no debounce, doing update now"
+                    "[async_sensor_state_changed]: no debounce, doing update now for mapping_id=%s", mapping_id
                 )
                 await self.async_continuous_update_for_mapping(mapping_id)
 
@@ -807,7 +809,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         and if not, updates and calculates all automatic zones that use this mapping, assuming their modules do not use forecasting.
 
         """
-        self._debounced_update_cancel = None
+        self._debounced_update_cancel.pop(mapping_id, None)
 
         if mapping_id is None:
             return
@@ -3728,7 +3730,7 @@ def register_services(hass: HomeAssistant):
     hass.services.async_register(
         const.DOMAIN, const.SERVICE_SET_BUCKET, coordinator.handle_set_zone
     )
-
+    
     hass.services.async_register(
         const.DOMAIN, const.SERVICE_SET_ALL_BUCKETS, coordinator.handle_set_all_buckets
     )
