@@ -2,7 +2,7 @@
 
 import datetime
 import logging
-from typing import Any, Optional, dict, list
+from typing import Any, Optional, Dict, List
 
 import homeassistant.helpers.entity_registry as er
 from homeassistant.const import STATE_ON
