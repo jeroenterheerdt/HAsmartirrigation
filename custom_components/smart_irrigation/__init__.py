@@ -1470,10 +1470,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 d,
             )
 
-            if (
-                key == const.MAPPING_PRECIPITATION
-                or aggregate == const.MAPPING_CONF_AGGREGATE_DELTA
-            ):
+            if aggregate == const.MAPPING_CONF_AGGREGATE_DELTA:
                 # Fetch value from last calculation
                 last_calc_value = last_calc_data.get(key)
                 if last_calc_value is None:
