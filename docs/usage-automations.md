@@ -12,13 +12,13 @@ Since this integration does not interface with your irrigation system directly, 
 
 > **The last step in any automation is very important, since you will need to let the integration know you have finished irrigating and the evaporation counter can be reset by calling the `smart_irrigation.reset_bucket` service**
 
-Experts say you should water deeply but infrequently to avoid overwatering and encourage deep rooting. It might be a good idea to create an automation that starts early enough to finish before sunrise (using the [`smart_irrigation_start_irrigation_all_zones` event](usage-events.md)) and only once per week if duration is `0` or whenever the `bucket < -25 mm`. Adjust to your specific needs.
+Experts say you should water deeply but infrequently to avoid overwatering and encourage deep rooting. It might be a good idea to create an automation that starts early enough to finish before sunrise (using the [`smart_irrigation_start_irrigation_all_zones` event](usage-events.md)) and only once per week if duration is above `0` or whenever the `bucket < -25 mm`. Adjust to your specific needs.
 
 The examples on this page don't use a timer - see [this discussion](https://github.com/jeroenterheerdt/HAsmartirrigation/discussions/361) for an example of using a timer for extra safety.
 
 Also, check out the [blueprints we provide](https://github.com/jeroenterheerdt/HAsmartirrigation/tree/master/blueprints).
 
-### Example 1: one valve, once per week irrigation if duration < 0 or if the bucket < - 25 mm:
+### Example 1: one valve, once per week irrigation if duration > 0 or if the bucket < - 25 mm:
 
 This example automation runs daily and checks `sensor.smart_irrigation_[zone_name]`. It checks if the `buckets` is `< -25mm (~1")` or if's a monday and duration is above `0`. This follows the expert recommendation mentioned above.
 
