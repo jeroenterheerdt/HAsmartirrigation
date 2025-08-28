@@ -2,11 +2,11 @@
 
 import datetime
 import logging
-from typing import Any, Optional, dict, list
+from typing import Any, Optional
 
-import homeassistant.helpers.entity_registry as er
 from homeassistant.const import STATE_ON
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_registry import async_get as async_get_entity_registry
 
 from . import const
 
@@ -36,19 +36,16 @@ class IrrigationUnlimitedIntegration:
 
         if self._sync_enabled:
             await self._discover_iu_entities()
-            _LOGGER.info(
-                "Irrigation Unlimited integration enabled with %d entities",
-                len(self._iu_entities),
-            )
+            _LOGGER.info("Irrigation Unlimited integration enabled with %d entities", len(self._iu_entities))
 
     async def _discover_iu_entities(self) -> None:
         """Discover Irrigation Unlimited entities."""
-        entity_registry = er.async_get(self.hass)
+        entity_registry = async_get_entity_registry(self.hass)
 
         # Find all entities that match the IU pattern
         self._iu_entities.clear()
 
-        for entity_id in entity_registry.entities:
+        for entity_id, entity_entry in entity_registry.entities.items():
             if entity_id.startswith(self._entity_prefix):
                 # Get additional info about the entity
                 state = self.hass.states.get(entity_id)
@@ -64,9 +61,7 @@ class IrrigationUnlimitedIntegration:
 
         _LOGGER.debug("Discovered IU entities: %s", list(self._iu_entities.keys()))
 
-    async def async_sync_zones_to_iu(
-        self, zone_ids: list[int] | None = None
-    ) -> dict[str, Any]:
+    async def async_sync_zones_to_iu(self, zone_ids: Optional[list[int]] = None) -> dict[str, Any]:
         """Sync Smart Irrigation zones to Irrigation Unlimited."""
         if not self._sync_enabled:
             raise ValueError("Irrigation Unlimited integration is not enabled")
@@ -146,9 +141,7 @@ class IrrigationUnlimitedIntegration:
 
         return sync_results
 
-    async def _find_matching_iu_entity(
-        self, zone: dict[str, Any]
-    ) -> Optional[dict[str, Any]]:
+    async def _find_matching_iu_entity(self, zone: dict[str, Any]) -> Optional[dict[str, Any]]:
         """Find the matching Irrigation Unlimited entity for a zone."""
         zone_name = zone.get(const.ZONE_NAME, "").lower()
         zone_id = zone.get(const.ZONE_ID)
@@ -175,9 +168,7 @@ class IrrigationUnlimitedIntegration:
 
         return None
 
-    async def _sync_zone_to_iu_entity(
-        self, zone: dict[str, Any], iu_entity: dict[str, Any]
-    ) -> None:
+    async def _sync_zone_to_iu_entity(self, zone: dict[str, Any], iu_entity: dict[str, Any]) -> None:
         """Sync a Smart Irrigation zone to an Irrigation Unlimited entity."""
         zone_duration = zone.get(const.ZONE_DURATION, 0)
         iu_entity_id = iu_entity["entity_id"]
@@ -271,9 +262,7 @@ class IrrigationUnlimitedIntegration:
 
         return status
 
-    async def async_send_zone_data_to_iu(
-        self, zone_id: int, data: dict[str, Any]
-    ) -> bool:
+    async def async_send_zone_data_to_iu(self, zone_id: int, data: dict[str, Any]) -> bool:
         """Send zone data to corresponding Irrigation Unlimited entity."""
         if not self._sync_enabled:
             return False
@@ -304,9 +293,7 @@ class IrrigationUnlimitedIntegration:
             _LOGGER.error("Failed to send zone data to IU: %s", e)
             return False
 
-    async def async_create_iu_schedule_from_smart_irrigation(
-        self, zone_ids: list[int] | None = None
-    ) -> dict[str, Any]:
+    async def async_create_iu_schedule_from_smart_irrigation(self, zone_ids: Optional[list[int]] = None) -> dict[str, Any]:
         """Create IU schedules based on Smart Irrigation triggers and schedules."""
         if not self._sync_enabled:
             raise ValueError("Irrigation Unlimited integration is not enabled")
@@ -370,9 +357,7 @@ class IrrigationUnlimitedIntegration:
 
         return schedule_data
 
-    async def _convert_trigger_to_iu_schedule(
-        self, trigger: dict[str, Any]
-    ) -> Optional[dict[str, Any]]:
+    async def _convert_trigger_to_iu_schedule(self, trigger: dict[str, Any]) -> Optional[dict[str, Any]]:
         """Convert a Smart Irrigation trigger to an IU schedule format."""
         trigger_type = trigger.get(const.TRIGGER_CONF_TYPE)
         trigger_name = trigger.get(const.TRIGGER_CONF_NAME, "Smart Irrigation Trigger")
@@ -418,9 +403,7 @@ class IrrigationUnlimitedIntegration:
 
         return iu_schedule
 
-    async def _convert_recurring_schedule_to_iu_schedule(
-        self, schedule: dict[str, Any]
-    ) -> Optional[dict[str, Any]]:
+    async def _convert_recurring_schedule_to_iu_schedule(self, schedule: dict[str, Any]) -> Optional[dict[str, Any]]:
         """Convert a Smart Irrigation recurring schedule to an IU schedule format."""
         schedule_type = schedule.get(const.SCHEDULE_CONF_TYPE)
         schedule_name = schedule.get(

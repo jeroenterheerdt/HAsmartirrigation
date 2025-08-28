@@ -12,7 +12,7 @@ requests>=2.25.0
 python-dotenv>=0.19.0
 
 # Home Assistant development (useful for local testing)
-homeassistant>=2023.1.0
+homeassistant>=2025.2.4
 
 # Development tools
 black>=22.0.0
@@ -28,4 +28,3 @@ markdown>=3.3.0
 pytest
 pytest-cov
 pytest-homeassistant-custom-component
-
