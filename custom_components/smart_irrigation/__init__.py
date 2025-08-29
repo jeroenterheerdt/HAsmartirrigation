@@ -2725,11 +2725,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 _LOGGER.debug("No weather service configured")
                 return False
 
-            weather_client = None
-            if weather_service == const.CONF_WEATHER_SERVICE_OWM:
-                weather_client = self._OWMClient
-            elif weather_service == const.CONF_WEATHER_SERVICE_PW:
-                weather_client = self._PirateWeatherClient
+            weather_client = self._WeatherServiceClient
 
             if weather_client is None:
                 _LOGGER.debug("Weather client not available")
