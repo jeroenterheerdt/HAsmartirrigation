@@ -2732,7 +2732,7 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 return False
 
             # Get forecast data (today and tomorrow)
-            forecast_data = weather_client.get_forecast_data()
+            forecast_data = await self.hass.async_add_executor_job( weather_client.get_forecast_data )
             if not forecast_data:
                 _LOGGER.debug("No forecast data available")
                 return False
