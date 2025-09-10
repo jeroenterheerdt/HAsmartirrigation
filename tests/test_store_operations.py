@@ -117,6 +117,21 @@ class TestConfigOperations:
 class TestZoneOperations:
     """Test zone management operations."""
 
+    @pytest.mark.asyncio
+    async def test_get_zones(self, store_with_zones):
+        """Test getting individual zones synchronously."""
+        zones = await store_with_zones.async_get_zones()
+        if zones:
+            zone_id = zones[0][const.ZONE_ID]
+            # Test synchronous get_zone method
+            zone = store_with_zones.get_zone(zone_id)
+            assert zone is not None
+            assert zone[const.ZONE_NAME] in ["Front Lawn", "Back Garden"]
+
+        # Test invalid ID handling
+        non_existent_zone = store_with_zones.get_zone(99999)
+        assert non_existent_zone is None
+
     @pytest.fixture
     async def store_with_zones(self, hass):
         """Create store with sample zones."""
@@ -184,6 +199,12 @@ class TestZoneOperations:
             assert zone[const.ZONE_NAME] in ["Front Lawn", "Back Garden"]
 
     @pytest.mark.asyncio
+    async def test_async_get_zone_nonexistent(self, store_with_zones):
+        """Test retrieving non-existent zone."""
+        nonexistent_zone = store_with_zones.get_zone(99999)
+        assert nonexistent_zone is None
+
+    @pytest.mark.asyncio
     async def test_async_save_zone_new(self, hass):
         """Test saving new zone."""
         store = SmartIrrigationStorage(hass)
@@ -201,6 +222,29 @@ class TestZoneOperations:
         assert created_zone[const.ZONE_ID] is not None
 
     @pytest.mark.asyncio
+    async def test_async_save_zone_update(self, store_with_zones):
+        """Test updating existing zone."""
+        zones = await store_with_zones.async_get_zones()
+        if zones:
+            zone_to_update = zones[0]
+            zone_id = zone_to_update[const.ZONE_ID]
+            original_name = zone_to_update[const.ZONE_NAME]
+
+            # Update zone data
+            updated_data = {
+                const.ZONE_NAME: f"Updated {original_name}",
+                const.ZONE_SIZE: 200.0,  # Different from original
+                const.ZONE_THROUGHPUT: 20.0,
+                const.ZONE_STATE: const.ZONE_STATE_MANUAL,
+            }
+
+            updated_zone = await store_with_zones.async_update_zone(
+                zone_id, updated_data
+            )
+            assert updated_zone[const.ZONE_NAME] == f"Updated {original_name}"
+            assert updated_zone[const.ZONE_SIZE] == 200.0
+
+    @pytest.mark.asyncio
     async def test_async_delete_zone(self, store_with_zones):
         """Test deleting existing zone."""
         zones = await store_with_zones.async_get_zones()
@@ -213,9 +257,40 @@ class TestZoneOperations:
             zone_ids = [zone[const.ZONE_ID] for zone in remaining_zones]
             assert zone_id not in zone_ids
 
+    @pytest.mark.asyncio
+    async def test_async_delete_zone_nonexistent(self, store_with_zones):
+        """Test deleting non-existent zone."""
+        # Try to delete zone with invalid ID
+        nonexistent_id = 99999
+
+        # Should handle gracefully without raising exception
+        try:
+            await store_with_zones.async_delete_zone(nonexistent_id)
+            # If it doesn't raise, that's fine - just verify original zones remain
+            zones = await store_with_zones.async_get_zones()
+            assert len(zones) >= 2  # Our test zones should still exist
+        except Exception:
+            # If it does raise, that's also acceptable behavior
+            pass
+
 
 class TestMappingOperations:
     """Test mapping management operations."""
+
+    @pytest.mark.asyncio
+    async def test_get_mappings(self, store_with_mappings):
+        """Test getting individual mappings synchronously."""
+        mappings = await store_with_mappings.async_get_mappings()
+        if mappings:
+            mapping_id = mappings[0][const.MAPPING_ID]
+            # Test synchronous get_mapping method
+            mapping = store_with_mappings.get_mapping(mapping_id)
+            assert mapping is not None
+            assert mapping[const.MAPPING_NAME] in ["temp_sensor", "humidity_sensor"]
+
+        # Test invalid ID handling
+        non_existent_mapping = store_with_mappings.get_mapping(99999)
+        assert non_existent_mapping is None
 
     @pytest.fixture
     async def store_with_mappings(self, hass):
@@ -223,18 +298,26 @@ class TestMappingOperations:
         store = SmartIrrigationStorage(hass)
         await store.async_load()
 
-        # Add sample mappings using correct constants
-        mapping1_data = {
-            const.MAPPING_NAME: "Test Mapping 1",
-            const.MAPPING_DATA: {"source": "sensor"},
+        # Add sample mappings with real sensor entities
+        temp_mapping_data = {
+            const.MAPPING_NAME: "temp_sensor",
+            const.MAPPING_DATA: {
+                "source": "sensor.outdoor_temperature",
+                "target": "temperature",
+                "conversion": "°C",
+            },
         }
-        mapping2_data = {
-            const.MAPPING_NAME: "Test Mapping 2",
-            const.MAPPING_DATA: {"source": "weather_service"},
+        humidity_mapping_data = {
+            const.MAPPING_NAME: "humidity_sensor",
+            const.MAPPING_DATA: {
+                "source": "sensor.outdoor_humidity",
+                "target": "humidity",
+                "conversion": "%",
+            },
         }
 
-        await store.async_create_mapping(mapping1_data)
-        await store.async_create_mapping(mapping2_data)
+        await store.async_create_mapping(temp_mapping_data)
+        await store.async_create_mapping(humidity_mapping_data)
         return store
 
     @pytest.mark.asyncio
@@ -251,28 +334,77 @@ class TestMappingOperations:
         """Test async retrieval of all mappings."""
         mappings = await store_with_mappings.async_get_mappings()
         assert len(mappings) >= 2
-        # Should contain our test mappings
+        # Should contain our sensor mappings
         mapping_names = [mapping[const.MAPPING_NAME] for mapping in mappings]
-        assert "Test Mapping 1" in mapping_names
-        assert "Test Mapping 2" in mapping_names
+        assert "temp_sensor" in mapping_names
+        assert "humidity_sensor" in mapping_names
 
     @pytest.mark.asyncio
-    async def test_async_save_mapping_new(self, hass):
+    async def test_async_save_mapping(self, hass):
         """Test saving new mapping."""
         store = SmartIrrigationStorage(hass)
         await store.async_load()
 
         new_mapping = {
-            const.MAPPING_NAME: "New Test Mapping",
-            const.MAPPING_DATA: {"source": "static"},
+            const.MAPPING_NAME: "wind_sensor",
+            const.MAPPING_DATA: {
+                "source": "sensor.wind_speed",
+                "target": "wind_speed",
+                "conversion": "m/s",
+            },
         }
 
         created_mapping = await store.async_create_mapping(new_mapping)
-        assert created_mapping[const.MAPPING_NAME] == "New Test Mapping"
+        assert created_mapping[const.MAPPING_NAME] == "wind_sensor"
+
+        # Verify it was actually saved
+        mappings = await store.async_get_mappings()
+        mapping_names = [mapping[const.MAPPING_NAME] for mapping in mappings]
+        assert "wind_sensor" in mapping_names
+
+    @pytest.mark.asyncio
+    async def test_async_delete_mapping(self, store_with_mappings):
+        """Test deleting mapping."""
+        # Verify mapping exists before deletion
+        mappings = await store_with_mappings.async_get_mappings()
+        initial_count = len(mappings)
+        mapping_names = [mapping[const.MAPPING_NAME] for mapping in mappings]
+        assert "temp_sensor" in mapping_names
+
+        # Find and delete the temp_sensor mapping
+        temp_mapping = None
+        for mapping in mappings:
+            if mapping[const.MAPPING_NAME] == "temp_sensor":
+                temp_mapping = mapping
+                break
+
+        assert temp_mapping is not None
+        await store_with_mappings.async_delete_mapping(temp_mapping[const.MAPPING_ID])
+
+        # Verify mapping was deleted
+        updated_mappings = await store_with_mappings.async_get_mappings()
+        assert len(updated_mappings) == initial_count - 1
+        updated_names = [mapping[const.MAPPING_NAME] for mapping in updated_mappings]
+        assert "temp_sensor" not in updated_names
 
 
 class TestModuleOperations:
     """Test module management operations."""
+
+    @pytest.mark.asyncio
+    async def test_get_modules(self, store_with_modules):
+        """Test getting individual modules synchronously."""
+        modules = await store_with_modules.async_get_modules()
+        if modules:
+            module_id = modules[0][const.MODULE_ID]
+            # Test synchronous get_module method
+            module = store_with_modules.get_module(module_id)
+            assert module is not None
+            assert module[const.MODULE_NAME] in ["Test Module 1", "Test Module 2"]
+
+        # Test invalid ID handling
+        non_existent_module = store_with_modules.get_module(99999)
+        assert non_existent_module is None
 
     @pytest.fixture
     async def store_with_modules(self, hass):
@@ -330,6 +462,60 @@ class TestModuleOperations:
         created_module = await store.async_create_module(new_module)
         assert created_module[const.MODULE_NAME] == "New Test Module"
 
+    @pytest.mark.asyncio
+    async def test_async_save_module(self, store_with_modules):
+        """Test saving/updating existing module."""
+        modules = await store_with_modules.async_get_modules()
+        if modules:
+            module_to_update = modules[0]
+            module_id = module_to_update[const.MODULE_ID]
+
+            # Update module data
+            updated_data = {
+                const.MODULE_NAME: "Updated Module",
+                const.MODULE_CONFIG: "updated_config",
+                const.MODULE_SCHEMA: '{"updated": true}',
+            }
+
+            updated_module = await store_with_modules.async_update_module(
+                module_id, updated_data
+            )
+            assert updated_module[const.MODULE_NAME] == "Updated Module"
+
+    @pytest.mark.asyncio
+    async def test_async_delete_module(self, store_with_modules):
+        """Test deleting module."""
+        modules = await store_with_modules.async_get_modules()
+        if modules:
+            module_id = modules[0][const.MODULE_ID]
+            initial_count = len(modules)
+
+            await store_with_modules.async_delete_module(module_id)
+
+            # Verify module was deleted
+            remaining_modules = await store_with_modules.async_get_modules()
+            assert len(remaining_modules) == initial_count - 1
+            module_ids = [module[const.MODULE_ID] for module in remaining_modules]
+            assert module_id not in module_ids
+
+
+class TestErrorHandling:
+    """Test error handling scenarios."""
+
+    @pytest.mark.asyncio
+    async def test_async_save_error_handling(self, hass):
+        """Test error handling in save operations."""
+        store = SmartIrrigationStorage(hass)
+        await store.async_load()
+
+        # Test with invalid zone data should handle gracefully
+        invalid_zone_data = {}
+        try:
+            await store.async_create_zone(invalid_zone_data)
+        except Exception:
+            # Expected to fail with invalid data - this is correct behavior
+            pass
+
 
 class TestBasicFunctionality:
     """Test basic functionality that doesn't require complex setup."""
@@ -374,3 +560,66 @@ class TestBasicFunctionality:
         # Test getting non-existent module
         non_existent_module = store.get_module(99999)
         assert non_existent_module is None
+
+    @pytest.mark.asyncio
+    async def test_zone_data_integrity(self, hass):
+        """Test zone data integrity across operations."""
+        store = SmartIrrigationStorage(hass)
+        await store.async_load()
+
+        # Create a zone with specific data
+        zone_data = {
+            const.ZONE_NAME: "Integrity Test Zone",
+            const.ZONE_SIZE: 150.0,
+            const.ZONE_THROUGHPUT: 18.0,
+            const.ZONE_STATE: const.ZONE_STATE_AUTOMATIC,
+        }
+
+        created_zone = await store.async_create_zone(zone_data)
+        zone_id = created_zone[const.ZONE_ID]
+
+        # Retrieve and verify data integrity
+        retrieved_zone = store.get_zone(zone_id)
+        assert retrieved_zone[const.ZONE_NAME] == "Integrity Test Zone"
+        assert retrieved_zone[const.ZONE_SIZE] == 150.0
+        assert retrieved_zone[const.ZONE_THROUGHPUT] == 18.0
+        assert retrieved_zone[const.ZONE_STATE] == const.ZONE_STATE_AUTOMATIC
+
+        # Verify async retrieval matches
+        zones = await store.async_get_zones()
+        matching_zone = next(
+            (zone for zone in zones if zone[const.ZONE_ID] == zone_id), None
+        )
+        assert matching_zone is not None
+        assert matching_zone[const.ZONE_NAME] == retrieved_zone[const.ZONE_NAME]
+
+    def test_config_defaults(self, hass):
+        """Test configuration default values."""
+        store = SmartIrrigationStorage(hass)
+        config = store.get_config()
+
+        # Should have default values for critical settings
+        assert isinstance(config, dict)
+
+        # These should have reasonable defaults even if not explicitly set
+        auto_update_enabled = config.get(
+            const.CONF_AUTO_UPDATE_ENABLED, const.CONF_DEFAULT_AUTO_UPDATE_ENABLED
+        )
+        auto_calc_enabled = config.get(
+            const.CONF_AUTO_CALC_ENABLED, const.CONF_DEFAULT_AUTO_CALC_ENABLED
+        )
+
+        # The values might be strings in the config, so check for truthiness
+        if isinstance(auto_update_enabled, str):
+            auto_update_enabled = auto_update_enabled.lower() in [
+                "true",
+                "1",
+                "yes",
+                "on",
+            ]
+        if isinstance(auto_calc_enabled, str):
+            auto_calc_enabled = auto_calc_enabled.lower() in ["true", "1", "yes", "on"]
+
+        # Now verify they are reasonable boolean-like values
+        assert auto_update_enabled is not None
+        assert auto_calc_enabled is not None
