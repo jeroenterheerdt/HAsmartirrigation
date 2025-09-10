@@ -2,7 +2,7 @@
 
 import datetime
 import logging
-from typing import Any, Optional, dict, list
+from typing import Any, Optional
 
 import homeassistant.helpers.entity_registry as er
 from homeassistant.const import STATE_ON
@@ -388,9 +388,9 @@ class IrrigationUnlimitedIntegration:
             iu_schedule.update(
                 {
                     "schedule_type": "sunrise",
-                    "offset": f"{offset_minutes:+d} minutes"
-                    if offset_minutes != 0
-                    else "0",
+                    "offset": (
+                        f"{offset_minutes:+d} minutes" if offset_minutes != 0 else "0"
+                    ),
                 }
             )
         elif trigger_type == const.TRIGGER_TYPE_SUNSET:
@@ -398,9 +398,9 @@ class IrrigationUnlimitedIntegration:
             iu_schedule.update(
                 {
                     "schedule_type": "sunset",
-                    "offset": f"{offset_minutes:+d} minutes"
-                    if offset_minutes != 0
-                    else "0",
+                    "offset": (
+                        f"{offset_minutes:+d} minutes" if offset_minutes != 0 else "0"
+                    ),
                 }
             )
         elif trigger_type == const.TRIGGER_TYPE_SOLAR_AZIMUTH:
