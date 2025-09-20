@@ -2725,18 +2725,14 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 _LOGGER.debug("No weather service configured")
                 return False
 
-            weather_client = None
-            if weather_service == const.CONF_WEATHER_SERVICE_OWM:
-                weather_client = self._OWMClient
-            elif weather_service == const.CONF_WEATHER_SERVICE_PW:
-                weather_client = self._PirateWeatherClient
+            weather_client = self._WeatherServiceClient
 
             if weather_client is None:
                 _LOGGER.debug("Weather client not available")
                 return False
 
             # Get forecast data (today and tomorrow)
-            forecast_data = weather_client.get_forecast_data()
+            forecast_data = await self.hass.async_add_executor_job( weather_client.get_forecast_data )
             if not forecast_data:
                 _LOGGER.debug("No forecast data available")
                 return False
