@@ -6,7 +6,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.selector import selector
 
 from . import const
-from .helpers import CannotConnect, InvalidAuth, test_api_key
+from .helpers import CannotConnect, InvalidAuth, validate_api_key
 from .options_flow import SmartIrrigationOptionsFlowHandler
 
 
@@ -77,7 +77,7 @@ class SmartIrrigationConfigFlow(config_entries.ConfigFlow, domain=const.DOMAIN):
                 # ]
                 user_input[const.CONF_USE_WEATHER_SERVICE] = self._use_weather_service
                 user_input[const.CONF_INSTANCE_NAME] = self._name
-                await test_api_key(
+                await validate_api_key(
                     self.hass, self._weather_service, self._weather_service_api_key
                 )
                 return self.async_create_entry(title=const.NAME, data=user_input)

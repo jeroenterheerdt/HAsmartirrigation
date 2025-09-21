@@ -5,13 +5,13 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
-  
+
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11', '3.12']
+        python-version: ['3.13']
 
     steps:
       - name: Checkout Smart Irrigation
@@ -29,7 +29,7 @@ jobs:
 
       - name: Run unit tests with coverage
         run: |
-          pytest tests/ -v --cov=custom_components.smart_irrigation --cov-report=xml --cov-report=term-missing
+          pytest tests/ -v --cov=custom_components.smart_irrigation --cov-report=xml --cov-report=term-missing --ignore-glob="**/test_*.py.disabled"
 
       - name: Run integration tests
         run: |
@@ -52,7 +52,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |

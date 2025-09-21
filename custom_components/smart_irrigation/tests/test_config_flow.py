@@ -105,7 +105,7 @@ class TestSmartIrrigationConfigFlow:
         assert result2["type"] is FlowResultType.FORM
         assert result2["step_id"] == "step1"
 
-    @patch("custom_components.smart_irrigation.helpers.test_api_key")
+    @patch("custom_components.smart_irrigation.helpers.validate_api_key")
     async def test_weather_service_step_owm(
         self, mock_test_api: AsyncMock, hass: HomeAssistant
     ) -> None:
@@ -127,7 +127,7 @@ class TestSmartIrrigationConfigFlow:
 
         user_input_2 = {
             const.CONF_WEATHER_SERVICE: const.CONF_WEATHER_SERVICE_OWM,
-            const.CONF_WEATHER_SERVICE_API_KEY: "test_api_key",
+            const.CONF_WEATHER_SERVICE_API_KEY: "validate_api_key",
         }
 
         result3 = await hass.config_entries.flow.async_configure(
@@ -140,7 +140,7 @@ class TestSmartIrrigationConfigFlow:
         assert result3["data"] == expected_data
         mock_test_api.assert_called_once()
 
-    @patch("custom_components.smart_irrigation.helpers.test_api_key")
+    @patch("custom_components.smart_irrigation.helpers.validate_api_key")
     async def test_weather_service_invalid_api_key(
         self, mock_test_api: AsyncMock, hass: HomeAssistant
     ) -> None:
@@ -172,7 +172,7 @@ class TestSmartIrrigationConfigFlow:
         assert result3["type"] is FlowResultType.FORM
         assert result3["errors"]["base"] == "auth"
 
-    @patch("custom_components.smart_irrigation.helpers.test_api_key")
+    @patch("custom_components.smart_irrigation.helpers.validate_api_key")
     async def test_weather_service_connection_error(
         self, mock_test_api: AsyncMock, hass: HomeAssistant
     ) -> None:

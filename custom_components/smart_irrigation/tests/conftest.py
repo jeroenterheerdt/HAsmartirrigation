@@ -9,12 +9,12 @@ from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE
 from pytest_homeassistant_custom_component.syrupy import HomeAssistantSnapshotExtension
 from syrupy.assertion import SnapshotAssertion
 
-from custom_components.smart_irrigation import const
-
 # Add the repository root to Python path so imports work
 repo_root = Path(__file__).parent.parent.parent.parent
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
+
+from custom_components.smart_irrigation import const  # noqa: E402
 
 
 # Patch problematic Home Assistant modules before any imports
@@ -119,7 +119,7 @@ def mock_config_entry_with_weather():
             const.CONF_INSTANCE_NAME: "Test Smart Irrigation",
             const.CONF_USE_WEATHER_SERVICE: True,
             const.CONF_WEATHER_SERVICE: const.CONF_WEATHER_SERVICE_OWM,
-            const.CONF_WEATHER_SERVICE_API_KEY: "test_api_key",
+            const.CONF_WEATHER_SERVICE_API_KEY: "validate_api_key",
             CONF_LATITUDE: 52.379189,
             CONF_LONGITUDE: 4.899431,
             CONF_ELEVATION: 0,
@@ -139,7 +139,7 @@ def mock_weather_config_entry():
             const.CONF_INSTANCE_NAME: "Test Smart Irrigation",
             const.CONF_USE_WEATHER_SERVICE: True,
             const.CONF_WEATHER_SERVICE: const.CONF_WEATHER_SERVICE_OWM,
-            const.CONF_WEATHER_SERVICE_API_KEY: "test_api_key",
+            const.CONF_WEATHER_SERVICE_API_KEY: "validate_api_key",
             CONF_LATITUDE: 52.379189,
             CONF_LONGITUDE: 4.899431,
             CONF_ELEVATION: 0,

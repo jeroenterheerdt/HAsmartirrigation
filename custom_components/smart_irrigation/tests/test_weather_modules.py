@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock
 import pytest
 from aiohttp import ClientError
 
+from custom_components.smart_irrigation.helpers import CannotConnect, InvalidAuth
 from custom_components.smart_irrigation.weathermodules.OWMClient import OWMClient
 from custom_components.smart_irrigation.weathermodules.PirateWeatherClient import (
     PirateWeatherClient,
@@ -17,7 +18,7 @@ class TestOWMClient:
     def test_owm_client_init(self) -> None:
         """Test OWM client initialization."""
         session = AsyncMock()
-        api_key = "test_api_key"
+        api_key = "validate_api_key"
         api_version = "3.0"
 
         client = OWMClient(session, api_key, api_version)
@@ -42,7 +43,7 @@ class TestOWMClient:
         }
         session.get.return_value.__aenter__.return_value = mock_response
 
-        client = OWMClient(session, "test_api_key", "3.0")
+        client = OWMClient(session, "validate_api_key", "3.0")
 
         weather_data = await client.get_current_weather(52.0, 5.0)
 
@@ -56,7 +57,7 @@ class TestOWMClient:
         session = AsyncMock()
         session.get.side_effect = ClientError("Connection error")
 
-        client = OWMClient(session, "test_api_key", "3.0")
+        client = OWMClient(session, "validate_api_key", "3.0")
 
         with pytest.raises(ClientError):
             await client.get_current_weather(52.0, 5.0)
@@ -82,7 +83,7 @@ class TestOWMClient:
         }
         session.get.return_value.__aenter__.return_value = mock_response
 
-        client = OWMClient(session, "test_api_key", "3.0")
+        client = OWMClient(session, "validate_api_key", "3.0")
 
         forecast_data = await client.get_forecast(52.0, 5.0)
 
@@ -96,7 +97,7 @@ class TestPirateWeatherClient:
     def test_pirate_weather_client_init(self) -> None:
         """Test Pirate Weather client initialization."""
         session = AsyncMock()
-        api_key = "test_api_key"
+        api_key = "validate_api_key"
 
         client = PirateWeatherClient(session, api_key)
 
@@ -119,7 +120,7 @@ class TestPirateWeatherClient:
         }
         session.get.return_value.__aenter__.return_value = mock_response
 
-        client = PirateWeatherClient(session, "test_api_key")
+        client = PirateWeatherClient(session, "validate_api_key")
 
         weather_data = await client.get_current_weather(52.0, 5.0)
 
@@ -150,7 +151,7 @@ class TestPirateWeatherClient:
         }
         session.get.return_value.__aenter__.return_value = mock_response
 
-        client = PirateWeatherClient(session, "test_api_key")
+        client = PirateWeatherClient(session, "validate_api_key")
 
         forecast_data = await client.get_forecast(52.0, 5.0, days=5)
 
@@ -172,7 +173,7 @@ class TestWeatherModuleErrorHandling:
 
         client = OWMClient(session, "invalid_api_key", "3.0")
 
-        with pytest.raises(Exception):  # Specific exception depends on implementation
+        with pytest.raises((InvalidAuth, CannotConnect, OSError)):
             await client.get_current_weather(52.0, 5.0)
 
     async def test_pirate_weather_client_rate_limit(self) -> None:
@@ -182,7 +183,7 @@ class TestWeatherModuleErrorHandling:
         mock_response.status = 429
         session.get.return_value.__aenter__.return_value = mock_response
 
-        client = PirateWeatherClient(session, "test_api_key")
+        client = PirateWeatherClient(session, "validate_api_key")
 
-        with pytest.raises(Exception):  # Specific exception depends on implementation
+        with pytest.raises((InvalidAuth, CannotConnect, OSError)):
             await client.get_current_weather(52.0, 5.0)

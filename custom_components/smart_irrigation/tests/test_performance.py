@@ -100,12 +100,14 @@ class TestPerformanceTimer:
         def failing_function():
             raise ValueError("Test error")
 
-        with patch(
-            "custom_components.smart_irrigation.performance.time.perf_counter",
-            side_effect=[0, 0.15],
+        with (
+            patch(
+                "custom_components.smart_irrigation.performance.time.perf_counter",
+                side_effect=[0, 0.15],
+            ),
+            pytest.raises(ValueError, match="Test error"),
         ):
-            with pytest.raises(ValueError, match="Test error"):
-                failing_function()
+            failing_function()
 
         # Should still log the duration despite the exception
         assert "took 0.150 seconds" in caplog.text
@@ -117,12 +119,14 @@ class TestPerformanceTimer:
         async def failing_async_function():
             raise ValueError("Async test error")
 
-        with patch(
-            "custom_components.smart_irrigation.performance.time.perf_counter",
-            side_effect=[0, 0.15],
+        with (
+            patch(
+                "custom_components.smart_irrigation.performance.time.perf_counter",
+                side_effect=[0, 0.15],
+            ),
+            pytest.raises(ValueError, match="Async test error"),
         ):
-            with pytest.raises(ValueError, match="Async test error"):
-                await failing_async_function()
+            await failing_async_function()
 
         # Should still log the duration despite the exception
         assert "took 0.150 seconds" in caplog.text
@@ -178,7 +182,10 @@ class TestAsyncPerformanceMonitor:
                 pass
 
         assert "WARNING" in caplog.text
-        assert "test_operation took 0.150 seconds (threshold: 0.1s)" in caplog.text
+        assert (
+            "Operation test_operation took 0.150 seconds (threshold: 0.100s)"
+            in caplog.text
+        )
 
     async def test_async_performance_monitor_custom_threshold(self, caplog):
         """Test async performance monitor with custom threshold."""
@@ -190,30 +197,37 @@ class TestAsyncPerformanceMonitor:
                 pass
 
         assert "WARNING" in caplog.text
-        assert "test_operation took 0.050 seconds (threshold: 0.03s)" in caplog.text
+        assert (
+            "Operation test_operation took 0.050 seconds (threshold: 0.030s)"
+            in caplog.text
+        )
 
     async def test_async_performance_monitor_debug_threshold(self, caplog):
         """Test async performance monitor debug logging."""
-        with caplog.at_level("DEBUG"):
-            with patch(
+        with (
+            caplog.at_level("DEBUG"),
+            patch(
                 "custom_components.smart_irrigation.performance.time.perf_counter",
                 side_effect=[0, 0.06],
-            ):
-                async with AsyncPerformanceMonitor("test_operation", threshold=0.1):
-                    pass
+            ),
+        ):
+            async with AsyncPerformanceMonitor("test_operation", threshold=0.1):
+                pass
 
         assert "DEBUG" in caplog.text
         assert "test_operation took 0.060 seconds" in caplog.text
 
     async def test_async_performance_monitor_exception_handling(self, caplog):
         """Test async performance monitor with exception."""
-        with patch(
-            "custom_components.smart_irrigation.performance.time.perf_counter",
-            side_effect=[0, 0.15],
+        with (
+            patch(
+                "custom_components.smart_irrigation.performance.time.perf_counter",
+                side_effect=[0, 0.15],
+            ),
+            pytest.raises(ValueError, match="Test error"),
         ):
-            with pytest.raises(ValueError, match="Test error"):
-                async with AsyncPerformanceMonitor("test_operation"):
-                    raise ValueError("Test error")
+            async with AsyncPerformanceMonitor("test_operation"):
+                raise ValueError("Test error")
 
         # Should still log the duration despite the exception
         assert "test_operation took 0.150 seconds" in caplog.text

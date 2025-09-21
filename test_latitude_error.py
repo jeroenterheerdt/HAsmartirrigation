@@ -4,9 +4,9 @@ Simple test to reproduce the latitude error.
 """
 
 import asyncio
-import sys
 import os
-from unittest.mock import MagicMock, AsyncMock
+import sys
+from unittest.mock import AsyncMock, MagicMock
 
 # Add the custom components to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'custom_components'))

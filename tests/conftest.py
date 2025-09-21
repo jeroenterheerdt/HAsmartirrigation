@@ -1,33 +1,36 @@
 """Fixtures for testing."""
 
 import sys
-import pytest
 from pathlib import Path
-from unittest.mock import AsyncMock, Mock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
+
+import pytest
 
 # Add the repository root to Python path so custom component imports work
 repo_root = Path(__file__).parent.parent
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
+
 # Patch problematic Home Assistant modules before any imports
 def patch_homeassistant_modules():
     """Patch Home Assistant modules that cause import issues."""
     # Create mock modules for problematic HA components
     mock_modules = [
-        'homeassistant.helpers',
-        'homeassistant.helpers.device_registry',
-        'homeassistant.helpers.entity_registry',
-        'homeassistant.components.frontend',
-        'homeassistant.components.websocket_api',
-        'homeassistant.components.http',
-        'homeassistant.components.logger',
-        'homeassistant.components.system_log',
+        "homeassistant.helpers",
+        "homeassistant.helpers.device_registry",
+        "homeassistant.helpers.entity_registry",
+        "homeassistant.components.frontend",
+        "homeassistant.components.websocket_api",
+        "homeassistant.components.http",
+        "homeassistant.components.logger",
+        "homeassistant.components.system_log",
     ]
-    
+
     for module_name in mock_modules:
         if module_name not in sys.modules:
             sys.modules[module_name] = MagicMock()
+
 
 # Apply patches early
 patch_homeassistant_modules()
@@ -50,32 +53,33 @@ def mock_hass():
     hass.config.elevation = 0
     hass.config.units = Mock()
     hass.config.time_zone = "UTC"
-    
+
     hass.data = {}
     hass.states = Mock()
     hass.states.async_set = AsyncMock()
     hass.states.get = Mock(return_value=None)
-    
+
     hass.services = Mock()
     hass.services.async_call = AsyncMock()
-    
+
     hass.bus = Mock()
     hass.bus.async_listen = Mock()
     hass.bus.async_fire = AsyncMock()
-    
+
     hass.async_add_executor_job = AsyncMock()
     hass.async_create_task = AsyncMock()
-    
+
     return hass
 
 
 @pytest.fixture
 def mock_entry():
     """Return a mock config entry."""
-    from tests.common import MockConfigEntry
+    from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE
+
     from custom_components.smart_irrigation import const
-    from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_ELEVATION
-    
+    from tests.common import MockConfigEntry
+
     return MockConfigEntry(
         domain=const.DOMAIN,
         title=const.NAME,
@@ -95,7 +99,7 @@ def mock_entry():
 def mock_store():
     """Return a mock store."""
     from custom_components.smart_irrigation import const
-    
+
     store = Mock()
     store.async_get_config = AsyncMock(return_value={})
     store.async_get_all_zones = AsyncMock(return_value=[])
@@ -110,7 +114,7 @@ def mock_store():
     default_config = {
         const.CONF_AUTO_UPDATE_ENABLED: False,
         const.CONF_AUTO_CALC_ENABLED: False,
-        const.CONF_USE_WEATHER_SERVICE: False
+        const.CONF_USE_WEATHER_SERVICE: False,
     }
     store.get_config = Mock(return_value=default_config)
     return store

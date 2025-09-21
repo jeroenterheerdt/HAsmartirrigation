@@ -210,4 +210,6 @@ class TestSmartIrrigationZoneEntity:
         entity.async_handle_unit_system_change()
 
         # Verify state update was scheduled
-        entity.async_schedule_update_ha_state.assert_called_once_with(force_refresh=True)
+        entity.async_schedule_update_ha_state.assert_called_once_with(
+            force_refresh=True
+        )

@@ -385,3 +385,6 @@ Thumbs.db
 # Temporary test files
 test_latitude_*.py
 test_calendar_fix.py
+
+# IDE history files
+.history/

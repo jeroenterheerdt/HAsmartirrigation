@@ -771,14 +771,17 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 # Cancel any previously scheduled update for this mapping
                 if mapping_id in self._debounced_update_cancel:
                     _LOGGER.debug(
-                        "[async_sensor_state_changed]: cancelling previously scheduled update for mapping_id=%s", mapping_id
+                        "[async_sensor_state_changed]: cancelling previously scheduled update for mapping_id=%s",
+                        mapping_id,
                     )
                     self._debounced_update_cancel[mapping_id]()
                     del self._debounced_update_cancel[mapping_id]
 
                 # Schedule the update for this mapping
                 _LOGGER.debug(
-                    "[async_sensor_state_changed]: scheduling update in %s ms for mapping_id=%s", debounce, mapping_id
+                    "[async_sensor_state_changed]: scheduling update in %s ms for mapping_id=%s",
+                    debounce,
+                    mapping_id,
                 )
                 self._debounced_update_cancel[mapping_id] = async_call_later(
                     self.hass,
@@ -790,12 +793,15 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                                 self.async_continuous_update_for_mapping(mid)
                             )
                         ),
-                        self._debounced_update_cancel.pop(mid, None),  # Remove after firing
+                        self._debounced_update_cancel.pop(
+                            mid, None
+                        ),  # Remove after firing
                     )[-1],
                 )
             else:
                 _LOGGER.debug(
-                    "[async_sensor_state_changed]: no debounce, doing update now for mapping_id=%s", mapping_id
+                    "[async_sensor_state_changed]: no debounce, doing update now for mapping_id=%s",
+                    mapping_id,
                 )
                 await self.async_continuous_update_for_mapping(mapping_id)
 
@@ -1652,9 +1658,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
         for mapping_id in mapping_ids:
             mapping = self.store.get_mapping(mapping_id)
             if mapping.get(const.MAPPING_DATA):
-                aggregated_mapping_data[
-                    mapping_id
-                ] = await self.apply_aggregates_to_mapping_data(mapping, True)
+                aggregated_mapping_data[mapping_id] = (
+                    await self.apply_aggregates_to_mapping_data(mapping, True)
+                )
 
         # TODO: maybe calc each module once here
 
@@ -2729,7 +2735,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
                 return False
 
             # Get forecast data (today and tomorrow)
-            forecast_data = await self.hass.async_add_executor_job( weather_client.get_forecast_data )
+            forecast_data = await self.hass.async_add_executor_job(
+                weather_client.get_forecast_data
+            )
             if not forecast_data:
                 _LOGGER.debug("No forecast data available")
                 return False
@@ -3139,9 +3147,9 @@ class SmartIrrigationCoordinator(DataUpdateCoordinator):
             if "watering_calendars" not in self.hass.data[const.DOMAIN]:
                 self.hass.data[const.DOMAIN]["watering_calendars"] = {}
 
-            self.hass.data[const.DOMAIN]["watering_calendars"]["last_generated"] = (
-                calendar_data
-            )
+            self.hass.data[const.DOMAIN]["watering_calendars"][
+                "last_generated"
+            ] = calendar_data
 
             # Fire an event with the calendar data
             self.hass.bus.fire(
@@ -3723,7 +3731,7 @@ def register_services(hass: HomeAssistant):
     hass.services.async_register(
         const.DOMAIN, const.SERVICE_SET_BUCKET, coordinator.handle_set_zone
     )
-    
+
     hass.services.async_register(
         const.DOMAIN, const.SERVICE_SET_ALL_BUCKETS, coordinator.handle_set_all_buckets
     )

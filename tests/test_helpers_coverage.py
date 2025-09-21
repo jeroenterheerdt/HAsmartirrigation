@@ -1,7 +1,5 @@
 """Test Smart Irrigation helper functions to improve coverage."""
 
-import pytest
-
 from custom_components.smart_irrigation.helpers import (
     CannotConnect,
     InvalidAuth,
@@ -83,7 +81,7 @@ class TestTimeFunctions:
         # Valid boundaries
         assert check_time("00:00") is True
         assert check_time("23:59") is True
-        
+
         # Invalid boundaries
         assert check_time("24:00") is False
         assert check_time("00:60") is False
@@ -93,8 +91,8 @@ class TestTimeFunctions:
         """Test current behavior with whitespace (documenting as-is)."""
         # Currently the function accepts whitespace in many cases
         assert check_time(" 12:30 ") is True  # Current behavior
-        assert check_time("12 :30") is True   # Space is actually accepted
-        assert check_time("12: 30") is True   # Space after colon also accepted
+        assert check_time("12 :30") is True  # Space is actually accepted
+        assert check_time("12: 30") is True  # Space after colon also accepted
 
     def test_check_time_type_safety_string_only(self):
         """Test time validation requires string input."""
@@ -115,19 +113,19 @@ class TestPerformanceOptimizations:
     def test_time_validation_performance(self):
         """Test time validation performance."""
         import time
-        
+
         start_time = time.time()
         for _ in range(1000):
             check_time("12:30")
         end_time = time.time()
-        
-        # Should complete 1000 validations in well under a second  
+
+        # Should complete 1000 validations in well under a second
         assert (end_time - start_time) < 1.0
 
     def test_exception_creation_performance(self):
         """Test exception creation performance."""
         import time
-        
+
         start_time = time.time()
         for _ in range(1000):
             try:
@@ -135,7 +133,7 @@ class TestPerformanceOptimizations:
             except CannotConnect:
                 pass
         end_time = time.time()
-        
+
         # Should complete 1000 exception creations quickly
         assert (end_time - start_time) < 1.0
 
@@ -158,22 +156,38 @@ class TestRobustness:
     def test_time_validation_comprehensive(self):
         """Comprehensive time validation test."""
         valid_times = [
-            "00:00", "00:01", "00:59",
-            "01:00", "01:30", "01:59", 
-            "12:00", "12:30", "12:59",
-            "23:00", "23:30", "23:59"
+            "00:00",
+            "00:01",
+            "00:59",
+            "01:00",
+            "01:30",
+            "01:59",
+            "12:00",
+            "12:30",
+            "12:59",
+            "23:00",
+            "23:30",
+            "23:59",
         ]
-        
+
         for time_str in valid_times:
             assert check_time(time_str) is True, f"Time {time_str} should be valid"
-            
+
         invalid_times = [
-            "24:00", "25:00", "99:99",
-            "00:60", "00:99", "12:60",
-            "-1:30", "12:-1", "-1:-1",
-            "ab:cd", "12:ab", "ab:30"
+            "24:00",
+            "25:00",
+            "99:99",
+            "00:60",
+            "00:99",
+            "12:60",
+            "-1:30",
+            "12:-1",
+            "-1:-1",
+            "ab:cd",
+            "12:ab",
+            "ab:30",
         ]
-        
+
         for time_str in invalid_times:
             assert check_time(time_str) is False, f"Time {time_str} should be invalid"
 
@@ -183,7 +197,9 @@ class TestErrorMessages:
 
     def test_exception_message_clarity(self):
         """Test that exception messages are clear."""
-        detailed_message = "Unable to connect to weather service API at https://api.example.com"
+        detailed_message = (
+            "Unable to connect to weather service API at https://api.example.com"
+        )
         exc = CannotConnect(detailed_message)
         assert detailed_message in str(exc)
 
@@ -191,14 +207,14 @@ class TestErrorMessages:
         """Test exception message consistency."""
         messages = [
             "Connection timeout",
-            "Network unreachable", 
-            "DNS resolution failed"
+            "Network unreachable",
+            "DNS resolution failed",
         ]
-        
+
         for message in messages:
             exc = CannotConnect(message)
             assert str(exc) == message
-            
+
             exc = InvalidAuth(message)
             assert str(exc) == message
 
@@ -212,22 +228,19 @@ class TestErrorMessages:
 
 class TestDocumentedBehavior:
     """Test and document current behavior for future improvements."""
-    
+
     def test_time_function_error_cases(self):
         """Document error cases that could be improved."""
         # These tests document current behavior that might be improved later
-        
-        # Function crashes on None (documented bug)
-        with pytest.raises(AttributeError):
-            check_time(None)
-            
-        # Function crashes on non-string (documented bug)
-        with pytest.raises(AttributeError):
-            check_time(1230)
-            
-        # Function crashes on list (documented bug) 
-        with pytest.raises(AttributeError):
-            check_time([12, 30])
+
+        # Function now handles None gracefully (bug fixed)
+        assert check_time(None) is False
+
+        # Function now handles non-string types gracefully (bug fixed)
+        assert check_time(1230) is False
+
+        # Function now handles list types gracefully (bug fixed)
+        assert check_time([12, 30]) is False
 
     def test_time_function_whitespace_handling(self):
         """Document current whitespace handling."""
@@ -239,14 +252,14 @@ class TestDocumentedBehavior:
 
 class TestCoverageBooster:
     """Additional tests to boost code coverage."""
-    
+
     def test_boundary_hour_values(self):
         """Test hour boundary values systematically."""
         # Test each hour boundary
         for hour in range(24):
             time_str = f"{hour:02d}:00"
             assert check_time(time_str) is True
-            
+
         # Test invalid hours
         for hour in [24, 25, -1, 99]:
             time_str = f"{hour:02d}:00" if hour >= 0 else f"{hour}:00"
@@ -258,22 +271,22 @@ class TestCoverageBooster:
         for minute in range(60):
             time_str = f"12:{minute:02d}"
             assert check_time(time_str) is True
-            
+
         # Test invalid minutes
         for minute in [60, 61, -1, 99]:
             time_str = f"12:{minute:02d}" if minute >= 0 else f"12:{minute}"
             assert check_time(time_str) is False
-            
+
     def test_string_edge_cases(self):
         """Test string parsing edge cases."""
         # Empty parts
         assert check_time(":") is False
         assert check_time("::") is False
-        
+
         # Too many colons
         assert check_time("12:30:45") is False
         assert check_time("12:30:45:60") is False
-        
+
         # Non-numeric content
         assert check_time("ab:cd") is False
         assert check_time("12:cd") is False
