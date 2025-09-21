@@ -3,7 +3,7 @@
 ## Development Setup
 
 ### Prerequisites
-- Python 3.11 or higher
+- Python 3.13.2 or higher
 - Git
 - on Windows:
    - Microsoft Visual C++ 14.0 or greater # Get it with "Microsoft C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
@@ -16,16 +16,15 @@
    cd HAsmartirrigation
    ```
 
-2. **Create and activate virtual environment**
+2. **Set up development environment**
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   make setup
    ```
+   This will create a Python 3.13 virtual environment and install all dependencies.
 
-3. **Install development dependencies**
+3. **Activate the environment**
    ```bash
-   pip install --upgrade pip
-   pip install -r requirements-dev.txt
+   source .venv/bin/activate
    ```
 
 4. **Set up environment variables** (for testing)
@@ -37,26 +36,27 @@
 ### Running Tests
 
 ```bash
-# Run all tests
-pytest
+make test
 ```
 
 ### Code Quality
 
-We use several tools to maintain code quality:
-
+**All CI checks:**
 ```bash
-# Format code
-black .
+make check    # Run all CI quality checks
+```
 
-# Sort imports
-isort .
+**Individual commands:**
+```bash
+make format   # Format code (black)
+make lint     # Lint code (ruff)
+```
 
-# Lint code
-flake8 .
+### Available Make Commands
 
-# Type checking
-mypy custom_components/smart_irrigation/
+Run `make help` to see all available commands:
+```bash
+make help
 ```
 
 ### Pre-commit Hooks

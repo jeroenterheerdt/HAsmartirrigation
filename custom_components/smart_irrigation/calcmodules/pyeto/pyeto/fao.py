@@ -612,10 +612,7 @@ def sol_rad_from_t(et_rad, cs_rad, tmin, tmax, coastal):
     """
     # Determine value of adjustment coefficient [deg C-0.5] for
     # coastal/interior locations
-    if coastal:
-        adj = 0.19
-    else:
-        adj = 0.16
+    adj = 0.19 if coastal else 0.16
 
     sol_rad = adj * math.sqrt(tmax - tmin) * et_rad
 

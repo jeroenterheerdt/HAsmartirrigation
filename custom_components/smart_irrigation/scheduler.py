@@ -2,8 +2,8 @@
 
 import datetime
 import logging
-from typing import Any, Optional, Union
 import uuid
+from typing import Any, Optional, Union
 
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import (
@@ -289,6 +289,7 @@ class RecurringScheduleManager:
 
         except Exception as e:
             _LOGGER.error("Error executing schedule action %s: %s", action, e)
+            raise
 
     async def _save_schedules(self) -> None:
         """Save schedules to configuration."""
@@ -312,8 +313,10 @@ class RecurringScheduleManager:
             time_str = schedule_data[const.SCHEDULE_CONF_TIME]
             try:
                 datetime.datetime.strptime(time_str, "%H:%M")
-            except ValueError:
-                raise ValueError(f"Invalid time format: {time_str}. Expected HH:MM")
+            except ValueError as e:
+                raise ValueError(
+                    f"Invalid time format: {time_str}. Expected HH:MM"
+                ) from e
 
     def _generate_schedule_id(self) -> str:
         """Generate a unique schedule ID."""

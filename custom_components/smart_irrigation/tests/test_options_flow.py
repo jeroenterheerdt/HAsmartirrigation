@@ -57,7 +57,7 @@ class TestSmartIrrigationOptionsFlow:
             data={
                 CONF_USE_WEATHER_SERVICE: True,
                 CONF_WEATHER_SERVICE: CONF_WEATHER_SERVICE_OWM,
-                CONF_WEATHER_SERVICE_API_KEY: "test_api_key",
+                CONF_WEATHER_SERVICE_API_KEY: "validate_api_key",
                 CONF_WEATHER_SERVICE_API_VERSION: "3.0",
             },
             options={},
@@ -90,7 +90,7 @@ class TestSmartIrrigationOptionsFlow:
         """Test options flow initialization with weather service."""
         assert options_flow_with_weather._use_weather_service is True
         assert options_flow_with_weather._weather_service == CONF_WEATHER_SERVICE_OWM
-        assert options_flow_with_weather._weather_service_api_key == "test_api_key"
+        assert options_flow_with_weather._weather_service_api_key == "validate_api_key"
 
     async def test_async_step_init_no_weather_service(self, options_flow):
         """Test init step without weather service."""
@@ -132,7 +132,7 @@ class TestSmartIrrigationOptionsFlow:
         }
 
         with patch(
-            "custom_components.smart_irrigation.options_flow.test_api_key"
+            "custom_components.smart_irrigation.options_flow.validate_api_key"
         ) as mock_test_api:
             mock_test_api.return_value = True
 
@@ -152,7 +152,7 @@ class TestSmartIrrigationOptionsFlow:
         }
 
         with patch(
-            "custom_components.smart_irrigation.options_flow.test_api_key"
+            "custom_components.smart_irrigation.options_flow.validate_api_key"
         ) as mock_test_api:
             mock_test_api.side_effect = InvalidAuth()
 
@@ -170,11 +170,11 @@ class TestSmartIrrigationOptionsFlow:
         options_flow._use_weather_service = True
         user_input = {
             CONF_WEATHER_SERVICE: CONF_WEATHER_SERVICE_OWM,
-            CONF_WEATHER_SERVICE_API_KEY: "test_api_key",
+            CONF_WEATHER_SERVICE_API_KEY: "validate_api_key",
         }
 
         with patch(
-            "custom_components.smart_irrigation.options_flow.test_api_key"
+            "custom_components.smart_irrigation.options_flow.validate_api_key"
         ) as mock_test_api:
             mock_test_api.side_effect = CannotConnect()
 
@@ -241,7 +241,7 @@ class TestSmartIrrigationOptionsFlow:
         assert flow._weather_service == CONF_WEATHER_SERVICE_OWM
         assert flow._weather_service_api_key == "options_api_key"
 
-    def test_api_key_whitespace_stripping(self, mock_hass):
+    def validate_api_key_whitespace_stripping(self, mock_hass):
         """Test that API keys are stripped of whitespace."""
         mock_config_entry = ConfigEntry(
             version=1,
@@ -265,7 +265,7 @@ class TestSmartIrrigationOptionsFlow:
             CONF_DAYS_BETWEEN_IRRIGATION,
             CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION,
         )
-        
+
         # Test with no existing setting (should use default)
         mock_config_entry = ConfigEntry(
             version=1,
@@ -305,5 +305,7 @@ class TestSmartIrrigationOptionsFlow:
             entry_id="test_entry_id",
         )
 
-        flow_with_options = SmartIrrigationOptionsFlowHandler(mock_config_entry_with_options)
+        flow_with_options = SmartIrrigationOptionsFlowHandler(
+            mock_config_entry_with_options
+        )
         assert flow_with_options._days_between_irrigation == 3

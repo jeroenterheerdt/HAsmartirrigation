@@ -270,48 +270,48 @@ class MigratableStore(Store):
 
                 # Add weather skip configuration if missing
                 if CONF_SKIP_IRRIGATION_ON_PRECIPITATION not in data["config"]:
-                    data["config"][CONF_SKIP_IRRIGATION_ON_PRECIPITATION] = (
-                        CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
-                    )
+                    data["config"][
+                        CONF_SKIP_IRRIGATION_ON_PRECIPITATION
+                    ] = CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
                 if CONF_PRECIPITATION_THRESHOLD_MM not in data["config"]:
-                    data["config"][CONF_PRECIPITATION_THRESHOLD_MM] = (
-                        CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
-                    )
+                    data["config"][
+                        CONF_PRECIPITATION_THRESHOLD_MM
+                    ] = CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
 
                 # Add days between irrigation configuration if missing
                 if CONF_DAYS_BETWEEN_IRRIGATION not in data["config"]:
-                    data["config"][CONF_DAYS_BETWEEN_IRRIGATION] = (
-                        CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
-                    )
+                    data["config"][
+                        CONF_DAYS_BETWEEN_IRRIGATION
+                    ] = CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
                 if CONF_DAYS_SINCE_LAST_IRRIGATION not in data["config"]:
-                    data["config"][CONF_DAYS_SINCE_LAST_IRRIGATION] = (
-                        CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
-                    )
+                    data["config"][
+                        CONF_DAYS_SINCE_LAST_IRRIGATION
+                    ] = CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
 
         # CRITICAL: Always ensure required fields are present and strip unrecognized keys
         # This prevents TypeError when Config(**config_data) is called
         if "config" in data:
             # Ensure all required fields are present with defaults
             if CONF_IRRIGATION_START_TRIGGERS not in data["config"]:
-                data["config"][CONF_IRRIGATION_START_TRIGGERS] = (
-                    CONF_DEFAULT_IRRIGATION_START_TRIGGERS
-                )
+                data["config"][
+                    CONF_IRRIGATION_START_TRIGGERS
+                ] = CONF_DEFAULT_IRRIGATION_START_TRIGGERS
             if CONF_SKIP_IRRIGATION_ON_PRECIPITATION not in data["config"]:
-                data["config"][CONF_SKIP_IRRIGATION_ON_PRECIPITATION] = (
-                    CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
-                )
+                data["config"][
+                    CONF_SKIP_IRRIGATION_ON_PRECIPITATION
+                ] = CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION
             if CONF_PRECIPITATION_THRESHOLD_MM not in data["config"]:
-                data["config"][CONF_PRECIPITATION_THRESHOLD_MM] = (
-                    CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
-                )
+                data["config"][
+                    CONF_PRECIPITATION_THRESHOLD_MM
+                ] = CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM
             if CONF_DAYS_BETWEEN_IRRIGATION not in data["config"]:
-                data["config"][CONF_DAYS_BETWEEN_IRRIGATION] = (
-                    CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
-                )
+                data["config"][
+                    CONF_DAYS_BETWEEN_IRRIGATION
+                ] = CONF_DEFAULT_DAYS_BETWEEN_IRRIGATION
             if CONF_DAYS_SINCE_LAST_IRRIGATION not in data["config"]:
-                data["config"][CONF_DAYS_SINCE_LAST_IRRIGATION] = (
-                    CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
-                )
+                data["config"][
+                    CONF_DAYS_SINCE_LAST_IRRIGATION
+                ] = CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION
 
             # Get valid field names from Config class to filter out unrecognized keys
             valid_fields = set(attr.fields_dict(Config).keys())

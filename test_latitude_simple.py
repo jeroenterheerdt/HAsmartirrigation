@@ -3,8 +3,8 @@
 Simple test to trigger the latitude AttributeError without full coordinator initialization.
 """
 
-import sys
 import os
+import sys
 from unittest.mock import MagicMock
 
 # Add the custom components to the path
@@ -25,8 +25,9 @@ try:
         def _generate_monthly_climate_data(self):
             """Copy of the real method that should fail due to missing _latitude"""
             import math
+
             from smart_irrigation.helpers import altitudeToPressure
-            
+
             # Get latitude for seasonal variation (default to temperate zone if not available)
             latitude = abs(self._latitude or 45.0)  # This should fail!
             

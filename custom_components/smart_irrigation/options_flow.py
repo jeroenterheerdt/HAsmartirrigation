@@ -6,7 +6,7 @@ from homeassistant.const import CONF_ELEVATION, CONF_LATITUDE, CONF_LONGITUDE
 from homeassistant.helpers.selector import selector
 
 from . import const
-from .helpers import CannotConnect, InvalidAuth, test_api_key
+from .helpers import CannotConnect, InvalidAuth, validate_api_key
 
 
 class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
@@ -152,7 +152,7 @@ class SmartIrrigationOptionsFlowHandler(config_entries.OptionsFlow):
                 #    const.CONF_WEATHER_SERVICE_API_VERSION
                 # ]
                 user_input[const.CONF_USE_WEATHER_SERVICE] = self._use_weather_service
-                await test_api_key(
+                await validate_api_key(
                     self.hass, self._weather_service, self._weather_service_api_key
                 )
                 # After weather service configuration, go to coordinate step

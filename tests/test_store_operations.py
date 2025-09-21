@@ -1,6 +1,6 @@
 """Comprehensive tests for Smart Irrigation store operations."""
 
-from unittest.mock import AsyncMock
+import contextlib
 
 import pytest
 
@@ -23,7 +23,6 @@ class TestSmartIrrigationStorageBasics:
         """Test that store can be loaded."""
         store = SmartIrrigationStorage(hass)
         await store.async_load()
-        # Should not raise any exceptions
 
     def test_get_config_returns_dict(self, hass):
         """Test that get_config returns a dictionary."""
@@ -44,7 +43,6 @@ class TestSmartIrrigationStorageBasics:
         """Test factory defaults creation."""
         store = SmartIrrigationStorage(hass)
         await store.set_up_factory_defaults()
-        # Should not raise any exceptions
 
     @pytest.mark.asyncio
     async def test_config_update_works(self, hass):
@@ -52,7 +50,6 @@ class TestSmartIrrigationStorageBasics:
         store = SmartIrrigationStorage(hass)
         await store.async_load()
 
-        # Update a configuration value
         await store.async_update_config({const.CONF_AUTO_UPDATE_ENABLED: True})
 
         updated_config = await store.async_get_config()
@@ -99,7 +96,6 @@ class TestConfigOperations:
 
         updated_config = await store_with_config.async_get_config()
         assert updated_config[const.CONF_AUTO_CALC_ENABLED] is True
-        # Other values should remain unchanged
         assert updated_config[const.CONF_AUTO_UPDATE_ENABLED] is True
 
     @pytest.mark.asyncio
@@ -110,7 +106,6 @@ class TestConfigOperations:
 
         config = await store.async_get_config()
         assert isinstance(config, dict)
-        # Should have some default values
         assert const.CONF_AUTO_UPDATE_ENABLED in config
 
 
@@ -123,12 +118,10 @@ class TestZoneOperations:
         zones = await store_with_zones.async_get_zones()
         if zones:
             zone_id = zones[0][const.ZONE_ID]
-            # Test synchronous get_zone method
             zone = store_with_zones.get_zone(zone_id)
             assert zone is not None
             assert zone[const.ZONE_NAME] in ["Front Lawn", "Back Garden"]
 
-        # Test invalid ID handling
         non_existent_zone = store_with_zones.get_zone(99999)
         assert non_existent_zone is None
 
@@ -138,7 +131,6 @@ class TestZoneOperations:
         store = SmartIrrigationStorage(hass)
         await store.async_load()
 
-        # Add sample zones
         zone1_data = {
             const.ZONE_NAME: "Front Lawn",
             const.ZONE_SIZE: 100.0,
@@ -162,7 +154,6 @@ class TestZoneOperations:
         store = SmartIrrigationStorage(hass)
         await store.async_load()
 
-        # Get zones (should be empty initially)
         zones = await store.async_get_zones()
         assert isinstance(zones, list)
 
@@ -183,7 +174,6 @@ class TestZoneOperations:
         """Test async retrieval of all zones."""
         zones = await store_with_zones.async_get_zones()
         assert len(zones) >= 2
-        # Should contain our test zones
         zone_names = [zone[const.ZONE_NAME] for zone in zones]
         assert "Front Lawn" in zone_names
         assert "Back Garden" in zone_names
@@ -264,14 +254,10 @@ class TestZoneOperations:
         nonexistent_id = 99999
 
         # Should handle gracefully without raising exception
-        try:
+        with contextlib.suppress(Exception):
             await store_with_zones.async_delete_zone(nonexistent_id)
-            # If it doesn't raise, that's fine - just verify original zones remain
             zones = await store_with_zones.async_get_zones()
-            assert len(zones) >= 2  # Our test zones should still exist
-        except Exception:
-            # If it does raise, that's also acceptable behavior
-            pass
+            assert len(zones) >= 2
 
 
 class TestMappingOperations:
@@ -334,7 +320,6 @@ class TestMappingOperations:
         """Test async retrieval of all mappings."""
         mappings = await store_with_mappings.async_get_mappings()
         assert len(mappings) >= 2
-        # Should contain our sensor mappings
         mapping_names = [mapping[const.MAPPING_NAME] for mapping in mappings]
         assert "temp_sensor" in mapping_names
         assert "humidity_sensor" in mapping_names
@@ -357,7 +342,6 @@ class TestMappingOperations:
         created_mapping = await store.async_create_mapping(new_mapping)
         assert created_mapping[const.MAPPING_NAME] == "wind_sensor"
 
-        # Verify it was actually saved
         mappings = await store.async_get_mappings()
         mapping_names = [mapping[const.MAPPING_NAME] for mapping in mappings]
         assert "wind_sensor" in mapping_names
@@ -365,13 +349,11 @@ class TestMappingOperations:
     @pytest.mark.asyncio
     async def test_async_delete_mapping(self, store_with_mappings):
         """Test deleting mapping."""
-        # Verify mapping exists before deletion
         mappings = await store_with_mappings.async_get_mappings()
         initial_count = len(mappings)
         mapping_names = [mapping[const.MAPPING_NAME] for mapping in mappings]
         assert "temp_sensor" in mapping_names
 
-        # Find and delete the temp_sensor mapping
         temp_mapping = None
         for mapping in mappings:
             if mapping[const.MAPPING_NAME] == "temp_sensor":
@@ -442,7 +424,6 @@ class TestModuleOperations:
         """Test async retrieval of all modules."""
         modules = await store_with_modules.async_get_modules()
         assert len(modules) >= 2
-        # Should contain our test modules
         module_names = [module[const.MODULE_NAME] for module in modules]
         assert "Test Module 1" in module_names
         assert "Test Module 2" in module_names
@@ -510,11 +491,8 @@ class TestErrorHandling:
 
         # Test with invalid zone data should handle gracefully
         invalid_zone_data = {}
-        try:
+        with contextlib.suppress(Exception):
             await store.async_create_zone(invalid_zone_data)
-        except Exception:
-            # Expected to fail with invalid data - this is correct behavior
-            pass
 
 
 class TestBasicFunctionality:

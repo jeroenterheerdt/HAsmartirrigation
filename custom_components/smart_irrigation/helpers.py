@@ -94,20 +94,25 @@ def omit(obj: dict, blacklisted_keys: list):
 
 def check_time(itime):
     """Check time."""
-    timesplit = itime.split(":")
-    if len(timesplit) != 2:
+    # Add type safety for None and non-string inputs
+    if not isinstance(itime, str):
         return False
+
     try:
+        timesplit = itime.split(":")
+        if len(timesplit) != 2:
+            return False
+
         hours = int(timesplit[0])
         minutes = int(timesplit[1])
         if hours in range(24) and minutes in range(
             60
         ):  # range does not include upper bound
             return True
-    except ValueError:
+    except (ValueError, AttributeError):
         return False
-    else:
-        return False
+
+    return False
 
 
 def convert_timestamp(val):
@@ -573,6 +578,7 @@ def convert_length(from_unit, to_unit, val):
     # unknown conversion
     return None
 
+
 def convert_precip_rate(from_unit, to_unit, val):
     """Convert precipitation rate values between different units.
 
@@ -597,6 +603,7 @@ def convert_precip_rate(from_unit, to_unit, val):
             return float(float(val) * MM_TO_INCH_FACTOR)
     # unknown conversion
     return None
+
 
 def convert_temperatures(from_unit, to_unit, val):
     """Convert temperature values between different units.
@@ -672,7 +679,7 @@ def altitudeToPressure(alt):
     return 100 * ((44331.514 - alt) / 11880.516) ** (1 / 0.1902632) / 100
 
 
-async def test_api_key(hass: HomeAssistant, weather_service, api_key):
+async def validate_api_key(hass: HomeAssistant, weather_service, api_key):
     """Test access to Weather Service API here."""
     client = None
     test_lat = 52.353218
@@ -774,6 +781,7 @@ def convert_list_to_dict(lst):
                 res_dict[lst[i]] = lst[i + 1]
     return res_dict
 
+
 def parse_datetime(val) -> datetime | None:
     """Gets a datetime value or converts one from a string."""
     if isinstance(val, datetime):
@@ -782,10 +790,10 @@ def parse_datetime(val) -> datetime | None:
         return datetime.strptime(val, "%Y-%m-%dT%H:%M:%S.%f")
     else:
         _LOGGER.warning(
-            "[get_datetime]: value not instanceof datetime or string: %s",
-            val
+            "[get_datetime]: value not instanceof datetime or string: %s", val
         )
         return None
+
 
 class CannotConnect(exceptions.HomeAssistantError):
     """Error to indicate we cannot connect."""
