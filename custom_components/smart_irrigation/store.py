@@ -220,8 +220,7 @@ class MigratableStore(Store):
     """Store subclass that supports migration for Smart Irrigation storage."""
 
     async def _async_migrate_func(self, old_version, data: dict):
-        """
-        Migration function for Smart Irrigation storage.
+        """Migration function for Smart Irrigation storage.
 
         This function ALWAYS runs on version mismatch to ensure config compatibility.
         It performs critical tasks:

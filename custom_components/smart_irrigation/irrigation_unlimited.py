@@ -2,7 +2,7 @@
 
 import datetime
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import homeassistant.helpers.entity_registry as er
 from homeassistant.const import STATE_ON
@@ -148,7 +148,7 @@ class IrrigationUnlimitedIntegration:
 
     async def _find_matching_iu_entity(
         self, zone: dict[str, Any]
-    ) -> Optional[dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Find the matching Irrigation Unlimited entity for a zone."""
         zone_name = zone.get(const.ZONE_NAME, "").lower()
         zone_id = zone.get(const.ZONE_ID)
@@ -372,7 +372,7 @@ class IrrigationUnlimitedIntegration:
 
     async def _convert_trigger_to_iu_schedule(
         self, trigger: dict[str, Any]
-    ) -> Optional[dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Convert a Smart Irrigation trigger to an IU schedule format."""
         trigger_type = trigger.get(const.TRIGGER_CONF_TYPE)
         trigger_name = trigger.get(const.TRIGGER_CONF_NAME, "Smart Irrigation Trigger")
@@ -420,7 +420,7 @@ class IrrigationUnlimitedIntegration:
 
     async def _convert_recurring_schedule_to_iu_schedule(
         self, schedule: dict[str, Any]
-    ) -> Optional[dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Convert a Smart Irrigation recurring schedule to an IU schedule format."""
         schedule_type = schedule.get(const.SCHEDULE_CONF_TYPE)
         schedule_name = schedule.get(

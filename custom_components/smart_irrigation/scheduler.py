@@ -3,7 +3,7 @@
 import datetime
 import logging
 import uuid
-from typing import Any, Optional, Union
+from typing import Any
 
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import (
@@ -256,7 +256,7 @@ class RecurringScheduleManager:
         )
 
     async def _perform_schedule_action(
-        self, action: str, zones: Union[str, list[str]], schedule_name: str
+        self, action: str, zones: str | list[str], schedule_name: str
     ) -> None:
         """Perform the scheduled action."""
         try:
@@ -403,7 +403,7 @@ class SeasonalAdjustmentManager:
         _LOGGER.info("Deleted seasonal adjustment: %s", adjustment_id)
 
     async def apply_seasonal_adjustments(
-        self, zone_data: dict[str, Any], zone_id: Optional[int] = None
+        self, zone_data: dict[str, Any], zone_id: int | None = None
     ) -> dict[str, Any]:
         """Apply applicable seasonal adjustments to zone data."""
         current_month = datetime.datetime.now().month

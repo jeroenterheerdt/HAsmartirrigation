@@ -8,7 +8,7 @@ import math
 import requests
 
 from ..const import (
-    MAPPING_CURRENT_PRECIPITATION,  # noqa: TID252
+    MAPPING_CURRENT_PRECIPITATION,
     MAPPING_DEWPOINT,
     MAPPING_HUMIDITY,
     MAPPING_MAX_TEMP,

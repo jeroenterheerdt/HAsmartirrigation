@@ -3,7 +3,7 @@
 :copyright: (c) 2015 by Mark Richards.
 :license: BSD 3-Clause, see LICENSE.txt for more details.
 
-References
+References:
 ----------
 Thornthwaite CW (1948) An approach toward a rational classification of
     climate. Geographical Review, 38, 55-94.

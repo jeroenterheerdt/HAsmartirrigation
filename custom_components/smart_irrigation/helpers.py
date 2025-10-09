@@ -786,13 +786,12 @@ def parse_datetime(val) -> datetime | None:
     """Gets a datetime value or converts one from a string."""
     if isinstance(val, datetime):
         return val
-    elif isinstance(val, str):
+    if isinstance(val, str):
         return datetime.strptime(val, "%Y-%m-%dT%H:%M:%S.%f")
-    else:
-        _LOGGER.warning(
-            "[get_datetime]: value not instanceof datetime or string: %s", val
-        )
-        return None
+    _LOGGER.warning(
+        "[get_datetime]: value not instanceof datetime or string: %s", val
+    )
+    return None
 
 
 class CannotConnect(exceptions.HomeAssistantError):
@@ -929,16 +928,14 @@ def _azimuth_crossed_target(
         if prev_azimuth > current_azimuth:
             # Wrapped from 359 to small number
             return target >= prev_azimuth or target <= current_azimuth
-        else:
-            # Wrapped from small number to 359
-            return target <= prev_azimuth or target >= current_azimuth
-    else:
-        # Normal case
-        return (
-            min(prev_azimuth, current_azimuth)
-            <= target
-            <= max(prev_azimuth, current_azimuth)
-        )
+        # Wrapped from small number to 359
+        return target <= prev_azimuth or target >= current_azimuth
+    # Normal case
+    return (
+        min(prev_azimuth, current_azimuth)
+        <= target
+        <= max(prev_azimuth, current_azimuth)
+    )
 
 
 def _refine_azimuth_time(

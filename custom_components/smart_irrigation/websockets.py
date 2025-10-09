@@ -31,14 +31,14 @@ def _safe_parse_datetime(value):
     if isinstance(value, datetime.datetime):
         # Convert timezone-aware datetime to naive UTC for consistent comparison
         if value.tzinfo is not None:
-            return value.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+            return value.astimezone(datetime.UTC).replace(tzinfo=None)
         return value
     if isinstance(value, str):
         try:
             parsed = dateutil_parser.isoparse(value)
             # Convert timezone-aware datetime to naive UTC for consistent comparison
             if parsed.tzinfo is not None:
-                return parsed.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+                return parsed.astimezone(datetime.UTC).replace(tzinfo=None)
             return parsed
         except (ValueError, TypeError):
             _LOGGER.warning("Failed to parse datetime string: %s", value)
