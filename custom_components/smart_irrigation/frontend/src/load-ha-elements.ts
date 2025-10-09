@@ -99,3 +99,29 @@ export const loadHaYamlEditor = async () => {
   const devToolsRouter = document.createElement("developer-tools-router");
   await (devToolsRouter as any)?.routerOptions?.routes?.service?.load?.();
 };
+
+export const loadHaTabs = async (): Promise<void> => {
+  // Tab components might already be available, just check and return
+  console.log("Checking for tab components...");
+
+  // Check what components are actually available
+  console.log("ha-tab-group available:", !!customElements.get("ha-tab-group"));
+  console.log("ha-tab-group-tab available:", !!customElements.get("ha-tab-group-tab"));
+
+  // Let's try a timeout-based wait for the components
+  let attempts = 0;
+  const maxAttempts = 50; // 5 seconds max wait
+
+  while (attempts < maxAttempts) {
+    if (customElements.get("ha-tab-group") && customElements.get("ha-tab-group-tab")) {
+      console.log("Tab components found after", attempts * 100, "ms");
+      return Promise.resolve();
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+    attempts++;
+  }
+
+  console.log("Tab components not found, continuing anyway...");
+  return Promise.resolve();
+};

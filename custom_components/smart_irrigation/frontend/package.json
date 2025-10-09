@@ -1,6 +1,6 @@
 {
   "name": "smartirrigation",
-  "version": "2025.8.1",
+  "version": "2025.10.0",
   "description": "Smart Irrigation frontend",
   "main": "dist/smart-irrigation.js",
   "scripts": {

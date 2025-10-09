@@ -311,3 +311,18 @@ export function sortAlphabetically(
     typeof s === "object" ? stringVal(s.name) : s.trim().toLowerCase();
   return stringVal(a) < stringVal(b) ? -1 : 1;
 }
+
+export const navigate = (
+  _node: any,
+  path: string,
+  replace: boolean = false
+) => {
+  if (replace) {
+    history.replaceState(null, "", path);
+  } else {
+    history.pushState(null, "", path);
+  }
+  fireEvent(window, "location-changed", {
+    replace
+  });
+};

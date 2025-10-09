@@ -1,7 +1,8 @@
 import { LitElement, html, CSSResultGroup, css } from "lit";
 import { property, customElement } from "lit/decorators.js";
-import { HomeAssistant, navigate } from "custom-card-helpers";
+import { HomeAssistant } from "custom-card-helpers";
 import { loadHaForm } from "./load-ha-elements";
+import { navigate } from "./helpers";
 
 import "./views/general/view-general.ts";
 import "./views/zones/view-zones.ts";
@@ -13,6 +14,15 @@ import { commonStyle } from "./styles";
 import { VERSION, PLATFORM } from "./const";
 import { localize } from "../localize/localize";
 import { exportPath, getPath, Path } from "./common/navigation";
+
+enum EMenuItems {
+  Info = 'info',
+  General = 'general',
+  Zones = 'zones',
+  Modules = 'modules',
+  Mappings = 'mappings',
+  Help = 'help',
+}
 
 @customElement("smart-irrigation")
 export class SmartIrrigationPanel extends LitElement {
@@ -33,6 +43,13 @@ export class SmartIrrigationPanel extends LitElement {
   }
 
   async firstUpdated() {
+    // Ensure we have a default route
+    const path = getPath();
+    if (!path.page || !Object.values(EMenuItems).includes(path.page as EMenuItems)) {
+      navigate(this, exportPath(EMenuItems.General));
+      return;
+    }
+
     window.addEventListener("location-changed", () => {
       if (!window.location.pathname.includes(PLATFORM)) return;
 
@@ -60,8 +77,12 @@ export class SmartIrrigationPanel extends LitElement {
   }
 
   render() {
-    // Remove the blocking check - let the app render even if HA elements aren't fully loaded
     const path = getPath();
+
+    // Check what tab components are available
+    const hasTabGroup = !!customElements.get('ha-tab-group');
+    const hasTabGroupTab = !!customElements.get('ha-tab-group-tab');
+
     return html`
       <div class="header">
         <div class="toolbar">
@@ -73,37 +94,32 @@ export class SmartIrrigationPanel extends LitElement {
           <div class="version">${VERSION}</div>
         </div>
 
-        <sl-tab-group
-          scrollable
-          attr-for-selected="page-name"
-          .selected=${path.page}
-          @sl-tab-show=${this.handlePageSelected}
-        >
-          <sl-tab slot="nav" panel="info" .active=${path.page === "info"}>
-            ${localize("panels.info.title", this.hass.language)}
-          </sl-tab>
-          <sl-tab slot="nav" panel="general" .active=${path.page === "general"}>
-            ${localize("panels.general.title", this.hass.language)}
-          </sl-tab>
-          <sl-tab slot="nav" panel="zones" .active=${path.page === "zones"}>
-            ${localize("panels.zones.title", this.hass.language)}
-          </sl-tab>
-          <sl-tab slot="nav" panel="modules" .active=${path.page === "modules"}>
-            ${localize("panels.modules.title", this.hass.language)}
-          </sl-tab>
-          <sl-tab
-            slot="nav"
-            panel="mappings"
-            .active=${path.page === "mappings"}
+        ${hasTabGroup && hasTabGroupTab ? html`
+          <ha-tab-group
+            @wa-tab-show=${this.handlePageSelected}
           >
-            ${localize("panels.mappings.title", this.hass.language)}
-          </sl-tab>
-          <sl-tab slot="nav" panel="help" .active=${path.page === "help"}>
-            ${localize("panels.help.title", this.hass.language)}
-          </sl-tab>
-        </sl-tab-group>
+            ${Object.values(EMenuItems).map(e => html`
+              <ha-tab-group-tab slot="nav" panel="${e}" .active=${path.page === e}>
+                ${localize(`panels.${e}.title`, this.hass.language)}
+              </ha-tab-group-tab>
+            `)}
+          </ha-tab-group>
+        ` : html`
+          <div class="custom-tabs">
+            ${Object.values(EMenuItems).map(e => html`
+              <button
+                class="custom-tab ${path.page === e ? 'active' : ''}"
+                @click=${() => this.navigateToPage(e)}
+              >
+                ${localize(`panels.${e}.title`, this.hass.language)}
+              </button>
+            `)}
+          </div>
+        `}
       </div>
-      <div class="view">${this.getView(path)}</div>
+      <div class="view">
+        ${this.getView(path)}
+      </div>
     `;
   }
 
@@ -208,76 +224,131 @@ export class SmartIrrigationPanel extends LitElement {
     }
   }
 
-  handlePageSelected(ev: CustomEvent) {
-    // Try multiple ways to get the page name
-    const newPage =
-      ev.detail.name ||
-      ev.detail.panel ||
-      (ev.target as any)?.getAttribute?.("panel") ||
-      ev.detail.item?.getAttribute?.("panel");
+  navigateToPage(page: string) {
+    if (page !== getPath().page) {
+      const newPath = exportPath(page);
+      navigate(this, newPath);
+      this.requestUpdate();
+    } else {
+      scrollTo(0, 0);
+    }
+  }
 
-    if (newPage && newPage !== getPath().page) {
-      navigate(this, exportPath(newPage));
-      // Don't call requestUpdate here - the location-changed event will handle it
+  handlePageSelected(ev: CustomEvent) {
+    const newPage = ev.detail.name;
+    if (newPage !== getPath().page) {
+      const newPath = exportPath(newPage);
+      navigate(this, newPath);
+      this.requestUpdate();
     } else {
       scrollTo(0, 0);
     }
   }
 
   static get styles(): CSSResultGroup {
-    return css`
-      ${commonStyle} :host {
-        color: var(--primary-text-color);
-        --paper-card-header-color: var(--primary-text-color);
-      }
-      .header {
-        background-color: var(--app-header-background-color);
-        color: var(--app-header-text-color, white);
-        border-bottom: var(--app-header-border-bottom, none);
-      }
-      .toolbar {
-        height: var(--header-height);
-        display: flex;
-        align-items: center;
-        font-size: 20px;
-        padding: 0 16px;
-        font-weight: 400;
-        box-sizing: border-box;
-      }
-      .main-title {
-        margin: 0 0 0 24px;
-        line-height: 20px;
-        flex-grow: 1;
-      }
-      sl-tab-group {
-        margin-left: max(env(safe-area-inset-left), 24px);
-        margin-right: max(env(safe-area-inset-right), 24px);
-        --ha-tab-active-text-color: var(--app-header-text-color, white);
-        --ha-tab-indicator-color: var(--app-header-text-color, white);
-        --ha-tab-track-color: transparent;
-        text-transform: uppercase;
-      }
+    return [
+      commonStyle,
+      css`
+        :host {
+          color: var(--primary-text-color);
+          --paper-card-header-color: var(--primary-text-color);
+        }
+        .header {
+          background-color: var(--app-header-background-color);
+          color: var(--app-header-text-color, white);
+          border-bottom: var(--app-header-border-bottom, none);
+        }
+        .toolbar {
+          height: var(--header-height);
+          display: flex;
+          align-items: center;
+          font-size: 20px;
+          padding: 0 16px;
+          font-weight: 400;
+          box-sizing: border-box;
+        }
+        .main-title {
+          margin: 0 0 0 24px;
+          line-height: 20px;
+          flex-grow: 1;
+        }
+        ha-tab-group {
+          margin-left: max(env(safe-area-inset-left), 24px);
+          margin-right: max(env(safe-area-inset-right), 24px);
+          --ha-tab-active-text-color: var(--app-header-text-color, white);
+          --ha-tab-indicator-color: var(--app-header-text-color, white);
+          --ha-tab-track-color: transparent;
+        }
 
-      .view {
-        height: calc(100vh - 112px);
-        display: flex;
-        justify-content: center;
-      }
+        .custom-tabs {
+          display: flex;
+          margin-left: max(env(safe-area-inset-left), 24px);
+          margin-right: max(env(safe-area-inset-right), 24px);
+          border-bottom: 1px solid rgba(var(--rgb-app-header-text-color, var(--rgb-text-primary-color)), 0.12);
+          overflow-x: auto;
+        }
 
-      .view > * {
-        width: 600px;
-        max-width: 600px;
-      }
+        .custom-tab {
+          background: transparent;
+          border: none;
+          color: rgba(var(--rgb-app-header-text-color, var(--rgb-text-primary-color)), 0.7);
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 14px;
+          font-weight: 500;
+          line-height: 48px;
+          margin: 0;
+          min-width: 72px;
+          outline: none;
+          padding: 0 12px;
+          position: relative;
+          text-transform: uppercase;
+          transition: color 0.15s ease-in-out;
+          white-space: nowrap;
+          letter-spacing: 0.1em;
+        }
 
-      .view > *:last-child {
-        margin-bottom: 20px;
-      }
+        .custom-tab:hover {
+          color: var(--app-header-text-color, white);
+          background-color: rgba(var(--rgb-app-header-text-color, var(--rgb-text-primary-color)), 0.04);
+        }
 
-      .version {
-        font-size: 14px;
-        font-weight: 500;
-        color: rgba(var(--rgb-text-primary-color), 0.9);
-      }
-    `;
+        .custom-tab.active {
+          color: var(--app-header-text-color, white);
+        }
+
+        .custom-tab.active::after {
+          background-color: var(--app-header-text-color, white);
+          bottom: 0;
+          content: "";
+          height: 2px;
+          left: 0;
+          position: absolute;
+          right: 0;
+        }
+
+        .view {
+          height: calc(100vh - 112px);
+          display: flex;
+          justify-content: center;
+          overflow-y: auto;
+        }
+
+        .view > * {
+          width: 600px;
+          max-width: 600px;
+        }
+
+        .view > *:last-child {
+          margin-bottom: 20px;
+        }
+
+        .version {
+          font-size: 14px;
+          font-weight: 500;
+          color: rgba(var(--rgb-text-primary-color), 0.9);
+        }
+      `
+    ];
   }
 }
