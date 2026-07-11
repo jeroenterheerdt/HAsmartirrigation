@@ -155,8 +155,8 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
                             data[PirateWeather_humidity_key_name] * 100.0
                         )  # update since humidity reported by PirateWeather is how reported on a scale from 0-1
                         parsed_data[MAPPING_TEMPERATURE] = (
-                            data[PirateWeather_max_temp_key_name]
-                            + data[PirateWeather_min_temp_key_name] / 2.0
+                            (data[PirateWeather_max_temp_key_name]
+                            + data[PirateWeather_min_temp_key_name]) / 2.0
                         )
                         # also put in min/max here
                         parsed_data[MAPPING_MAX_TEMP] = data[
