@@ -19,9 +19,9 @@
       "seconds": "secondi"
     },
     "attributes": {
-      "size": "size",
-      "throughput": "throughput",
-      "state": "state",
+      "size": "dimensione",
+      "throughput": "portata",
+      "state": "stato",
       "bucket": "secchio",
       "last_updated": "ultimo aggiornamento",
       "last_calculated": "ultimo calcolo",
@@ -44,7 +44,7 @@
   "module": {
     "calculation": {
       "explanation": {
-        "module-returned-evapotranspiration-deficiency": "Il modulo ha restituito un deficit di evapotraspirazione del",
+        "module-returned-evapotranspiration-deficiency": "Nota: questa spiegazione usa '.' come separatore decimale e mostra valori arrotondati in unità metriche. Il modulo ha restituito un deficit di evapotraspirazione ( = et0 * hour_multiplier + precipitazione) di",
         "bucket-was": "Il secchio era",
         "new-bucket-values-is": "Il nuovo valore del secchio è",
         "bucket": "secchio",
@@ -136,7 +136,7 @@
       "cards": {
         "automatic-duration-calculation": {
           "header": "Calcolo automatico della durata",
-          "description": "Il calcolo prende i dati meteorologici raccolti fino a quel momento e aggiorna il bucket per ciascuna zona automatica. Quindi, la durata viene regolata in base al nuovo valore del segmento e i dati meteorologici raccolti vengono rimossi.",
+          "description": "Il calcolo prende i dati meteorologici raccolti fino a quel momento e aggiorna il secchio per ciascuna zona automatica. Quindi, la durata viene regolata in base al nuovo valore del secchio e i dati meteorologici raccolti vengono rimossi.",
           "labels": {
             "auto-calc-enabled": "Calcola automaticamente la durata delle zone",
             "calc-time": "Calcola alle"
@@ -202,9 +202,9 @@
       "configuration-not-available": "Configurazione non disponibile.",
       "cards": {
         "zone-bucket-values": {
-          "title": "Valori bucket e durata per zona",
+          "title": "Valori secchio e durata per zona",
           "labels": {
-            "bucket": "Bucket",
+            "bucket": "Secchio",
             "duration": "Durata"
           },
           "no-zones": "Nessuna zona configurata"
@@ -261,7 +261,7 @@
             "humidity": "Umidità",
             "maximum temperature": "Temperatura massima",
             "minimum temperature": "Temperatura minima",
-            "precipitation": "Precipitazione",
+            "precipitation": "Precipitazione totale",
             "current precipitation": "Precipitazioni attuali",
             "pressure": "Pressione",
             "solar radiation": "Irradiamento solare",
@@ -281,13 +281,13 @@
           "source": "Fonte",
           "sources": {
             "none": "Nessuna",
-            "weather_service": "Weather service",
+            "weather_service": "Servizio meteo",
             "sensor": "Sensore",
             "static": "Valore statico"
           }
         }
       },
-      "description": "Aggiungi uno o più gruppi di sensori che recuperano i dati meteorologici da Weather service, da sensori o da una combinazione di questi. È possibile mappare ciascun gruppo di sensori su una o più zone",
+      "description": "Aggiungi uno o più gruppi di sensori che recuperano i dati meteorologici dal servizio meteo, da sensori o da una combinazione di questi. È possibile mappare ciascun gruppo di sensori su una o più zone",
       "labels": {
         "mapping-name": "Nome"
       },
@@ -353,15 +353,16 @@
           "actions": {
             "calculate-all": "Calcola tutte le zone",
             "update-all": "Aggiorna tutte le zone",
-            "reset-all-buckets": "Reimposta tutte le zone",
+            "reset-all-buckets": "Reimposta tutti i secchi",
             "clear-all-weatherdata": "Cancella tutti i dati meteo"
           },
           "header": "Azioni su tutte le zone"
         }
       },
-      "description": "Specificare qui una o più zone di irrigazione. La durata dell'irrigazione viene calcolata per zona, a seconda delle dimensioni, della produttività, dello stato, del modulo e del gruppo di sensori.",
+      "description": "Specificare qui una o più zone di irrigazione. La durata dell'irrigazione viene calcolata per zona, a seconda delle dimensioni, della portata, dello stato, del modulo e del gruppo di sensori.",
       "labels": {
         "bucket": "Secchio",
+        "et-deficiency": "Deficit ET giornaliero",
         "duration": "Durata",
         "lead-time": "Tempi di esecuzione",
         "mapping": "Gruppo di sensori",
@@ -394,7 +395,10 @@
   "title": "Smart Irrigation",
   "irrigation_start_triggers": {
     "title": "Trigger di avvio irrigazione",
-    "description": "Configura quando deve iniziare l'irrigazione in base agli eventi solari. Puoi aggiungere più trigger per programmi diversi. Per i trigger all'alba, lasciando lo scostamento a 0 verrà usata automaticamente la durata totale di tutte le zone attive.",
+    "description": "Configura quando deve iniziare l'irrigazione in base agli eventi solari. Definisci i tuoi trigger qui sotto, poi scegli quale singolo trigger avvia l'irrigazione. Per i trigger all'alba, lasciando lo scostamento a 0 verrà usata automaticamente la durata totale di tutte le zone attive.",
+    "active_label": "Trigger attivo",
+    "active_default": "Predefinito (alba meno la durata totale dell'irrigazione)",
+    "active_hint": "Solo il trigger selezionato avvia l'irrigazione, quindi viene eseguita una volta al giorno. \"Predefinito\" calcola l'irrigazione in modo che termini esattamente all'alba. Aggiungi trigger personalizzati (tramonto, azimut, scostamenti) qui sotto, poi selezionane uno qui.",
     "usage_before": "Quando un trigger scatta, Smart Irrigation emette l'evento ",
     "usage_after": " — ascoltalo in un'automazione per avviare l'irrigazione. I dati dell'evento includono trigger_name, trigger_type e offset_minutes, così puoi reagire in modo diverso per ogni trigger. Le impostazioni di salto per precipitazioni e di giorni tra le irrigazioni continuano ad applicarsi: in un giorno di salto non viene emesso alcun evento.",
     "add_trigger": "Aggiungi trigger",
@@ -451,10 +455,7 @@
       "sunset_offset": "Per i trigger al tramonto: usa valori negativi per iniziare prima del tramonto, positivi per iniziare dopo il tramonto.",
       "azimuth_explanation": "L'azimut solare è la direzione bussola del sole. 0°=Nord, 90°=Est, 180°=Sud, 270°=Ovest. Puoi inserire qualsiasi valore di angolo (es. 450°=90°, -30°=330°). Usalo per avviare l'irrigazione quando il sole raggiunge una posizione specifica.",
       "multiple_triggers": "Puoi configurare più trigger. Ogni trigger attivo pianificherà gli avvii di irrigazione in modo indipendente."
-    },
-    "active_label": "Trigger attivo",
-    "active_default": "Predefinito (alba meno la durata totale dell'irrigazione)",
-    "active_hint": "Solo il trigger selezionato avvia l'irrigazione, quindi viene eseguita una volta al giorno. \"Predefinito\" calcola l'irrigazione in modo che termini esattamente all'alba. Aggiungi trigger personalizzati (tramonto, azimut, scostamenti) qui sotto, poi selezionane uno qui."
+    }
   },
   "weather_skip": {
     "title": "Salto dell'irrigazione in base al meteo",
@@ -463,7 +464,7 @@
     "threshold_description": "Quantità minima di precipitazioni (in mm) prevista per oggi e domani per saltare l'irrigazione."
   },
   "coordinate_config": {
-    "title": "Coordinate di Posizione",
+    "title": "Coordinate di posizione",
     "description": "Configura le coordinate di posizione per il recupero dei dati meteorologici. Puoi usare coordinate manuali diverse dalla tua posizione Home Assistant se necessario.",
     "manual_enabled": "Usa coordinate manuali",
     "use_ha_location": "Usa posizione di Home Assistant",
@@ -473,7 +474,7 @@
     "current_ha_coords": "Coordinate attuali di Home Assistant"
   },
   "days_between_irrigation": {
-    "title": "Giorni Tra Irrigazioni",
+    "title": "Giorni tra le irrigazioni",
     "description": "Configura il numero minimo di giorni che devono passare tra gli eventi di irrigazione. Questo aiuta a controllare la frequenza di irrigazione per la conservazione dell'acqua e la gestione della salute delle piante.\n\nCasi d'uso tipici:\n• Cura del prato: intervalli di 1-2 giorni prevengono l'eccesso di irrigazione\n• Restrizioni di siccità: intervalli di 6+ giorni per irrigazione settimanale\n• Piante a radici profonde: intervalli di 3-7 giorni per irrigazione meno frequente\n• Conservazione dell'acqua: personalizzabile in base al clima e alle condizioni del suolo",
     "label": "Giorni minimi tra irrigazioni",
     "help_text": "Imposta a 0 per disabilitare questa funzione. Sono supportati valori da 1-365 giorni. Questa impostazione funziona insieme alla logica di previsione delle precipitazioni esistente."
