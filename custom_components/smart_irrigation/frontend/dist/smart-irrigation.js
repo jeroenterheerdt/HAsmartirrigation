@@ -3541,6 +3541,7 @@ t.version="2.30.1",i(Gt),t.fn=or,t.min=Jt,t.max=Qt,t.now=Xt,t.utc=m,t.unix=lr,t.
           padding: 0 16px;
           font-weight: 400;
           box-sizing: border-box;
+          border-bottom: var(--app-header-border-bottom);
         }
         .main-title {
           margin: 0 0 0 24px;
