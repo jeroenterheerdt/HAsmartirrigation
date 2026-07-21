@@ -20,12 +20,14 @@ import {
   PLATFORM,
   UNIT_DEGREES_C,
   UNIT_DEGREES_F,
+  UNIT_GALLON,
   UNIT_GPM,
   UNIT_HPA,
   UNIT_INCH,
   UNIT_INCHH,
   UNIT_INHG,
   UNIT_KMH,
+  UNIT_LITER,
   UNIT_LPM,
   UNIT_M2,
   UNIT_MBAR,
@@ -44,6 +46,7 @@ import {
   ZONE_DRAINAGE_RATE,
   ZONE_SIZE,
   ZONE_THROUGHPUT,
+  ZONE_WATER_VOLUME,
 } from "./const";
 import { Dictionary } from "./types";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
@@ -89,9 +92,42 @@ export function output_unit(config, arg0: string): TemplateResult {
         return html`${unsafeHTML(UNIT_LPM)}`;
       } else return html`${unsafeHTML(UNIT_GPM)}`;
       break;
+    case ZONE_WATER_VOLUME:
+      if (config.units == CONF_METRIC) {
+        return html`${unsafeHTML(UNIT_LITER)}`;
+      } else return html`${unsafeHTML(UNIT_GALLON)}`;
+      break;
     default:
       return html``;
   }
+}
+
+/**
+ * Format a duration in seconds as hh:mm:ss, which reads far better than a raw
+ * second count once a run is longer than a couple of minutes. Hours are not
+ * capped at two digits, so a very long duration still shows correctly.
+ */
+export function formatDuration(seconds?: number | null): string {
+  const total = Math.max(0, Math.round(Number(seconds) || 0));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  const pad = (v: number) => String(v).padStart(2, "0");
+  return `${pad(hours)}:${pad(minutes)}:${pad(secs)}`;
+}
+
+/**
+ * Water volume implied by an irrigation duration: the throughput is a flow rate
+ * per minute (l/minute in metric, gal/minute in imperial), so the result is in
+ * litres or gallons respectively — matching output_unit(ZONE_WATER_VOLUME).
+ */
+export function waterVolume(seconds?: number | null, throughput?: number) {
+  const duration = Number(seconds) || 0;
+  const flow = Number(throughput) || 0;
+  if (duration <= 0 || flow <= 0) {
+    return 0;
+  }
+  return (duration / 60) * flow;
 }
 export function getOptionsForMappingType(mapping: string) {
   switch (mapping) {

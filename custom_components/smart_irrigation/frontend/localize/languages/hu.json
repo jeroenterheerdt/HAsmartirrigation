@@ -205,7 +205,8 @@
           "title": "Zóna vödörértékei és időtartama",
           "labels": {
             "bucket": "Vödör",
-            "duration": "Időtartam"
+            "duration": "Időtartam",
+            "water": "Vízmennyiség"
           },
           "no-zones": "Nincs konfigurált zóna"
         },
@@ -214,6 +215,7 @@
           "labels": {
             "next-start": "Következő indulás",
             "duration": "Időtartam",
+            "water": "Vízmennyiség",
             "zones": "Zónák"
           },
           "no-data": "Nincs elérhető adat"
@@ -224,6 +226,7 @@
             "reason": "Ok",
             "sunrise": "Napkelte",
             "total-duration": "Teljes időtartam",
+            "total-water": "Teljes vízmennyiség",
             "explanation": "Magyarázat"
           },
           "no-data": "Nincs elérhető adat"

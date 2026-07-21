@@ -206,7 +206,8 @@
           "title": "Zone bucket values & duration",
           "labels": {
             "bucket": "Bucket",
-            "duration": "Duration"
+            "duration": "Duration",
+            "water": "Water"
           },
           "no-zones": "No zones configured"
         },
@@ -215,6 +216,7 @@
           "labels": {
             "next-start": "Next start",
             "duration": "Duration",
+            "water": "Water",
             "zones": "Zones"
           },
           "no-data": "No data available"
@@ -225,6 +227,7 @@
             "reason": "Reason",
             "sunrise": "Sunrise",
             "total-duration": "Total duration",
+            "total-water": "Total water",
             "explanation": "Explanation"
           },
           "no-data": "No data available"

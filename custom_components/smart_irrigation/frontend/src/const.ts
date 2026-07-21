@@ -112,6 +112,8 @@ export const UNIT_M2 = "m<sup>2</sup>";
 export const UNIT_SQ_FT = "sq ft";
 export const UNIT_LPM = "l/minute";
 export const UNIT_GPM = "gal/minute";
+export const UNIT_LITER = "L";
+export const UNIT_GALLON = "gal";
 export const UNIT_SECONDS = "s";
 export const UNIT_DEGREES_C = "°C";
 export const UNIT_DEGREES_F = "°F";
@@ -138,6 +140,9 @@ export const ZONE_SIZE = "size";
 export const ZONE_THROUGHPUT = "throughput";
 export const ZONE_STATE = "state";
 export const ZONE_DURATION = "duration";
+// Display-only: the water volume implied by a zone's duration and throughput.
+// Not a stored zone attribute, but it takes a unit like one (see output_unit).
+export const ZONE_WATER_VOLUME = "water_volume";
 export const ZONE_STATE_DISABLED = "disabled";
 export const ZONE_STATE_MANUAL = "manual";
 export const ZONE_STATE_AUTOMATIC = "automatic";

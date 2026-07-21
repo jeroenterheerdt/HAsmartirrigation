@@ -14,12 +14,13 @@ import {
   SmartIrrigationConfig,
   SmartIrrigationInfo,
   SmartIrrigationZone,
+  SmartIrrigationZoneState,
 } from "../../types";
-import { output_unit } from "../../helpers";
+import { formatDuration, output_unit, waterVolume } from "../../helpers";
 import { globalStyle } from "../../styles/global-style";
 import { modernStyle } from "../../styles/modern-style";
 import { localize } from "../../../localize/localize";
-import { DOMAIN, ZONE_BUCKET } from "../../const";
+import { DOMAIN, ZONE_BUCKET, ZONE_WATER_VOLUME } from "../../const";
 import moment from "moment";
 
 @customElement("smart-irrigation-view-info")
@@ -99,6 +100,30 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
       // Trigger a re-render to ensure UI updates
       this._scheduleUpdate();
     }
+  }
+
+  /**
+   * Water volume for the whole next run. The backend sums the durations of
+   * every enabled zone into next/total_irrigation_duration, so sum the water
+   * over exactly that same set of zones to stay consistent with it.
+   */
+  private _totalWaterVolume(): number {
+    return this.zones
+      .filter(
+        (zone) =>
+          zone.state === SmartIrrigationZoneState.Automatic ||
+          zone.state === SmartIrrigationZoneState.Manual,
+      )
+      .reduce(
+        (total, zone) => total + waterVolume(zone.duration, zone.throughput),
+        0,
+      );
+  }
+
+  /** "12.3 L" — the unit follows the configured unit system. */
+  private _renderWaterVolume(volume: number): TemplateResult {
+    return html`${volume.toFixed(1)}
+    ${this.config ? output_unit(this.config, ZONE_WATER_VOLUME) : "L"}`;
   }
 
   render(): TemplateResult {
@@ -206,9 +231,20 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
                       )}:</span
                     >
                     <span class="value">
-                      ${zone.duration
-                        ? `${Math.round(zone.duration)} ${localize("common.units.seconds", this.hass?.language ?? "en")}`
-                        : `0 ${localize("common.units.seconds", this.hass?.language ?? "en")}`}
+                      ${formatDuration(zone.duration)}
+                    </span>
+                  </div>
+                  <div class="zone-water">
+                    <span class="label"
+                      >${localize(
+                        "panels.info.cards.zone-bucket-values.labels.water",
+                        this.hass?.language ?? "en",
+                      )}:</span
+                    >
+                    <span class="value">
+                      ${this._renderWaterVolume(
+                        waterVolume(zone.duration, zone.throughput),
+                      )}
                     </span>
                   </div>
                 </div>
@@ -292,11 +328,18 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
                     )}:</label
                   >
                   <span class="value"
-                    >${this.info.next_irrigation_duration}
-                    ${localize(
-                      "common.units.seconds",
+                    >${formatDuration(this.info.next_irrigation_duration)}</span
+                  >
+                </div>
+                <div class="info-item">
+                  <label
+                    >${localize(
+                      "panels.info.cards.next-irrigation.labels.water",
                       this.hass.language,
-                    )}</span
+                    )}:</label
+                  >
+                  <span class="value"
+                    >${this._renderWaterVolume(this._totalWaterVolume())}</span
                   >
                 </div>
               `
@@ -406,11 +449,20 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
                     )}:</label
                   >
                   <span class="value"
-                    >${this.info.total_irrigation_duration}
-                    ${localize(
-                      "common.units.seconds",
-                      this.hass.language,
+                    >${formatDuration(
+                      this.info.total_irrigation_duration,
                     )}</span
+                  >
+                </div>
+                <div class="info-item">
+                  <label
+                    >${localize(
+                      "panels.info.cards.irrigation-reason.labels.total-water",
+                      this.hass.language,
+                    )}:</label
+                  >
+                  <span class="value"
+                    >${this._renderWaterVolume(this._totalWaterVolume())}</span
                   >
                 </div>
               `
@@ -464,7 +516,7 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
         color: var(--primary-text-color);
       }
 
-      /* a zone's bucket + duration: compact, left-aligned label:value pairs
+      /* a zone's bucket + duration + water: compact, left-aligned label:value pairs
          that sit next to each other and wrap as a whole (never mid-value),
          using the free space instead of cramming to the right. */
       .zone-details {
@@ -474,18 +526,21 @@ class SmartIrrigationViewInfo extends SubscribeMixin(LitElement) {
         margin-top: 2px;
       }
       .zone-bucket,
-      .zone-duration {
+      .zone-duration,
+      .zone-water {
         display: flex;
         align-items: baseline;
         gap: 6px;
         white-space: nowrap;
       }
       .zone-bucket .label,
-      .zone-duration .label {
+      .zone-duration .label,
+      .zone-water .label {
         color: var(--secondary-text-color);
       }
       .zone-bucket .value,
-      .zone-duration .value {
+      .zone-duration .value,
+      .zone-water .value {
         color: var(--primary-text-color);
         font-weight: 500;
         white-space: nowrap;
