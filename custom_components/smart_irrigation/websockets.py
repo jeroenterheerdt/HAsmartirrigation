@@ -712,6 +712,95 @@ class SmartIrrigationWateringCalendarView(HomeAssistantView):
             return self.json({"error": str(e)}, status_code=500)
 
 
+# Weather values kept in a weather data record, in the order the panel shows
+# them. The keys are the same ones used inside a sensor group's data records.
+WEATHER_SERVICE_HISTORY_FIELDS = (
+    const.MAPPING_TEMPERATURE,
+    const.MAPPING_MIN_TEMP,
+    const.MAPPING_MAX_TEMP,
+    const.MAPPING_DEWPOINT,
+    const.MAPPING_HUMIDITY,
+    const.MAPPING_PRESSURE,
+    const.MAPPING_WINDSPEED,
+    const.MAPPING_SOLRAD,
+    const.MAPPING_PRECIPITATION,
+    const.MAPPING_CURRENT_PRECIPITATION,
+    const.MAPPING_EVAPOTRANSPIRATION,
+)
+
+
+@async_response
+async def websocket_get_weather_service_history(hass: HomeAssistant, connection, msg):
+    """Publish the last weather service retrievals, newest first.
+
+    Only sensor groups that actually take at least one value from the weather
+    service are considered, and inside a record only the weather-service-sourced
+    values are returned: the panel tab is about the weather service, so showing
+    a sensor or static value there would be misleading.
+    """
+    coordinator = hass.data[const.DOMAIN]["coordinator"]
+    limit = msg.get("limit", 20)
+
+    records = []
+    try:
+        mappings = await coordinator.store.async_get_mappings()
+        for mapping in mappings:
+            # Which values of this sensor group come from the weather service?
+            service_keys = [
+                key
+                for key, the_map in (mapping.get(const.MAPPING_MAPPINGS) or {}).items()
+                if isinstance(the_map, dict)
+                and the_map.get(const.MAPPING_CONF_SOURCE)
+                == const.MAPPING_CONF_SOURCE_WEATHER_SERVICE
+            ]
+            if not service_keys:
+                continue
+
+            mapping_data = mapping.get(const.MAPPING_DATA) or []
+            if not isinstance(mapping_data, list):
+                continue
+
+            for data_point in mapping_data:
+                if not isinstance(data_point, dict):
+                    continue
+
+                values = {
+                    field: data_point.get(field)
+                    for field in WEATHER_SERVICE_HISTORY_FIELDS
+                    if field in service_keys and data_point.get(field) is not None
+                }
+                if not values:
+                    continue
+
+                retrieved = data_point.get(const.RETRIEVED_AT)
+                if isinstance(retrieved, datetime.datetime):
+                    retrieved = retrieved.isoformat()
+                elif not isinstance(retrieved, str):
+                    retrieved = None
+
+                records.append(
+                    {
+                        "retrieved": retrieved,
+                        "mapping_id": mapping.get(const.MAPPING_ID),
+                        "mapping_name": mapping.get(const.MAPPING_NAME),
+                        "values": values,
+                    }
+                )
+
+        records.sort(
+            key=lambda record: _safe_parse_datetime(record["retrieved"]), reverse=True
+        )
+        records = records[:limit]
+    except Exception as e:  # noqa: BLE001
+        _LOGGER.error("Error retrieving weather service history: %s", e)
+        records = []
+
+    connection.send_result(
+        msg["id"],
+        {"fields": list(WEATHER_SERVICE_HISTORY_FIELDS), "records": records},
+    )
+
+
 @async_response
 async def websocket_get_weather_service(hass: HomeAssistant, connection, msg):
     """Publish the currently configured weather service so the panel can show/edit it."""
@@ -965,6 +1054,17 @@ async def async_register_websockets(hass: HomeAssistant):
             {
                 vol.Required("type"): const.DOMAIN + "/watering_calendar",
                 vol.Optional("zone_id"): vol.Coerce(str),
+            }
+        ),
+    )
+    async_register_command(
+        hass,
+        const.DOMAIN + "/weatherservice_history",
+        websocket_get_weather_service_history,
+        websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
+            {
+                vol.Required("type"): const.DOMAIN + "/weatherservice_history",
+                vol.Optional("limit", default=20): vol.Coerce(int),
             }
         ),
     )

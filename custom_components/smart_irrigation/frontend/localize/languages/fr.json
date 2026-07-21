@@ -86,6 +86,14 @@
   },
   "panels": {
     "weatherservice": {
+      "history": {
+        "title": "Historique",
+        "refresh": "Actualiser",
+        "last-update": "Dernière mise à jour",
+        "time": "Récupéré le",
+        "sensor-group": "Groupe de capteurs",
+        "no-data": "Aucune donnée n'a encore été récupérée du service météo."
+      },
       "title": "Service météo",
       "description": "Consultez et modifiez le service météo utilisé pour récupérer les données — sans réinstaller l'intégration. La clé API est validée et le changement est appliqué immédiatement.",
       "labels": {

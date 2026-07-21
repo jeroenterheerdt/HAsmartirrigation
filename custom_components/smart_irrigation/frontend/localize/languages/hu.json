@@ -86,6 +86,14 @@
   },
   "panels": {
     "weatherservice": {
+      "history": {
+        "title": "Előzmények",
+        "refresh": "Frissítés",
+        "last-update": "Utolsó frissítés",
+        "time": "Lekérés ideje",
+        "sensor-group": "Érzékelőcsoport",
+        "no-data": "Még nem érkezett adat az időjárás-szolgáltatástól."
+      },
       "title": "Időjárás-szolgáltatás",
       "description": "Tekintse meg és módosítsa az időjárási adatok lekéréséhez használt időjárás-szolgáltatást — nincs szükség az integráció újratelepítésére. Az API-kulcs ellenőrzésre kerül, és a változás azonnal érvénybe lép.",
       "labels": {

@@ -58,6 +58,28 @@ export const setWeatherService = (
     ...data,
   });
 
+export interface WeatherServiceHistoryRecord {
+  retrieved: string | null;
+  mapping_id?: number;
+  mapping_name?: string;
+  values: Record<string, number>;
+}
+
+export interface WeatherServiceHistory {
+  // Weather value keys, in the order the table should show them.
+  fields: string[];
+  records: WeatherServiceHistoryRecord[];
+}
+
+export const fetchWeatherServiceHistory = (
+  hass: HomeAssistant,
+  limit = 20,
+): Promise<WeatherServiceHistory> =>
+  hass.callWS({
+    type: DOMAIN + "/weatherservice_history",
+    limit: limit,
+  });
+
 /*export const fetchZones = (
   hass: HomeAssistant
 ): Promise<Dictionary<SmartIrrigationZone>> =>*/

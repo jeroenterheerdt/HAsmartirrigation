@@ -86,6 +86,14 @@
   },
   "panels": {
     "weatherservice": {
+      "history": {
+        "title": "History",
+        "refresh": "Refresh",
+        "last-update": "Last update",
+        "time": "Retrieved",
+        "sensor-group": "Sensor group",
+        "no-data": "No data has been retrieved from the weather service yet."
+      },
       "title": "Weather service",
       "description": "View and change the weather service used to fetch weather data — no need to reinstall the integration. The API key is validated and the change is applied immediately.",
       "labels": {
