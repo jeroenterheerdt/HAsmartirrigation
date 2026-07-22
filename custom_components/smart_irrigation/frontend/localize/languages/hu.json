@@ -179,7 +179,7 @@
             "auto-update-enabled": "Az időjárási adatok automatikus frissítése",
             "auto-update-schedule": "Frissítési ütemezés",
             "auto-update-time": "Frissítés ekkor",
-            "auto-update-interval": "Érzékelőadatok frissítése ennyente",
+            "auto-update-interval": "Érzékelőadatok frissítésének gyakorisága",
             "auto-update-delay": "Frissítési késleltetés"
           },
           "options": {
