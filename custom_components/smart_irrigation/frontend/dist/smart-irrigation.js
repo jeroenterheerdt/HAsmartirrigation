@@ -1726,7 +1726,9 @@ t.version="2.30.1",i(Yt),t.fn=or,t.min=Jt,t.max=Qt,t.now=Xt,t.utc=m,t.unix=lr,t.
               ?selected="${a===i.id}"
             >
               ${i.id}: ${i.name}
-            </option>`)),t}return F``}renderZone(e,a){var t,i,n;if(!this.hass)return F``;const r=this.hass.language,s=e.state===Al.Automatic,o=e.state===Al.Disabled||e.state===Al.Automatic,l=null!=e.explanation&&e.explanation.length>0;if(null!=e.mapping){const a=this.mappings.filter((a=>a.id===e.mapping))[0];null!=a&&null!=a.data&&(e.number_of_data_points=a.data.length)}const d=Xo("panels.zones.labels.states."+e.state,r),u=`${Math.round(Number(e.duration)||0)} s`,c=null!=e.id&&this._expanded.has(e.id);return F`
+            </option>`)),t}return F``}renderZone(e,a){var t,i,n;if(!this.hass)return F``;const r=this.hass.language,s=e.state===Al.Automatic,o=e.state===Al.Disabled||e.state===Al.Automatic,l=null!=e.explanation&&e.explanation.length>0;if(null!=e.mapping){const a=this.mappings.filter((a=>a.id===e.mapping))[0];null!=a&&null!=a.data&&(e.number_of_data_points=a.data.length)}const d=Xo("panels.zones.labels.states."+e.state,r),u=F`${Ia(e.duration)}
+    (${La(e.duration,e.throughput).toFixed(1)}
+    ${Ha(this.config,ya)})`,c=null!=e.id&&this._expanded.has(e.id);return F`
       <ha-card class="zone-card">
         <div
           class="zone-head"
