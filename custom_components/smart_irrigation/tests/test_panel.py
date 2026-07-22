@@ -11,6 +11,7 @@ from custom_components.smart_irrigation.const import (
     PANEL_NAME,
     PANEL_TITLE,
     PANEL_URL,
+    VERSION,
 )
 from custom_components.smart_irrigation.panel import async_register_panel, remove_panel
 
@@ -45,7 +46,8 @@ class TestSmartIrrigationPanel:
             assert call_args[0][0] == mock_hass  # First positional arg is hass
             assert call_args[1]["webcomponent_name"] == PANEL_NAME
             assert call_args[1]["frontend_url_path"] == DOMAIN
-            assert call_args[1]["module_url"] == PANEL_URL
+            # Versioned so a new release misses the browser/service worker cache.
+            assert call_args[1]["module_url"] == f"{PANEL_URL}?v={VERSION}"
             assert call_args[1]["sidebar_title"] == PANEL_TITLE
             assert call_args[1]["sidebar_icon"] == PANEL_ICON
             assert call_args[1]["require_admin"] is True
