@@ -351,6 +351,23 @@ CONF_DEFAULT_ZONE_INPUT_METHOD = ZONE_INPUT_METHOD_THROUGHPUT
 # throughput/size when input_method is ZONE_INPUT_METHOD_PRECIPITATION_RATE.
 ZONE_PRECIPITATION_RATE = "precipitation_rate"
 
+# Irrigation history: one record per credited run, feeding the panel's History
+# tab. The zone name is stored alongside the id so a run keeps its label after
+# the zone is renamed or deleted. Duration is in seconds, water in litres (the
+# unit the run crediting works in); the panel converts for imperial users.
+IRRIGATION_HISTORY = "irrigation_history"
+HISTORY_START = "start"
+HISTORY_ZONE_ID = "zone_id"
+HISTORY_ZONE_NAME = "zone_name"
+HISTORY_DURATION = "duration"
+HISTORY_WATER_USED = "water_used"
+# Older runs are pruned whenever a new one is recorded. The panel charts a
+# month, so a quarter of history covers it with room to look further back while
+# keeping the storage file small. The entry cap is a second guard for setups
+# with many zones watering several times a day.
+IRRIGATION_HISTORY_RETENTION_DAYS = 90
+IRRIGATION_HISTORY_MAX_ENTRIES = 1000
+
 MODULE_DIR = "calcmodules"
 MODULE_ID = "id"
 MODULE_NAME = "name"
