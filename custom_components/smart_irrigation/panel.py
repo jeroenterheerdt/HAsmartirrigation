@@ -17,6 +17,7 @@ from .const import (
     PANEL_NAME,
     PANEL_TITLE,
     PANEL_URL,
+    VERSION,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,11 +34,17 @@ async def async_register_panel(hass: HomeAssistant):
     )
     # hass.http.register_static_path(PANEL_URL, str(view_url), False)
 
+    # The bundle is served from a fixed path, so a browser that already has it
+    # cached has no way to tell a new release apart from the one it holds --
+    # cache_headers=False stops Home Assistant adding long-lived cache headers,
+    # but not the frontend's service worker, which is why a desktop browser can
+    # keep showing the previous panel after an update. Versioning the module URL
+    # changes the URL on every release, so the fetch misses the cache by itself.
     await panel_custom.async_register_panel(
         hass,
         webcomponent_name=PANEL_NAME,
         frontend_url_path=DOMAIN,
-        module_url=PANEL_URL,
+        module_url=f"{PANEL_URL}?v={VERSION}",
         sidebar_title=PANEL_TITLE,
         sidebar_icon=PANEL_ICON,
         require_admin=True,
