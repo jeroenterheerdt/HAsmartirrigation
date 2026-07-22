@@ -45,7 +45,12 @@ import {
   SmartIrrigationMapping,
   WeatherRecord,
 } from "../../types";
-import { engineModeLabel, output_unit } from "../../helpers";
+import {
+  engineModeLabel,
+  formatDuration,
+  output_unit,
+  waterVolume,
+} from "../../helpers";
 import { globalStyle } from "../../styles/global-style";
 import { localize } from "../../../localize/localize";
 import {
@@ -71,6 +76,7 @@ import {
   ZONE_SIZE,
   ZONE_STATE,
   ZONE_THROUGHPUT,
+  ZONE_WATER_VOLUME,
 } from "../../const";
 import moment, { Moment } from "moment";
 
@@ -825,9 +831,11 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
       "panels.zones.labels.states." + zone.state,
       lang,
     );
-    const durationText = `${Math.round(
-      Number(zone.duration) || 0,
-    )} ${UNIT_SECONDS}`;
+    // "hh:mm:ss (12.3 L)" — the run time reads better than a raw second count,
+    // and the volume it implies is what actually matters when watering.
+    const durationText = html`${formatDuration(zone.duration)}
+    (${waterVolume(zone.duration, zone.throughput).toFixed(1)}
+    ${output_unit(this.config, ZONE_WATER_VOLUME)})`;
 
     const expanded = zone.id != undefined && this._expanded.has(zone.id);
 
