@@ -223,6 +223,32 @@ export const fetchMappingWeatherRecords = (
     limit: limit,
   });
 
+/**
+ * One completed irrigation run. ``start`` is an ISO 8601 UTC timestamp (when
+ * the water started flowing), ``duration`` is in seconds and ``water_used`` in
+ * litres — the panel converts to the user's units for display.
+ */
+export interface IrrigationHistoryRecord {
+  start: string | null;
+  zone_id: number | null;
+  zone_name: string | null;
+  duration: number;
+  water_used: number;
+}
+
+export interface IrrigationHistory {
+  records: IrrigationHistoryRecord[];
+}
+
+export const fetchIrrigationHistory = (
+  hass: HomeAssistant,
+  limit = 500,
+): Promise<IrrigationHistory> =>
+  hass.callWS({
+    type: DOMAIN + "/irrigation_history",
+    limit: limit,
+  });
+
 // Backend API for watering calendar for a zone
 export const fetchWateringCalendar = (
   hass: HomeAssistant,

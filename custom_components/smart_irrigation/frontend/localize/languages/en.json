@@ -85,6 +85,25 @@
     }
   },
   "panels": {
+    "history": {
+      "title": "History",
+      "description": "Every irrigation run Smart Irrigation has credited to a zone: when it started, how long it watered and how much water it used. Runs are recorded by direct valve control and by observed watering, and are kept for 90 days.",
+      "refresh": "Refresh",
+      "no-data": "No irrigation runs have been recorded yet.",
+      "table": {
+        "title": "Irrigation runs",
+        "start": "Start",
+        "zone": "Zone",
+        "duration": "Duration",
+        "water": "Water used",
+        "truncated": "Showing the {count} most recent runs out of {total}."
+      },
+      "charts": {
+        "total-title": "Total water used per day (last 30 days)",
+        "per-zone-title": "Water used per day, per zone (last 30 days)",
+        "no-data": "No water was used in this period."
+      }
+    },
     "weatherservice": {
       "history": {
         "title": "History",

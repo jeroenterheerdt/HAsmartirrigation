@@ -129,6 +129,19 @@ export function waterVolume(seconds?: number | null, throughput?: number) {
   }
   return (duration / 60) * flow;
 }
+/** US gallons in one litre, for converting stored volumes to imperial. */
+const LITRES_PER_GALLON = 3.785411784;
+
+/**
+ * Convert a volume the backend stores in litres to the unit the panel shows for
+ * this configuration — litres in metric, gallons in imperial, matching
+ * output_unit(ZONE_WATER_VOLUME).
+ */
+export function displayVolume(litres: number, config): number {
+  const value = Number(litres) || 0;
+  return config?.units === CONF_METRIC ? value : value / LITRES_PER_GALLON;
+}
+
 export function getOptionsForMappingType(mapping: string) {
   switch (mapping) {
     case MAPPING_DEWPOINT:

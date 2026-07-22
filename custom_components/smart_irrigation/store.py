@@ -72,6 +72,14 @@ from .const import (
     CONF_WEATHER_SERVICE_OWM,
     CONF_ZONE_SEQUENCING,
     DOMAIN,
+    HISTORY_DURATION,
+    HISTORY_START,
+    HISTORY_WATER_USED,
+    HISTORY_ZONE_ID,
+    HISTORY_ZONE_NAME,
+    IRRIGATION_HISTORY,
+    IRRIGATION_HISTORY_MAX_ENTRIES,
+    IRRIGATION_HISTORY_RETENTION_DAYS,
     MAPPING_CONF_SENSOR,
     MAPPING_CONF_SOURCE,
     MAPPING_CONF_SOURCE_NONE,
@@ -145,6 +153,27 @@ STORAGE_VERSION = 5
 SAVE_DELAY = 0
 
 
+def _parse_history_start(value) -> datetime.datetime | None:
+    """Parse an irrigation-history start stamp into an aware UTC datetime.
+
+    Returns None when the value is missing or not a readable timestamp, so
+    callers can decide what to do with a record they cannot date.
+    """
+    if isinstance(value, datetime.datetime):
+        parsed = value
+    elif isinstance(value, str):
+        try:
+            parsed = datetime.datetime.fromisoformat(value)
+        except ValueError:
+            _LOGGER.warning("Unparseable irrigation history start: %s", value)
+            return None
+    else:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=datetime.UTC)
+    return parsed.astimezone(datetime.UTC)
+
+
 @attr.s(slots=True, frozen=True)
 class ZoneEntry:
     """Zone storage Entry."""
@@ -202,6 +231,22 @@ class MappingEntry:
     data_last_updated = attr.ib(type=datetime, default=None)
     data_last_entry = attr.ib(type=str, default={})
     data_last_calculation = attr.ib(type=str, default={})
+
+
+@attr.s(slots=True, frozen=True)
+class IrrigationHistoryEntry:
+    """One completed irrigation run, as shown on the panel's History tab.
+
+    ``start`` is an ISO 8601 UTC timestamp (the moment the water started
+    flowing, not the moment the run was credited), ``duration`` is in seconds
+    and ``water_used`` in litres.
+    """
+
+    start = attr.ib(type=str, default=None)
+    zone_id = attr.ib(type=int, default=None)
+    zone_name = attr.ib(type=str, default=None)
+    duration = attr.ib(type=float, default=0.0)
+    water_used = attr.ib(type=float, default=0.0)
 
 
 @attr.s(slots=True, frozen=True)
@@ -392,6 +437,7 @@ class SmartIrrigationStorage:
         self.zones: MutableMapping[ZoneEntry] = {}
         self.modules: MutableMapping[ModuleEntry] = {}
         self.mappings: MutableMapping[MappingEntry] = {}
+        self.irrigation_history: list[IrrigationHistoryEntry] = []
         self._store = MigratableStore(hass, STORAGE_VERSION, STORAGE_KEY)
 
     async def async_load(self) -> None:
@@ -400,7 +446,7 @@ class SmartIrrigationStorage:
         await self._populate_from_data(data)
 
     async def _populate_from_data(self, data) -> None:
-        """Rebuild config/zones/modules/mappings from a storage-shaped dict.
+        """Rebuild config/zones/modules/mappings/history from a storage-shaped dict.
 
         Shared by async_load (data read from disk) and async_import (data from a
         user-provided backup). ``data`` may be None on a fresh install, in which
@@ -431,6 +477,7 @@ class SmartIrrigationStorage:
         zones: OrderedDict[str, ZoneEntry] = OrderedDict()
         modules: OrderedDict[str, ModuleEntry] = OrderedDict()
         mappings: OrderedDict[str, MappingEntry] = OrderedDict()
+        irrigation_history: list[IrrigationHistoryEntry] = []
 
         if data is not None:
             config = Config(
@@ -601,11 +648,26 @@ class SmartIrrigationStorage:
                             MAPPING_DATA_LAST_CALCULATION, {}
                         ),
                     )
+            # Absent before the History tab existed, so treat a missing key as
+            # "no runs recorded yet" rather than a broken store.
+            for run in data.get(IRRIGATION_HISTORY) or []:
+                if not isinstance(run, dict):
+                    continue
+                irrigation_history.append(
+                    IrrigationHistoryEntry(
+                        start=run.get(HISTORY_START),
+                        zone_id=run.get(HISTORY_ZONE_ID),
+                        zone_name=run.get(HISTORY_ZONE_NAME),
+                        duration=run.get(HISTORY_DURATION, 0.0),
+                        water_used=run.get(HISTORY_WATER_USED, 0.0),
+                    )
+                )
 
         self.config = config
         self.zones = zones
         self.modules = modules
         self.mappings = mappings
+        self.irrigation_history = irrigation_history
 
     async def set_up_factory_defaults(self):
         """Set up factory default zones, modules, and mappings if they do not exist."""
@@ -736,6 +798,9 @@ class SmartIrrigationStorage:
         store_data["modules"] = [attr.asdict(entry) for entry in self.modules.values()]
         store_data["mappings"] = [
             attr.asdict(entry) for entry in self.mappings.values()
+        ]
+        store_data[IRRIGATION_HISTORY] = [
+            attr.asdict(entry) for entry in self.irrigation_history
         ]
         return store_data
 
@@ -980,6 +1045,40 @@ class SmartIrrigationStorage:
         new = self.mappings[mapping_id] = attr.evolve(old, **changes)
         self.async_schedule_save()
         return attr.asdict(new)
+
+    async def async_get_irrigation_history(self):
+        """Return every recorded irrigation run, oldest first."""
+        return [attr.asdict(entry) for entry in self.irrigation_history]
+
+    async def async_add_irrigation_history(self, data: dict) -> dict:
+        """Record one completed irrigation run and prune what has aged out.
+
+        Runs are appended in completion order, which is also start order for
+        sequential watering; the panel sorts by start time anyway, so a parallel
+        run finishing early cannot put the list out of order for the user.
+        """
+        entry = IrrigationHistoryEntry(**data)
+        self.irrigation_history.append(entry)
+        self._prune_irrigation_history()
+        self.async_schedule_save()
+        return attr.asdict(entry)
+
+    def _prune_irrigation_history(self) -> None:
+        """Drop runs older than the retention window, then cap the total kept."""
+        cutoff = datetime.datetime.now(datetime.UTC) - datetime.timedelta(
+            days=IRRIGATION_HISTORY_RETENTION_DAYS
+        )
+        kept = []
+        for entry in self.irrigation_history:
+            started = _parse_history_start(entry.start)
+            # An unparseable timestamp cannot be aged out; keep it and let the
+            # entry cap below bound it, rather than silently dropping a run.
+            if started is not None and started < cutoff:
+                continue
+            kept.append(entry)
+        if len(kept) > IRRIGATION_HISTORY_MAX_ENTRIES:
+            kept = kept[-IRRIGATION_HISTORY_MAX_ENTRIES:]
+        self.irrigation_history = kept
 
     def generate_next_id(self, the_list):
         """Generate a next id for the_list."""

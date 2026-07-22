@@ -85,6 +85,25 @@
     }
   },
   "panels": {
+    "history": {
+      "title": "Előzmények",
+      "description": "Minden öntözés, amelyet a Smart Irrigation elszámolt egy zónához: mikor kezdődött, meddig tartott és mennyi vizet használt. Az öntözéseket a közvetlen szelepvezérlés és a megfigyelt öntözés rögzíti, és 90 napig őrizzük meg őket.",
+      "refresh": "Frissítés",
+      "no-data": "Még nincs rögzített öntözés.",
+      "table": {
+        "title": "Öntözések",
+        "start": "Kezdés",
+        "zone": "Zóna",
+        "duration": "Időtartam",
+        "water": "Felhasznált víz",
+        "truncated": "A legutóbbi {count} öntözés látható, összesen {total} közül."
+      },
+      "charts": {
+        "total-title": "Napi teljes vízfelhasználás (utolsó 30 nap)",
+        "per-zone-title": "Napi vízfelhasználás zónánként (utolsó 30 nap)",
+        "no-data": "Ebben az időszakban nem volt vízfelhasználás."
+      }
+    },
     "weatherservice": {
       "history": {
         "title": "Előzmények",

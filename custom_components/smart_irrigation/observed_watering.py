@@ -30,6 +30,7 @@ Smart Irrigation fork (https://github.com/JustChr/HAsmartirrigation), MIT.
 """
 
 import logging
+from datetime import timedelta
 
 import homeassistant.util.dt as dt_util
 from homeassistant.core import Event, callback
@@ -167,7 +168,12 @@ class ObservedWateringMixin:
                 if litres_now is not None and litres_now >= flow_start:
                     volume_l = litres_now - flow_start
                     self.hass.async_create_task(
-                        self._credit_from_volume(zone_id, volume_l)
+                        self._credit_from_volume(
+                            zone_id,
+                            volume_l,
+                            (dt_util.utcnow() - started).total_seconds(),
+                            started,
+                        )
                     )
                     return
                 _LOGGER.warning(
@@ -181,7 +187,7 @@ class ObservedWateringMixin:
 
             seconds = (dt_util.utcnow() - started).total_seconds()
             self.hass.async_create_task(
-                self._credit_observed_watering(zone_id, seconds)
+                self._credit_observed_watering(zone_id, seconds, started)
             )
 
     def _zone_flow_sensor(self, zone_id: int):
@@ -229,7 +235,9 @@ class ObservedWateringMixin:
         )
         return value if ha_metric else value * _VOLUME_TO_LITRES["gal"]
 
-    async def _credit_observed_watering(self, zone_id: int, seconds: float) -> None:
+    async def _credit_observed_watering(
+        self, zone_id: int, seconds: float, started=None
+    ) -> None:
         """Credit a zone's bucket for a timed run of ``seconds`` (no flow meter).
 
         Applied depth is estimated from run time x configured throughput, so the
@@ -257,9 +265,17 @@ class ObservedWateringMixin:
             else convert_between(const.UNIT_GPM, const.UNIT_LPM, throughput)
         )
         volume_l = tput_lpm * (seconds / 60.0)
-        await self._apply_volume_credit(zone, volume_l, source=f"{seconds:.0f}s timed")
+        await self._apply_volume_credit(
+            zone,
+            volume_l,
+            source=f"{seconds:.0f}s timed",
+            seconds=seconds,
+            started=started,
+        )
 
-    async def _credit_from_volume(self, zone_id: int, volume_l: float) -> None:
+    async def _credit_from_volume(
+        self, zone_id: int, volume_l: float, seconds: float | None = None, started=None
+    ) -> None:
         """Credit a zone's bucket from a metered ``volume_l`` (litres delivered)."""
         if volume_l <= 0:
             return
@@ -272,16 +288,37 @@ class ObservedWateringMixin:
             )
             return
         await self._apply_volume_credit(
-            zone, volume_l, source=f"{volume_l:.1f} L metered"
+            zone,
+            volume_l,
+            source=f"{volume_l:.1f} L metered",
+            seconds=seconds,
+            started=started,
         )
 
     async def _apply_volume_credit(
-        self, zone: dict, volume_l: float, *, source: str
+        self,
+        zone: dict,
+        volume_l: float,
+        *,
+        source: str,
+        seconds: float | None = None,
+        started=None,
+        water_l: float | None = None,
     ) -> None:
         """Convert a delivered ``volume_l`` to depth and add it to the bucket.
 
         The bucket may rise into surplus (capped at maximum_bucket) -- unlike the
         calculation, observed watering can legitimately overshoot the deficit.
+
+        ``seconds`` and ``started`` describe the run for the History tab. They
+        are optional so a caller that only knows the volume still credits the
+        bucket; the run is then recorded with what is known (see
+        ``_record_irrigation_run``).
+
+        ``water_l`` is the water actually delivered, when that differs from the
+        volume credited to the bucket (direct valve control divides the zone
+        multiplier back out of the credit). It defaults to ``volume_l``, and is
+        what the water-used total and the history record count.
         """
         zone_id = int(zone.get(const.ZONE_ID))
         size = zone.get(const.ZONE_SIZE) or 0.0
@@ -313,6 +350,7 @@ class ObservedWateringMixin:
 
         # Also stamp the run time and accumulate the delivered volume (litres);
         # this is the single crediting path for both direct and observed runs.
+        delivered_l = volume_l if water_l is None else water_l
         prev_used = zone.get(const.ZONE_WATER_USED) or 0.0
         await self.store.async_update_zone(
             zone_id,
@@ -320,9 +358,10 @@ class ObservedWateringMixin:
                 const.ZONE_BUCKET: new_bucket,
                 const.ZONE_DURATION: new_duration,
                 const.ZONE_LAST_IRRIGATION: dt_util.utcnow(),
-                const.ZONE_WATER_USED: round(prev_used + volume_l, 3),
+                const.ZONE_WATER_USED: round(prev_used + delivered_l, 3),
             },
         )
+        await self._record_irrigation_run(zone, delivered_l, seconds, started)
         # Refresh the zone sensor (it listens to _config_updated) and any open
         # panel (it listens to _update_frontend); _zone_irrigated lets the
         # per-zone "problem" binary sensor clear after a successful run.
@@ -337,3 +376,36 @@ class ObservedWateringMixin:
             old_bucket,
             new_bucket,
         )
+
+    async def _record_irrigation_run(
+        self, zone: dict, volume_l: float, seconds, started
+    ) -> None:
+        """Append this run to the irrigation history the History tab reads.
+
+        Crediting happens when the valve closes, so ``started`` is the moment
+        the water began flowing. A caller that did not track it (a metered run
+        whose start we never saw) gets it back-computed from the duration, and
+        failing that the current time -- the History tab is more useful with an
+        approximate start than with a gap.
+        """
+        end = dt_util.utcnow()
+        duration = float(seconds) if seconds is not None else 0.0
+        if started is None:
+            started = end - timedelta(seconds=duration)
+        try:
+            await self.store.async_add_irrigation_history(
+                {
+                    const.HISTORY_START: started.isoformat(),
+                    const.HISTORY_ZONE_ID: int(zone.get(const.ZONE_ID)),
+                    const.HISTORY_ZONE_NAME: zone.get(const.ZONE_NAME),
+                    const.HISTORY_DURATION: round(duration, 1),
+                    const.HISTORY_WATER_USED: round(volume_l, 3),
+                }
+            )
+        except Exception as e:  # noqa: BLE001
+            # History is a display convenience: never let it break crediting.
+            _LOGGER.warning(
+                "Could not record irrigation history for zone %s: %s",
+                zone.get(const.ZONE_ID),
+                e,
+            )

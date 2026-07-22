@@ -297,7 +297,7 @@ class ValveRunnerMixin:
         await self._remove_active_run(zone_id)
         # The valve was held for ``duration``; credit that (a cancelled run never
         # reaches here, so its credit comes from the reboot-resume path instead).
-        await self._credit_direct_run(zone_id, duration)
+        await self._credit_direct_run(zone_id, duration, started)
         zone_after = self.store.get_zone(zone_id) or {}
         return {
             "zone_id": zone_id,
@@ -322,8 +322,14 @@ class ValveRunnerMixin:
         )
         return tput_lpm * seconds / 60.0
 
-    async def _credit_direct_run(self, zone_id: int, elapsed: float) -> None:
-        """Credit the bucket for a completed direct run of ``elapsed`` seconds."""
+    async def _credit_direct_run(
+        self, zone_id: int, elapsed: float, started=None
+    ) -> None:
+        """Credit the bucket for a completed direct run of ``elapsed`` seconds.
+
+        ``started`` is passed through to the irrigation history so the History
+        tab shows when the run began rather than when it was credited.
+        """
         if elapsed <= 0:
             return
         zone = self.store.get_zone(zone_id)
@@ -358,7 +364,16 @@ class ValveRunnerMixin:
         # of the "need", so a full run lands the bucket on target.
         volume_l = tput_lpm * (credit_seconds / 60.0) / multiplier
         await self._apply_volume_credit(
-            zone, volume_l, source=f"direct run {elapsed:.0f}s"
+            zone,
+            volume_l,
+            source=f"direct run {elapsed:.0f}s",
+            seconds=elapsed,
+            started=started,
+            # The bucket credit above divides the multiplier back out, but the
+            # tap ran for the full elapsed time: that is the water actually
+            # delivered, which is what the History tab and the water-used total
+            # are about.
+            water_l=tput_lpm * (elapsed / 60.0),
         )
 
     # --- reboot resume ------------------------------------------------------
@@ -409,7 +424,7 @@ class ValveRunnerMixin:
                 domain, off_svc, {"entity_id": entity_id}
             )
             await self._remove_active_run(zone_id)
-            await self._credit_direct_run(zone_id, elapsed)
+            await self._credit_direct_run(zone_id, elapsed, started)
             return
 
         remaining = duration - elapsed
@@ -441,4 +456,4 @@ class ValveRunnerMixin:
                 domain, off_svc, {"entity_id": entity_id}
             )
         await self._remove_active_run(zone_id)
-        await self._credit_direct_run(zone_id, duration)
+        await self._credit_direct_run(zone_id, duration, started)

@@ -802,6 +802,31 @@ async def websocket_get_weather_service_history(hass: HomeAssistant, connection,
 
 
 @async_response
+async def websocket_get_irrigation_history(hass: HomeAssistant, connection, msg):
+    """Publish the recorded irrigation runs, newest first.
+
+    Records are returned raw (start time in UTC, duration in seconds, water in
+    litres) so the panel can group them by local calendar day and convert to the
+    user's units -- bucketing here would use the server's idea of "a day".
+    """
+    coordinator = hass.data[const.DOMAIN]["coordinator"]
+    limit = msg.get("limit", 500)
+
+    try:
+        runs = await coordinator.store.async_get_irrigation_history()
+        runs.sort(
+            key=lambda run: _safe_parse_datetime(run.get(const.HISTORY_START)),
+            reverse=True,
+        )
+        runs = runs[:limit]
+    except Exception as e:  # noqa: BLE001
+        _LOGGER.error("Error retrieving irrigation history: %s", e)
+        runs = []
+
+    connection.send_result(msg["id"], {"records": runs})
+
+
+@async_response
 async def websocket_get_weather_service(hass: HomeAssistant, connection, msg):
     """Publish the currently configured weather service so the panel can show/edit it."""
     data = hass.data.get(const.DOMAIN, {})
@@ -1065,6 +1090,17 @@ async def async_register_websockets(hass: HomeAssistant):
             {
                 vol.Required("type"): const.DOMAIN + "/weatherservice_history",
                 vol.Optional("limit", default=20): vol.Coerce(int),
+            }
+        ),
+    )
+    async_register_command(
+        hass,
+        const.DOMAIN + "/irrigation_history",
+        websocket_get_irrigation_history,
+        websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
+            {
+                vol.Required("type"): const.DOMAIN + "/irrigation_history",
+                vol.Optional("limit", default=500): vol.Coerce(int),
             }
         ),
     )

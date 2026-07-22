@@ -85,6 +85,25 @@
     }
   },
   "panels": {
+    "history": {
+      "title": "Historique",
+      "description": "Chaque arrosage comptabilisé par Smart Irrigation pour une zone : quand il a commencé, combien de temps il a duré et quel volume d'eau il a utilisé. Les arrosages sont enregistrés par le contrôle direct des vannes et par l'arrosage observé, et sont conservés 90 jours.",
+      "refresh": "Actualiser",
+      "no-data": "Aucun arrosage n'a encore été enregistré.",
+      "table": {
+        "title": "Arrosages",
+        "start": "Début",
+        "zone": "Zone",
+        "duration": "Durée",
+        "water": "Eau utilisée",
+        "truncated": "Affichage des {count} arrosages les plus récents sur {total}."
+      },
+      "charts": {
+        "total-title": "Eau totale utilisée par jour (30 derniers jours)",
+        "per-zone-title": "Eau utilisée par jour et par zone (30 derniers jours)",
+        "no-data": "Aucune eau utilisée sur cette période."
+      }
+    },
     "weatherservice": {
       "history": {
         "title": "Historique",
