@@ -8,6 +8,17 @@ calculate_all_zones:
         default: true
         selector:
           boolean: {}
+    dry_run:
+        name: Dry run
+        description: >-
+          Report what the calculation would do without changing anything: the bucket,
+          the zone and the collected weather data are all left untouched. Use this to
+          inspect a zone mid-day without affecting the scheduled calculation.
+        required: false
+        example: true
+        default: false
+        selector:
+          boolean: {}
 calculate_zone:
   name: Calculate zone
   description: Calculate irrigation requirements for a specific zone.
@@ -19,6 +30,17 @@ calculate_zone:
         required: false
         example: false
         default: true
+        selector:
+          boolean: {}
+    dry_run:
+        name: Dry run
+        description: >-
+          Report what the calculation would do without changing anything: the bucket,
+          the zone and the collected weather data are all left untouched. Use this to
+          inspect a zone mid-day without affecting the scheduled calculation.
+        required: false
+        example: true
+        default: false
         selector:
           boolean: {}
 update_all_zones:

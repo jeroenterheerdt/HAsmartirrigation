@@ -13,7 +13,14 @@ from homeassistant.const import (
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
 )
-from homeassistant.core import Event, HomeAssistant, State, asyncio, callback
+from homeassistant.core import (
+    Event,
+    HomeAssistant,
+    State,
+    SupportsResponse,
+    asyncio,
+    callback,
+)
 from homeassistant.helpers import (
     config_validation as cv,
 )
@@ -1989,7 +1996,11 @@ class SmartIrrigationCoordinator(
             _LOGGER.info("Calculating zone %s", zone_id)
             if data is not None:
                 data.pop(const.ATTR_CALCULATE)
-            delete_weather_data = data.get(const.ATTR_DELETE_WEATHER_DATA, True)
+            dry_run = data.get(const.ATTR_DRY_RUN, False)
+            # A dry run must not consume the collected data, whatever the caller asked.
+            delete_weather_data = not dry_run and data.get(
+                const.ATTR_DELETE_WEATHER_DATA, True
+            )
 
             # aggregate sensor data
             weatherdata = None
@@ -1999,9 +2010,12 @@ class SmartIrrigationCoordinator(
             if mapping.get(const.MAPPING_DATA):
                 # Only this zone's own window. The group's buffer belongs to
                 # every zone reading it, so calculating one must not consume
-                # the history the others have not read yet.
+                # the history the others have not read yet. A dry run does not
+                # move the marker at all.
                 weatherdata = await self.apply_aggregates_to_mapping_data(
-                    mapping, since=parse_datetime(zone.get(const.ZONE_LAST_CONSUMED_AT))
+                    mapping,
+                    persist=not dry_run,
+                    since=parse_datetime(zone.get(const.ZONE_LAST_CONSUMED_AT)),
                 )
             else:
                 _LOGGER.error(
@@ -2026,8 +2040,8 @@ class SmartIrrigationCoordinator(
                     )
                     return
 
-            await self.async_calculate_zone(
-                zone_id, weatherdata, forecastdata, delete_weather_data
+            return await self.async_calculate_zone(
+                zone_id, weatherdata, forecastdata, delete_weather_data, dry_run
             )
         elif const.ATTR_CALCULATE_ALL in data:
             # calculate all zones
@@ -2173,13 +2187,19 @@ def register_services(hass: HomeAssistant):
 
     coordinator = hass.data[const.DOMAIN]["coordinator"]
 
+    # These two support an optional response so `dry_run: true` can report what
+    # the calculation would have done without writing anything.
     hass.services.async_register(
         const.DOMAIN,
         const.SERVICE_CALCULATE_ALL_ZONES,
         coordinator.handle_calculate_all_zones,
+        supports_response=SupportsResponse.OPTIONAL,
     )
     hass.services.async_register(
-        const.DOMAIN, const.SERVICE_CALCULATE_ZONE, coordinator.handle_calculate_zone
+        const.DOMAIN,
+        const.SERVICE_CALCULATE_ZONE,
+        coordinator.handle_calculate_zone,
+        supports_response=SupportsResponse.OPTIONAL,
     )
 
     hass.services.async_register(

@@ -565,6 +565,13 @@ class CalculationMixin:
             last_calc_data[key] = d[-1]
 
         if not persist:
+            # Advancing the marker here would shrink the next real calculation's
+            # hour_multiplier and re-baseline the delta aggregates, double
+            # counting precipitation, so anything that is only looking (a dry
+            # run, the live estimate) must leave it alone.
+            _LOGGER.debug(
+                "[_aggregate_sensor_data] not persisting MAPPING_DATA_LAST_CALCULATION"
+            )
             return
         # update LAST_CALCULATION entry
         await self.store.async_update_mapping(
@@ -608,7 +615,7 @@ class CalculationMixin:
                 mapping.get(const.MAPPING_ID), changes
             )
 
-    async def _async_calculate_all(self, delete_weather_data=True):
+    async def _async_calculate_all(self, delete_weather_data=True, dry_run=False):
         """Calculate every automatic zone.
 
         ``delete_weather_data`` defaults to True because that is what every
@@ -617,8 +624,16 @@ class CalculationMixin:
         time argument when this is used directly as an async_track_time_change
         callback, and the recurring scheduler calls it without any argument at
         all.
+
+        ``dry_run`` computes without committing anything. It forces
+        ``delete_weather_data`` off whatever the caller asked, because a preview
+        must not advance any zone's watermark.
         """
-        _LOGGER.info("Calculating all automatic zones")
+        if dry_run:
+            delete_weather_data = False
+        _LOGGER.info(
+            "Calculating all automatic zones%s", " (dry run)" if dry_run else ""
+        )
         # get all zones that are in automatic and for all of those, loop over the unique list of mappings
         # are any modules using OWM / sensors?
 
@@ -664,6 +679,7 @@ class CalculationMixin:
 
         # loop over zones and calculate
         forecastdata = None
+        results = {}
         for zone in zones:
             # get forecast data if needed (once)
             modinst = await self.getModuleInstanceByID(self.module_id_for_zone(zone))
@@ -688,7 +704,10 @@ class CalculationMixin:
                 weatherdata = None
                 if mapping and mapping.get(const.MAPPING_DATA):
                     weatherdata = await self.apply_aggregates_to_mapping_data(
-                        mapping, True, since=self.zone_window_start(zone)
+                        mapping,
+                        True,
+                        persist=not dry_run,
+                        since=self.zone_window_start(zone),
                     )
                 if not weatherdata:
                     _LOGGER.error(
@@ -696,13 +715,16 @@ class CalculationMixin:
                         zone.get(const.ZONE_NAME),
                     )
                     continue
-                await self.async_calculate_zone(
+                calc_data = await self.async_calculate_zone(
                     zone.get(const.ZONE_ID),
                     weatherdata,
                     forecastdata,
                     delete_weather_data=delete_weather_data,
                     prune=False,
+                    dry_run=dry_run,
                 )
+                if calc_data is not None:
+                    results[zone.get(const.ZONE_ID)] = calc_data
 
         # Drop what every zone of each group has now read. Not a wipe: a group
         # can be shared with a zone that did not calculate in this pass, and its
@@ -712,9 +734,13 @@ class CalculationMixin:
                 if mapping_id is not None:
                     await self.prune_consumed_readings(mapping_id)
 
+        if dry_run:
+            return results
+
         # update start_event
         _LOGGER.debug("calling register start event from async_calculate_all")
         await self.register_start_event()
+        return results
 
     async def async_calculate_zone(
         self,
@@ -723,12 +749,21 @@ class CalculationMixin:
         forecastdata=None,
         delete_weather_data=False,
         prune=True,
+        dry_run=False,
     ):
         """Calculate irrigation values for a specific zone.
 
         Args:
             zone_id: The ID of the zone to calculate.
+            weatherdata: Aggregated weather data for the calculation.
+            forecastdata: Forecast data if required by the module.
             delete_weather_data: Whether to delete weather data.
+            dry_run: When True, compute and return the result without writing
+                anything: the bucket, the zone and the collected weather data are
+                all left as they were.
+
+        Returns:
+            dict or None: The calculated zone data.
 
         """
         _LOGGER.debug("async_calculate_zone: Calculating zone %s", zone_id)
@@ -752,6 +787,15 @@ class CalculationMixin:
         # bucket value superseded part of, so the marker has done its job (#811).
         calc_data[const.ZONE_PRECIPITATION_SUPERSEDED] = 0.0
 
+        if dry_run:
+            _LOGGER.info(
+                "[async_calculate_zone] dry run for zone %s: bucket would become %s, duration %s (nothing was saved)",
+                zone_id,
+                calc_data.get(const.ZONE_BUCKET),
+                calc_data.get(const.ZONE_DURATION),
+            )
+            return calc_data
+
         # This zone has now read its window, so record where it got to instead
         # of emptying the group's buffer. The buffer belongs to every zone
         # reading that group: clearing it here left the others calculating on
@@ -774,6 +818,7 @@ class CalculationMixin:
             zone.get(const.ZONE_ID),
         )
         async_dispatcher_send(self.hass, const.DOMAIN + "_update_frontend")
+        return calc_data
 
     async def getModuleInstanceByID(self, module_id):
         """Retrieve and instantiate a module by its ID.

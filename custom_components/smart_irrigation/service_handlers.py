@@ -21,6 +21,37 @@ from .exceptions import SmartIrrigationError
 _LOGGER = logging.getLogger(__name__)
 
 
+def _summarize_calculations(results):
+    """Build a JSON-serializable summary of calculation results per zone.
+
+    Used as the service response so a dry run is visible to the caller: with
+    ``dry_run: true`` nothing is written to the zone, so the response is the
+    only place the outcome shows up.
+    """
+    summary = []
+    for zone_id, calc_data in results.items():
+        if not calc_data:
+            continue
+        entry = {const.ZONE_ID: zone_id}
+        for key in (
+            const.ZONE_DELTA,
+            const.ZONE_BUCKET,
+            const.ZONE_DURATION,
+            const.ZONE_CURRENT_DRAINAGE,
+            const.ZONE_ET_DEFICIENCY,
+        ):
+            value = calc_data.get(key)
+            if value is None:
+                continue
+            try:
+                entry[key] = float(value)
+            except (TypeError, ValueError):
+                # Some fields are loosely typed in the schema; pass through as-is.
+                entry[key] = value
+        summary.append(entry)
+    return summary
+
+
 class ServiceHandlersMixin:
     """Service-call handlers for ``SmartIrrigationCoordinator``.
 
@@ -55,16 +86,24 @@ class ServiceHandlersMixin:
 
     async def handle_calculate_all_zones(self, call):
         """Calculate all zones."""
-        _LOGGER.info("Calculate all zones service called")
-        await self._async_calculate_all(
-            call.data.get(const.ATTR_DELETE_WEATHER_DATA, True)
+        dry_run = call.data.get(const.ATTR_DRY_RUN, False)
+        _LOGGER.info("Calculate all zones service called (dry_run=%s)", dry_run)
+        results = await self._async_calculate_all(
+            call.data.get(const.ATTR_DELETE_WEATHER_DATA, True), dry_run=dry_run
         )
+        return {"zones": _summarize_calculations(results or {})}
 
     async def handle_calculate_zone(self, call):
         """Calculate specific zone."""
+        dry_run = call.data.get(const.ATTR_DRY_RUN, False)
+        results = {}
         if const.SERVICE_ENTITY_ID in call.data:
             for entity in call.data[const.SERVICE_ENTITY_ID]:
-                _LOGGER.info("Calculate zone service called for zone %s", entity)
+                _LOGGER.info(
+                    "Calculate zone service called for zone %s (dry_run=%s)",
+                    entity,
+                    dry_run,
+                )
                 # find entity zone id and call calculate on the zone
                 state = self.hass.states.get(entity)
                 if state:
@@ -73,10 +112,16 @@ class ServiceHandlersMixin:
                     if zone_id is not None:
                         data = {}
                         data[const.ATTR_CALCULATE] = const.ATTR_CALCULATE
+                        data[const.ATTR_DRY_RUN] = dry_run
                         data[const.ATTR_DELETE_WEATHER_DATA] = call.data.get(
                             const.ATTR_DELETE_WEATHER_DATA, True
                         )
-                        await self.async_update_zone_config(zone_id=zone_id, data=data)
+                        calc_data = await self.async_update_zone_config(
+                            zone_id=zone_id, data=data
+                        )
+                        if calc_data is not None:
+                            results[zone_id] = calc_data
+        return {"zones": _summarize_calculations(results)}
 
     async def handle_update_all_zones(self, call):
         """Update all zones."""

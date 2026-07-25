@@ -113,6 +113,10 @@
         "delete_weather_data": {
           "name": "Delete weather data",
           "description": "Delete weather data after calculation"
+        },
+        "dry_run": {
+          "name": "Dry run",
+          "description": "Report what the calculation would do without changing the bucket, the zone or the collected weather data"
         }
       }
     },
@@ -127,6 +131,10 @@
         "delete_weather_data": {
           "name": "Delete weather data",
           "description": "Delete weather data for the zone after calculation"
+        },
+        "dry_run": {
+          "name": "Dry run",
+          "description": "Report what the calculation would do without changing the bucket, the zone or the collected weather data"
         }
       }
     },
