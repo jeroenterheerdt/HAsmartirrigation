@@ -152,12 +152,17 @@ def test_summarize_calculations_is_json_serializable():
         }
     )
 
+    # The documented keys are always present, null when the module produced
+    # nothing, so a template can index the response without guarding. Keys that
+    # are not part of the documented response (last_calculated) stay out of it.
     assert summary == [
         {
             const.ZONE_ID: 1,
             const.ZONE_DELTA: -2.5,
             const.ZONE_BUCKET: -7.5,
             const.ZONE_DURATION: 900.0,
+            const.ZONE_CURRENT_DRAINAGE: None,
+            const.ZONE_ET_DEFICIENCY: None,
         }
     ]
 
@@ -228,10 +233,11 @@ async def test_dry_run_zone_calculation_skips_the_start_event():
     coord.register_start_event.assert_not_awaited()
     coord.async_setup_observed_watering.assert_not_awaited()
     assert result[const.ZONE_BUCKET] == -7.5
-    # The dry run must be forwarded, and must not consume the weather data.
+    # dry_run must reach async_calculate_zone, which is the single place that
+    # enforces a dry run does not consume the collected data (covered by
+    # test_dry_run_zone_writes_nothing).
     args = coord.async_calculate_zone.call_args[0]
     assert args[4] is True, "dry_run must reach async_calculate_zone"
-    assert args[3] is False, "a dry run must not delete the weather data"
 
 
 async def test_calculate_all_honours_dry_run():
@@ -262,3 +268,64 @@ async def test_calculate_all_without_dry_run_is_unchanged():
     assert kwargs["dry_run"] is False
     assert kwargs["delete_weather_data"] is True
     coord.register_start_event.assert_awaited_once()
+
+
+def _all_zones_calculator():
+    """Host for _async_calculate_all with one automatic zone on one mapping."""
+    calc = _Aggregator()
+    calc.hass = Mock()
+    calc.use_weather_service = False
+    calc.store.async_get_zones = AsyncMock(
+        return_value=[
+            {
+                const.ZONE_ID: 1,
+                const.ZONE_NAME: "zone",
+                const.ZONE_MAPPING: 1,
+                const.ZONE_MODULE: 1,
+                const.ZONE_STATE: const.ZONE_STATE_AUTOMATIC,
+            }
+        ]
+    )
+    calc.store.async_get_config = AsyncMock(return_value={})
+    calc.store.get_mapping = Mock(return_value={const.MAPPING_DATA: [{}]})
+    calc._get_unique_mappings_for_automatic_zones = AsyncMock(return_value=[1])
+    calc.apply_aggregates_to_mapping_data = AsyncMock(return_value={"aggregated": 1})
+    calc.getModuleInstanceByID = AsyncMock(return_value=None)
+    calc.async_calculate_zone = AsyncMock(
+        return_value={const.ZONE_BUCKET: -7.5, const.ZONE_DURATION: 900}
+    )
+    calc.register_start_event = AsyncMock()
+    return calc
+
+
+async def test_calculate_all_dry_run_does_not_clear_the_weather_data():
+    """The bulk clear is the one place the dry-run rule is enforced here."""
+    calc = _all_zones_calculator()
+
+    results = await calc._async_calculate_all(delete_weather_data=True, dry_run=True)
+
+    calc.store.async_update_mapping.assert_not_called()
+    calc.register_start_event.assert_not_awaited()
+    assert results[1][const.ZONE_BUCKET] == -7.5
+
+
+async def test_calculate_all_real_run_clears_the_weather_data():
+    """A normal run still clears the data and re-registers the start event."""
+    calc = _all_zones_calculator()
+
+    await calc._async_calculate_all(delete_weather_data=True, dry_run=False)
+
+    calc.store.async_update_mapping.assert_called_once()
+    _, changes = calc.store.async_update_mapping.call_args[0]
+    assert changes[const.MAPPING_DATA] == []
+    calc.register_start_event.assert_awaited_once()
+
+
+async def test_calculate_all_respects_delete_weather_data_false():
+    """An explicit delete_weather_data=False is still honoured on a real run."""
+    calc = _all_zones_calculator()
+
+    await calc._async_calculate_all(delete_weather_data=False, dry_run=False)
+
+    calc.store.async_update_mapping.assert_not_called()
+    calc.register_start_event.assert_awaited_once()

@@ -351,9 +351,6 @@ class CalculationMixin:
             )
 
     async def _async_calculate_all(self, delete_weather_data, dry_run=False):
-        if dry_run:
-            # A dry run must not consume the collected data, whatever the caller asked.
-            delete_weather_data = False
         _LOGGER.info(
             "Calculating all automatic zones%s", " (dry run)" if dry_run else ""
         )
@@ -445,8 +442,9 @@ class CalculationMixin:
                 if calc_data is not None:
                     results[zone.get(const.ZONE_ID)] = calc_data
 
-        # remove mapping data from all mappings used
-        if delete_weather_data:
+        # remove mapping data from all mappings used. A dry run must not consume
+        # the collected data, whatever the caller asked for.
+        if delete_weather_data and not dry_run:
             async with asyncio.TaskGroup() as tg:
                 for mapping_id in mapping_ids:
                     changes = {}
@@ -460,12 +458,10 @@ class CalculationMixin:
                             self.store.async_update_mapping(mapping_id, changes)
                         )
 
-        if dry_run:
-            return results
-
-        # update start_event
-        _LOGGER.debug("calling register start event from async_calculate_all")
-        await self.register_start_event()
+        # A dry run changed no durations, so there is no new start event to register.
+        if not dry_run:
+            _LOGGER.debug("calling register start event from async_calculate_all")
+            await self.register_start_event()
         return results
 
     async def async_calculate_zone(

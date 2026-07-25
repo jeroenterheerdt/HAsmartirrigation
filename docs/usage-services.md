@@ -28,8 +28,9 @@ After installation, the following services are available:
 ## Dry run
 
 `calculate_zone` and `calculate_all_zones` accept `dry_run: true`. A dry run computes
-the result and returns it, but writes nothing: the bucket, the zone and the collected
-weather data are all left exactly as they were.
+the result and returns it without touching any of your irrigation data: the bucket, the
+zone, the collected weather data and the internal "last calculated" marker are all left
+exactly as they were.
 
 Use it when you want to inspect a zone during the day without disturbing the scheduled
 calculation. A normal manual calculation consumes the weather data collected so far and
@@ -39,6 +40,12 @@ that window and then scaled by its length, and because the minimum and maximum
 temperature are taken from the samples inside the window, a partial window never
 contains the full daily temperature swing. The result is a lower daily total than if the
 scheduled run had seen the whole day. A dry run avoids this entirely.
+
+One thing a dry run does still do: if your zone uses the PyETO module with
+`forecast_days` greater than 0, it fetches forecast data from your weather service just
+like a real calculation, because the preview has to be computed from the same inputs to
+be meaningful. Subject to the usual cache, that can count against your weather service's
+API quota, so avoid polling a dry run in a tight loop.
 
 Because a dry run stores nothing, the outcome is only available as the service response:
 
@@ -52,7 +59,9 @@ response_variable: result
 ```
 
 `result.zones` then holds the `delta`, `bucket`, `duration`, `current_drainage` and
-`et_deficiency` the calculation would have produced for each zone.
+`et_deficiency` the calculation would have produced for each zone. All five keys are
+always present, and are null when the zone's module does not produce that value. Zones
+that produced no result at all are left out of the list entirely.
 
 > Main page: [Usage](usage.md)<br/>
 > Previous: [Entities](usage-entities.md)<br/>

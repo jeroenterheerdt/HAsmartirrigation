@@ -27,6 +27,9 @@ def _summarize_calculations(results):
     Used as the service response so a dry run is visible to the caller: with
     ``dry_run: true`` nothing is written to the zone, so the response is the
     only place the outcome shows up.
+
+    Every reported key is always present, as null when the module did not
+    produce it, so a template can index the response without guarding.
     """
     summary = []
     for zone_id, calc_data in results.items():
@@ -42,6 +45,7 @@ def _summarize_calculations(results):
         ):
             value = calc_data.get(key)
             if value is None:
+                entry[key] = None
                 continue
             try:
                 entry[key] = float(value)
