@@ -275,10 +275,11 @@ class RecurringScheduleManager:
         try:
             if action == "calculate":
                 if zones == "all":
-                    await self.coordinator._async_calculate_all()
+                    await self.coordinator._async_calculate_all(
+                        delete_weather_data=True
+                    )
                 else:
-                    for zone_id in zones:
-                        await self.coordinator.async_calculate_zone(zone_id)
+                    await self._calculate_zones(zones)
             elif action == "update":
                 if zones == "all":
                     await self.coordinator._async_update_all()
@@ -303,6 +304,72 @@ class RecurringScheduleManager:
         except Exception as e:
             _LOGGER.error("Error executing schedule action %s: %s", action, e)
             raise
+
+    async def _calculate_zones(self, zone_ids: list[str] | list[int]) -> None:
+        """Calculate a specific set of zones.
+
+        `async_calculate_zone` expects the aggregated sensor data to be gathered by
+        the caller, the same way `async_update_zone_config` does it for a manual
+        calculation of a single zone.
+        """
+        mapping_ids = set()
+
+        for zone_id in zone_ids:
+            mapping_id = await self._calculate_zone(zone_id)
+            if mapping_id is not None:
+                mapping_ids.add(mapping_id)
+
+        # Clear the sensor data only once all zones have been calculated: several
+        # zones can share a mapping, and clearing it inside the loop would leave the
+        # remaining zones without data.
+        for mapping_id in mapping_ids:
+            await self.coordinator.store.async_update_mapping(
+                mapping_id, {const.MAPPING_DATA: []}
+            )
+
+    async def _calculate_zone(self, zone_id) -> str | None:
+        """Calculate a single zone and return the mapping ID it used, if any."""
+        zone = self.coordinator.store.get_zone(zone_id)
+        if not zone:
+            _LOGGER.error(
+                "[_calculate_zone] Error calculating zone %s: zone not found", zone_id
+            )
+            return None
+
+        # aggregate sensor data
+        mapping_id = zone.get(const.ZONE_MAPPING)
+        mapping = (
+            self.coordinator.store.get_mapping(mapping_id)
+            if mapping_id is not None
+            else None
+        )
+        if not mapping or not mapping.get(const.MAPPING_DATA):
+            _LOGGER.error(
+                "[_calculate_zone] Error calculating zone %s: no sensor data available",
+                zone.get(const.ZONE_NAME),
+            )
+            return None
+        weatherdata = await self.coordinator.apply_aggregates_to_mapping_data(mapping)
+
+        # get forecast data if needed
+        forecastdata = None
+        modinst = await self.coordinator.getModuleInstanceByID(
+            zone.get(const.ZONE_MODULE)
+        )
+        if modinst and modinst.name == "PyETO" and modinst.forecast_days > 0:
+            if self.coordinator.use_weather_service:
+                forecastdata = await self.hass.async_add_executor_job(
+                    self.coordinator._WeatherServiceClient.get_forecast_data
+                )
+            else:
+                _LOGGER.error(
+                    "[_calculate_zone] Error calculating zone %s: You have configured forecasting but there is no OWM API configured. Either configure the OWM API or stop using forecasting on the PyETO module",
+                    zone.get(const.ZONE_NAME),
+                )
+                return None
+
+        await self.coordinator.async_calculate_zone(zone_id, weatherdata, forecastdata)
+        return mapping_id
 
     async def _save_schedules(self) -> None:
         """Save schedules to configuration."""
