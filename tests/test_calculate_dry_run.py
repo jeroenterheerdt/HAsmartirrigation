@@ -9,7 +9,11 @@ which double-counts precipitation.
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, Mock, patch
 
-from custom_components.smart_irrigation import calculation, const
+from custom_components.smart_irrigation import (
+    SmartIrrigationCoordinator,
+    calculation,
+    const,
+)
 from custom_components.smart_irrigation.calculation import CalculationMixin
 from custom_components.smart_irrigation.service_handlers import _summarize_calculations
 
@@ -161,3 +165,100 @@ def test_summarize_calculations_is_json_serializable():
 def test_summarize_calculations_skips_empty_results():
     """Zones that produced nothing are left out rather than reported as zero."""
     assert _summarize_calculations({1: None, 2: {}}) == []
+
+
+def _coordinator():
+    """A coordinator with only what ``async_update_zone_config`` touches.
+
+    Built with ``object.__new__`` so the real method body runs without needing a
+    full Home Assistant setup.
+    """
+    coord = object.__new__(SmartIrrigationCoordinator)
+    coord.hass = Mock()
+    coord.use_weather_service = False
+    coord.store = Mock()
+    coord.store.get_zone = Mock(
+        return_value={
+            const.ZONE_ID: 1,
+            const.ZONE_MAPPING: 1,
+            const.ZONE_NAME: "zone",
+            const.ZONE_MODULE: 1,
+        }
+    )
+    coord.store.get_mapping = Mock(return_value={const.MAPPING_DATA: [{}]})
+    coord.apply_aggregates_to_mapping_data = AsyncMock(return_value={})
+    coord.getModuleInstanceByID = AsyncMock(return_value=None)
+    coord.async_calculate_zone = AsyncMock(
+        return_value={const.ZONE_BUCKET: -7.5, const.ZONE_DURATION: 900}
+    )
+    coord._async_calculate_all = AsyncMock(return_value={})
+    coord.register_start_event = AsyncMock()
+    coord.async_setup_observed_watering = AsyncMock()
+    return coord
+
+
+async def test_real_zone_calculation_still_registers_the_start_event():
+    """A normal calculate must not skip the post-calculation bookkeeping.
+
+    Regression test: returning the calculation result directly from the
+    ``ATTR_CALCULATE`` branch skipped ``register_start_event`` for every real
+    calculation, so a freshly calculated duration never reached the schedule.
+    """
+    coord = _coordinator()
+
+    result = await coord.async_update_zone_config(
+        zone_id=1, data={const.ATTR_CALCULATE: const.ATTR_CALCULATE}
+    )
+
+    coord.register_start_event.assert_awaited_once()
+    coord.async_setup_observed_watering.assert_awaited_once()
+    # The caller still gets the numbers back.
+    assert result[const.ZONE_BUCKET] == -7.5
+
+
+async def test_dry_run_zone_calculation_skips_the_start_event():
+    """A dry run wrote nothing, so there is nothing to re-register."""
+    coord = _coordinator()
+
+    result = await coord.async_update_zone_config(
+        zone_id=1,
+        data={const.ATTR_CALCULATE: const.ATTR_CALCULATE, const.ATTR_DRY_RUN: True},
+    )
+
+    coord.register_start_event.assert_not_awaited()
+    coord.async_setup_observed_watering.assert_not_awaited()
+    assert result[const.ZONE_BUCKET] == -7.5
+    # The dry run must be forwarded, and must not consume the weather data.
+    args = coord.async_calculate_zone.call_args[0]
+    assert args[4] is True, "dry_run must reach async_calculate_zone"
+    assert args[3] is False, "a dry run must not delete the weather data"
+
+
+async def test_calculate_all_honours_dry_run():
+    """``calculate_all`` must forward dry_run instead of doing a real run.
+
+    Regression test: this branch hardcoded ``delete_weather_data=True`` and
+    dropped ``dry_run``, so a caller asking for a preview got a committed
+    calculation plus a wipe of all collected sensor data.
+    """
+    coord = _coordinator()
+
+    await coord.async_update_zone_config(
+        data={const.ATTR_CALCULATE_ALL: True, const.ATTR_DRY_RUN: True}
+    )
+
+    _, kwargs = coord._async_calculate_all.call_args
+    assert kwargs["dry_run"] is True
+    coord.register_start_event.assert_not_awaited()
+
+
+async def test_calculate_all_without_dry_run_is_unchanged():
+    """The normal calculate_all path still commits and clears."""
+    coord = _coordinator()
+
+    await coord.async_update_zone_config(data={const.ATTR_CALCULATE_ALL: True})
+
+    _, kwargs = coord._async_calculate_all.call_args
+    assert kwargs["dry_run"] is False
+    assert kwargs["delete_weather_data"] is True
+    coord.register_start_event.assert_awaited_once()
