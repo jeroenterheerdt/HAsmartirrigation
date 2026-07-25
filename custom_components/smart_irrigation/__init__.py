@@ -1975,10 +1975,14 @@ class SmartIrrigationCoordinator(
             zone_id: The ID of the zone to update or delete.
             data: The configuration data for the mapping.
 
+        Returns:
+            The calculation result for the calculate branches, None otherwise.
+
         """
         _LOGGER.debug("[async_update_zone_config]: updating zone %s", zone_id)
         if data is None:
             data = {}
+        result = None
         if zone_id is not None:
             zone_id = int(zone_id)
         if const.ATTR_REMOVE in data:
@@ -2040,14 +2044,23 @@ class SmartIrrigationCoordinator(
                     )
                     return
 
-            return await self.async_calculate_zone(
+            result = await self.async_calculate_zone(
                 zone_id, weatherdata, forecastdata, delete_weather_data, dry_run
             )
+            if dry_run:
+                # Nothing was written, so there is no new start event to register
+                # and no valve subscription to refresh.
+                return result
         elif const.ATTR_CALCULATE_ALL in data:
             # calculate all zones
-            _LOGGER.info("Calculating all zones")
+            dry_run = data.get(const.ATTR_DRY_RUN, False)
+            _LOGGER.info("Calculating all zones (dry_run=%s)", dry_run)
             data.pop(const.ATTR_CALCULATE_ALL)
-            await self._async_calculate_all(delete_weather_data=True)
+            result = await self._async_calculate_all(
+                delete_weather_data=True, dry_run=dry_run
+            )
+            if dry_run:
+                return result
 
         elif const.ATTR_UPDATE in data:
             _LOGGER.info("Updating zone %s", zone_id)
@@ -2087,6 +2100,8 @@ class SmartIrrigationCoordinator(
 
         # A zone's linked valve entity may have changed; refresh the observer.
         await self.async_setup_observed_watering()
+
+        return result
 
     async def async_get_all_modules(self):
         """Get all ModuleEntries."""
