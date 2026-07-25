@@ -275,7 +275,9 @@ class RecurringScheduleManager:
         try:
             if action == "calculate":
                 if zones == "all":
-                    await self.coordinator._async_calculate_all()
+                    await self.coordinator._async_calculate_all(
+                        delete_weather_data=True
+                    )
                 else:
                     for zone_id in zones:
                         # async_calculate_zone wants the aggregated weather data
@@ -312,12 +314,6 @@ class RecurringScheduleManager:
         except Exception as e:
             _LOGGER.error("Error executing schedule action %s: %s", action, e)
             raise
-
-    async def _save_schedules(self) -> None:
-        """Save schedules to configuration."""
-        await self.coordinator.store.async_update_config(
-            {const.CONF_RECURRING_SCHEDULES: self._schedules}
-        )
 
     def _validate_schedule_data(self, schedule_data: dict[str, Any]) -> None:
         """Validate schedule data."""
