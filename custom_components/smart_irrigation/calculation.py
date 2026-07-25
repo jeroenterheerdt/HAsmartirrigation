@@ -734,12 +734,10 @@ class CalculationMixin:
                 if mapping_id is not None:
                     await self.prune_consumed_readings(mapping_id)
 
-        if dry_run:
-            return results
-
-        # update start_event
-        _LOGGER.debug("calling register start event from async_calculate_all")
-        await self.register_start_event()
+        # A dry run changed no durations, so there is no new start event to register.
+        if not dry_run:
+            _LOGGER.debug("calling register start event from async_calculate_all")
+            await self.register_start_event()
         return results
 
     async def async_calculate_zone(

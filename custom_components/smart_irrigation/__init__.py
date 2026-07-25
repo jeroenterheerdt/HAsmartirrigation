@@ -2001,10 +2001,9 @@ class SmartIrrigationCoordinator(
             if data is not None:
                 data.pop(const.ATTR_CALCULATE)
             dry_run = data.get(const.ATTR_DRY_RUN, False)
-            # A dry run must not consume the collected data, whatever the caller asked.
-            delete_weather_data = not dry_run and data.get(
-                const.ATTR_DELETE_WEATHER_DATA, True
-            )
+            # Forwarded as-is: async_calculate_zone is what enforces that a dry run
+            # does not consume the collected data.
+            delete_weather_data = data.get(const.ATTR_DELETE_WEATHER_DATA, True)
 
             # aggregate sensor data
             weatherdata = None
