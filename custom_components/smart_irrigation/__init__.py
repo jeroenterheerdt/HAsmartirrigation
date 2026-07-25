@@ -13,7 +13,14 @@ from homeassistant.const import (
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
 )
-from homeassistant.core import Event, HomeAssistant, State, asyncio, callback
+from homeassistant.core import (
+    Event,
+    HomeAssistant,
+    State,
+    SupportsResponse,
+    asyncio,
+    callback,
+)
 from homeassistant.helpers import (
     config_validation as cv,
 )
@@ -1826,7 +1833,11 @@ class SmartIrrigationCoordinator(
             _LOGGER.info("Calculating zone %s", zone_id)
             if data is not None:
                 data.pop(const.ATTR_CALCULATE)
-            delete_weather_data = data.get(const.ATTR_DELETE_WEATHER_DATA, True)
+            dry_run = data.get(const.ATTR_DRY_RUN, False)
+            # A dry run must not consume the collected data, whatever the caller asked.
+            delete_weather_data = not dry_run and data.get(
+                const.ATTR_DELETE_WEATHER_DATA, True
+            )
 
             # aggregate sensor data
             weatherdata = None
@@ -1834,7 +1845,9 @@ class SmartIrrigationCoordinator(
             mapping_id = zone[const.ZONE_MAPPING]
             mapping = self.store.get_mapping(mapping_id)
             if mapping.get(const.MAPPING_DATA):
-                weatherdata = await self.apply_aggregates_to_mapping_data(mapping)
+                weatherdata = await self.apply_aggregates_to_mapping_data(
+                    mapping, dry_run=dry_run
+                )
             else:
                 _LOGGER.error(
                     "[async_update_zone_config] Error calculating zone %s: no sensor data available",
@@ -1858,8 +1871,8 @@ class SmartIrrigationCoordinator(
                     )
                     return
 
-            await self.async_calculate_zone(
-                zone_id, weatherdata, forecastdata, delete_weather_data
+            return await self.async_calculate_zone(
+                zone_id, weatherdata, forecastdata, delete_weather_data, dry_run
             )
         elif const.ATTR_CALCULATE_ALL in data:
             # calculate all zones
@@ -1997,13 +2010,19 @@ def register_services(hass: HomeAssistant):
 
     coordinator = hass.data[const.DOMAIN]["coordinator"]
 
+    # These two support an optional response so `dry_run: true` can report what
+    # the calculation would have done without writing anything.
     hass.services.async_register(
         const.DOMAIN,
         const.SERVICE_CALCULATE_ALL_ZONES,
         coordinator.handle_calculate_all_zones,
+        supports_response=SupportsResponse.OPTIONAL,
     )
     hass.services.async_register(
-        const.DOMAIN, const.SERVICE_CALCULATE_ZONE, coordinator.handle_calculate_zone
+        const.DOMAIN,
+        const.SERVICE_CALCULATE_ZONE,
+        coordinator.handle_calculate_zone,
+        supports_response=SupportsResponse.OPTIONAL,
     )
 
     hass.services.async_register(

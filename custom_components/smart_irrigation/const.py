@@ -263,6 +263,7 @@ ATTR_CLEAR_ALL_WEATHERDATA = "clear_all_weatherdata"
 ATTR_NEW_STATE_VALUE = "new_state_value"
 ATTR_NEW_DURATION_VALUE = "new_duration_value"
 ATTR_DELETE_WEATHER_DATA = "delete_weather_data"
+ATTR_DRY_RUN = "dry_run"
 
 LIST_SET_ZONE_ALLOWED_ARGS = [
     ATTR_NEW_BUCKET_VALUE,

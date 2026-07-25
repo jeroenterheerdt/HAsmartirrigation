@@ -234,6 +234,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
                 vol.Optional(const.ATTR_REMOVE): cv.boolean,
                 vol.Optional(const.ATTR_CALCULATE): cv.boolean,
                 vol.Optional(const.ATTR_CALCULATE_ALL): cv.boolean,
+                vol.Optional(const.ATTR_DRY_RUN): cv.boolean,
                 vol.Optional(const.ATTR_UPDATE): cv.boolean,
                 vol.Optional(const.ATTR_UPDATE_ALL): cv.boolean,
                 vol.Optional(const.ATTR_RESET_ALL_BUCKETS): cv.boolean,
