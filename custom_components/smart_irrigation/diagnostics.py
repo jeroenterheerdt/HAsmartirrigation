@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from . import const
+from .calc_log import redact_record
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,6 +51,17 @@ async def async_get_config_entry_diagnostics(
             }
         else:
             _LOGGER.warning("Store is not available")
+        # Calculation audit log (#12): attach the most recent records so a
+        # "the calculated amount looks wrong" report arrives with the numbers
+        # that produced it. Coordinates are rounded and entity ids dropped.
+        calc_logger = getattr(coordinator, "calc_logger", None)
+        if calc_logger is not None:
+            records = await calc_logger.async_read_recent(
+                const.CALC_LOG_DIAGNOSTICS_RECORDS
+            )
+            diagnostics["calculation_log"] = [
+                redact_record(record) for record in records
+            ]
     else:
         _LOGGER.warning("Coordinator is not available")
     if const.CONF_WEATHER_SERVICE_API_KEY in diagnostics:

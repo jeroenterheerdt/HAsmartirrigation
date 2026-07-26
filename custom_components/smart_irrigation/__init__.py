@@ -47,6 +47,7 @@ from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from . import const
 from .blueprint_install import async_install_bundled_blueprints
+from .calc_log import CalculationLogger
 from .calculation import CalculationMixin
 from .exceptions import SmartIrrigationError
 from .flow_calibration import FlowCalibrationMixin
@@ -517,6 +518,14 @@ class SmartIrrigationCoordinator(
         # Keep latitude and elevation properties for backward compatibility
         self._latitude = self._effective_latitude
         self._elevation = self._effective_elevation
+
+        # Calculation audit log (#12): opt-in JSONL record of every calculation.
+        # ``_mapping_audits`` holds the aggregation audit of each sensor group
+        # until the zone calculation that consumes it, ``_pending_calc_record``
+        # the record being assembled for the zone currently being calculated.
+        self.calc_logger = CalculationLogger(hass)
+        self._mapping_audits = {}
+        self._pending_calc_record = None
 
         self._subscriptions = []
 

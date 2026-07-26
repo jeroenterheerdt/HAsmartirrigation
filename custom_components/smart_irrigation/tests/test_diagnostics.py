@@ -49,10 +49,26 @@ class TestSmartIrrigationDiagnostics:
         return store
 
     @pytest.fixture
-    def mock_coordinator(self, mock_store):
+    def mock_calc_logger(self):
+        """Return a mock calculation audit logger with one record."""
+        calc_logger = Mock()
+        calc_logger.async_read_recent = AsyncMock(
+            return_value=[
+                {
+                    "zone": {"name": "Lawn"},
+                    "module": {"latitude": 52.379189},
+                    "inputs": {"fields": {"Temperature": {"entity": "sensor.temp"}}},
+                }
+            ]
+        )
+        return calc_logger
+
+    @pytest.fixture
+    def mock_coordinator(self, mock_store, mock_calc_logger):
         """Return a mock coordinator."""
         coordinator = Mock()
         coordinator.store = mock_store
+        coordinator.calc_logger = mock_calc_logger
         return coordinator
 
     async def test_async_get_config_entry_diagnostics_with_coordinator(
@@ -153,12 +169,28 @@ class TestSmartIrrigationDiagnostics:
         assert result["test_data"] == "value"
         assert "Coordinator is not available" in caplog.text
 
+    async def test_async_get_config_entry_diagnostics_includes_calculation_log(
+        self, mock_hass, mock_config_entry, mock_coordinator
+    ):
+        """The recent calculation-log records are attached, redacted (#12)."""
+        mock_hass.data[DOMAIN] = {"coordinator": mock_coordinator}
+
+        result = await async_get_config_entry_diagnostics(mock_hass, mock_config_entry)
+
+        assert len(result["calculation_log"]) == 1
+        record = result["calculation_log"][0]
+        assert record["zone"]["name"] == "Lawn"
+        # Coordinates rounded and entity ids dropped before sharing.
+        assert record["module"]["latitude"] == 52.4
+        assert record["inputs"]["fields"]["Temperature"]["entity"] == "[redacted]"
+
     async def test_async_get_config_entry_diagnostics_no_store(
-        self, mock_hass, mock_config_entry, caplog
+        self, mock_hass, mock_config_entry, mock_calc_logger, caplog
     ):
         """Test diagnostics with coordinator but no store."""
         mock_coordinator = Mock()
         mock_coordinator.store = None
+        mock_coordinator.calc_logger = mock_calc_logger
 
         mock_hass.data[DOMAIN] = {
             "coordinator": mock_coordinator,

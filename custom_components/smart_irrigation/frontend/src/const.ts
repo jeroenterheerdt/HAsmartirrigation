@@ -16,6 +16,7 @@ export const CONF_AUTO_CLEAR_ENABLED = "autoclearenabled";
 export const CONF_CLEAR_TIME = "cleardatatime";
 export const CONF_CONTINUOUS_UPDATES = "continuousupdates";
 export const CONF_SENSOR_DEBOUNCE = "sensor_debounce";
+export const CONF_CALC_LOG_ENABLED = "calc_log_enabled";
 
 // Manual coordinate configuration
 export const CONF_MANUAL_COORDINATES_ENABLED = "manual_coordinates_enabled";

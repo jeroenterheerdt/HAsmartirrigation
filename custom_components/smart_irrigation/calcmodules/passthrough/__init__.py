@@ -34,6 +34,10 @@ class Passthrough(SmartIrrigationCalculationModule):
             name="Passthrough", description=description, schema=SCHEMA, config=config
         )
         self._hass = hass
+        # Intermediates of the last calculate() call, for the calculation audit
+        # log (#12). The inputs are few here, but "why this number" is asked of
+        # the passthrough module just as often.
+        self.last_trace: dict | None = None
 
     def calculate(self, et_data=None):
         """Return the input evapotranspiration value unchanged as a float.
@@ -49,16 +53,33 @@ class Passthrough(SmartIrrigationCalculationModule):
         if et_data is not None:
             # Ensure the value is a float before returning
             try:
-                return float(et_data)
+                eto = float(et_data)
             except (ValueError, TypeError):
                 _LOGGER.error(
                     "Invalid non-numeric Evapotranspiration data received by Passthrough module: %s",
                     et_data,
                 )
+                self.last_trace = {
+                    "module": self.name,
+                    "et_input": et_data,
+                    "eto": 0,
+                    "error": "non-numeric evapotranspiration",
+                }
                 # Return 0 if conversion fails, consistent with the original else block's return
                 return 0
-        else:
-            _LOGGER.error(
-                "No Evapotranspiration data specified (et_data is None) for Passthrough module"
-            )
-            return 0
+            self.last_trace = {
+                "module": self.name,
+                "et_input": et_data,
+                "eto": eto,
+            }
+            return eto
+        _LOGGER.error(
+            "No Evapotranspiration data specified (et_data is None) for Passthrough module"
+        )
+        self.last_trace = {
+            "module": self.name,
+            "et_input": None,
+            "eto": 0,
+            "error": "no evapotranspiration provided",
+        }
+        return 0
