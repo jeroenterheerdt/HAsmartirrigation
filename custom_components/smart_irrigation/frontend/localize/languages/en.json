@@ -521,5 +521,11 @@
       "sequential": "Sequential (one zone at a time)",
       "parallel": "Parallel (all zones at once)"
     }
+  },
+  "calculation_log": {
+    "title": "Calculation log",
+    "description": "Write the complete input of every calculation to a file, so two days that look alike but water very differently can be compared afterwards. Each calculation appends one line: the sensor group records and how they were aggregated, the module intermediates (solar radiation, net radiation, ET0), and the resulting bucket, duration and volume. Off by default; the file is capped in size and rotated, so it can be left on for a season.",
+    "enabled_label": "Log calculation inputs to a file",
+    "file_hint": "Written to config/smart_irrigation/calc_log.jsonl, one JSON record per line. The most recent records are also included in the diagnostics download (coordinates rounded, entity ids removed), so you can attach them to an issue in one step."
   }
 }

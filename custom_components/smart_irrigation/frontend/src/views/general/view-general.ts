@@ -27,6 +27,7 @@ import {
   CONF_CLEAR_TIME,
   CONF_CONTINUOUS_UPDATES,
   CONF_SENSOR_DEBOUNCE,
+  CONF_CALC_LOG_ENABLED,
   CONF_IRRIGATION_START_TRIGGERS,
   CONF_SKIP_IRRIGATION_ON_PRECIPITATION,
   CONF_PRECIPITATION_THRESHOLD_MM,
@@ -142,6 +143,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
         CONF_CLEAR_TIME,
         CONF_CONTINUOUS_UPDATES,
         CONF_SENSOR_DEBOUNCE,
+        CONF_CALC_LOG_ENABLED,
         CONF_MANUAL_COORDINATES_ENABLED,
         CONF_MANUAL_LATITUDE,
         CONF_MANUAL_LONGITUDE,
@@ -446,13 +448,16 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       // Observed Watering (closed-loop bucket) Card
       const r9 = this.renderObservedWateringCard();
 
+      // Calculation audit log Card
+      const r10 = this.renderCalculationLogCard();
+
       const r = html`<ha-card
           header="${localize("panels.general.title", this.hass.language)}"
         >
           <div class="card-content">
             ${localize("panels.general.description", this.hass.language)}
           </div> </ha-card
-        >${r2}${r1}${r3}${r4}${r5}${r6}${r7}${r8}${r9}`;
+        >${r2}${r1}${r3}${r4}${r5}${r6}${r7}${r8}${r9}${r10}`;
 
       return r;
     }
@@ -877,6 +882,41 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                   </select>
                 </div>
               `
+            : ""}
+        </div>
+      </ha-card>
+    `;
+  }
+
+  renderCalculationLogCard() {
+    if (!this.config || !this.data || !this.hass) return html``;
+    const lang = this.hass.language;
+
+    return html`
+      <ha-card header="${localize("calculation_log.title", lang)}">
+        <div class="card-content">
+          ${localize("calculation_log.description", lang)}
+        </div>
+        <div class="card-content">
+          <div class="setting-row">
+            <div class="setting-label">
+              ${localize("calculation_log.enabled_label", lang)}
+            </div>
+            <ha-switch
+              .checked=${this.config.calc_log_enabled}
+              @change=${(e: Event) =>
+                this.handleConfigChange({
+                  calc_log_enabled: (e.target as any).checked,
+                })}
+            ></ha-switch>
+          </div>
+          ${this.config.calc_log_enabled
+            ? html`<div
+                class="zoneline"
+                style="color: var(--secondary-text-color); font-style: italic;"
+              >
+                ${localize("calculation_log.file_hint", lang)}
+              </div>`
             : ""}
         </div>
       </ha-card>

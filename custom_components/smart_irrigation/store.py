@@ -23,6 +23,7 @@ from .const import (
     CONF_AUTO_UPDATE_ENABLED,
     CONF_AUTO_UPDATE_INTERVAL,
     CONF_AUTO_UPDATE_SCHEDULE,
+    CONF_CALC_LOG_ENABLED,
     CONF_CALC_TIME,
     CONF_CLEAR_TIME,
     CONF_CONTINUOUS_UPDATES,
@@ -35,6 +36,7 @@ from .const import (
     CONF_DEFAULT_AUTO_UPDATE_ENABLED,
     CONF_DEFAULT_AUTO_UPDATE_INTERVAL,
     CONF_DEFAULT_AUTO_UPDATE_SCHEDULE,
+    CONF_DEFAULT_CALC_LOG_ENABLED,
     CONF_DEFAULT_CALC_TIME,
     CONF_DEFAULT_CLEAR_TIME,
     CONF_DEFAULT_CONTINUOUS_UPDATES,
@@ -269,6 +271,9 @@ class Config:
         type=bool, default=CONF_DEFAULT_CONTINUOUS_UPDATES
     )  # continuous updates are disabled by default for now
     sensor_debounce = attr.ib(type=int, default=CONF_DEFAULT_SENSOR_DEBOUNCE)
+    # Opt-in calculation audit log (#12): append every calculation's inputs,
+    # intermediates and outputs to a JSON Lines file so days can be diffed.
+    calc_log_enabled = attr.ib(type=bool, default=CONF_DEFAULT_CALC_LOG_ENABLED)
     irrigation_start_triggers = attr.ib(
         type=list, default=CONF_DEFAULT_IRRIGATION_START_TRIGGERS
     )
@@ -473,6 +478,7 @@ class SmartIrrigationStorage:
             starteventfiredtoday=False,
             continuousupdates=CONF_DEFAULT_CONTINUOUS_UPDATES,
             sensor_debounce=CONF_DEFAULT_SENSOR_DEBOUNCE,
+            calc_log_enabled=CONF_DEFAULT_CALC_LOG_ENABLED,
         )
         zones: OrderedDict[str, ZoneEntry] = OrderedDict()
         modules: OrderedDict[str, ModuleEntry] = OrderedDict()
@@ -523,6 +529,9 @@ class SmartIrrigationStorage:
                 ),
                 sensor_debounce=data["config"].get(
                     CONF_SENSOR_DEBOUNCE, CONF_DEFAULT_SENSOR_DEBOUNCE
+                ),
+                calc_log_enabled=data["config"].get(
+                    CONF_CALC_LOG_ENABLED, CONF_DEFAULT_CALC_LOG_ENABLED
                 ),
                 irrigation_start_triggers=data["config"].get(
                     CONF_IRRIGATION_START_TRIGGERS,

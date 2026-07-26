@@ -519,5 +519,11 @@
       "sequential": "Szekvenciális (egy zóna egyszerre)",
       "parallel": "Párhuzamos (minden zóna egyszerre)"
     }
+  },
+  "calculation_log": {
+    "title": "Számítási napló",
+    "description": "Minden számítás teljes bemenetét fájlba írja, így két egyformának tűnő, mégis nagyon eltérő öntözést eredményező nap utólag összehasonlítható. Minden számítás egy sort fűz hozzá: az érzékelőcsoport rekordjai és az alkalmazott aggregálás, a modul köztes értékei (napsugárzás, nettó sugárzás, ET0), valamint az eredményül kapott vödör, időtartam és vízmennyiség. Alapértelmezés szerint kikapcsolva; a fájl mérete korlátozott és forog, így egy egész szezonon át bekapcsolva hagyható.",
+    "enabled_label": "Számítási bemenetek naplózása fájlba",
+    "file_hint": "A config/smart_irrigation/calc_log.jsonl fájlba kerül, soronként egy JSON rekord. A legutóbbi rekordok a diagnosztikai letöltésben is szerepelnek (kerekített koordinátákkal, entitásazonosítók nélkül), így egy lépésben csatolhatók egy hibajegyhez."
   }
 }

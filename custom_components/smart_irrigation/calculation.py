@@ -16,6 +16,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from . import const
+from .calc_log import timestamps as calc_log_timestamps
 from .helpers import convert_between, loadModules, parse_datetime
 from .localize import localize
 
@@ -85,19 +86,84 @@ class CalculationMixin:
 
         data_by_sensor = self._group_data_by_sensor(data)
         resultdata = {}
+        # Calculation audit log (#12): record how the raw sensor records became
+        # the aggregate the calculation module is fed. None when the log is off.
+        audit = self._new_mapping_audit(mapping, data)
 
-        hour_multiplier = self._calc_hour_multiplier(data_by_sensor, mapping)
+        hour_multiplier = self._calc_hour_multiplier(data_by_sensor, mapping, audit)
         resultdata[const.MAPPING_DATA_MULTIPLIER] = hour_multiplier
 
         if continuous_updates:
-            self._fill_missing_from_last_entry(mapping, data_by_sensor)
+            self._fill_missing_from_last_entry(mapping, data_by_sensor, audit)
 
         await self._aggregate_sensor_data(
-            data_by_sensor, mapping, resultdata, dry_run=dry_run
+            data_by_sensor, mapping, resultdata, audit=audit, dry_run=dry_run
         )
+
+        if audit is not None:
+            audit["multiplier"] = hour_multiplier
+            self._mapping_audit_store()[mapping.get(const.MAPPING_ID)] = audit
 
         _LOGGER.debug("[apply_aggregates_to_mapping_data] returns %s", resultdata)
         return resultdata
+
+    # --- calculation audit log helpers (#12) ---
+
+    def _calc_log_enabled(self) -> bool:
+        """Whether the opt-in calculation audit log is switched on."""
+        logger = getattr(self, "calc_logger", None)
+        if logger is None:
+            return False
+        try:
+            return logger.is_enabled(self.store.get_config())
+        except (AttributeError, TypeError):  # pragma: no cover - defensive
+            return False
+
+    def _mapping_audit_store(self) -> dict:
+        """Per-sensor-group aggregation audits, keyed by mapping id."""
+        store = getattr(self, "_mapping_audits", None)
+        if store is None:
+            store = {}
+            self._mapping_audits = store
+        return store
+
+    def _new_mapping_audit(self, mapping, data) -> dict | None:
+        """Start an aggregation audit for a sensor group, if logging is on."""
+        if not self._calc_log_enabled():
+            return None
+        return {
+            "id": mapping.get(const.MAPPING_ID),
+            "name": mapping.get(const.MAPPING_NAME),
+            "aggregated_at": datetime.now(),
+            "records": len(data),
+            "interval": {},
+            "fields": {},
+            "carried_over": [],
+        }
+
+    def _record_field_audit(self, audit, mapping, key, values, aggregate, value):
+        """Record one aggregated field: where it came from and how it was aggregated."""
+        the_map = mapping.get(const.MAPPING_MAPPINGS, {}).get(key)
+        source = None
+        entity = None
+        static_value = None
+        if isinstance(the_map, dict):
+            source = the_map.get(const.MAPPING_CONF_SOURCE)
+            entity = the_map.get(const.MAPPING_CONF_SENSOR)
+            static_value = the_map.get(const.MAPPING_CONF_STATIC_VALUE)
+        audit["fields"][key] = {
+            "value": value,
+            "aggregate": aggregate,
+            "count": len(values),
+            # min/max of the raw records make a single outlier visible without
+            # having to dump every record.
+            "min": min(values),
+            "max": max(values),
+            "source": source,
+            "entity": entity,
+            "static_value": static_value,
+            "carried_over": key in audit["carried_over"],
+        }
 
     def _group_data_by_sensor(self, data):
         """Group mapping data by sensor key."""
@@ -112,7 +178,7 @@ class CalculationMixin:
         data_by_sensor.pop(const.MAPPING_MIN_TEMP, None)
         return data_by_sensor
 
-    def _calc_hour_multiplier(self, data_by_sensor, mapping):
+    def _calc_hour_multiplier(self, data_by_sensor, mapping, audit=None):
         """Process retrieved_at timestamps and calculate hour multiplier."""
 
         # get interval from last calculation to now
@@ -121,7 +187,14 @@ class CalculationMixin:
         if last_calc := mapping.get(const.MAPPING_DATA_LAST_CALCULATION):
             last_calc_time = parse_datetime(last_calc.get(const.MAPPING_TIMESTAMP))
             if last_calc_time:
-                diff = datetime.now() - last_calc_time
+                now = datetime.now()
+                diff = now - last_calc_time
+                if audit is not None:
+                    audit["interval"] = {
+                        "start": last_calc_time,
+                        "end": now,
+                        "source": const.MAPPING_DATA_LAST_CALCULATION,
+                    }
                 _LOGGER.debug(
                     "[_calc_hour_multiplier]: mapping last calculated: %s",
                     last_calc_time,
@@ -149,6 +222,12 @@ class CalculationMixin:
             first_retrieved_at = min(formatted_retrieved_ats)
             last_retrieved_at = max(formatted_retrieved_ats)
             diff = last_retrieved_at - first_retrieved_at
+            if audit is not None:
+                audit["interval"] = {
+                    "start": first_retrieved_at,
+                    "end": last_retrieved_at,
+                    "source": const.RETRIEVED_AT,
+                }
             _LOGGER.debug(
                 "[_calc_hour_multiplier]: first_retrieved_at: %s, last_retrieved_at: %s",
                 first_retrieved_at,
@@ -158,6 +237,8 @@ class CalculationMixin:
         # Get interval in hours, then days
         diff_in_hours = abs(diff.total_seconds() / 3600)
         hour_multiplier = diff_in_hours / 24
+        if audit is not None:
+            audit["interval"]["hours"] = diff_in_hours
         _LOGGER.debug(
             "[_calc_hour_multiplier]: diff: %s diff_in_seconds: %s, diff_in_hours: %s, hour_multiplier: %s",
             diff,
@@ -168,7 +249,7 @@ class CalculationMixin:
         return hour_multiplier
 
     async def _aggregate_sensor_data(
-        self, data_by_sensor, mapping, resultdata, dry_run=False
+        self, data_by_sensor, mapping, resultdata, audit=None, dry_run=False
     ):
         """Aggregate sensor data by configured or default aggregate."""
         # Work on a copy: on a dry run the stored mapping must stay untouched.
@@ -299,6 +380,24 @@ class CalculationMixin:
                         riemann_sum += ((d[i] + d[i + 1]) / 2) * dt
                     resultdata[key] = riemann_sum
             last_calc_data[key] = d[-1]
+            if audit is not None:
+                self._record_field_audit(
+                    audit, mapping, key, d, aggregate, resultdata.get(key)
+                )
+
+        if audit is not None:
+            # Max/min temperature are not mapped fields: they are derived from
+            # the temperature records above, so record where they came from.
+            for derived_key, derived_aggregate in (
+                (const.MAPPING_MAX_TEMP, const.MAPPING_CONF_AGGREGATE_MAXIMUM),
+                (const.MAPPING_MIN_TEMP, const.MAPPING_CONF_AGGREGATE_MINIMUM),
+            ):
+                if derived_key in resultdata:
+                    audit["fields"][derived_key] = {
+                        "value": resultdata[derived_key],
+                        "aggregate": derived_aggregate,
+                        "derived_from": const.MAPPING_TEMPERATURE,
+                    }
 
         # update LAST_CALCULATION entry
         if dry_run:
@@ -320,7 +419,7 @@ class CalculationMixin:
             last_calc_data,
         )
 
-    def _fill_missing_from_last_entry(self, mapping, data_by_sensor):
+    def _fill_missing_from_last_entry(self, mapping, data_by_sensor, audit=None):
         """Fill missing keys in data_by_sensor from last entry data."""
         last_entry = mapping.get(const.MAPPING_DATA_LAST_ENTRY)
         _LOGGER.debug(
@@ -338,6 +437,8 @@ class CalculationMixin:
                     val,
                 )
                 data_by_sensor[key] = [val]
+                if audit is not None:
+                    audit["carried_over"].append(key)
 
     async def _async_clear_all_weatherdata(self, *args):
         _LOGGER.info("Clearing all weatherdata")
@@ -505,6 +606,14 @@ class CalculationMixin:
         calc_data[const.ZONE_LAST_CALCULATED] = datetime.now()
         calc_data[const.ZONE_LAST_UPDATED] = datetime.now()
 
+        # Calculation audit log (#12): written after the seasonal adjustments so
+        # the record shows the values the zone would be updated with. A dry run
+        # is logged as well -- it is exactly when one asks "why this number?" --
+        # but flagged, so it is never mistaken for a real calculation. The log
+        # is a diagnostic side-file, not integration state, so writing it does
+        # not break the dry-run promise.
+        await self._async_write_calc_record(calc_data, dry_run=dry_run)
+
         if dry_run:
             _LOGGER.info(
                 "[async_calculate_zone] dry run for zone %s: bucket would become %s, duration %s (nothing was saved)",
@@ -571,6 +680,9 @@ class CalculationMixin:
         """
         _LOGGER.debug("calculate_module for zone: %s", zone)
         # _LOGGER.debug("[calculate_module] for zone: %s, weatherdata: %s, forecastdata: %s", zone, weatherdata, forecastdata)
+        # Audit record of this call (#12); only filled in on a successful
+        # calculation, so an early return cannot leave a stale one behind.
+        self._pending_calc_record = None
         mod_id = zone.get(const.ZONE_MODULE)
         m = self.store.get_module(mod_id)
         if m is None:
@@ -592,6 +704,12 @@ class CalculationMixin:
         data = {}
         old_bucket = bucket
         explanation = ""
+        # Only computed when irrigation is needed, but recorded in the audit log
+        # (#12) either way, so a zero duration can be told apart from a missing
+        # precipitation rate.
+        precipitation_rate = None
+        throughput_metric = None
+        size_metric = None
 
         precip = 0
         if m[const.MODULE_NAME] == "PyETO":
@@ -768,6 +886,8 @@ class CalculationMixin:
                 tput = convert_between(const.UNIT_GPM, const.UNIT_LPM, tput)
                 sz = convert_between(const.UNIT_SQ_FT, const.UNIT_M2, sz)
             precipitation_rate = (tput * 60) / sz
+            throughput_metric = tput
+            size_metric = sz
             # new version of calculation below - this is the old version from V1. Switching to the new version removes the need for ET values to be passed in!
             # water_budget = 1
             # if mod.maximum_et != 0:
@@ -929,7 +1049,139 @@ class CalculationMixin:
             )
         data[const.ZONE_DURATION] = duration
         data[const.ZONE_EXPLANATION] = explanation
+
+        self._pending_calc_record = self._build_calc_record(
+            zone=zone,
+            module_name=m[const.MODULE_NAME],
+            modinst=modinst,
+            weatherdata=weatherdata,
+            forecastdata=forecastdata,
+            metric=ha_config_is_metric,
+            values={
+                "et_deficiency": et_deficiency,
+                "hour_multiplier": hour_multiplier,
+                "precipitation": precip,
+                "delta": delta,
+                "bucket_before": old_bucket,
+                "bucket_plus_delta_capped": bucket_plus_delta_capped,
+                "maximum_bucket": maximum_bucket,
+                "drainage_rate": drainage_rate,
+                "drainage": drainage,
+                "bucket_after": newbucket,
+                "precipitation_rate": precipitation_rate,
+                "throughput": throughput_metric,
+                "size": size_metric,
+                "duration": duration,
+            },
+        )
         return data
+
+    def _build_calc_record(
+        self, zone, module_name, modinst, weatherdata, forecastdata, metric, values
+    ) -> dict | None:
+        """Assemble one audit record for a zone calculation (#12).
+
+        Returns None when the audit log is switched off. Inputs, module
+        intermediates and outputs are in the metric units the calculation itself
+        works in (mm, m/s, hPa, litres, seconds) whatever the Home Assistant
+        unit system, so records stay comparable across a unit-system change; the
+        ``outputs.final`` block added on write is the exception, mirroring what
+        is stored on the zone. ``unit_system`` records which one was in effect.
+        """
+        if not self._calc_log_enabled():
+            return None
+
+        mapping_id = zone.get(const.ZONE_MAPPING)
+        # The aggregation audit is kept, not consumed: several zones commonly
+        # share one sensor group and each of them needs it. Without fresh
+        # aggregated data there is nothing it could describe, so skip it.
+        aggregation = (
+            self._mapping_audit_store().get(mapping_id) if weatherdata else None
+        )
+        duration = values.get("duration") or 0
+        throughput = values.get("throughput")
+        # Volume in m3: throughput (l/min) * duration (s) / 60 / 1000.
+        volume_m3 = None
+        if throughput is not None:
+            volume_m3 = throughput * duration / 60 / 1000
+
+        record = {
+            **calc_log_timestamps(),
+            "version": const.VERSION,
+            "unit_system": const.CONF_METRIC if metric else const.CONF_IMPERIAL,
+            "zone": {
+                "id": zone.get(const.ZONE_ID),
+                "name": zone.get(const.ZONE_NAME),
+                "state": zone.get(const.ZONE_STATE),
+                "module": module_name,
+                "multiplier": zone.get(const.ZONE_MULTIPLIER),
+                "lead_time": zone.get(const.ZONE_LEAD_TIME),
+                "maximum_duration": zone.get(const.ZONE_MAXIMUM_DURATION),
+            },
+            "inputs": {
+                "sensor_group": {
+                    "id": mapping_id,
+                    "name": (aggregation or {}).get("name"),
+                    "records": (aggregation or {}).get("records"),
+                    "aggregated_at": (aggregation or {}).get("aggregated_at"),
+                },
+                "interval": (aggregation or {}).get("interval", {}),
+                "fields": (aggregation or {}).get("fields", {}),
+                "carried_over": (aggregation or {}).get("carried_over", []),
+                # What the module was actually handed, after aggregation.
+                "aggregate": {
+                    key: value
+                    for key, value in (weatherdata or {}).items()
+                    if key != const.MAPPING_DATA_MULTIPLIER
+                },
+                "forecast_records": len(forecastdata) if forecastdata else 0,
+            },
+            "module": getattr(modinst, "last_trace", None),
+            "outputs": {
+                "et_deficiency": values.get("et_deficiency"),
+                "hour_multiplier": values.get("hour_multiplier"),
+                "precipitation": values.get("precipitation"),
+                "delta": values.get("delta"),
+                "bucket_before": values.get("bucket_before"),
+                "bucket_plus_delta_capped": values.get("bucket_plus_delta_capped"),
+                "maximum_bucket": values.get("maximum_bucket"),
+                "drainage_rate": values.get("drainage_rate"),
+                "drainage": values.get("drainage"),
+                "bucket_after": values.get("bucket_after"),
+                "precipitation_rate": values.get("precipitation_rate"),
+                "throughput": throughput,
+                "size": values.get("size"),
+                "duration": duration,
+                "volume_m3": volume_m3,
+            },
+        }
+        return record
+
+    async def _async_write_calc_record(self, calc_data, dry_run=False) -> None:
+        """Write the pending audit record, completed with the stored values."""
+        record = getattr(self, "_pending_calc_record", None)
+        self._pending_calc_record = None
+        if record is None:
+            return
+        record["dry_run"] = dry_run
+        if calc_data:
+            # After seasonal adjustments: what the zone is updated with (would
+            # be, on a dry run), in the user's unit system. Only the keys the
+            # calculation produced -- a multiplier here means a seasonal
+            # adjustment changed it, which is exactly what one looks for on a
+            # surprising day.
+            record["outputs"]["final"] = {
+                key: calc_data[key]
+                for key in (
+                    const.ZONE_DURATION,
+                    const.ZONE_MULTIPLIER,
+                    const.ZONE_BUCKET,
+                    const.ZONE_DELTA,
+                    const.ZONE_ET_DEFICIENCY,
+                )
+                if key in calc_data
+            }
+        await self.calc_logger.async_log(record)
 
     def duration_from_bucket(self, zone: dict, bucket_native: float) -> float:
         """Duration (seconds) implied by a zone's current bucket value.

@@ -40,6 +40,9 @@ class Static(SmartIrrigationCalculationModule):
             name="Static", description=description, config=config, schema=SCHEMA
         )
         self._delta = DEFAULT_DELTA
+        # Intermediates of the last calculate() call, for the calculation audit
+        # log (#12).
+        self.last_trace: dict | None = None
         if config:
             if config.get(CONF_DELTA) == "":
                 self._delta = DEFAULT_DELTA
@@ -48,4 +51,5 @@ class Static(SmartIrrigationCalculationModule):
 
     def calculate(self) -> float:
         """Return the static delta value for irrigation calculation."""
+        self.last_trace = {"module": self.name, "delta": self._delta}
         return self._delta

@@ -232,6 +232,19 @@ CONF_CONTINUOUS_UPDATES = "continuousupdates"
 CONF_SENSOR_DEBOUNCE = "sensor_debounce"
 CONF_DEFAULT_SENSOR_DEBOUNCE = 100  # milliseconds, 0 = disabled
 
+# Calculation audit log (#12): opt-in JSON Lines file with the complete input
+# -> intermediate -> output chain of every calculation, so two days that look
+# alike but water very differently can be diffed afterwards. Off by default;
+# the file is size-capped and rotated so it can be left on for a season.
+CONF_CALC_LOG_ENABLED = "calc_log_enabled"
+CONF_DEFAULT_CALC_LOG_ENABLED = False
+CALC_LOG_DIR = DOMAIN  # <config>/smart_irrigation/
+CALC_LOG_FILENAME = "calc_log.jsonl"
+CALC_LOG_MAX_BYTES = 2 * 1024 * 1024  # rotate at 2 MB, one backup kept
+# Number of most recent records attached to the diagnostics download. Enough to
+# cover the last few days of calculations without bloating the file.
+CALC_LOG_DIAGNOSTICS_RECORDS = 50
+
 # PyETO specific config consts
 CONF_PYETO_COASTAL = "coastal"
 CONF_PYETO_SOLRAD_BEHAVIOR = "solrad_behavior"

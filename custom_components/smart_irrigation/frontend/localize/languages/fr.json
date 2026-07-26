@@ -517,5 +517,11 @@
       "sequential": "Séquentiel (une zone à la fois)",
       "parallel": "Parallèle (toutes les zones en même temps)"
     }
+  },
+  "calculation_log": {
+    "title": "Journal de calcul",
+    "description": "Écrit dans un fichier l'intégralité des données d'entrée de chaque calcul, afin de pouvoir comparer après coup deux journées qui se ressemblent mais qui arrosent très différemment. Chaque calcul ajoute une ligne : les relevés du groupe de capteurs et la façon dont ils ont été agrégés, les valeurs intermédiaires du module (rayonnement solaire, rayonnement net, ET0), ainsi que le réservoir, la durée et le volume obtenus. Désactivé par défaut ; la taille du fichier est limitée et il est archivé par rotation, il peut donc rester activé toute une saison.",
+    "enabled_label": "Journaliser les données de calcul dans un fichier",
+    "file_hint": "Écrit dans config/smart_irrigation/calc_log.jsonl, un enregistrement JSON par ligne. Les enregistrements les plus récents sont aussi inclus dans le téléchargement des diagnostics (coordonnées arrondies, identifiants d'entités supprimés), pour les joindre à un ticket en une seule étape."
   }
 }

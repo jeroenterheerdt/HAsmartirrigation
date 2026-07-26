@@ -44,6 +44,7 @@ export class SmartIrrigationConfig {
   observed_watering_enabled: boolean;
   direct_valve_control_enabled: boolean;
   zone_sequencing: string;
+  calc_log_enabled: boolean;
 
   constructor() {
     this.calctime = "23:00";
@@ -72,6 +73,8 @@ export class SmartIrrigationConfig {
     this.observed_watering_enabled = false;
     this.direct_valve_control_enabled = false;
     this.zone_sequencing = "sequential";
+    // the calculation audit log is opt-in
+    this.calc_log_enabled = false;
   }
 }
 

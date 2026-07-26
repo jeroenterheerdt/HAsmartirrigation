@@ -114,6 +114,11 @@ class PyETO(SmartIrrigationCalculationModule):
         self._hass = hass
         self._latitude = hass.config.as_dict().get(CONF_LATITUDE)
         self._elevation = hass.config.as_dict().get(CONF_ELEVATION)
+        # Intermediates of the last calculate() / calculate_et_for_day() call,
+        # for the calculation audit log (#12). Populated on every call;
+        # consumers read them right after.
+        self.last_trace: dict | None = None
+        self.last_day_trace: dict | None = None
         self._coastal = DEFAULT_COASTAL
         self.forecast_days = DEFAULT_FORECAST_DAYS
         self._solrad_behavior = DEFAULT_SOLRAD_BEHAVIOR
@@ -144,8 +149,10 @@ class PyETO(SmartIrrigationCalculationModule):
         """
         delta = 0.0
         deltas = []
+        days = []
         if weather_data:
             deltas.append(self.calculate_et_for_day(weather_data))
+            days.append(self.last_day_trace)
             # loop over the forecast days
             for x in range(self.forecast_days):
                 _LOGGER.debug(
@@ -154,11 +161,23 @@ class PyETO(SmartIrrigationCalculationModule):
                 )
                 if len(forecast_data) - 1 >= x:
                     deltas.append(self.calculate_et_for_day(forecast_data[x]))
+                    days.append(self.last_day_trace)
         # return average of the collected deltas
         _LOGGER.debug("[pyETO: calculate_et_for_day] collected deltas: %s", deltas)
         if deltas:
             delta = mean(deltas)
             _LOGGER.debug("[pyETO: calculate]: mean of deltas returned: %s", delta)
+        self.last_trace = {
+            "module": self.name,
+            "latitude": self._latitude,
+            "elevation": self._elevation,
+            "coastal": self._coastal,
+            "forecast_days": self.forecast_days,
+            "forecast_days_used": max(0, len(days) - 1),
+            "days": days,
+            "deltas": deltas,
+            "mean_delta": delta,
+        }
         return delta
 
     def calculate_et_for_day(self, weather_data):
@@ -172,6 +191,7 @@ class PyETO(SmartIrrigationCalculationModule):
 
         """
         # _LOGGER.debug("[pyETO: calculate_et_for_day] weather_data: %s", weather_data)
+        self.last_day_trace = None
         if weather_data:
             tdew = weather_data.get(MAPPING_DEWPOINT)
             temp_c_min = weather_data.get(MAPPING_MIN_TEMP)
@@ -203,6 +223,7 @@ class PyETO(SmartIrrigationCalculationModule):
                 # provides it. Provided radiation always takes precedence — this
                 # is what makes a full Penman-Monteith possible instead of a
                 # temperature-only approximation.
+                sol_rad_estimated = sol_rad is None
                 if sol_rad is None:
                     sol_rad = sol_rad_from_t(
                         et_radvar, cs_radvar, temp_c_min, temp_c_max, self._coastal
@@ -267,12 +288,49 @@ class PyETO(SmartIrrigationCalculationModule):
                     eto = 0
                 delta = -eto
 
+                self.last_day_trace = {
+                    "day_of_year": day_of_year,
+                    "inputs": {
+                        MAPPING_MIN_TEMP: temp_c_min,
+                        MAPPING_MAX_TEMP: temp_c_max,
+                        MAPPING_DEWPOINT: tdew,
+                        MAPPING_WINDSPEED: wind_m_s,
+                        MAPPING_PRESSURE: atmos_pres,
+                        MAPPING_SOLRAD: weather_data.get(MAPPING_SOLRAD),
+                        MAPPING_HUMIDITY: weather_data.get(MAPPING_HUMIDITY),
+                    },
+                    "et_rad": et_radvar,
+                    "cs_rad": cs_radvar,
+                    "sol_rad": sol_rad,
+                    "sol_rad_estimated": sol_rad_estimated,
+                    "net_in_sol_rad": net_in_sol_radvar,
+                    "avp": avp,
+                    "net_out_lw_rad": net_out_lw_radvar,
+                    "net_rad": net_radvar,
+                    "mean_temp": temp_c,
+                    "eto": eto,
+                    "delta": delta,
+                }
                 _LOGGER.debug("[pyETO: calculate_et_for_day] delta returned: %s", delta)
                 return delta
             # some data is missing, let's check and log what is missing
             _LOGGER.warning(
                 "[pyETO: calculate_et_for_day] cannot calculate as some data is missing!"
             )
+            self.last_day_trace = {
+                "delta": 0,
+                "missing": [
+                    name
+                    for name, value in (
+                        (MAPPING_DEWPOINT, tdew),
+                        (MAPPING_MIN_TEMP, temp_c_min),
+                        (MAPPING_MAX_TEMP, temp_c_max),
+                        (MAPPING_WINDSPEED, wind_m_s),
+                        (MAPPING_PRESSURE, atmos_pres),
+                    )
+                    if value is None
+                ],
+            }
             if tdew is None:
                 _LOGGER.warning(
                     "[pyETO: calculate_et_for_day] missing %s", MAPPING_DEWPOINT
