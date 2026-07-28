@@ -1963,6 +1963,23 @@ class SmartIrrigationCoordinator(
         while self._subscriptions:
             self._subscriptions.pop()()
 
+        # cancel scheduled time trackers (midnight reset, auto calc/update/
+        # clear, sunrise and irrigation start triggers): reloading the entry
+        # creates a new coordinator, and these would keep firing on the old one.
+        for attr in (
+            "_track_midnight_time_unsub",
+            "_track_auto_calc_time_unsub",
+            "_track_auto_update_time_unsub",
+            "_track_auto_clear_time_unsub",
+            "_track_sunrise_event_unsub",
+        ):
+            if unsub := getattr(self, attr):
+                unsub()
+                setattr(self, attr, None)
+        for unsub in self._track_irrigation_triggers_unsub:
+            unsub()
+        self._track_irrigation_triggers_unsub.clear()
+
         # stop watching linked valves (closed-loop bucket)
         self.async_teardown_observed_watering()
 
