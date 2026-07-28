@@ -567,7 +567,9 @@ class SmartIrrigationCoordinator(
             hass, self._reset_event_fired_today, 0, 0, 0
         )
 
-        super().__init__(hass, _LOGGER, name=const.DOMAIN)
+        # Pass the config entry explicitly: recent HA raises if the coordinator
+        # relies on the ContextVar to discover it.
+        super().__init__(hass, _LOGGER, name=const.DOMAIN, config_entry=entry)
 
     def _get_config_value(self, key: str, default_value):
         """Get configuration value from Home Assistant config, entry data, or options with fallback to default.
