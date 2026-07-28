@@ -257,7 +257,9 @@ class CalculationMixin:
                     resultdata[key] = float(d[0])
                 else:
                     # Trapezoidal rule: sum((d[i] + d[i+1]) / 2) * dt
-                    # dt is the interval between samples, assume 1 if not available
+                    # Values were converted to per-day rates upstream
+                    # (e.g. W/m2 -> MJ/day/m2 in convert_mapping_to_metric),
+                    # so dt must be expressed in days, not seconds (#784).
                     dt = 1.0
                     # If we have timestamps, use them to get dt
                     if const.RETRIEVED_AT in data_by_sensor:
@@ -269,10 +271,11 @@ class CalculationMixin:
                                 for t in timestamps:
                                     if parsed := parse_datetime(t):
                                         times.append(parsed)
-                                # Calculate average dt in seconds
+                                # Calculate average dt in days
                                 if len(times) > 1:
                                     dts = [
                                         (times[i + 1] - times[i]).total_seconds()
+                                        / 86400.0
                                         for i in range(len(times) - 1)
                                     ]
                                     dt = statistics.mean(dts)
