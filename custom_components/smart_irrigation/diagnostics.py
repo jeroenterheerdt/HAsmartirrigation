@@ -31,9 +31,9 @@ async def async_get_config_entry_diagnostics(
         if store is not None:
             diagnostics["store"] = {
                 "config": await store.async_get_config(),
-                "mappings": store.get_mappings(),
-                "modules": store.get_modules(),
-                "zones": store.get_zones(),
+                "mappings": await store.async_get_mappings(),
+                "modules": await store.async_get_modules(),
+                "zones": await store.async_get_zones(),
             }
         else:
             _LOGGER.warning("Store is not available")

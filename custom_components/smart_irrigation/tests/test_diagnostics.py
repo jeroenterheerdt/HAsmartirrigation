@@ -11,6 +11,7 @@ from custom_components.smart_irrigation.const import (
 from custom_components.smart_irrigation.diagnostics import (
     async_get_config_entry_diagnostics,
 )
+from custom_components.smart_irrigation.store import SmartIrrigationStorage
 
 
 class TestSmartIrrigationDiagnostics:
@@ -30,12 +31,17 @@ class TestSmartIrrigationDiagnostics:
 
     @pytest.fixture
     def mock_store(self):
-        """Return a mock store."""
-        store = Mock()
+        """Return a mock store.
+
+        Spec'd against the real storage class so diagnostics can only call
+        methods that actually exist (#782: get_mappings/get_modules/get_zones
+        do not exist, only the async plural getters do).
+        """
+        store = Mock(spec=SmartIrrigationStorage)
         store.async_get_config = AsyncMock(return_value={"test_config": "value"})
-        store.get_mappings = Mock(return_value={"test_mapping": "value"})
-        store.get_modules = Mock(return_value={"test_module": "value"})
-        store.get_zones = Mock(return_value={"test_zone": "value"})
+        store.async_get_mappings = AsyncMock(return_value=[{"test_mapping": "value"}])
+        store.async_get_modules = AsyncMock(return_value=[{"test_module": "value"}])
+        store.async_get_zones = AsyncMock(return_value=[{"test_zone": "value"}])
         return store
 
     @pytest.fixture
@@ -59,9 +65,9 @@ class TestSmartIrrigationDiagnostics:
 
         assert "store" in result
         assert result["store"]["config"] == {"test_config": "value"}
-        assert result["store"]["mappings"] == {"test_mapping": "value"}
-        assert result["store"]["modules"] == {"test_module": "value"}
-        assert result["store"]["zones"] == {"test_zone": "value"}
+        assert result["store"]["mappings"] == [{"test_mapping": "value"}]
+        assert result["store"]["modules"] == [{"test_module": "value"}]
+        assert result["store"]["zones"] == [{"test_zone": "value"}]
         assert result["test_data"] == "value"
         assert "coordinator" not in result
         assert "zones" not in result
