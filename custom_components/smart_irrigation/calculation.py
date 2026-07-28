@@ -546,7 +546,6 @@ class CalculationMixin:
             delta = modinst.calculate(
                 weather_data=weatherdata, forecast_data=forecastdata
             )
-            # only PyETO uses precipitation
             precip = weatherdata.get(const.MAPPING_PRECIPITATION, 0)
             _LOGGER.debug("[calculate-module]: precip: %s", precip)
         elif m[const.MODULE_NAME] == "Static":
@@ -556,6 +555,11 @@ class CalculationMixin:
                 delta = 0 - modinst.calculate(
                     et_data=weatherdata[const.MAPPING_EVAPOTRANSPIRATION]
                 )
+                # Passthrough bypasses the ET calculation, not the water
+                # balance: measured/forecast precipitation must still refill
+                # the bucket, otherwise it can only ever drain (#790).
+                precip = weatherdata.get(const.MAPPING_PRECIPITATION, 0)
+                _LOGGER.debug("[calculate-module]: precip: %s", precip)
             else:
                 _LOGGER.error(
                     "No evapotranspiration value provided for Passthrough module for zone %s",
