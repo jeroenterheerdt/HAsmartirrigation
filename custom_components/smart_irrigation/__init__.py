@@ -67,6 +67,12 @@ from .websockets import async_register_websockets
 
 _LOGGER = logging.getLogger(__name__)
 
+
+def _normalize_api_key(value):
+    """Trim a configured API key while preserving keyless services."""
+    return value.strip() if isinstance(value, str) else None
+
+
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(const.DOMAIN)
 
 
@@ -171,7 +177,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 )
             if const.CONF_WEATHER_SERVICE_API_KEY in entry.data:
                 hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = (
-                    entry.data.get(const.CONF_WEATHER_SERVICE_API_KEY).strip()
+                    _normalize_api_key(
+                        entry.data.get(const.CONF_WEATHER_SERVICE_API_KEY)
+                    )
                 )
             hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_VERSION] = (
                 entry.data.get(const.CONF_WEATHER_SERVICE_API_VERSION)
@@ -196,12 +204,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             )
         if const.CONF_WEATHER_SERVICE_API_KEY in entry.options:
             hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = (
-                entry.options.get(const.CONF_WEATHER_SERVICE_API_KEY)
+                _normalize_api_key(
+                    entry.options.get(const.CONF_WEATHER_SERVICE_API_KEY)
+                )
             )
-            if hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] is not None:
-                hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = hass.data[
-                    const.DOMAIN
-                ][const.CONF_WEATHER_SERVICE_API_KEY].strip()
         if const.CONF_WEATHER_SERVICE_API_VERSION in entry.options:
             hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_VERSION] = (
                 entry.options.get(const.CONF_WEATHER_SERVICE_API_VERSION)
@@ -352,7 +358,9 @@ async def options_update_listener(hass: HomeAssistant, config_entry):
                 )
             if const.CONF_WEATHER_SERVICE_API_KEY in config_entry.options:
                 hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_KEY] = (
-                    config_entry.options.get(const.CONF_WEATHER_SERVICE_API_KEY).strip()
+                    _normalize_api_key(
+                        config_entry.options.get(const.CONF_WEATHER_SERVICE_API_KEY)
+                    )
                 )
             hass.data[const.DOMAIN][const.CONF_WEATHER_SERVICE_API_VERSION] = (
                 config_entry.options.get(const.CONF_WEATHER_SERVICE_API_VERSION)
