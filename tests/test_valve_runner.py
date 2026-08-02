@@ -168,6 +168,10 @@ async def test_run_one_valve_opens_waits_closes_credits():
     calls = [c.args for c in hass.services.async_call.await_args_list]
     assert ("switch", "turn_on", {"entity_id": "switch.valve"}) in calls
     assert ("switch", "turn_off", {"entity_id": "switch.valve"}) in calls
+    assert all(
+        call.kwargs.get("blocking") is True
+        for call in hass.services.async_call.await_args_list
+    )
     # turn_on before turn_off
     assert calls.index(
         ("switch", "turn_on", {"entity_id": "switch.valve"})
