@@ -36,6 +36,7 @@ import {
   CONF_MANUAL_ELEVATION,
   CONF_DAYS_BETWEEN_IRRIGATION,
   CONF_MASTER_SWITCH_ENTITY,
+  CONF_MASTER_VALVE_ENTITY,
   TRIGGER_TYPE_SUNRISE,
   TRIGGER_TYPE_SUNSET,
   TRIGGER_TYPE_SOLAR_AZIMUTH,
@@ -149,6 +150,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
         CONF_MANUAL_ELEVATION,
         CONF_DAYS_BETWEEN_IRRIGATION,
         CONF_MASTER_SWITCH_ENTITY,
+        CONF_MASTER_VALVE_ENTITY,
       ]);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -915,7 +917,28 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                     >
                       ${localize("observed_watering.sequencing.parallel", lang)}
                     </option>
-                  </select>
+                    </select>
+                </div>
+                <div class="setting-row">
+                  <div class="setting-label">
+                    ${localize("observed_watering.master_valve_label", lang)}
+                    <div class="setting-hint">
+                      ${localize(
+                        "observed_watering.master_valve_description",
+                        lang,
+                      )}
+                    </div>
+                  </div>
+                  <ha-entity-picker
+                    class="entity-field"
+                    .hass=${this.hass}
+                    .value=${this.config.master_valve_entity || ""}
+                    .includeDomains=${["switch", "input_boolean"]}
+                    @value-changed=${(e: CustomEvent) =>
+                      this.handleConfigChange({
+                        [CONF_MASTER_VALVE_ENTITY]: e.detail?.value || null,
+                      })}
+                  ></ha-entity-picker>
                 </div>
               `
             : ""}

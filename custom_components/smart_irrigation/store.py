@@ -44,6 +44,7 @@ from .const import (
     CONF_DEFAULT_DRAINAGE_RATE,
     CONF_DEFAULT_IRRIGATION_START_TRIGGERS,
     CONF_DEFAULT_MASTER_SWITCH_ENTITY,
+    CONF_DEFAULT_MASTER_VALVE_ENTITY,
     CONF_DEFAULT_MAXIMUM_BUCKET,
     CONF_DEFAULT_MAXIMUM_DURATION,
     CONF_DEFAULT_OBSERVED_WATERING_ENABLED,
@@ -63,6 +64,7 @@ from .const import (
     CONF_MANUAL_LATITUDE,
     CONF_MANUAL_LONGITUDE,
     CONF_MASTER_SWITCH_ENTITY,
+    CONF_MASTER_VALVE_ENTITY,
     CONF_METRIC,
     CONF_OBSERVED_WATERING_ENABLED,
     CONF_PRECIPITATION_THRESHOLD_MM,
@@ -263,6 +265,7 @@ class Config:
     direct_valve_control_enabled = attr.ib(
         type=bool, default=CONF_DEFAULT_DIRECT_VALVE_CONTROL_ENABLED
     )
+    master_valve_entity = attr.ib(type=str, default=CONF_DEFAULT_MASTER_VALVE_ENTITY)
     zone_sequencing = attr.ib(type=str, default=CONF_DEFAULT_ZONE_SEQUENCING)
     # In-flight direct-control runs, persisted so a reboot can resume them.
     active_valve_runs = attr.ib(type=list, default=[])
@@ -523,6 +526,9 @@ class SmartIrrigationStorage:
                 direct_valve_control_enabled=data["config"].get(
                     CONF_DIRECT_VALVE_CONTROL_ENABLED,
                     CONF_DEFAULT_DIRECT_VALVE_CONTROL_ENABLED,
+                ),
+                master_valve_entity=data["config"].get(
+                    CONF_MASTER_VALVE_ENTITY, CONF_DEFAULT_MASTER_VALVE_ENTITY
                 ),
                 zone_sequencing=data["config"].get(
                     CONF_ZONE_SEQUENCING, CONF_DEFAULT_ZONE_SEQUENCING

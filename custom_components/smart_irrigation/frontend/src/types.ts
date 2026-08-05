@@ -44,6 +44,7 @@ export class SmartIrrigationConfig {
   observed_watering_enabled: boolean;
   master_switch_entity?: string | null;
   direct_valve_control_enabled: boolean;
+  master_valve_entity?: string | null;
   zone_sequencing: string;
 
   constructor() {
@@ -73,6 +74,7 @@ export class SmartIrrigationConfig {
     this.observed_watering_enabled = false;
     this.master_switch_entity = null;
     this.direct_valve_control_enabled = false;
+    this.master_valve_entity = null;
     this.zone_sequencing = "sequential";
   }
 }

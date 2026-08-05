@@ -490,6 +490,8 @@
     "direct_control_label": "Permitir que Smart Irrigation controle la válvula",
     "direct_control_description": "Cuando está activado, Smart Irrigation abre la válvula vinculada de cada zona, espera la duración calculada y luego la cierra, sin necesidad de automatización. Un riego en curso se reanuda tras un reinicio. Seguridad: si Home Assistant se cae durante mucho tiempo en mitad de un riego, la válvula permanece abierta y sigue regando, así que dale a tu válvula un mecanismo de seguridad por hardware (un tiempo máximo de funcionamiento).",
     "sequencing_label": "Secuenciación de zonas",
+    "master_valve_label": "Interruptor de válvula maestra / bomba",
+    "master_valve_description": "Las válvulas de zona se abren primero; este interruptor se activa después y permanece activo hasta que termina el riego.",
     "sequencing": {
       "sequential": "Secuencial (una zona a la vez)",
       "parallel": "Paralelo (todas las zonas a la vez)"

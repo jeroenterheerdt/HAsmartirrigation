@@ -560,6 +560,8 @@ class SmartIrrigationCoordinator(
         self._si_driven_until = {}
         self._active_valve_runs = {}
         self._running_valves = {}
+        self._running_master_valve = None
+        self._master_valve_lock = asyncio.Lock()
         self._valve_run_tasks = set()
 
         # set up sunrise tracking
@@ -2037,8 +2039,8 @@ class SmartIrrigationCoordinator(
         # stop watching linked valves (closed-loop bucket)
         self.async_teardown_observed_watering()
 
-        # cancel any in-flight direct valve runs
-        self.async_teardown_valve_runs()
+        # close any in-flight direct valve runs and the shared master valve
+        await self.async_stop_direct_valves()
 
     async def async_delete_config(self):
         """Wipe Smart Irrigation storage."""

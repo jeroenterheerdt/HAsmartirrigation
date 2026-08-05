@@ -189,6 +189,15 @@ class ValveRunnerMixin:
         sequencing = getattr(
             cfg, const.CONF_ZONE_SEQUENCING, const.CONF_DEFAULT_ZONE_SEQUENCING
         )
+        master_entity = getattr(cfg, const.CONF_MASTER_VALVE_ENTITY, None)
+        master_entity = master_entity if isinstance(master_entity, str) else None
+        zone_entities = {z.get(const.ZONE_LINKED_ENTITY) for z in eligible}
+        if master_entity and master_entity in zone_entities:
+            _LOGGER.error(
+                "Master valve %s is also configured as a zone valve; aborting run",
+                master_entity,
+            )
+            return
         _LOGGER.info(
             "Direct valve control: running %d zone(s) (%s)",
             len(eligible),
@@ -212,10 +221,35 @@ class ValveRunnerMixin:
             },
         )
 
-        if sequencing == const.CONF_ZONE_SEQUENCING_PARALLEL:
-            results = await asyncio.gather(*(self._run_one_valve(z) for z in eligible))
-        else:
-            results = [await self._run_one_valve(zone) for zone in eligible]
+        master_started = False
+        try:
+            if sequencing == const.CONF_ZONE_SEQUENCING_PARALLEL:
+                results = await self._run_parallel_valves(eligible, master_entity)
+                master_started = bool(
+                    master_entity
+                    and getattr(self, "_running_master_valve", None) == master_entity
+                )
+            else:
+                results = []
+                for index, zone in enumerate(eligible):
+                    result = await self._run_one_valve(
+                        zone,
+                        master_entity if index == 0 else None,
+                    )
+                    if result:
+                        results.append(result)
+                    if index == 0:
+                        master_started = bool(
+                            master_entity and result and result.get("ran")
+                        )
+                        if master_entity and not master_started:
+                            break
+        finally:
+            if master_entity and (
+                master_started
+                or getattr(self, "_running_master_valve", None) == master_entity
+            ):
+                await self._turn_off_master_valve(master_entity)
 
         # Fire a single end-of-watering summary so one automation can report.
         results = [r for r in results if r]
@@ -245,24 +279,18 @@ class ValveRunnerMixin:
             },
         )
 
-    async def _run_one_valve(self, zone: dict):
-        """Open one zone's valve, hold it for its duration, close it, credit.
-
-        Returns a result dict ``{zone_id, zone, seconds, ran, problem}`` used to
-        build the end-of-watering summary, or None when there was nothing to do.
-        """
+    async def _prepare_valve(self, zone: dict):
+        """Open and verify a zone valve without running it yet."""
         zone_id = int(zone.get(const.ZONE_ID))
         zone_name = zone.get(const.ZONE_NAME)
         entity_id = zone.get(const.ZONE_LINKED_ENTITY)
         duration = float(zone.get(const.ZONE_DURATION) or 0)
         if not entity_id or duration <= 0:
-            return None
+            return None, None
         domain, on_svc, off_svc = self._valve_services(entity_id)
         if not hasattr(self, "_running_valves"):
             self._running_valves = {}
         self._running_valves[zone_id] = entity_id
-        # Suppress the observer from the moment we send the open command (it must
-        # cover the confirm poll and the whole run).
         self._note_si_valve(zone_id, duration + VALVE_CONFIRM_TIMEOUT)
         _LOGGER.info(
             "Direct valve control: opening %s for zone %s (%.0fs)",
@@ -270,56 +298,173 @@ class ValveRunnerMixin:
             zone_id,
             duration,
         )
-        await self.hass.services.async_call(domain, on_svc, {"entity_id": entity_id})
-
-        # Confirm the valve actually opened before counting/crediting: a valve
-        # that never opens would otherwise clear the deficit while running dry
-        # (and the missed water silently rolls over to the next day). Only an
-        # explicit "still off" aborts; an unverifiable (write-only) valve runs.
-        if await self._confirm_valve_running(entity_id) is False:
+        try:
             await self.hass.services.async_call(
-                domain, off_svc, {"entity_id": entity_id}
+                domain, on_svc, {"entity_id": entity_id}
             )
+            if await self._confirm_valve_running(entity_id) is False:
+                await self.hass.services.async_call(
+                    domain, off_svc, {"entity_id": entity_id}
+                )
+                self._running_valves.pop(zone_id, None)
+                self._report_valve_problem(zone, entity_id, "valve_did_not_open")
+                return None, {
+                    "zone_id": zone_id,
+                    "zone": zone_name,
+                    "seconds": 0,
+                    "ran": False,
+                    "problem": "valve_did_not_open",
+                }
+        except BaseException:
             self._running_valves.pop(zone_id, None)
-            self._report_valve_problem(zone, entity_id, "valve_did_not_open")
-            return {
-                "zone_id": zone_id,
-                "zone": zone_name,
-                "seconds": 0,
-                "ran": False,
-                "problem": "valve_did_not_open",
-            }
+            raise
+        return {
+            "zone": zone,
+            "zone_id": zone_id,
+            "zone_name": zone_name,
+            "entity_id": entity_id,
+            "duration": duration,
+            "domain": domain,
+            "off_svc": off_svc,
+        }, None
 
-        # Start counting only once the valve is confirmed open.
+    async def _finish_prepared_valve(self, prepared: dict):
+        """Run and close a valve that has already been opened."""
+        zone = prepared["zone"]
+        zone_id = prepared["zone_id"]
+        duration = prepared["duration"]
         started = dt_util.utcnow()
-        await self._add_active_run(zone_id, entity_id, started, duration)
+        await self._add_active_run(zone_id, prepared["entity_id"], started, duration)
         try:
             await asyncio.sleep(duration)
         finally:
             await self.hass.services.async_call(
-                domain, off_svc, {"entity_id": entity_id}
+                prepared["domain"],
+                prepared["off_svc"],
+                {"entity_id": prepared["entity_id"]},
             )
             self._running_valves.pop(zone_id, None)
-        # Clear the persisted run before crediting: a crash in this window then
-        # loses at most one credit rather than double-crediting on resume.
         await self._remove_active_run(zone_id)
-        # The valve was held for ``duration``; credit that (a cancelled run never
-        # reaches here, so its credit comes from the reboot-resume path instead).
         await self._credit_direct_run(zone_id, duration)
         zone_after = self.store.get_zone(zone_id) or {}
         return {
             "zone_id": zone_id,
-            "zone": zone_name,
+            "zone": prepared["zone_name"],
             "seconds": int(duration),
             "volume_l": round(self._gross_volume_litres(zone, duration), 1),
-            "bucket": round(float(zone_after.get(const.ZONE_BUCKET) or 0.0), 1),
+            "bucket": round(float(zone_after.get(const.ZONE_BUCKET) or 0), 1),
             "ran": True,
             "problem": None,
         }
 
+    async def _run_one_valve(self, zone: dict, master_entity=None):
+        """Open one zone's valve, hold it for its duration, close it, credit.
+
+        Returns a result dict ``{zone_id, zone, seconds, ran, problem}`` used to
+        build the end-of-watering summary, or None when there was nothing to do.
+        """
+        prepared, failure = await self._prepare_valve(zone)
+        if prepared is None:
+            return failure
+        if master_entity:
+            try:
+                await self._turn_on_master_valve(master_entity)
+            except BaseException:
+                await self._close_prepared_valve(prepared)
+                raise
+        return await self._finish_prepared_valve(prepared)
+
+    async def _run_parallel_valves(self, zones, master_entity):
+        """Open all zones, start the pump, then run all zones together."""
+        prepared_results = await asyncio.gather(
+            *(self._prepare_valve(zone) for zone in zones)
+        )
+        prepared = [item[0] for item in prepared_results if item[0]]
+        failures = [item[1] for item in prepared_results if item[1]]
+        if failures:
+            await asyncio.gather(
+                *(self._close_prepared_valve(item) for item in prepared)
+            )
+            return failures + [
+                {
+                    "zone_id": int(zone.get(const.ZONE_ID)),
+                    "zone": zone.get(const.ZONE_NAME),
+                    "seconds": 0,
+                    "ran": False,
+                    "problem": "zone_valve_did_not_open",
+                }
+                for zone in zones
+                if not any(
+                    failure["zone_id"] == int(zone.get(const.ZONE_ID))
+                    for failure in failures
+                )
+            ]
+        if master_entity:
+            try:
+                await self._turn_on_master_valve(master_entity)
+            except BaseException:
+                await asyncio.gather(
+                    *(self._close_prepared_valve(item) for item in prepared)
+                )
+                raise
+        try:
+            return await asyncio.gather(
+                *(self._finish_prepared_valve(item) for item in prepared)
+            )
+        except BaseException:
+            await asyncio.gather(
+                *(self._close_prepared_valve(item) for item in prepared)
+            )
+            raise
+
+    async def _close_prepared_valve(self, prepared: dict) -> None:
+        """Close a prepared zone valve without crediting a watering run."""
+        await self.hass.services.async_call(
+            prepared["domain"],
+            prepared["off_svc"],
+            {"entity_id": prepared["entity_id"]},
+        )
+        self._running_valves.pop(prepared["zone_id"], None)
+
+    async def _turn_on_master_valve(self, entity_id: str) -> None:
+        """Start the configured pump/master valve after a zone is open."""
+        if not getattr(self, "master_switch_is_on", lambda: True)():
+            raise RuntimeError("Master switch is off")
+        lock = getattr(self, "_master_valve_lock", None)
+        if lock is None:
+            lock = self._master_valve_lock = asyncio.Lock()
+        async with lock:
+            if getattr(self, "_running_master_valve", None) == entity_id:
+                return
+            self._running_master_valve = entity_id
+            domain, on_svc, _ = self._valve_services(entity_id)
+            await self.hass.services.async_call(
+                domain, on_svc, {"entity_id": entity_id}
+            )
+            if await self._confirm_valve_running(entity_id) is False:
+                await self._turn_off_master_valve(entity_id)
+                raise RuntimeError(f"Master valve {entity_id} did not open")
+
+    async def _turn_off_master_valve(self, entity_id: str | None) -> None:
+        """Stop the configured pump/master valve."""
+        entity_id = entity_id or getattr(self, "_running_master_valve", None)
+        if not entity_id:
+            return
+        domain, _, off_svc = self._valve_services(entity_id)
+        try:
+            await self.hass.services.async_call(
+                domain, off_svc, {"entity_id": entity_id}
+            )
+        finally:
+            if getattr(self, "_running_master_valve", None) == entity_id:
+                self._running_master_valve = None
+
     async def async_stop_direct_valves(self) -> None:
         """Immediately close and cancel all direct-control valve runs."""
         running_valves = getattr(self, "_running_valves", {})
+        running_master = getattr(self, "_running_master_valve", None)
+        if running_master:
+            await self._turn_off_master_valve(running_master)
         entities = set(running_valves.values())
         active_runs = getattr(self, "_active_valve_runs", {})
         entities.update(
@@ -332,6 +477,7 @@ class ValveRunnerMixin:
             for record in getattr(self.store.config, const.CONF_ACTIVE_VALVE_RUNS, [])
             if record.get(const.RUN_ENTITY_ID)
         )
+        entities.discard(running_master)
         for entity_id in entities:
             domain, _, off_svc = self._valve_services(entity_id)
             try:
@@ -437,10 +583,24 @@ class ValveRunnerMixin:
                 "started": run.get(const.RUN_STARTED),
                 "duration": float(run.get(const.RUN_DURATION) or 0),
             }
-        for run in runs:
-            self._spawn_valve_run(self._resume_one(run))
+        master_entity = getattr(self.store.config, const.CONF_MASTER_VALVE_ENTITY, None)
+        if isinstance(master_entity, str) and master_entity:
+            self._spawn_valve_run(self._resume_all(runs, master_entity))
+        else:
+            for run in runs:
+                self._spawn_valve_run(self._resume_one(run))
 
-    async def _resume_one(self, run: dict) -> None:
+    async def _resume_all(self, runs: list[dict], master_entity: str) -> None:
+        """Resume persisted runs while sharing one master valve lifecycle."""
+        try:
+            await asyncio.gather(
+                *(self._resume_one(run, master_entity) for run in runs)
+            )
+        finally:
+            if getattr(self, "_running_master_valve", None) == master_entity:
+                await self._turn_off_master_valve(master_entity)
+
+    async def _resume_one(self, run: dict, master_entity: str | None = None) -> None:
         zone_id = int(run.get(const.RUN_ZONE_ID))
         entity_id = run.get(const.RUN_ENTITY_ID)
         duration = float(run.get(const.RUN_DURATION) or 0)
@@ -489,6 +649,18 @@ class ValveRunnerMixin:
                 "valve_did_not_open",
             )
             return
+        if master_entity:
+            try:
+                await self._turn_on_master_valve(master_entity)
+            except Exception as err:  # noqa: BLE001
+                await self.hass.services.async_call(
+                    domain, off_svc, {"entity_id": entity_id}
+                )
+                await self._remove_active_run(zone_id)
+                _LOGGER.error(
+                    "Could not resume master valve %s: %s", master_entity, err
+                )
+                return
         try:
             await asyncio.sleep(remaining)
         finally:

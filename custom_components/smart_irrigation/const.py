@@ -67,6 +67,8 @@ CONF_DEFAULT_MASTER_SWITCH_ENTITY = None
 # in-flight runs are persisted so a reboot mid-run can resume and credit.
 CONF_DIRECT_VALVE_CONTROL_ENABLED = "direct_valve_control_enabled"
 CONF_DEFAULT_DIRECT_VALVE_CONTROL_ENABLED = False
+CONF_MASTER_VALVE_ENTITY = "master_valve_entity"
+CONF_DEFAULT_MASTER_VALVE_ENTITY = None
 CONF_ZONE_SEQUENCING = "zone_sequencing"
 CONF_ZONE_SEQUENCING_SEQUENTIAL = "sequential"
 CONF_ZONE_SEQUENCING_PARALLEL = "parallel"

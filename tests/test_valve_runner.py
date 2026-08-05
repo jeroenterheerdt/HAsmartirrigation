@@ -94,11 +94,19 @@ def _zone(**overrides):
     return zone
 
 
-def _make_store(zone, *, enabled=True, sequencing="sequential", zones=None):
+def _make_store(
+    zone,
+    *,
+    enabled=True,
+    sequencing="sequential",
+    zones=None,
+    master_entity=None,
+):
     store = Mock()
     store.config = SimpleNamespace(
         direct_valve_control_enabled=enabled,
         zone_sequencing=sequencing,
+        master_valve_entity=master_entity,
         active_valve_runs=[],
     )
     store.get_zone = Mock(return_value=zone)
@@ -262,6 +270,49 @@ async def test_master_switch_stop_closes_active_valves():
     coord.store.async_update_config.assert_awaited_once_with(
         {const.CONF_ACTIVE_VALVE_RUNS: []}
     )
+
+
+async def test_master_valve_starts_after_zone_and_stops_last():
+    """The master valve wraps the zone run in the safe activation order."""
+    zone = _zone()
+    hass = _make_hass()
+    coord = _Coordinator(hass, _make_store(zone, master_entity="switch.pump"))
+
+    await coord.async_run_direct_valves()
+
+    calls = [call.args for call in hass.services.async_call.await_args_list]
+    zone_on = ("switch", "turn_on", {"entity_id": "switch.valve"})
+    pump_on = ("switch", "turn_on", {"entity_id": "switch.pump"})
+    zone_off = ("switch", "turn_off", {"entity_id": "switch.valve"})
+    pump_off = ("switch", "turn_off", {"entity_id": "switch.pump"})
+    assert calls.index(zone_on) < calls.index(pump_on)
+    assert calls.index(pump_on) < calls.index(zone_off)
+    assert calls.index(zone_off) < calls.index(pump_off)
+
+
+async def test_parallel_master_valve_starts_after_all_zones():
+    """Parallel runs open every zone before starting the shared pump."""
+    zone_a = _zone(id=0, linked_entity="switch.valve_a")
+    zone_b = _zone(id=1, linked_entity="switch.valve_b")
+    hass = _make_hass()
+    coord = _Coordinator(
+        hass,
+        _make_store(
+            zone_a,
+            sequencing="parallel",
+            zones=[zone_a, zone_b],
+            master_entity="switch.pump",
+        ),
+    )
+
+    await coord.async_run_direct_valves()
+
+    calls = [call.args for call in hass.services.async_call.await_args_list]
+    pump_on = calls.index(("switch", "turn_on", {"entity_id": "switch.pump"}))
+    valve_a_on = calls.index(("switch", "turn_on", {"entity_id": "switch.valve_a"}))
+    valve_b_on = calls.index(("switch", "turn_on", {"entity_id": "switch.valve_b"}))
+    assert valve_a_on < pump_on
+    assert valve_b_on < pump_on
 
 
 async def test_run_parallel_opens_all():
