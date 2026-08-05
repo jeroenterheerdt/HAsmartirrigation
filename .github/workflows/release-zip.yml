@@ -30,6 +30,19 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name || inputs.tag }}
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: custom_components/smart_irrigation/frontend/package-lock.json
+
+      - name: Build frontend bundle
+        working-directory: custom_components/smart_irrigation/frontend
+        run: |
+          npm ci
+          npm run build
+
       - name: Build smart_irrigation.zip
         run: |
           cd custom_components/smart_irrigation
