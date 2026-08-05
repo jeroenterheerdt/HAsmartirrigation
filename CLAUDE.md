@@ -21,9 +21,11 @@ Backend Python in `custom_components/smart_irrigation/`, frontend panel (TS/Lit)
 
 ## Branch workflow
 
-- **Work on `dev`.** Do NOT commit directly to `master`.
-- `master` is the clean/release branch (CI must stay green). Merge `dev` → `master`
-  (`git merge --ff-only dev`) only when a batch is validated, then bump the version
+- **Work through PRs into `main`.** Do NOT commit directly to `main`.
+- Create a separate feature branch for each feature, based on `main`.
+- Use Conventional Commits for commit messages (`feat:`, `fix:`, `docs:`, `chore:`, etc.).
+- Run the relevant tests before creating a PR. If a full test run is feasible, run the full suite.
+- `main` is the clean/release branch (CI must stay green). Bump the version
   (`manifest.json` + `const.py` + `frontend/src/const.ts`, format `vYYYY.M.PATCH`, non-padded
   month), rebuild the bundle, commit `release: vX`, and cut a tag + GitHub Release.
 - HACS default requires a release created **after** the validation actions pass green.
