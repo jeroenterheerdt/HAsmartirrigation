@@ -334,6 +334,9 @@ class CalculationMixin:
             )
 
     async def _async_calculate_all(self, delete_weather_data):
+        if not getattr(self, "master_switch_is_on", lambda: True)():
+            _LOGGER.info("Master switch is off; skipping calculation")
+            return
         _LOGGER.info("Calculating all automatic zones")
         # get all zones that are in automatic and for all of those, loop over the unique list of mappings
         # are any modules using OWM / sensors?
@@ -444,6 +447,11 @@ class CalculationMixin:
             delete_weather_data: Whether to delete weather data.
 
         """
+        if not getattr(self, "master_switch_is_on", lambda: True)():
+            _LOGGER.info(
+                "Master switch is off; skipping calculation for zone %s", zone_id
+            )
+            return
         _LOGGER.debug("async_calculate_zone: Calculating zone %s", zone_id)
         zone = self.store.get_zone(zone_id)
 

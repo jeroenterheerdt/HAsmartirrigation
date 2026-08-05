@@ -231,6 +231,39 @@ async def test_run_disabled_is_noop():
     hass.services.async_call.assert_not_awaited()
 
 
+async def test_master_switch_off_prevents_direct_watering():
+    """A disabled master switch must prevent opening any valve."""
+    zone = _zone()
+    hass = _make_hass()
+    coord = _Coordinator(hass, _make_store(zone))
+    coord.master_switch_is_on = Mock(return_value=False)
+
+    await coord.async_run_direct_valves()
+
+    hass.services.async_call.assert_not_awaited()
+
+
+async def test_master_switch_stop_closes_active_valves():
+    """The safety stop closes active valves and clears persisted runs."""
+    zone = _zone()
+    hass = _make_hass()
+    coord = _Coordinator(hass, _make_store(zone))
+    coord._running_valves = {0: "switch.valve"}
+    coord._active_valve_runs = {
+        0: {"entity": "switch.valve", "duration": 300, "started": "now"}
+    }
+
+    await coord.async_stop_direct_valves()
+
+    assert ("switch", "turn_off", {"entity_id": "switch.valve"}) in [
+        call.args for call in hass.services.async_call.await_args_list
+    ]
+    assert coord._active_valve_runs == {}
+    coord.store.async_update_config.assert_awaited_once_with(
+        {const.CONF_ACTIVE_VALVE_RUNS: []}
+    )
+
+
 async def test_run_parallel_opens_all():
     z0 = _zone(id=0, linked_entity="switch.a")
     z1 = _zone(id=1, linked_entity="switch.b")

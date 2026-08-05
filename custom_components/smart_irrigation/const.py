@@ -56,6 +56,11 @@ CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM = 2.0  # 2mm threshold
 CONF_OBSERVED_WATERING_ENABLED = "observed_watering_enabled"
 CONF_DEFAULT_OBSERVED_WATERING_ENABLED = False
 
+# Optional global safety switch. When configured and not on, Smart Irrigation
+# does not calculate or start irrigation.
+CONF_MASTER_SWITCH_ENTITY = "master_switch_entity"
+CONF_DEFAULT_MASTER_SWITCH_ENTITY = None
+
 # Direct valve control: Smart Irrigation opens each zone's linked valve, waits
 # the calculated duration, then closes it (optional executor). The start event
 # still fires for external executors. Crediting is handled by the runner, and

@@ -135,6 +135,11 @@
     },
     "general": {
       "cards": {
+        "master-switch": {
+          "title": "Master switch",
+          "description": "When this entity is off, unavailable or unknown, Smart Irrigation will not calculate or start watering. Any direct watering run is stopped immediately.",
+          "entity-label": "Master switch entity"
+        },
         "automatic-duration-calculation": {
           "header": "Automatic duration calculation",
           "description": "Calculation takes collected weather data up to that point and updates the bucket for each automatic zone. Then, the duration is adjusted based on the new bucket value and the collected weather data is removed.",

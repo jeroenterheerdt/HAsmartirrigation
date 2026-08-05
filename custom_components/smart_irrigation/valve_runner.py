@@ -175,6 +175,9 @@ class ValveRunnerMixin:
 
     async def async_run_direct_valves(self, zone_ids=None) -> None:
         """Open/run/close every eligible zone, sequentially or in parallel."""
+        if not getattr(self, "master_switch_is_on", lambda: True)():
+            _LOGGER.info("Master switch is off; refusing to start direct valve control")
+            return
         cfg = self.store.config
         if getattr(cfg, const.CONF_DIRECT_VALVE_CONTROL_ENABLED, False) is not True:
             return
@@ -255,6 +258,9 @@ class ValveRunnerMixin:
         if not entity_id or duration <= 0:
             return None
         domain, on_svc, off_svc = self._valve_services(entity_id)
+        if not hasattr(self, "_running_valves"):
+            self._running_valves = {}
+        self._running_valves[zone_id] = entity_id
         # Suppress the observer from the moment we send the open command (it must
         # cover the confirm poll and the whole run).
         self._note_si_valve(zone_id, duration + VALVE_CONFIRM_TIMEOUT)
@@ -274,6 +280,7 @@ class ValveRunnerMixin:
             await self.hass.services.async_call(
                 domain, off_svc, {"entity_id": entity_id}
             )
+            self._running_valves.pop(zone_id, None)
             self._report_valve_problem(zone, entity_id, "valve_did_not_open")
             return {
                 "zone_id": zone_id,
@@ -292,6 +299,7 @@ class ValveRunnerMixin:
             await self.hass.services.async_call(
                 domain, off_svc, {"entity_id": entity_id}
             )
+            self._running_valves.pop(zone_id, None)
         # Clear the persisted run before crediting: a crash in this window then
         # loses at most one credit rather than double-crediting on resume.
         await self._remove_active_run(zone_id)
@@ -308,6 +316,39 @@ class ValveRunnerMixin:
             "ran": True,
             "problem": None,
         }
+
+    async def async_stop_direct_valves(self) -> None:
+        """Immediately close and cancel all direct-control valve runs."""
+        running_valves = getattr(self, "_running_valves", {})
+        entities = set(running_valves.values())
+        active_runs = getattr(self, "_active_valve_runs", {})
+        entities.update(
+            record.get("entity")
+            for record in active_runs.values()
+            if record.get("entity")
+        )
+        entities.update(
+            record.get(const.RUN_ENTITY_ID)
+            for record in getattr(self.store.config, const.CONF_ACTIVE_VALVE_RUNS, [])
+            if record.get(const.RUN_ENTITY_ID)
+        )
+        for entity_id in entities:
+            domain, _, off_svc = self._valve_services(entity_id)
+            try:
+                await self.hass.services.async_call(
+                    domain, off_svc, {"entity_id": entity_id}
+                )
+            except Exception as err:  # noqa: BLE001
+                _LOGGER.error(
+                    "Failed to close valve %s during safety stop: %s", entity_id, err
+                )
+        valve_run_tasks = getattr(self, "_valve_run_tasks", set())
+        for task in list(valve_run_tasks):
+            task.cancel()
+        valve_run_tasks.clear()
+        running_valves.clear()
+        active_runs.clear()
+        await self.store.async_update_config({const.CONF_ACTIVE_VALVE_RUNS: []})
 
     def _gross_volume_litres(self, zone: dict, seconds: float) -> float:
         """Litres actually delivered (throughput x time), for the report."""
@@ -367,6 +408,20 @@ class ValveRunnerMixin:
         """Resume or close direct runs that were in flight before a restart."""
         runs = list(getattr(self.store.config, const.CONF_ACTIVE_VALVE_RUNS, []) or [])
         if not runs:
+            return
+        if not getattr(self, "master_switch_is_on", lambda: True)():
+            _LOGGER.warning(
+                "Master switch is off; closing %d persisted valve run(s) without resuming",
+                len(runs),
+            )
+            for run in runs:
+                entity_id = run.get(const.RUN_ENTITY_ID)
+                if entity_id:
+                    domain, _, off_svc = self._valve_services(entity_id)
+                    await self.hass.services.async_call(
+                        domain, off_svc, {"entity_id": entity_id}
+                    )
+            await self.store.async_update_config({const.CONF_ACTIVE_VALVE_RUNS: []})
             return
         _LOGGER.info(
             "Direct valve control: resuming %d in-flight run(s) after restart",

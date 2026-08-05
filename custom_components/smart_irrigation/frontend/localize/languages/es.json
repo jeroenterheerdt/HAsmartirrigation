@@ -134,6 +134,11 @@
     },
     "general": {
       "cards": {
+        "master-switch": {
+          "title": "Interruptor maestro",
+          "description": "Cuando esta entidad está apagada, no disponible o en estado desconocido, Smart Irrigation no calculará ni iniciará riegos. Cualquier riego directo se detendrá inmediatamente.",
+          "entity-label": "Entidad del interruptor maestro"
+        },
         "automatic-duration-calculation": {
           "header": "Cálculo automático de la duración",
           "description": "El cálculo toma los datos meteorológicos recopilados hasta ese momento y actualiza el bucket de cada zona automática. Después, la duración se ajusta según el nuevo valor del bucket y se eliminan los datos meteorológicos recopilados.",

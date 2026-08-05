@@ -42,6 +42,7 @@ export class SmartIrrigationConfig {
   manual_elevation?: number;
   days_between_irrigation: number;
   observed_watering_enabled: boolean;
+  master_switch_entity?: string | null;
   direct_valve_control_enabled: boolean;
   zone_sequencing: string;
 
@@ -70,6 +71,7 @@ export class SmartIrrigationConfig {
     this.manual_elevation = undefined;
     this.days_between_irrigation = 0;
     this.observed_watering_enabled = false;
+    this.master_switch_entity = null;
     this.direct_valve_control_enabled = false;
     this.zone_sequencing = "sequential";
   }

@@ -36,6 +36,10 @@ class WateringCalendarMixin:
             dict: Dictionary mapping zone IDs to their 12-month watering calendars.
 
         """
+        if not getattr(self, "master_switch_is_on", lambda: True)():
+            _LOGGER.info("Master switch is off; skipping watering calendar generation")
+            return {}
+
         _LOGGER.debug(
             "[async_generate_watering_calendar]: generating calendar for zone %s",
             zone_id,

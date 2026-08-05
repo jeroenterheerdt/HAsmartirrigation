@@ -501,11 +501,15 @@ class SmartIrrigationCoordinator(
         self._track_sunrise_event_unsub = None
         self._track_irrigation_triggers_unsub = []  # List to track multiple triggers
         self._track_midnight_time_unsub = None
+        self._master_switch_unsub = None
         self._debounced_update_cancel = {}  # mapping_id -> cancel callback
         # set up auto calc time and auto update time from data
         the_config = self.store.get_config()
         the_config[const.CONF_USE_WEATHER_SERVICE] = self.use_weather_service
         the_config[const.CONF_WEATHER_SERVICE] = self.weather_service
+        self._configure_master_switch_listener(
+            the_config.get(const.CONF_MASTER_SWITCH_ENTITY)
+        )
         if the_config[const.CONF_AUTO_UPDATE_ENABLED]:
             # Fire-and-forget: schedule auto update timer setup in background
             hass.loop.create_task(self.set_up_auto_update_time(the_config))
@@ -555,6 +559,7 @@ class SmartIrrigationCoordinator(
         # the background run tasks (cancelled on unload).
         self._si_driven_until = {}
         self._active_valve_runs = {}
+        self._running_valves = {}
         self._valve_run_tasks = set()
 
         # set up sunrise tracking
@@ -708,10 +713,43 @@ class SmartIrrigationCoordinator(
         # handle auto clear changes
         await self.set_up_auto_clear_time(data)
         await self.store.async_update_config(data)
+        if const.CONF_MASTER_SWITCH_ENTITY in data:
+            self._configure_master_switch_listener(
+                data.get(const.CONF_MASTER_SWITCH_ENTITY)
+            )
         # Re-evaluate the observed-watering subscription (the feature toggle may
         # have just changed).
         await self.async_setup_observed_watering()
         async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated")
+
+    def _configure_master_switch_listener(self, entity_id):
+        """Watch the configured master switch for safety shutdowns."""
+        if self._master_switch_unsub:
+            self._master_switch_unsub()
+            self._master_switch_unsub = None
+        entity_id = entity_id if isinstance(entity_id, str) and entity_id else None
+        if entity_id:
+            self._master_switch_unsub = async_track_state_change_event(
+                self.hass, [entity_id], self._async_master_switch_changed
+            )
+            state = self.hass.states.get(entity_id)
+            if state is not None and state.state != "on":
+                self.hass.async_create_task(self.async_stop_direct_valves())
+
+    def master_switch_is_on(self) -> bool:
+        """Return whether the optional master switch permits operation."""
+        entity_id = getattr(self.store.config, const.CONF_MASTER_SWITCH_ENTITY, None)
+        if not isinstance(entity_id, str) or not entity_id:
+            return True
+        state = self.hass.states.get(entity_id)
+        return state is not None and state.state == "on"
+
+    async def _async_master_switch_changed(self, event):
+        """Stop direct watering as soon as the master switch is disabled."""
+        new_state = event.data.get("new_state")
+        if new_state is None or new_state.state != "on":
+            _LOGGER.warning("Master switch disabled; stopping Smart Irrigation")
+            await self.async_stop_direct_valves()
 
     async def async_apply_weather_service(self, use, service, api_key):
         """Apply a weather-service change at runtime (no entry reload).
@@ -1349,6 +1387,11 @@ class SmartIrrigationCoordinator(
         ]
 
     async def _async_update_zone(self, zone_id):
+        if not self.master_switch_is_on():
+            _LOGGER.info(
+                "Master switch is off; skipping weather update for zone %s", zone_id
+            )
+            return
         # update the weather data for the mapping for the zone
         _LOGGER.info("Updating weather data for zone %s", zone_id)
         zone = self.store.get_zone(zone_id)
@@ -1464,6 +1507,9 @@ class SmartIrrigationCoordinator(
                     )
 
     async def _async_update_all(self, *args):
+        if not self.master_switch_is_on():
+            _LOGGER.info("Master switch is off; skipping weather update")
+            return
         # update the weather data for all mappings for all zones that are automatic here and store it.
         # in _async_calculate_all we need to read that data back and if there is none, we log an error, otherwise apply aggregate and use data
         # this should skip any pure sensor zones if continuous updates is enabled, otherwise it should include them
@@ -1822,6 +1868,11 @@ class SmartIrrigationCoordinator(
             await self.async_remove_entity(zone_id)
 
         elif const.ATTR_CALCULATE in data:
+            if not self.master_switch_is_on():
+                _LOGGER.info(
+                    "Master switch is off; skipping calculation for zone %s", zone_id
+                )
+                return
             # calculate a specific zone
             _LOGGER.info("Calculating zone %s", zone_id)
             if data is not None:
@@ -1979,6 +2030,9 @@ class SmartIrrigationCoordinator(
         for unsub in self._track_irrigation_triggers_unsub:
             unsub()
         self._track_irrigation_triggers_unsub.clear()
+        if self._master_switch_unsub:
+            self._master_switch_unsub()
+            self._master_switch_unsub = None
 
         # stop watching linked valves (closed-loop bucket)
         self.async_teardown_observed_watering()

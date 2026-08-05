@@ -334,6 +334,10 @@ class TriggersMixin:
         """
         name = trigger_info.get(const.TRIGGER_CONF_NAME) or "Unnamed Trigger"
 
+        if not self.master_switch_is_on():
+            _LOGGER.info("Master switch is off; ignoring trigger '%s'", name)
+            return
+
         if name in self._fired_triggers_today:
             _LOGGER.debug("Trigger '%s' already fired today, skipping", name)
             return
@@ -351,6 +355,9 @@ class TriggersMixin:
                 ),
             }
             try:
+                if not self.master_switch_is_on():
+                    _LOGGER.info("Master switch is off; not firing trigger '%s'", name)
+                    return
                 # Decide once per day whether today is a watering day.
                 if self._watering_decision_today is None:
                     skip_reason = None

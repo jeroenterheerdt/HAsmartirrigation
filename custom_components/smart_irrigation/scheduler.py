@@ -273,6 +273,11 @@ class RecurringScheduleManager:
     ) -> None:
         """Perform the scheduled action."""
         try:
+            if not self.coordinator.master_switch_is_on():
+                _LOGGER.info(
+                    "Master switch is off; skipping schedule '%s'", schedule_name
+                )
+                return
             if action == "calculate":
                 if zones == "all":
                     await self.coordinator._async_calculate_all()

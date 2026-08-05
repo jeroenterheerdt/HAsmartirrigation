@@ -43,6 +43,7 @@ from .const import (
     CONF_DEFAULT_DIRECT_VALVE_CONTROL_ENABLED,
     CONF_DEFAULT_DRAINAGE_RATE,
     CONF_DEFAULT_IRRIGATION_START_TRIGGERS,
+    CONF_DEFAULT_MASTER_SWITCH_ENTITY,
     CONF_DEFAULT_MAXIMUM_BUCKET,
     CONF_DEFAULT_MAXIMUM_DURATION,
     CONF_DEFAULT_OBSERVED_WATERING_ENABLED,
@@ -61,6 +62,7 @@ from .const import (
     CONF_MANUAL_ELEVATION,
     CONF_MANUAL_LATITUDE,
     CONF_MANUAL_LONGITUDE,
+    CONF_MASTER_SWITCH_ENTITY,
     CONF_METRIC,
     CONF_OBSERVED_WATERING_ENABLED,
     CONF_PRECIPITATION_THRESHOLD_MM,
@@ -256,6 +258,7 @@ class Config:
     observed_watering_enabled = attr.ib(
         type=bool, default=CONF_DEFAULT_OBSERVED_WATERING_ENABLED
     )
+    master_switch_entity = attr.ib(type=str, default=CONF_DEFAULT_MASTER_SWITCH_ENTITY)
     # Direct valve control: SI opens/closes each zone's linked valve itself.
     direct_valve_control_enabled = attr.ib(
         type=bool, default=CONF_DEFAULT_DIRECT_VALVE_CONTROL_ENABLED
@@ -513,6 +516,9 @@ class SmartIrrigationStorage:
                 observed_watering_enabled=data["config"].get(
                     CONF_OBSERVED_WATERING_ENABLED,
                     CONF_DEFAULT_OBSERVED_WATERING_ENABLED,
+                ),
+                master_switch_entity=data["config"].get(
+                    CONF_MASTER_SWITCH_ENTITY, CONF_DEFAULT_MASTER_SWITCH_ENTITY
                 ),
                 direct_valve_control_enabled=data["config"].get(
                     CONF_DIRECT_VALVE_CONTROL_ENABLED,

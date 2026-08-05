@@ -33,6 +33,7 @@ export const CONF_DAYS_BETWEEN_IRRIGATION = "days_between_irrigation";
 
 // Observed watering (closed-loop bucket) configuration
 export const CONF_OBSERVED_WATERING_ENABLED = "observed_watering_enabled";
+export const CONF_MASTER_SWITCH_ENTITY = "master_switch_entity";
 
 // Direct valve control configuration
 export const CONF_DIRECT_VALVE_CONTROL_ENABLED = "direct_valve_control_enabled";

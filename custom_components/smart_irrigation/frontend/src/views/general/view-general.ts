@@ -35,6 +35,7 @@ import {
   CONF_MANUAL_LONGITUDE,
   CONF_MANUAL_ELEVATION,
   CONF_DAYS_BETWEEN_IRRIGATION,
+  CONF_MASTER_SWITCH_ENTITY,
   TRIGGER_TYPE_SUNRISE,
   TRIGGER_TYPE_SUNSET,
   TRIGGER_TYPE_SOLAR_AZIMUTH,
@@ -147,6 +148,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
         CONF_MANUAL_LONGITUDE,
         CONF_MANUAL_ELEVATION,
         CONF_DAYS_BETWEEN_IRRIGATION,
+        CONF_MASTER_SWITCH_ENTITY,
       ]);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -432,6 +434,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
       > `;
 
       // Irrigation Start Triggers Card
+      const masterSwitch = this.renderMasterSwitchCard();
       const r5 = this.renderTriggersCard();
 
       // Weather-based Skip Card
@@ -452,7 +455,7 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
           <div class="card-content">
             ${localize("panels.general.description", this.hass.language)}
           </div> </ha-card
-        >${r2}${r1}${r3}${r4}${r5}${r6}${r7}${r8}${r9}`;
+         >${masterSwitch}${r2}${r1}${r3}${r4}${r5}${r6}${r7}${r8}${r9}`;
 
       return r;
     }
@@ -763,6 +766,44 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
         this._fetchData().catch(() => {});
       },
     );
+  }
+
+  renderMasterSwitchCard() {
+    if (!this.config || !this.data || !this.hass) return html``;
+    const lang = this.hass.language;
+
+    return html`
+      <ha-card
+        header="${localize(
+          "panels.general.cards.master-switch.title",
+          lang,
+        )}"
+      >
+        <div class="card-content">
+          ${localize("panels.general.cards.master-switch.description", lang)}
+        </div>
+        <div class="card-content">
+          <div class="setting-row">
+            <div class="setting-label">
+              ${localize(
+                "panels.general.cards.master-switch.entity-label",
+                lang,
+              )}
+            </div>
+            <ha-entity-picker
+              class="entity-field"
+              .hass=${this.hass}
+              .value=${this.config.master_switch_entity || ""}
+              .includeDomains=${["switch", "input_boolean"]}
+              @value-changed=${(e: CustomEvent) =>
+                this.handleConfigChange({
+                  [CONF_MASTER_SWITCH_ENTITY]: e.detail?.value || null,
+                })}
+            ></ha-entity-picker>
+          </div>
+        </div>
+      </ha-card>
+    `;
   }
 
   renderWeatherSkipCard() {
