@@ -309,6 +309,19 @@ ZONE_WATER_USED = "water_used"
 ZONE_LINKED_ENTITY = "linked_entity"
 # Optional cumulative volume/flow meter; credits the bucket by measured volume.
 ZONE_FLOW_SENSOR = "flow_sensor"
+# How the zone's precipitation rate is determined: from throughput+size, or
+# entered directly
+ZONE_INPUT_METHOD = "input_method"
+ZONE_INPUT_METHOD_THROUGHPUT = "throughput"
+ZONE_INPUT_METHOD_PRECIPITATION_RATE = "precipitation_rate"
+ZONE_INPUT_METHODS = [
+    ZONE_INPUT_METHOD_THROUGHPUT,
+    ZONE_INPUT_METHOD_PRECIPITATION_RATE,
+]
+CONF_DEFAULT_ZONE_INPUT_METHOD = ZONE_INPUT_METHOD_THROUGHPUT
+# Directly entered precipitation rate (mm/h or in/h), used instead of
+# throughput/size when input_method is ZONE_INPUT_METHOD_PRECIPITATION_RATE.
+ZONE_PRECIPITATION_RATE = "precipitation_rate"
 
 MODULE_DIR = "calcmodules"
 MODULE_ID = "id"

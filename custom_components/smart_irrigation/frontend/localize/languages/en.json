@@ -54,6 +54,7 @@
         "bucket-less-than-zero-irrigation-necessary": "Since bucket < 0, irrigation is necessary",
         "steps-taken-to-calculate-duration": "To calculate the exact duration, the following steps were taken",
         "precipitation-rate-defined-as": "The precipitation rate is defined as",
+        "precipitation-rate-is": "The precipitation rate is",
         "duration-is-calculated-as": "The duration is calculated as",
         "drainage": "drainage",
         "drainage-rate": "drainage_rate",

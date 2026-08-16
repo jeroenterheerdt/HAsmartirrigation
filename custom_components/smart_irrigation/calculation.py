@@ -708,13 +708,12 @@ class CalculationMixin:
         if newbucket < 0:
             # calculate duration
 
-            tput = zone.get(const.ZONE_THROUGHPUT)
-            sz = zone.get(const.ZONE_SIZE)
-            if not ha_config_is_metric:
-                # throughput is in gpm and size is in sq ft since HA is not in metric, so we need to adjust those first!
-                tput = convert_between(const.UNIT_GPM, const.UNIT_LPM, tput)
-                sz = convert_between(const.UNIT_SQ_FT, const.UNIT_M2, sz)
-            precipitation_rate = (tput * 60) / sz
+            precipitation_rate, tput, sz = self._zone_precipitation_rate(
+                zone, ha_config_is_metric
+            )
+            # Guard against a missing/zero rate (e.g. direct mode with no value
+            # entered yet) so the formatting below never divides by None/0.
+            precipitation_rate = precipitation_rate or 0
             # new version of calculation below - this is the old version from V1. Switching to the new version removes the need for ET values to be passed in!
             # water_budget = 1
             # if mod.maximum_et != 0:
@@ -725,7 +724,9 @@ class CalculationMixin:
             # duration = water_budget * base_schedule_index
             # new version (2.0): ART = W * BSI = ( |B| / ETpeak ) * ( ETpeak / PR * 3600 ) = |B| / PR * 3600 = ( ET - P ) / PR * 3600
             # so duration = |B| / PR * 3600
-            duration = abs(newbucket) / precipitation_rate * 3600
+            duration = (
+                abs(newbucket) / precipitation_rate * 3600 if precipitation_rate else 0
+            )
             explanation += (
                 await localize(
                     "module.calculation.explanation.bucket-less-than-zero-irrigation-necessary",
@@ -741,20 +742,32 @@ class CalculationMixin:
             # v1 only
             # explanation += "<ol><li>Water budget is defined as abs([bucket])/max(ET)={}</li>".format(water_budget)
             # beta25: temporarily removing all rounds to see if we can find the math issue reported in #186
-            explanation += (
-                "<ol><li>"
-                + await localize(
-                    "module.calculation.explanation.precipitation-rate-defined-as",
-                    self.hass.config.language,
+            if tput is not None and sz is not None:
+                explanation += (
+                    "<ol><li>"
+                    + await localize(
+                        "module.calculation.explanation.precipitation-rate-defined-as",
+                        self.hass.config.language,
+                    )
+                    + " ["
+                    + await localize(
+                        "common.attributes.throughput", self.hass.config.language
+                    )
+                    + "] * 60 / ["
+                    + await localize(
+                        "common.attributes.size", self.hass.config.language
+                    )
+                    + f"] = {tput:.1f} * 60 / {sz:.1f} = {precipitation_rate:.1f}.</li>"
                 )
-                + " ["
-                + await localize(
-                    "common.attributes.throughput", self.hass.config.language
+            else:
+                explanation += (
+                    "<ol><li>"
+                    + await localize(
+                        "module.calculation.explanation.precipitation-rate-is",
+                        self.hass.config.language,
+                    )
+                    + f" {precipitation_rate:.1f}.</li>"
                 )
-                + "] * 60 / ["
-                + await localize("common.attributes.size", self.hass.config.language)
-                + f"] = {tput:.1f} * 60 / {sz:.1f} = {precipitation_rate:.1f}.</li>"
-            )
             # v1 only
             # explanation += "<li>The base schedule index is defined as (max(ET)/[precipitation rate]*60)*60=({}/{}*60)*60={}</li>".format(mod.maximum_et,precipitation_rate,round(base_schedule_index,1))
             # explanation += "<li>the duration is calculated as [water_budget]*[base_schedule_index]={}*{}={}</li>".format(water_budget,round(base_schedule_index,1),round(duration))
@@ -878,6 +891,39 @@ class CalculationMixin:
         data[const.ZONE_EXPLANATION] = explanation
         return data
 
+    def _zone_precipitation_rate(self, zone: dict, ha_config_is_metric: bool):
+        """Return the zone's precipitation rate in mm/h.
+
+        If the zone is configured with a directly entered precipitation rate
+        (``ZONE_INPUT_METHOD_PRECIPITATION_RATE``), that value is used
+        (converted from in/h to mm/h for imperial systems). Otherwise it is
+        derived from throughput and size.
+
+        Returns a tuple ``(precipitation_rate, tput, sz)`` where ``tput``/``sz``
+        are ``None`` when the direct rate is used (nothing to show in that
+        formula). ``precipitation_rate`` is ``None`` if it cannot be determined.
+        """
+        if (
+            zone.get(const.ZONE_INPUT_METHOD)
+            == const.ZONE_INPUT_METHOD_PRECIPITATION_RATE
+        ):
+            rate = zone.get(const.ZONE_PRECIPITATION_RATE)
+            if not rate:
+                return None, None, None
+            if not ha_config_is_metric:
+                rate = convert_between(const.UNIT_INCHH, const.UNIT_MMH, rate)
+            return rate, None, None
+
+        tput = zone.get(const.ZONE_THROUGHPUT)
+        sz = zone.get(const.ZONE_SIZE)
+        if not ha_config_is_metric:
+            # throughput is in gpm and size is in sq ft since HA is not in metric, so we need to adjust those first!
+            tput = convert_between(const.UNIT_GPM, const.UNIT_LPM, tput)
+            sz = convert_between(const.UNIT_SQ_FT, const.UNIT_M2, sz)
+        if not tput or not sz:
+            return None, tput, sz
+        return (tput * 60) / sz, tput, sz
+
     def duration_from_bucket(self, zone: dict, bucket_native: float) -> float:
         """Duration (seconds) implied by a zone's current bucket value.
 
@@ -898,14 +944,11 @@ class CalculationMixin:
         if bucket_mm >= 0:
             return 0
 
-        tput = zone.get(const.ZONE_THROUGHPUT)
-        sz = zone.get(const.ZONE_SIZE)
-        if not tput or not sz:
+        precipitation_rate, _tput, _sz = self._zone_precipitation_rate(
+            zone, ha_config_is_metric
+        )
+        if not precipitation_rate:
             return 0
-        if not ha_config_is_metric:
-            tput = convert_between(const.UNIT_GPM, const.UNIT_LPM, tput)
-            sz = convert_between(const.UNIT_SQ_FT, const.UNIT_M2, sz)
-        precipitation_rate = (tput * 60) / sz
         duration = abs(bucket_mm) / precipitation_rate * 3600
         duration = zone.get(const.ZONE_MULTIPLIER) * duration
 

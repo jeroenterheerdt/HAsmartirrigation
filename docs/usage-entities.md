@@ -16,6 +16,8 @@ Each entity will have the following attributes:
 |`id`|internal identification|
 |`size`|the total area the irrigation system reaches in m<sup>2</sup> or sq ft.|
 |`throughput`|total amount of water that flows through the irrigation system in liters or gallon per minute.|
+|`input_method`|how the precipitation rate is determined: `throughput` (from size + throughput) or `precipitation_rate` (entered directly).|
+|`precipitation_rate`|the directly entered precipitation rate in mm/h or in/h, when `input_method` is `precipitation_rate`.|
 |`state`|disabled, manual, automatic |
 |`bucket`|the bucket size in mm or inch|
 |`unit_of_measurement`|seconds|

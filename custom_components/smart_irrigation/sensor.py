@@ -69,6 +69,10 @@ async def async_setup_entry(
             multiplier=config[const.ZONE_MULTIPLIER],
             lead_time=config[const.ZONE_LEAD_TIME],
             maximum_duration=config[const.ZONE_MAXIMUM_DURATION],
+            input_method=config.get(
+                const.ZONE_INPUT_METHOD, const.CONF_DEFAULT_ZONE_INPUT_METHOD
+            ),
+            precipitation_rate=config.get(const.ZONE_PRECIPITATION_RATE),
         )
         if const.DOMAIN in hass.data:
             if not check_zone_entity_in_hass_data(hass, entity_id):
@@ -184,6 +188,8 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         multiplier: float,
         lead_time: float,
         maximum_duration: float,
+        input_method: str = None,
+        precipitation_rate: float = None,
     ) -> None:
         """Initialize the sensor entity."""
         self._hass = hass
@@ -223,6 +229,8 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
         self._multiplier = multiplier
         self._lead_time = lead_time
         self._maximum_duration = maximum_duration
+        self._input_method = input_method
+        self._precipitation_rate = precipitation_rate
         self._last_updated_formatted = self._format_timestamp(self._last_updated)
         self._last_calculated_formatted = self._format_timestamp(self._last_calculated)
 
@@ -286,6 +294,10 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             self._multiplier = zone["multiplier"]
             self._lead_time = zone["lead_time"]
             self._maximum_duration = zone["maximum_duration"]
+            self._input_method = zone.get(
+                "input_method", const.CONF_DEFAULT_ZONE_INPUT_METHOD
+            )
+            self._precipitation_rate = zone.get("precipitation_rate")
 
             # Update cached formatted timestamps for performance
             self._last_updated_formatted = self._format_timestamp(self._last_updated)
@@ -393,6 +405,9 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             "multiplier": self._multiplier,
             "lead_time": self._lead_time,
             "maximum_duration": self._maximum_duration,
+            "input_method": self._input_method,
+            "precipitation_rate": self._precipitation_rate,
+            "precipitation_rate_unit": f"{depth_unit}/h",
             "state": self._state,
             "bucket": self._bucket,
             "bucket_unit": depth_unit,

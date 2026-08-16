@@ -53,6 +53,7 @@ from .const import (
     CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION,
     CONF_DEFAULT_USE_WEATHER_SERVICE,
     CONF_DEFAULT_WEATHER_SERVICE,
+    CONF_DEFAULT_ZONE_INPUT_METHOD,
     CONF_DEFAULT_ZONE_SEQUENCING,
     CONF_DIRECT_VALVE_CONTROL_ENABLED,
     CONF_IMPERIAL,
@@ -117,6 +118,7 @@ from .const import (
     ZONE_ET_DEFICIENCY,
     ZONE_FLOW_SENSOR,
     ZONE_ID,
+    ZONE_INPUT_METHOD,
     ZONE_LAST_IRRIGATION,
     ZONE_LAST_UPDATED,
     ZONE_LEAD_TIME,
@@ -128,6 +130,7 @@ from .const import (
     ZONE_MULTIPLIER,
     ZONE_NAME,
     ZONE_NUMBER_OF_DATA_POINTS,
+    ZONE_PRECIPITATION_RATE,
     ZONE_SIZE,
     ZONE_STATE,
     ZONE_STATE_AUTOMATIC,
@@ -178,6 +181,10 @@ class ZoneEntry:
     linked_entity = attr.ib(type=str, default=None)
     # Optional cumulative volume meter; credits the bucket by measured volume.
     flow_sensor = attr.ib(type=str, default=None)
+    # How the precipitation rate is determined: from throughput+size, or entered directly.
+    input_method = attr.ib(type=str, default=CONF_DEFAULT_ZONE_INPUT_METHOD)
+    # Directly entered precipitation rate (mm/h or in/h), used when input_method is "precipitation_rate".
+    precipitation_rate = attr.ib(type=float, default=None)
 
 
 @attr.s(slots=True, frozen=True)
@@ -556,6 +563,10 @@ class SmartIrrigationStorage:
                         water_used=zone.get(ZONE_WATER_USED, 0.0),
                         linked_entity=zone.get(ZONE_LINKED_ENTITY, None),
                         flow_sensor=zone.get(ZONE_FLOW_SENSOR, None),
+                        input_method=zone.get(
+                            ZONE_INPUT_METHOD, CONF_DEFAULT_ZONE_INPUT_METHOD
+                        ),
+                        precipitation_rate=zone.get(ZONE_PRECIPITATION_RATE, None),
                     )
             if "modules" in data:
                 for module in data["modules"]:
