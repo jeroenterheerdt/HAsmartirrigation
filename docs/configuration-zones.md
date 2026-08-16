@@ -32,18 +32,26 @@ After adding a zone, make sure to further configure your new zone.
 ## Actions on all automatic Zones
 ![](assets/images/configuration-zones-1.png)
 
-You can perform the following actions on all automatic zones: 
+You can perform the following actions on all automatic zones:
 - **Update all zones**: Retrieve the weather data for all [sensor groups](configuration-sensor-groups.md) for all automatic zones.
 - **Calculate all zones**: Calculate irrigation duration for all automatic zones. This will also delete weather data after calculation.
 - **Reset all buckets**: Set the buckets for all automatic zones to `0`.
 - **Clear all weatherdata**: Remove all collected weather data for the [sensor groups](configuration-sensor-groups.md) used by any automatic zone.
 
 ## Configuring a zone
+To configure a zone, the amount of water that flows through the irrigation system (throughput) and the area the irrigation system reaches (size) must be known.
+If you do not know these values for your system, you can also directly enter the precipitation rate (in mm/h or in/h) for the zone.
+To determine the precipitation rate, place a straight-sided container in the  zone, run the irrigation for exactly one hour, and measure the depth of water collected: that depth, in mm (or inches), is your precipitation rate per hour.
+
 You can change the following settings on a zone:
 
 - **Name**: change the name of a zone
-- **Size**: change the size of a zone
-- **Throughput**: change the throughput of a zone
+- **Input method**: choose how the zone's precipitation rate is determined:
+  - _Throughput & area_ (default): the rate is calculated from **Size** and **Throughput**.
+  - _Precipitation rate_: enter the rate directly.
+- **Size**: change the size of a zone (only used with the _Throughput & area_ input method)
+- **Throughput**: change the throughput of a zone (only used with the _Throughput & area_ input method)
+- **Precipitation rate**: change the directly entered rate (only used with the _Precipitation rate_ input method)
 - **Drainage rate**: set the drainage rate of a zone. This will only be applied if bucket > 0. Full drainage rate only occurs when the bucket is at its maximum value and before that it will be applied as a fraction of the drainage rate, following hydraulic conductivity method of [Brooks and Corey, Eq. 4-6](https://open.library.okstate.edu/rainorshine/chapter/1-8-models-for-soil-hydraulic-conductivity/). Use this if you have drainage problems. You will need to do some experimentation to see what value works for you. Too low of a value and your drainage problem is not solved, too high of a value and the effects of the evapotranspiration calculation has little to no impact. Keep in mind that the values quoted on the internet (around 50.8 mm or 2 inch per hour) for drainage rates are dependent on your soil type and are for fully saturated soil only. It's recommended to start with 0 mm/h and if you have draingage problems, increase it by approx 5 mm/h each 24 hours until you arrive at a level of irrigation that waters your area and doesn't cause puddles to appear. Since this is so dependent on your soil characteristics you will need to do some experimentation to arrive at the optimal value.
 - **State**:
   - _Automatic_: Automatic updating and calculation of that zone. [module](configuration-modules.md) and [sensor group](configuration-sensor-groups.md) is mandatory.
@@ -75,20 +83,9 @@ To pick a value, work from the water your soil actually holds for the plant, the
 Do **not** derive it from the **Maximum bucket**: that setting caps the surplus above field capacity, which is the other side of zero and a different quantity entirely.
 
 The default of `0` is there to keep existing installs behaving exactly as before, not because watering the instant anything is missing is good practice. Deep and infrequent watering suits a lawn too, it simply wants a smaller threshold than a tree because its roots are shallower.
-- *Duration*: Irrigation duration in seconds. Either calculated or manually set.
-
-### Available actions per zone
-
-![](assets/images/configuration-zones-2.png)
-
-Below each zone there are some buttons, to perform the following tasks:
-
-* update weather data. This collects weather data from the sensor group for the zone.
-* calculate irrigation duration. Note that if you calculate irrigation duration using the buttons per zone, the weather data for the sensor group for that zone is deleted. 
-* after a calculation there is also a button to get some information how duration was calculated, which gives insight into how the bucket was updated, and how the crop factor and lead time influenced the result.
 * view weather data. View the last 10 records of the associated sensor group.
 * view watering calendar. View a yearly watering calendar based on the location and normal weather patterns.
-* delete the zone. 
+* delete the zone.
 
 > Main page: [Configuration](configuration.md)<br/>
 > Previous: [General configuration](configuration-general.md)<br/>

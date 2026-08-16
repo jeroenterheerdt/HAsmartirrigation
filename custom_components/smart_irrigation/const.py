@@ -337,6 +337,19 @@ ZONE_FLOW_SENSOR = "flow_sensor"
 # duration, it only lets us tell the user their configured value is off.
 ZONE_MEASURED_THROUGHPUT = "measured_throughput"
 ZONE_MEASURED_THROUGHPUT_SAMPLES = "measured_throughput_samples"
+# How the zone's precipitation rate is determined: from throughput+size, or
+# entered directly
+ZONE_INPUT_METHOD = "input_method"
+ZONE_INPUT_METHOD_THROUGHPUT = "throughput"
+ZONE_INPUT_METHOD_PRECIPITATION_RATE = "precipitation_rate"
+ZONE_INPUT_METHODS = [
+    ZONE_INPUT_METHOD_THROUGHPUT,
+    ZONE_INPUT_METHOD_PRECIPITATION_RATE,
+]
+CONF_DEFAULT_ZONE_INPUT_METHOD = ZONE_INPUT_METHOD_THROUGHPUT
+# Directly entered precipitation rate (mm/h or in/h), used instead of
+# throughput/size when input_method is ZONE_INPUT_METHOD_PRECIPITATION_RATE.
+ZONE_PRECIPITATION_RATE = "precipitation_rate"
 
 MODULE_DIR = "calcmodules"
 MODULE_ID = "id"

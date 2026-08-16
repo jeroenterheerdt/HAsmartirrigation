@@ -55,6 +55,7 @@ from .const import (
     CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION,
     CONF_DEFAULT_USE_WEATHER_SERVICE,
     CONF_DEFAULT_WEATHER_SERVICE,
+    CONF_DEFAULT_ZONE_INPUT_METHOD,
     CONF_DEFAULT_ZONE_SEQUENCING,
     CONF_DIRECT_VALVE_CONTROL_ENABLED,
     CONF_IMPERIAL,
@@ -121,6 +122,7 @@ from .const import (
     ZONE_ET_DEFICIENCY,
     ZONE_FLOW_SENSOR,
     ZONE_ID,
+    ZONE_INPUT_METHOD,
     ZONE_IRRIGATION_THRESHOLD,
     ZONE_LAST_CONSUMED_AT,
     ZONE_LAST_IRRIGATION,
@@ -136,6 +138,7 @@ from .const import (
     ZONE_MULTIPLIER,
     ZONE_NAME,
     ZONE_NUMBER_OF_DATA_POINTS,
+    ZONE_PRECIPITATION_RATE,
     ZONE_PRECIPITATION_SUPERSEDED,
     ZONE_SIZE,
     ZONE_STATE,
@@ -205,6 +208,10 @@ class ZoneEntry:
     # with the number of runs behind it. Advisory only (see const).
     measured_throughput = attr.ib(type=float, default=None)
     measured_throughput_samples = attr.ib(type=int, default=0)
+    # How the precipitation rate is determined: from throughput+size, or entered directly.
+    input_method = attr.ib(type=str, default=CONF_DEFAULT_ZONE_INPUT_METHOD)
+    # Directly entered precipitation rate (mm/h or in/h), used when input_method is "precipitation_rate".
+    precipitation_rate = attr.ib(type=float, default=None)
 
 
 @attr.s(slots=True, frozen=True)
@@ -747,6 +754,10 @@ class SmartIrrigationStorage:
                         measured_throughput_samples=zone.get(
                             ZONE_MEASURED_THROUGHPUT_SAMPLES, 0
                         ),
+                        input_method=zone.get(
+                            ZONE_INPUT_METHOD, CONF_DEFAULT_ZONE_INPUT_METHOD
+                        ),
+                        precipitation_rate=zone.get(ZONE_PRECIPITATION_RATE, None),
                     )
             if "modules" in data:
                 for module in data["modules"]:

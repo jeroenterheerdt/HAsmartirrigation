@@ -285,6 +285,8 @@ class SmartIrrigationZoneView(HomeAssistantView):
                 vol.Optional(const.ZONE_CURRENT_DRAINAGE): vol.Or(float, int, None),
                 vol.Optional(const.ZONE_LINKED_ENTITY): vol.Any(None, cv.string),
                 vol.Optional(const.ZONE_FLOW_SENSOR): vol.Any(None, cv.string),
+                vol.Optional(const.ZONE_INPUT_METHOD): vol.In(const.ZONE_INPUT_METHODS),
+                vol.Optional(const.ZONE_PRECIPITATION_RATE): vol.Or(float, int, None),
                 vol.Optional(const.ZONE_ET_DEFICIENCY): vol.Or(float, int, None),
                 vol.Optional(const.ZONE_LAST_IRRIGATION): vol.Or(
                     None, str, datetime.datetime
