@@ -66,6 +66,19 @@ class ValveRunnerMixin:
             return domain, "open_valve", "close_valve"
         return domain, "turn_on", "turn_off"
 
+    async def _async_call_valve_service(
+        self, domain: str, service: str, entity_id: str
+    ) -> None:
+        """Run a valve service to completion before evaluating its state.
+
+        A linked entity may itself be a template or proxy whose action performs
+        several safety checks. Waiting for the service prevents the confirmation
+        window from racing those checks or the close from racing run crediting.
+        """
+        await self.hass.services.async_call(
+            domain, service, {"entity_id": entity_id}, blocking=True
+        )
+
     async def _confirm_valve_running(self, entity_id: str):
         """Wait briefly for a freshly-opened valve to report an on-state.
 
@@ -264,16 +277,14 @@ class ValveRunnerMixin:
             zone_id,
             duration,
         )
-        await self.hass.services.async_call(domain, on_svc, {"entity_id": entity_id})
+        await self._async_call_valve_service(domain, on_svc, entity_id)
 
         # Confirm the valve actually opened before counting/crediting: a valve
         # that never opens would otherwise clear the deficit while running dry
         # (and the missed water silently rolls over to the next day). Only an
         # explicit "still off" aborts; an unverifiable (write-only) valve runs.
         if await self._confirm_valve_running(entity_id) is False:
-            await self.hass.services.async_call(
-                domain, off_svc, {"entity_id": entity_id}
-            )
+            await self._async_call_valve_service(domain, off_svc, entity_id)
             self._report_valve_problem(zone, entity_id, "valve_did_not_open")
             return {
                 "zone_id": zone_id,
@@ -289,9 +300,7 @@ class ValveRunnerMixin:
         try:
             await asyncio.sleep(duration)
         finally:
-            await self.hass.services.async_call(
-                domain, off_svc, {"entity_id": entity_id}
-            )
+            await self._async_call_valve_service(domain, off_svc, entity_id)
         # Clear the persisted run before crediting: a crash in this window then
         # loses at most one credit rather than double-crediting on resume.
         await self._remove_active_run(zone_id)
@@ -405,9 +414,7 @@ class ValveRunnerMixin:
                     elapsed,
                     duration,
                 )
-            await self.hass.services.async_call(
-                domain, off_svc, {"entity_id": entity_id}
-            )
+            await self._async_call_valve_service(domain, off_svc, entity_id)
             await self._remove_active_run(zone_id)
             await self._credit_direct_run(zone_id, elapsed)
             return
@@ -422,11 +429,9 @@ class ValveRunnerMixin:
         )
         # Re-assert open: the valve should still be on after an HA reboot, but a
         # power cut may have reset it. Confirm before finishing/crediting.
-        await self.hass.services.async_call(domain, on_svc, {"entity_id": entity_id})
+        await self._async_call_valve_service(domain, on_svc, entity_id)
         if await self._confirm_valve_running(entity_id) is False:
-            await self.hass.services.async_call(
-                domain, off_svc, {"entity_id": entity_id}
-            )
+            await self._async_call_valve_service(domain, off_svc, entity_id)
             await self._remove_active_run(zone_id)
             self._report_valve_problem(
                 self.store.get_zone(zone_id) or {const.ZONE_ID: zone_id},
@@ -437,8 +442,6 @@ class ValveRunnerMixin:
         try:
             await asyncio.sleep(remaining)
         finally:
-            await self.hass.services.async_call(
-                domain, off_svc, {"entity_id": entity_id}
-            )
+            await self._async_call_valve_service(domain, off_svc, entity_id)
         await self._remove_active_run(zone_id)
         await self._credit_direct_run(zone_id, duration)
