@@ -365,8 +365,11 @@ class TriggersMixin:
                             "will not fire",
                             skip_reason,
                         )
-                        # Count this as a (skipped) day, once.
-                        await self._increment_days_since_irrigation()
+                        # Do NOT increment days-since-irrigation here: the
+                        # midnight reset already counts every calendar day
+                        # exactly once, skipped days included. Counting again
+                        # here advanced the counter by 2 per skipped day, so a
+                        # days-between setting of 5 watered every 3 days (#802).
 
                 if not self._watering_decision_today:
                     _LOGGER.info(

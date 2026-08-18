@@ -32,12 +32,14 @@ Configure the minimum number of days that must pass between irrigation events. T
 * When set to 0: Irrigation events can fire daily if conditions are met (default behavior)
 * When set to a value > 0: Irrigation events will only fire if the specified number of days have passed since the last irrigation event
 
-**Example scenarios:**
-* Set to 1: Allow irrigation every other day maximum
-* Set to 3: Allow irrigation only every 3 days minimum  
-* Set to 7: Weekly irrigation maximum
+The value is the length of the watering cycle in calendar days: set to *N*, irrigation happens every *N* days.
 
-The system automatically tracks the number of days since the last irrigation event. If an irrigation trigger occurs but insufficient days have passed, the event is skipped and the days counter continues to increment. When enough days have passed, the next trigger will fire the irrigation event and reset the counter.
+**Example scenarios:**
+* Set to 1: Allow irrigation every day (one calendar day between events)
+* Set to 3: Allow irrigation every 3 days
+* Set to 7: Weekly irrigation
+
+The system automatically tracks the number of days since the last irrigation event. The counter is incremented once per calendar day, at midnight, whether or not irrigation happened that day. If an irrigation trigger occurs but insufficient days have passed, the event is skipped and the counter simply keeps running. When enough days have passed, the next trigger will fire the irrigation event and reset the counter to 0.
 
 This feature works alongside existing precipitation forecasting - if both restrictions apply, both must be satisfied for irrigation to occur.
 
