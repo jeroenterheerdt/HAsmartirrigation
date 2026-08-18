@@ -5,6 +5,10 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from custom_components.smart_irrigation.const import (
+    CONF_MANUAL_COORDINATES_ENABLED,
+    CONF_MANUAL_ELEVATION,
+    CONF_MANUAL_LATITUDE,
+    CONF_MANUAL_LONGITUDE,
     CONF_WEATHER_SERVICE_API_KEY,
     DOMAIN,
 )
@@ -86,6 +90,55 @@ class TestSmartIrrigationDiagnostics:
 
         assert result[CONF_WEATHER_SERVICE_API_KEY] == "[redacted]"
         assert result["other_data"] == "value"
+
+    async def test_manual_coordinates_are_redacted(
+        self, mock_hass, mock_config_entry, mock_coordinator, mock_store
+    ):
+        """Manual coordinates pinpoint the user's home and must not leak (#806).
+
+        They live in store -> config, which the top-level API key redaction
+        never reached.
+        """
+        stored = {
+            CONF_MANUAL_COORDINATES_ENABLED: True,
+            CONF_MANUAL_LATITUDE: 52.3676,
+            CONF_MANUAL_LONGITUDE: 4.9041,
+            CONF_MANUAL_ELEVATION: 12.0,
+            "other_setting": "value",
+        }
+        mock_store.async_get_config = AsyncMock(return_value=stored)
+        mock_hass.data[DOMAIN] = {"coordinator": mock_coordinator}
+
+        result = await async_get_config_entry_diagnostics(mock_hass, mock_config_entry)
+
+        config = result["store"]["config"]
+        assert config[CONF_MANUAL_LATITUDE] == "[redacted]"
+        assert config[CONF_MANUAL_LONGITUDE] == "[redacted]"
+        assert config[CONF_MANUAL_ELEVATION] == "[redacted]"
+        # Everything else is left alone, including the "is it enabled" flag.
+        assert config[CONF_MANUAL_COORDINATES_ENABLED] is True
+        assert config["other_setting"] == "value"
+        # The live store config must not be mutated by building diagnostics.
+        assert stored[CONF_MANUAL_LATITUDE] == 52.3676
+
+    async def test_unset_manual_coordinates_stay_unset(
+        self, mock_hass, mock_config_entry, mock_coordinator, mock_store
+    ):
+        """Without manual coordinates there is nothing to hide."""
+        mock_store.async_get_config = AsyncMock(
+            return_value={
+                CONF_MANUAL_COORDINATES_ENABLED: False,
+                CONF_MANUAL_LATITUDE: None,
+                CONF_MANUAL_LONGITUDE: None,
+            }
+        )
+        mock_hass.data[DOMAIN] = {"coordinator": mock_coordinator}
+
+        result = await async_get_config_entry_diagnostics(mock_hass, mock_config_entry)
+
+        config = result["store"]["config"]
+        assert config[CONF_MANUAL_LATITUDE] is None
+        assert config[CONF_MANUAL_LONGITUDE] is None
 
     async def test_async_get_config_entry_diagnostics_no_coordinator(
         self, mock_hass, mock_config_entry, caplog
