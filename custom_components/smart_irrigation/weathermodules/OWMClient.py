@@ -32,8 +32,10 @@ OWM_pressure_key_name = "pressure"
 OWM_humidity_key_name = "humidity"
 OWM_temp_key_name = "temp"
 OWM_dew_point_key_name = "dew_point"
-OWM_current_rain_key_name = "rain.1h"
-OWM_current_snow_key_name = "snow.1h"
+OWM_current_rain_key_name = "rain"
+OWM_current_snow_key_name = "snow"
+# One Call reports the last hour under a nested key: {"rain": {"1h": 3.16}}.
+OWM_current_precipitation_period = "1h"
 
 OWM_required_keys = {
     OWM_wind_speed_key_name,
@@ -48,6 +50,25 @@ min_temp_key_name = "min_temp"
 precip_key_name = "precip"
 
 OWM_required_key_temp = {"day", "min", "max"}
+
+
+def current_precipitation(current):
+    """Return rain + snow of the last hour from a One Call "current" block, in mm.
+
+    One Call nests these as ``{"rain": {"1h": 3.16}}`` and leaves the key out
+    entirely when nothing is falling, so a missing key means 0, not an error.
+    A plain number is accepted too: that is the shape of the daily entries, and
+    it costs nothing to tolerate it here.
+    """
+    total = 0.0
+    for key in (OWM_current_rain_key_name, OWM_current_snow_key_name):
+        value = current.get(key)
+        if isinstance(value, dict):
+            value = value.get(OWM_current_precipitation_period)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            total += float(value)
+    return total
+
 
 # Validators
 OWM_validators = {
@@ -290,17 +311,11 @@ class OWMClient:  # pylint: disable=invalid-name
                     parsed_data[MAPPING_HUMIDITY] = data[OWM_humidity_key_name]
                     parsed_data[MAPPING_TEMPERATURE] = data[OWM_temp_key_name]
                     parsed_data[MAPPING_DEWPOINT] = data[OWM_dew_point_key_name]
-                    parsed_data[MAPPING_CURRENT_PRECIPITATION] = 0.0
                     # is it currently raining or snowing?
                     # should this only be added if the precipProbability is above a certain threshold?
-                    if OWM_current_rain_key_name in data:
-                        parsed_data[MAPPING_CURRENT_PRECIPITATION] += data[
-                            OWM_current_rain_key_name
-                        ]
-                    if OWM_current_snow_key_name in data:
-                        parsed_data[MAPPING_CURRENT_PRECIPITATION] += data[
-                            OWM_current_snow_key_name
-                        ]
+                    parsed_data[MAPPING_CURRENT_PRECIPITATION] = current_precipitation(
+                        data
+                    )
 
                     # NOT used: also put in min/max here as just the current temp
                     # removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
