@@ -27,6 +27,7 @@ The methods live on a mixin the SmartIrrigationCoordinator inherits.
 
 import asyncio
 import logging
+from functools import partial
 
 import homeassistant.util.dt as dt_util
 from homeassistant.util.unit_system import METRIC_SYSTEM
@@ -44,6 +45,10 @@ SI_VALVE_SUPPRESS_MARGIN = 30
 # treating the run as a failure, and how often to poll.
 VALVE_CONFIRM_TIMEOUT = 8.0
 VALVE_CONFIRM_POLL = 1.0
+
+# How long a run waits for a linked valve service to return. Generous, since the
+# point of waiting is to let a template or proxy finish its own safety steps.
+VALVE_SERVICE_TIMEOUT = 30.0
 
 # Entity states that count as "the valve actually opened".
 _VALVE_ON_STATES = ("on", "open", "opening")
@@ -66,6 +71,15 @@ class ValveRunnerMixin:
             return domain, "open_valve", "close_valve"
         return domain, "turn_on", "turn_off"
 
+    def _log_late_valve_service(self, entity_id: str, task) -> None:
+        """Report how a valve service that outlived its wait ended up."""
+        if task.cancelled():
+            return
+        if exc := task.exception():
+            _LOGGER.error("Valve service for %s failed: %s", entity_id, exc)
+        else:
+            _LOGGER.info("Valve service for %s finished after the wait", entity_id)
+
     async def _async_call_valve_service(
         self, domain: str, service: str, entity_id: str
     ) -> None:
@@ -74,10 +88,32 @@ class ValveRunnerMixin:
         A linked entity may itself be a template or proxy whose action performs
         several safety checks. Waiting for the service prevents the confirmation
         window from racing those checks or the close from racing run crediting.
+
+        The wait is bounded: a linked script that blocks forever would otherwise
+        stall the run, leaving the water uncredited, the persisted run dangling
+        and, in sequential mode, every later zone waiting behind it. Giving up on
+        the wait leaves the service running in Home Assistant (asyncio.wait does
+        not cancel it); it only stops the run from hanging on it.
         """
-        await self.hass.services.async_call(
-            domain, service, {"entity_id": entity_id}, blocking=True
+        task = self.hass.async_create_task(
+            self.hass.services.async_call(
+                domain, service, {"entity_id": entity_id}, blocking=True
+            )
         )
+        done, _ = await asyncio.wait({task}, timeout=VALVE_SERVICE_TIMEOUT)
+        if task in done:
+            # Surface a service that actually failed, as a plain await would.
+            task.result()
+            return
+        _LOGGER.warning(
+            "Valve service %s.%s for %s did not complete within %ss; "
+            "continuing without waiting for it",
+            domain,
+            service,
+            entity_id,
+            VALVE_SERVICE_TIMEOUT,
+        )
+        task.add_done_callback(partial(self._log_late_valve_service, entity_id))
 
     async def _confirm_valve_running(self, entity_id: str):
         """Wait briefly for a freshly-opened valve to report an on-state.
