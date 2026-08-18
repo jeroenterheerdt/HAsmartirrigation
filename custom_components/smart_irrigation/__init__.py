@@ -717,6 +717,16 @@ class SmartIrrigationCoordinator(
         # Re-evaluate the observed-watering subscription (the feature toggle may
         # have just changed).
         await self.async_setup_observed_watering()
+        # Editing a trigger in the panel only wrote it to the store: the tracker
+        # registered at setup kept the old schedule, so the change took effect
+        # at the next restart (or the next zone edit / calculation, which do
+        # re-register). Re-register when the trigger configuration changed (#800).
+        if (
+            const.CONF_IRRIGATION_START_TRIGGERS in data
+            or const.CONF_ACTIVE_START_TRIGGER in data
+        ):
+            _LOGGER.debug("calling register start event from async_update_config")
+            await self.register_start_event()
         async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated")
 
     async def async_apply_weather_service(self, use, service, api_key):
