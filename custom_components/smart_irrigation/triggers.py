@@ -406,13 +406,17 @@ class TriggersMixin:
                         {const.START_EVENT_FIRED_TODAY: True}
                     )
             except Exception as e:
+                # Fail safe, not fail open (#804): if we cannot tell whether
+                # today is a watering day, not watering is recoverable (one
+                # missed day, visible in the log) while watering on an
+                # unevaluated decision is not. Firing here also risked a double
+                # fire when the exception came from the post-fire bookkeeping.
                 _LOGGER.error(
-                    "Error evaluating irrigation conditions for trigger '%s', "
-                    "firing event anyway: %s",
+                    "Error evaluating irrigation conditions for trigger '%s'; "
+                    "not firing the start event (fail-safe): %s",
                     name,
                     e,
                 )
-                self.hass.bus.fire(event_to_fire, event_data)
 
         self.hass.async_create_task(check_and_fire())
 

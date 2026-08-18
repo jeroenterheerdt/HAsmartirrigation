@@ -1,9 +1,13 @@
-"""Days-between-irrigation counting (#802).
+"""Days-between-irrigation counting and the trigger fail-safe (#802, #804).
 
 ``days_since_last_irrigation`` used to be advanced twice on a skipped day: once
 by the midnight reset and once again by the skip branch of the start trigger.
 The counter then reached the threshold in about half the configured time, so a
 "days between irrigation" of 5 watered every 3 days.
+
+The same trigger path also fired the start event from its exception handler, so
+an error while evaluating the skip conditions was treated as permission to
+irrigate.
 """
 
 from unittest.mock import MagicMock
@@ -144,3 +148,31 @@ async def test_precipitation_skip_does_not_advance_the_counter():
 
     assert coordinator.fire_count == 0
     assert coordinator.days_since == 3
+
+
+async def test_start_event_is_not_fired_when_the_decision_cannot_be_evaluated():
+    """#804: an unevaluated decision must not be read as "go ahead and water"."""
+    coordinator = _Coordinator(0)
+
+    async def _boom():
+        raise RuntimeError("weather service unreachable")
+
+    coordinator._check_precipitation_forecast = _boom
+
+    await coordinator.reach_trigger()
+
+    assert coordinator.fire_count == 0
+
+
+async def test_failure_after_firing_does_not_fire_a_second_time():
+    """The old handler re-fired on any exception, including post-fire ones."""
+    coordinator = _Coordinator(0)
+
+    async def _boom():
+        raise RuntimeError("store is gone")
+
+    coordinator._reset_days_since_irrigation = _boom
+
+    await coordinator.reach_trigger()
+
+    assert coordinator.fire_count == 1
