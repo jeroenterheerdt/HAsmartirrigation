@@ -37,7 +37,7 @@ jobs:
             -x "tests/*" "*/__pycache__/*" "*.pyc" "frontend/node_modules/*"
 
       - name: Attach the zip to the release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.event.release.tag_name || inputs.tag }}
           files: custom_components/smart_irrigation/smart_irrigation.zip
