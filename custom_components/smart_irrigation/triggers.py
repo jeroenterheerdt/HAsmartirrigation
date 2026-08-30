@@ -82,7 +82,14 @@ class TriggersMixin:
             await self._register_legacy_sunrise_trigger()
             return
 
-        if total_duration <= 0:
+        # A trigger that accounts for the duration has to know it to work out
+        # when to start, so there is nothing to schedule without one. A trigger
+        # that fires at a fixed offset does not need it and stays scheduled, so
+        # its event is still fired (and shown as the next start) on a day when
+        # no zone happens to need water.
+        if total_duration <= 0 and selected.get(
+            const.TRIGGER_CONF_ACCOUNT_FOR_DURATION, True
+        ):
             _LOGGER.info(
                 "No enabled zones with duration > 0, skipping trigger registration"
             )
