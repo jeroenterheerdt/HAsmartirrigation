@@ -11,7 +11,10 @@ homeassistant>=2023.1.0
 pytest>=7.0.0
 pytest-homeassistant-custom-component>=0.13.0
 pytest-asyncio>=0.21.0
-pytest-aiohttp>=1.1.1
+# pinned below 1.1: pytest-aiohttp 1.1 wants a pytest-asyncio that
+# pytest-homeassistant-custom-component does not allow, and pip cannot resolve
+# the two together (dependabot #740)
+pytest-aiohttp>=1.0.0,<1.1
 pytest-cov>=4.0.0
 
 # Additional testing utilities
