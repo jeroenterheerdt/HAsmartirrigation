@@ -128,6 +128,7 @@ export const UNIT_INHG = "inch Hg";
 export const UNIT_KMH = "km/h";
 export const UNIT_MH = "mile/h";
 export const UNIT_MS = "meter/s";
+export const UNIT_KNOTS = "knot";
 export const UNIT_W_M2 = "W/m2";
 export const UNIT_W_SQFT = "W/sq ft";
 export const UNIT_MJ_DAY_M2 = "MJ/day/m2";

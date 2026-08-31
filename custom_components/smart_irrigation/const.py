@@ -408,6 +408,7 @@ UNIT_INHG = "inch Hg"
 UNIT_KMH = "km/h"
 UNIT_MH = "mile/h"
 UNIT_MS = "meter/s"
+UNIT_KNOTS = "knot"
 UNIT_W_M2 = "W/m2"
 UNIT_W_SQFT = "W/sq ft"
 UNIT_MJ_DAY_M2 = "MJ/day/m2"
@@ -439,6 +440,7 @@ W_SQ_FT_TO_W_M2_FACTOR = 10.76391042  # w/sqft * factor = w/m2
 # OTHER FACTORS
 KMH_TO_MS_FACTOR = 0.277777777777778  # kmh * factor = ms
 MS_TO_KMH_FACTOR = 3.6  # m/s * factor = kmh
+KNOTS_TO_MS_FACTOR = 0.5144444444444445  # knot * factor = m/s (1852 m per hour)
 W_TO_MJ_DAY_FACTOR = 0.0864  # w * factor = mj/day, same for w/m2 to mj/day/m2
 K_TO_C_FACTOR = 273.15  # K-factor = C, C+factor=K
 INHG_TO_PSI_FACTOR = 0.49115420057253  # inhg * factor = PSI

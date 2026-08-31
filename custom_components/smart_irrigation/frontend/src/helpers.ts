@@ -26,6 +26,7 @@ import {
   UNIT_INCHH,
   UNIT_INHG,
   UNIT_KMH,
+  UNIT_KNOTS,
   UNIT_LPM,
   UNIT_M2,
   UNIT_MBAR,
@@ -130,11 +131,14 @@ export function getOptionsForMappingType(mapping: string) {
         { unit: UNIT_INHG, system: CONF_IMPERIAL },
       ];
     case MAPPING_WINDSPEED:
-      //return km/h, mile/h, meter/s
+      //return km/h, mile/h, meter/s, knot
       return [
         { unit: UNIT_KMH, system: CONF_METRIC },
         { unit: UNIT_MS, system: CONF_METRIC },
         { unit: UNIT_MH, system: CONF_IMPERIAL },
+        // A nautical mile is 1852 m against 1609 m for a land mile, so a METAR
+        // wind read as mile/h is off by 15% straight into the FAO-56 wind term.
+        { unit: UNIT_KNOTS, system: [CONF_METRIC, CONF_IMPERIAL] },
       ];
 
     case MAPPING_SOLRAD:

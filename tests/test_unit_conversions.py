@@ -28,7 +28,7 @@ PANEL_UNITS = {
     const.MAPPING_CURRENT_PRECIPITATION: ["mm/h", "in/h"],
     const.MAPPING_HUMIDITY: ["%"],
     const.MAPPING_PRESSURE: ["millibar", "hPa", "psi", "inch Hg"],
-    const.MAPPING_WINDSPEED: ["km/h", "meter/s", "mile/h"],
+    const.MAPPING_WINDSPEED: ["km/h", "meter/s", "mile/h", "knot"],
     const.MAPPING_SOLRAD: ["W/m2", "W/sq ft", "MJ/day/m2", "MJ/day/sq ft"],
 }
 
@@ -59,7 +59,7 @@ GROUPS = [
         const.UNIT_PSI,
         const.UNIT_INHG,
     ],
-    [const.UNIT_KMH, const.UNIT_MH, const.UNIT_MS],
+    [const.UNIT_KMH, const.UNIT_MH, const.UNIT_MS, const.UNIT_KNOTS],
     [const.UNIT_W_M2, const.UNIT_W_SQFT, const.UNIT_MJ_DAY_M2, const.UNIT_MJ_DAY_SQFT],
     [const.UNIT_MMH, const.UNIT_INCHH],
 ]
@@ -75,3 +75,23 @@ def test_converting_there_and_back_returns_the_original(a, b):
     assert there is not None
     back = convert_between(from_unit=b, to_unit=a, val=there)
     assert back == pytest.approx(7.5)
+
+
+def test_knots_convert_to_the_other_speeds():
+    """A METAR reports wind in knots, and a nautical mile is not a land mile (#801)."""
+    assert convert_between(
+        from_unit=const.UNIT_KNOTS, to_unit=const.UNIT_MS, val=10.0
+    ) == pytest.approx(5.14444, abs=1e-4)
+    assert convert_between(
+        from_unit=const.UNIT_KNOTS, to_unit=const.UNIT_KMH, val=10.0
+    ) == pytest.approx(18.52, abs=1e-4)
+    # Reading a knot as a land mile per hour is the 15% error this avoids.
+    assert convert_between(
+        from_unit=const.UNIT_KNOTS, to_unit=const.UNIT_MH, val=10.0
+    ) == pytest.approx(11.5078, abs=1e-4)
+
+
+def test_a_windspeed_in_knots_reaches_the_calculation_in_metres_per_second():
+    assert convert_mapping_to_metric(
+        10.0, const.MAPPING_WINDSPEED, const.UNIT_KNOTS, True
+    ) == pytest.approx(5.14444, abs=1e-4)

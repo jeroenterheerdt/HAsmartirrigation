@@ -22,8 +22,8 @@ from .const import (
     INHG_TO_HPA_FACTOR,
     INHG_TO_PSI_FACTOR,
     K_TO_C_FACTOR,
-    KMH_TO_MILESH_FACTOR,
     KMH_TO_MS_FACTOR,
+    KNOTS_TO_MS_FACTOR,
     LITER_TO_GALLON_FACTOR,
     M2_TO_SQ_FT_FACTOR,
     MAPPING_CURRENT_PRECIPITATION,
@@ -39,11 +39,8 @@ from .const import (
     MAPPING_WINDSPEED,
     MBAR_TO_INHG_FACTOR,
     MBAR_TO_PSI_FACTOR,
-    MILESH_TO_KMH_FACTOR,
     MILESH_TO_MS_FACTOR,
     MM_TO_INCH_FACTOR,
-    MS_TO_KMH_FACTOR,
-    MS_TO_MILESH_FACTOR,
     PSI_TO_HPA_FACTOR,
     PSI_TO_INHG_FACTOR,
     SQ_FT_TO_M2_FACTOR,
@@ -53,6 +50,7 @@ from .const import (
     UNIT_INCHH,
     UNIT_INHG,
     UNIT_KMH,
+    UNIT_KNOTS,
     UNIT_LPM,
     UNIT_M2,
     UNIT_MBAR,
@@ -287,7 +285,7 @@ def convert_between(from_unit, to_unit, val):
         _LOGGER.debug("[convert_between]: Converting pressures")
         return convert_pressure(from_unit, to_unit, val)
     # convert speeds
-    if from_unit in [UNIT_KMH, UNIT_MS, UNIT_MH]:
+    if from_unit in SPEED_IN_MS:
         _LOGGER.debug("[convert_between]: Converting speeds")
         return convert_speed(from_unit, to_unit, val)
     # convert production/area
@@ -430,6 +428,17 @@ def convert_production(from_unit, to_unit, val):
     return None
 
 
+# Every speed unit expressed in metres per second. Converting is then a
+# division by the source factor and a multiplication by the target one, so
+# adding a unit is one entry instead of a branch against every other unit.
+SPEED_IN_MS = {
+    UNIT_MS: 1.0,
+    UNIT_KMH: KMH_TO_MS_FACTOR,
+    UNIT_MH: MILESH_TO_MS_FACTOR,
+    UNIT_KNOTS: KNOTS_TO_MS_FACTOR,
+}
+
+
 def convert_speed(from_unit, to_unit, val):
     """Convert speed values between different units.
 
@@ -446,23 +455,10 @@ def convert_speed(from_unit, to_unit, val):
         return None
     if to_unit == from_unit:
         return val
-    if to_unit == UNIT_KMH:
-        if from_unit == UNIT_MS:
-            return float(float(val) * MS_TO_KMH_FACTOR)
-        if from_unit == UNIT_MH:
-            return float(float(val) * MILESH_TO_KMH_FACTOR)
-    elif to_unit == UNIT_MS:
-        if from_unit == UNIT_KMH:
-            return float(float(val) * KMH_TO_MS_FACTOR)
-        if from_unit == UNIT_MH:
-            return float(float(val) * MILESH_TO_MS_FACTOR)
-    elif to_unit == UNIT_MH:
-        if from_unit == UNIT_KMH:
-            return float(float(val) * KMH_TO_MILESH_FACTOR)
-        if from_unit == UNIT_MS:
-            return float(float(val) * MS_TO_MILESH_FACTOR)
-    # unknown conversion
-    return None
+    if from_unit not in SPEED_IN_MS or to_unit not in SPEED_IN_MS:
+        # unknown conversion
+        return None
+    return float(float(val) * SPEED_IN_MS[from_unit] / SPEED_IN_MS[to_unit])
 
 
 def convert_pressure(from_unit, to_unit, val):
