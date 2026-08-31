@@ -18,6 +18,9 @@ Each entity will have the following attributes:
 |`throughput`|total amount of water that flows through the irrigation system in liters or gallon per minute.|
 |`state`|disabled, manual, automatic |
 |`bucket`|the bucket size in mm or inch|
+|`et_value`|the **net precipitation** applied to the bucket by the last calculation, in mm or inch: the water need over the interval with the precipitation already subtracted from it. It is positive on a day where more rain fell than water evaporated. Despite its name this is not the evapotranspiration.|
+|`et_deficiency`|the water need on its own, per day, before the interval scaling and before precipitation, in mm or inch. Negative, because it is what the soil lost. Unlike the bucket it does not depend on the calculation interval or on bucket resets, so this is the value to compare when trying out configurations.|
+|`eto`|the same water need expressed as a reference evapotranspiration, which is `et_deficiency` without the sign. This is the positive number the literature and the weather services quote, so it is the one to compare against an external ET0 figure.|
 |`unit_of_measurement`|seconds|
 |`device_class`|duration|
 |`icon`|default: mdi:sprinkler|

@@ -399,13 +399,21 @@ class SmartIrrigationZoneEntity(SensorEntity, RestoreEntity):
             "last_updated": self._last_updated_formatted,
             "last_calculated": self._last_calculated_formatted,
             "number_of_data_points": self._number_of_data_points,
-            # et_value: ET deficiency actually applied to the bucket this run
-            # (et0 * hour_multiplier + precipitation). et_deficiency: the raw
-            # per-day ET deficiency, independent of interval and bucket resets.
+            # Three different quantities, which "et_value" alone was being read
+            # as all of (#528):
+            # - et_value is the net precipitation applied to the bucket this run
+            #   (et0 * hour_multiplier + precipitation), so it is positive on a
+            #   day where more rain fell than water evaporated;
+            # - et_deficiency is the raw per-day water need before the interval
+            #   scaling and before precipitation, so it is negative;
+            # - eto is that same need as a reference evapotranspiration, the
+            #   positive number the literature and the weather services quote.
             "et_value": self._delta,
             "et_value_unit": depth_unit,
             "et_deficiency": self._et_deficiency,
             "et_deficiency_unit": depth_unit,
+            "eto": (None if self._et_deficiency is None else -self._et_deficiency),
+            "eto_unit": depth_unit,
             # asyncio.run_coroutine_threadsafe(
             #    localize("common.attributes.size", "en"), self._hass.loop
             # ).result(): self._size,
