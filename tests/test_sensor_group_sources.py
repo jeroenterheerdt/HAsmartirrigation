@@ -114,6 +114,10 @@ async def test_sourceless_group_is_repaired_on_load(hass):
         the_map[const.MAPPING_SOLRAD][const.MAPPING_CONF_SOURCE]
         == const.MAPPING_CONF_SOURCE_NONE
     )
+    assert (
+        the_map[const.MAPPING_PRECIPITATION][const.MAPPING_CONF_SOURCE]
+        == const.MAPPING_CONF_SOURCE_NONE
+    )
 
 
 @pytest.mark.asyncio
@@ -150,12 +154,20 @@ async def test_created_group_gets_real_sources(hass):
             const.MAPPING_MAPPINGS: dict(SOURCELESS_MAPPING),
         }
     )
+    conf = created[const.MAPPING_MAPPINGS]
 
     assert (
-        created[const.MAPPING_MAPPINGS][const.MAPPING_PRECIPITATION][
-            const.MAPPING_CONF_SOURCE
-        ]
+        conf[const.MAPPING_TEMPERATURE][const.MAPPING_CONF_SOURCE]
         == const.MAPPING_CONF_SOURCE_WEATHER_SERVICE
+    )
+    # Rain comes from the service as a rate, not as a depth (#764).
+    assert (
+        conf[const.MAPPING_CURRENT_PRECIPITATION][const.MAPPING_CONF_SOURCE]
+        == const.MAPPING_CONF_SOURCE_WEATHER_SERVICE
+    )
+    assert (
+        conf[const.MAPPING_PRECIPITATION][const.MAPPING_CONF_SOURCE]
+        == const.MAPPING_CONF_SOURCE_NONE
     )
 
 
@@ -229,3 +241,29 @@ async def test_a_group_that_does_not_use_the_service_for_rain_is_left_alone(hass
     )
 
     assert store.mappings[0].mappings[const.MAPPING_CURRENT_PRECIPITATION] == {}
+
+
+@pytest.mark.asyncio
+async def test_the_depth_slot_stops_pointing_at_the_service(hass):
+    """The panel no longer offers it there, so the stored source must agree.
+
+    A source that does nothing is how a sensor group comes to look configured
+    while it is not, which is the whole of #809.
+    """
+    configured_rate = {
+        const.MAPPING_CONF_SOURCE: const.MAPPING_CONF_SOURCE_WEATHER_SERVICE,
+        const.MAPPING_CONF_SENSOR: "",
+        const.MAPPING_CONF_UNIT: "",
+    }
+    store = SmartIrrigationStorage(hass)
+    await store._populate_from_data(_payload(_weather_group(configured_rate)))
+
+    the_map = store.mappings[0].mappings
+    assert (
+        the_map[const.MAPPING_PRECIPITATION][const.MAPPING_CONF_SOURCE]
+        == const.MAPPING_CONF_SOURCE_NONE
+    )
+    assert (
+        the_map[const.MAPPING_CURRENT_PRECIPITATION][const.MAPPING_CONF_SOURCE]
+        == const.MAPPING_CONF_SOURCE_WEATHER_SERVICE
+    )

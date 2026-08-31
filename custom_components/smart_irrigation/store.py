@@ -195,11 +195,18 @@ def default_mapping_entry(mapping_key: str, use_weather_service: bool) -> dict:
     """Return the default source configuration for a single sensor group field.
 
     Evapotranspiration and solar radiation are never delivered by the configured
-    weather service directly, so they default to "none" when a weather service is
-    in use and to a sensor otherwise. Every other field defaults to the weather
-    service when there is one.
+    weather service directly. Neither is the precipitation depth: a weather
+    service supplies a rate, which reaches the water balance through Current
+    Precipitation (#764), and the depth is for a rain gauge of one's own. Those
+    three default to "none" when a weather service is in use and to a sensor
+    otherwise. Every other field defaults to the weather service when there is
+    one.
     """
-    if mapping_key in (MAPPING_EVAPOTRANSPIRATION, MAPPING_SOLRAD):
+    if mapping_key in (
+        MAPPING_EVAPOTRANSPIRATION,
+        MAPPING_SOLRAD,
+        MAPPING_PRECIPITATION,
+    ):
         source = (
             MAPPING_CONF_SOURCE_NONE
             if use_weather_service
@@ -216,18 +223,25 @@ def default_mapping_entry(mapping_key: str, use_weather_service: bool) -> dict:
     }
 
 
-def ensure_precipitation_rate_source(the_map: dict) -> dict:
-    """Give the precipitation rate a source when the depth came from the service.
+def move_service_precipitation_to_the_rate(the_map: dict) -> dict:
+    """Move a weather-service precipitation mapping onto the rate field.
 
-    The water balance is fed by ``Current Precipitation``, the rate, rather than
-    by the weather service's own precipitation totals (#764). Sensor groups that
-    predate the rate field carry it as an empty dict, backfilled by the loader
-    above with no source at all, so leaving them alone would silently drop rain
-    from the balance entirely. They asked the weather service for their rain, so
-    keep asking it, for the field that now carries it.
+    A weather service does not supply a precipitation depth worth using. It
+    supplies the rain of the last hour, a rate, which reaches the water balance
+    through ``Current Precipitation`` and is integrated over the calculation
+    interval (#764). Its daily figure is a forecast for the part of the day that
+    has not happened yet.
 
-    Only a slot with no source is touched. The panel offers no "none" option for
-    this field, so a sourceless one is always the backfill and never a choice.
+    A group that asked the service for its rain has to keep getting it, from the
+    field that now carries it, or it would silently lose precipitation
+    altogether. Groups older than the rate field carry an empty slot for it,
+    backfilled by the loader with no source at all, which is exactly that case.
+
+    The depth slot is then pointed at "none", because the panel no longer offers
+    the weather service there and a source that does nothing is how a sensor
+    group comes to look configured while it is not (#809). A rate sensor
+    somebody configured is left alone, and so is a depth coming from a rain
+    gauge, which still takes precedence over the service.
     """
     if not isinstance(the_map, dict):
         return the_map
@@ -237,17 +251,22 @@ def ensure_precipitation_rate_source(the_map: dict) -> dict:
         or depth.get(MAPPING_CONF_SOURCE) != MAPPING_CONF_SOURCE_WEATHER_SERVICE
     ):
         return the_map
+
     rate = the_map.get(MAPPING_CURRENT_PRECIPITATION)
-    if isinstance(rate, dict) and rate.get(MAPPING_CONF_SOURCE) not in (
+    rate_is_unset = not isinstance(rate, dict) or rate.get(MAPPING_CONF_SOURCE) in (
         None,
         "",
         MAPPING_CONF_SOURCE_NONE,
-    ):
-        return the_map
-    the_map[MAPPING_CURRENT_PRECIPITATION] = {
-        MAPPING_CONF_SOURCE: MAPPING_CONF_SOURCE_WEATHER_SERVICE,
-        MAPPING_CONF_SENSOR: "",
-        MAPPING_CONF_UNIT: "",
+    )
+    if rate_is_unset:
+        the_map[MAPPING_CURRENT_PRECIPITATION] = {
+            MAPPING_CONF_SOURCE: MAPPING_CONF_SOURCE_WEATHER_SERVICE,
+            MAPPING_CONF_SENSOR: "",
+            MAPPING_CONF_UNIT: "",
+        }
+    the_map[MAPPING_PRECIPITATION] = {
+        **depth,
+        MAPPING_CONF_SOURCE: MAPPING_CONF_SOURCE_NONE,
     }
     return the_map
 
@@ -674,7 +693,7 @@ class SmartIrrigationStorage:
                     the_map = normalize_mapping_conf(
                         the_map, config.use_weather_service
                     )
-                    the_map = ensure_precipitation_rate_source(the_map)
+                    the_map = move_service_precipitation_to_the_rate(the_map)
                     mappings[mapping[MAPPING_ID]] = MappingEntry(
                         id=mapping[MAPPING_ID],
                         name=mapping[MAPPING_NAME],
