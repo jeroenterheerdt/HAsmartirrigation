@@ -44,6 +44,7 @@ import {
   UNIT_W_SQFT,
   ZONE_BUCKET,
   ZONE_DRAINAGE_RATE,
+  ZONE_PRECIPITATION_RATE,
   ZONE_SIZE,
   ZONE_THROUGHPUT,
 } from "./const";
@@ -71,6 +72,7 @@ export function getPart(value: any, index: number) {
 export function output_unit(config, arg0: string): TemplateResult {
   switch (arg0) {
     case ZONE_DRAINAGE_RATE:
+    case ZONE_PRECIPITATION_RATE:
       if (config.units == CONF_METRIC) {
         return html`${unsafeHTML(UNIT_MMH)}`;
       } else return html`${unsafeHTML(UNIT_INCHH)}`;

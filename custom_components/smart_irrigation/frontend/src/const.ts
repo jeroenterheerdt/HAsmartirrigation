@@ -163,3 +163,7 @@ export const ZONE_DRAINAGE_RATE = "drainage_rate";
 export const ZONE_CURRENT_DRAINAGE = "current_drainage";
 export const ZONE_LINKED_ENTITY = "linked_entity";
 export const ZONE_FLOW_SENSOR = "flow_sensor";
+export const ZONE_INPUT_METHOD = "input_method";
+export const ZONE_INPUT_METHOD_THROUGHPUT = "throughput";
+export const ZONE_INPUT_METHOD_PRECIPITATION_RATE = "direct";
+export const ZONE_PRECIPITATION_RATE = "precipitation_rate";

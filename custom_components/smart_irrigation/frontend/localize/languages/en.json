@@ -465,6 +465,12 @@
         "maximum-duration": "Maximum duration",
         "multiplier": "Crop factor (Kc)",
         "name": "Name",
+        "input-method": "Input method",
+        "input-methods": {
+          "throughput": "Throughput & area",
+          "direct": "Precipitation rate"
+        },
+        "precipitation-rate": "Precipitation rate",
         "size": "Size",
         "state": "State",
         "states": {
