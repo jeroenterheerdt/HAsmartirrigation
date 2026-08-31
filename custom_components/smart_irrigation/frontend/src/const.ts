@@ -118,6 +118,9 @@ export const UNIT_DEGREES_F = "°F";
 export const UNIT_MM = "mm";
 export const UNIT_INCH = "in";
 export const UNIT_PERCENT = "%";
+// The stored value is "millibar"; the backend knows it under both that name
+// and "mbar" (they are the same unit), so do not "fix" this string: existing
+// sensor groups have it saved.
 export const UNIT_MBAR = "millibar";
 export const UNIT_HPA = "hPa";
 export const UNIT_PSI = "psi";

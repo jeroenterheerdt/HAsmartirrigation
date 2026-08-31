@@ -481,6 +481,14 @@ def convert_pressure(from_unit, to_unit, val):
         return None
     if to_unit == from_unit:
         return val
+    # The panel stores "millibar" for this unit while the constant used
+    # throughout the conversions is "mbar". They are the same unit, but a
+    # sensor with millibar selected converted to None, which dropped pressure
+    # out of the record entirely and left PyETO reporting it as missing.
+    from_unit = UNIT_MBAR if from_unit == UNIT_MILLIBAR else from_unit
+    to_unit = UNIT_MBAR if to_unit == UNIT_MILLIBAR else to_unit
+    if to_unit == from_unit:
+        return val
     if to_unit in [UNIT_MBAR, UNIT_HPA]:
         if from_unit in [UNIT_HPA, UNIT_MBAR]:
             # 1 mbar = 1hpa
