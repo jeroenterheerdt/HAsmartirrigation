@@ -848,36 +848,40 @@ export class SmartIrrigationViewGeneral extends SubscribeMixin(LitElement) {
                     lang,
                   )}
                 </div>
-                <div class="setting-row">
-                  <div class="setting-label">
-                    ${localize("observed_watering.sequencing_label", lang)}
-                  </div>
-                  <select
-                    class="field"
-                    @change=${(e: Event) =>
-                      this.handleConfigChange({
-                        zone_sequencing: (e.target as HTMLSelectElement).value,
-                      })}
-                  >
-                    <option
-                      value="sequential"
-                      ?selected=${this.config.zone_sequencing === "sequential"}
-                    >
-                      ${localize(
-                        "observed_watering.sequencing.sequential",
-                        lang,
-                      )}
-                    </option>
-                    <option
-                      value="parallel"
-                      ?selected=${this.config.zone_sequencing === "parallel"}
-                    >
-                      ${localize("observed_watering.sequencing.parallel", lang)}
-                    </option>
-                  </select>
-                </div>
               `
             : ""}
+
+          <!-- Sequencing also decides what a start trigger works back from to
+               finish at sunrise, so it applies whether Smart Irrigation drives
+               the valves or an automation of your own does. -->
+          <div class="setting-row">
+            <div class="setting-label">
+              ${localize("observed_watering.sequencing_label", lang)}
+            </div>
+            <select
+              class="field"
+              @change=${(e: Event) =>
+                this.handleConfigChange({
+                  zone_sequencing: (e.target as HTMLSelectElement).value,
+                })}
+            >
+              <option
+                value="sequential"
+                ?selected=${this.config.zone_sequencing === "sequential"}
+              >
+                ${localize("observed_watering.sequencing.sequential", lang)}
+              </option>
+              <option
+                value="parallel"
+                ?selected=${this.config.zone_sequencing === "parallel"}
+              >
+                ${localize("observed_watering.sequencing.parallel", lang)}
+              </option>
+            </select>
+          </div>
+          <div class="card-content">
+            ${localize("observed_watering.sequencing_description", lang)}
+          </div>
         </div>
       </ha-card>
     `;

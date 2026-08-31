@@ -22,21 +22,35 @@ class SkipConditionsMixin:
     """
 
     async def get_total_duration_all_enabled_zones(self):
-        """Calculate the total duration for all enabled (automatic or manual) zones.
+        """How long watering every enabled zone takes, in seconds.
+
+        This is what a start trigger works back from to finish at sunrise, so it
+        has to be the wall-clock length of the run, not the amount of watering in
+        it. Zones run one after another by default, which is their sum; run in
+        parallel they all finish with the longest one, and summing then started
+        the run hours too early (#552). Which of the two it is comes from the
+        zone sequencing setting.
 
         Returns:
-            int: The sum of durations for all enabled zones.
+            int: The duration of the whole run for all enabled zones.
 
         """
-        total_duration = 0
         zones = await self.store.async_get_zones()
-        for zone in zones:
-            if (
-                zone.get(const.ZONE_STATE) == const.ZONE_STATE_AUTOMATIC
-                or zone.get(const.ZONE_STATE) == const.ZONE_STATE_MANUAL
-            ):
-                total_duration += zone.get(const.ZONE_DURATION, 0)
-        return total_duration
+        durations = [
+            zone.get(const.ZONE_DURATION, 0)
+            for zone in zones
+            if zone.get(const.ZONE_STATE)
+            in (const.ZONE_STATE_AUTOMATIC, const.ZONE_STATE_MANUAL)
+        ]
+        if not durations:
+            return 0
+        config = await self.store.async_get_config()
+        sequencing = config.get(
+            const.CONF_ZONE_SEQUENCING, const.CONF_DEFAULT_ZONE_SEQUENCING
+        )
+        if sequencing == const.CONF_ZONE_SEQUENCING_PARALLEL:
+            return max(durations)
+        return sum(durations)
 
     async def _check_precipitation_forecast(self) -> bool:
         """Check if precipitation is forecasted and should skip irrigation.

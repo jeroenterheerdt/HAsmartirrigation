@@ -490,6 +490,7 @@
     "sequencing": {
       "sequential": "Sequential (one zone at a time)",
       "parallel": "Parallel (all zones at once)"
-    }
+    },
+    "sequencing_description": "How your zones are watered. This sets what a start trigger works back from when it has to finish at sunrise: one after another takes the sum of every zone's run time, all at once takes the longest of them. It applies whether Smart Irrigation opens the valves itself or an automation of your own does."
   }
 }
