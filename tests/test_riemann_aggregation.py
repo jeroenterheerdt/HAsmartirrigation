@@ -60,3 +60,72 @@ async def test_riemann_sum_15_minute_interval():
     )
     # trapezoids: ((10+20)/2 + (20+30)/2) * (900 / 86400) = 40 * 0.0104166...
     assert resultdata[const.MAPPING_SOLRAD] == pytest.approx(40.0 * 900.0 / 86400.0)
+
+
+def _mapping_with_data(key, data):
+    return {
+        const.MAPPING_ID: 1,
+        const.MAPPING_MAPPINGS: {
+            key: {const.MAPPING_CONF_AGGREGATE: const.MAPPING_CONF_AGGREGATE_RIEMANNSUM}
+        },
+        const.MAPPING_DATA: data,
+        const.MAPPING_DATA_LAST_CALCULATION: {},
+    }
+
+
+async def test_records_carrying_one_key_each_still_integrate_correctly():
+    """Continuous updates append one record per sensor state change (#363).
+
+    Each record then carries a single key, so the flat list of record timestamps
+    never lines up with a key's values. The length check that guarded it fell
+    back to one day per sample, inflating the result by roughly the number of
+    samples: with solar radiation aggregated by Riemann sum, which is what the
+    docs recommend for continuous updates, a day of samples came out about a
+    hundred times too large.
+    """
+    coordinator = _Coordinator()
+    start = datetime(2026, 8, 31, 0, 0, 0)
+    # A steady 20 MJ/day/m2 over 24h is 20, whatever else is interleaved.
+    data = []
+    for i in range(5):
+        stamp = start + timedelta(hours=6 * i)
+        data.append({const.MAPPING_WINDSPEED: 1.0, const.RETRIEVED_AT: stamp})
+        data.append({const.MAPPING_SOLRAD: 20.0, const.RETRIEVED_AT: stamp})
+
+    result = await coordinator.apply_aggregates_to_mapping_data(
+        _mapping_with_data(const.MAPPING_SOLRAD, data)
+    )
+
+    assert result[const.MAPPING_SOLRAD] == pytest.approx(20.0)
+
+
+async def test_uneven_sampling_uses_each_interval():
+    """One average spacing misrepresents samples that are not evenly spaced."""
+    coordinator = _Coordinator()
+    start = datetime(2026, 8, 31, 0, 0, 0)
+    # 12 MJ/day/m2 held for 18 hours, then 0 for the last 6.
+    data = [
+        {const.MAPPING_SOLRAD: 12.0, const.RETRIEVED_AT: start},
+        {const.MAPPING_SOLRAD: 12.0, const.RETRIEVED_AT: start + timedelta(hours=18)},
+        {const.MAPPING_SOLRAD: 0.0, const.RETRIEVED_AT: start + timedelta(hours=24)},
+    ]
+
+    result = await coordinator.apply_aggregates_to_mapping_data(
+        _mapping_with_data(const.MAPPING_SOLRAD, data)
+    )
+
+    # 12 * 0.75 day + (12+0)/2 * 0.25 day
+    assert result[const.MAPPING_SOLRAD] == pytest.approx(10.5)
+
+
+async def test_missing_timestamps_are_spread_over_the_interval_and_warned(caplog):
+    """Never silently assume a day per sample."""
+    coordinator = _Coordinator()
+    data = [{const.MAPPING_SOLRAD: 20.0}, {const.MAPPING_SOLRAD: 20.0}]
+
+    result = await coordinator.apply_aggregates_to_mapping_data(
+        _mapping_with_data(const.MAPPING_SOLRAD, data)
+    )
+
+    assert "no usable timestamps" in caplog.text
+    assert result[const.MAPPING_SOLRAD] < 20.0

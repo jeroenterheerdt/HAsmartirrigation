@@ -85,7 +85,7 @@ class CalculationMixin:
         if not data:
             return None
 
-        data_by_sensor = self._group_data_by_sensor(data)
+        data_by_sensor, timestamps_by_sensor = self._group_data_by_sensor(data)
         resultdata = {}
 
         hour_multiplier = self._calc_hour_multiplier(data_by_sensor, mapping)
@@ -95,24 +95,46 @@ class CalculationMixin:
             self._fill_missing_from_last_entry(mapping, data_by_sensor)
 
         await self._aggregate_sensor_data(
-            data_by_sensor, mapping, resultdata, persist=persist
+            data_by_sensor,
+            mapping,
+            resultdata,
+            persist=persist,
+            timestamps_by_sensor=timestamps_by_sensor,
         )
 
         _LOGGER.debug("[apply_aggregates_to_mapping_data] returns %s", resultdata)
         return resultdata
 
     def _group_data_by_sensor(self, data):
-        """Group mapping data by sensor key."""
+        """Group mapping data by sensor key, keeping each value's timestamp.
+
+        A record does not have to carry every key. Continuous updates append one
+        record per sensor state change, so most records carry a single key, and
+        a value can also be missing because its sensor was unavailable. The flat
+        list of record timestamps therefore does not line up with any one key's
+        values, which is why they are paired here instead (#363).
+
+        Returns:
+            tuple: (values per key, timestamp per value per key)
+
+        """
         data_by_sensor = {}
+        timestamps_by_sensor = {}
         for d in data:
-            if isinstance(d, dict):
-                for key, val in d.items():
-                    if val is not None:
-                        data_by_sensor.setdefault(key, []).append(val)
+            if not isinstance(d, dict):
+                continue
+            retrieved_at = d.get(const.RETRIEVED_AT)
+            for key, val in d.items():
+                if val is None:
+                    continue
+                data_by_sensor.setdefault(key, []).append(val)
+                if key != const.RETRIEVED_AT:
+                    timestamps_by_sensor.setdefault(key, []).append(retrieved_at)
         # Drop MAX and MIN temp mapping because we calculate it from temp
-        data_by_sensor.pop(const.MAPPING_MAX_TEMP, None)
-        data_by_sensor.pop(const.MAPPING_MIN_TEMP, None)
-        return data_by_sensor
+        for key in (const.MAPPING_MAX_TEMP, const.MAPPING_MIN_TEMP):
+            data_by_sensor.pop(key, None)
+            timestamps_by_sensor.pop(key, None)
+        return data_by_sensor, timestamps_by_sensor
 
     def _calc_hour_multiplier(self, data_by_sensor, mapping):
         """Process retrieved_at timestamps and calculate hour multiplier."""
@@ -218,9 +240,20 @@ class CalculationMixin:
         return precip
 
     async def _aggregate_sensor_data(
-        self, data_by_sensor, mapping, resultdata, persist=True
+        self,
+        data_by_sensor,
+        mapping,
+        resultdata,
+        persist=True,
+        timestamps_by_sensor=None,
     ):
-        """Aggregate sensor data by configured or default aggregate."""
+        """Aggregate sensor data by configured or default aggregate.
+
+        ``timestamps_by_sensor`` carries the timestamp of each value, per key,
+        which is what the Riemann sum integrates over. Without it the flat
+        RETRIEVED_AT list is used, which is only right when every record carries
+        every key.
+        """
         last_calc_data = mapping.get(const.MAPPING_DATA_LAST_CALCULATION) or {}
         last_calc_data[const.MAPPING_TIMESTAMP] = datetime.now()
 
@@ -266,7 +299,7 @@ class CalculationMixin:
                     if val < prev:
                         if val == 0:
                             _LOGGER.debug(
-                                "[_aggregate_sensor_data]: detected reset to zero",
+                                "[_aggregate_sensor_data]: detected reset to zero (%s < %s)",
                                 val,
                                 prev,
                             )
@@ -329,34 +362,49 @@ class CalculationMixin:
                         interval_days * 86400.0 / seconds_per_unit
                     )
                 else:
-                    # Trapezoidal rule: sum((d[i] + d[i+1]) / 2) * dt
-                    dt = 1.0
-                    # If we have timestamps, use them to get dt
-                    if const.RETRIEVED_AT in data_by_sensor:
-                        timestamps = data_by_sensor[const.RETRIEVED_AT]
-                        if len(timestamps) == len(d):
-                            try:
-                                # Convert all to datetime
-                                times = []
-                                for t in timestamps:
-                                    if parsed := parse_datetime(t):
-                                        times.append(parsed)
-                                # Calculate average dt in days
-                                if len(times) > 1:
-                                    dts = [
-                                        (times[i + 1] - times[i]).total_seconds()
-                                        / seconds_per_unit
-                                        for i in range(len(times) - 1)
-                                    ]
-                                    dt = statistics.mean(dts)
-                            except (ValueError, TypeError) as err:
-                                _LOGGER.error(
-                                    "[_aggregate_sensor_data]: Failed to parse timestamps for Riemann sum: %s",
-                                    err,
-                                )
-                    # Calculate the sum
+                    # Trapezoidal rule: sum((d[i] + d[i+1]) / 2 * dt[i]), with
+                    # each interval measured from the timestamps of the two
+                    # values it joins rather than from one average spacing, so
+                    # samples that are not evenly spaced integrate correctly.
+                    timestamps = (timestamps_by_sensor or {}).get(key)
+                    if timestamps is None:
+                        # No per-key timestamps: the flat record timestamps are
+                        # only usable when every record carried every key.
+                        timestamps = data_by_sensor.get(const.RETRIEVED_AT)
+                    times = []
+                    if timestamps is not None and len(timestamps) == len(d):
+                        try:
+                            times = [parse_datetime(t) for t in timestamps]
+                        except (ValueError, TypeError) as err:
+                            _LOGGER.error(
+                                "[_aggregate_sensor_data]: Failed to parse timestamps for Riemann sum: %s",
+                                err,
+                            )
+                            times = []
+                    if len(times) != len(d) or any(t is None for t in times):
+                        # Falling back to one day per sample silently inflated
+                        # the result by the number of samples (#363), so say so
+                        # and integrate over the calculation interval instead.
+                        interval_days = resultdata.get(const.MAPPING_DATA_MULTIPLIER, 0)
+                        dt = (
+                            interval_days
+                            * 86400.0
+                            / seconds_per_unit
+                            / max(len(d) - 1, 1)
+                        )
+                        _LOGGER.warning(
+                            "[_aggregate_sensor_data]: no usable timestamps for the Riemann sum of '%s'; "
+                            "spreading its %s samples evenly over the calculation interval",
+                            key,
+                            len(d),
+                        )
+                        times = None
                     riemann_sum = 0.0
                     for i in range(len(d) - 1):
+                        if times is not None:
+                            dt = (
+                                times[i + 1] - times[i]
+                            ).total_seconds() / seconds_per_unit
                         riemann_sum += ((d[i] + d[i + 1]) / 2) * dt
                     resultdata[key] = riemann_sum
             last_calc_data[key] = d[-1]
