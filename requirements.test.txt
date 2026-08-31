@@ -6,18 +6,13 @@
 # Component-specific dependency
 aiofiles
 
-# Home Assistant and testing framework
-homeassistant>=2023.1.0
-pytest>=7.0.0
-pytest-homeassistant-custom-component>=0.13.0
-pytest-asyncio>=0.21.0
-# pinned below 1.1: pytest-aiohttp 1.1 wants a pytest-asyncio that
-# pytest-homeassistant-custom-component does not allow, and pip cannot resolve
-# the two together (dependabot #740)
-pytest-aiohttp>=1.0.0,<1.1
-pytest-cov>=4.0.0
-
-# Additional testing utilities
-freezegun>=1.2.0
-respx>=0.20.0
-syrupy>=4.0.0
+# Home Assistant and testing framework.
+#
+# pytest-homeassistant-custom-component pins the whole test stack to the set
+# that matches the Home Assistant version it targets: pytest, pytest-asyncio,
+# pytest-aiohttp, pytest-cov, freezegun, respx and syrupy are all requirements
+# of it. Pinning them here as well only gives pip room to pick a combination
+# that cannot be satisfied, which is how the install step broke outright when a
+# floor was raised on one of them (#740). Let it drive.
+homeassistant>=2026.6.4
+pytest-homeassistant-custom-component>=0.13.342
