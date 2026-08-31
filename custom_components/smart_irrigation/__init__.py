@@ -1860,6 +1860,46 @@ class SmartIrrigationCoordinator(
                     static_values[key] = val
         return static_values
 
+    async def _supersede_precipitation_on_bucket_set(self, zone_id, data):
+        """Record the rain an asserted bucket value has already accounted for.
+
+        Setting the bucket says the soil is in a known state right now, which is
+        what ``reset_bucket`` asserts at the end of the documented irrigation
+        automation. The rain collected since the last calculation happened
+        before that assertion, so it is part of what the assertion is about, but
+        the calculation window spans the moment of the reset and would credit it
+        to the bucket afterwards, on top of the value just asserted (#811).
+
+        Nothing is needed on the closed-loop path: observed watering credits the
+        bucket by the water applied rather than asserting a value, and the
+        running balance already comes out right there.
+        """
+        if const.ATTR_NEW_BUCKET_VALUE not in data:
+            return data
+        zone = self.store.get_zone(zone_id)
+        if not zone:
+            return data
+        try:
+            superseded = await self.precipitation_since_last_calculation(zone)
+        except Exception as e:
+            # Losing the marker costs accuracy at the next calculation; failing
+            # the bucket reset would leave an automation half done.
+            _LOGGER.error(
+                "Could not work out the rain superseded by the new bucket value "
+                "on zone %s: %s",
+                zone.get(const.ZONE_NAME),
+                e,
+            )
+            return data
+        if superseded <= 0:
+            return data
+        _LOGGER.debug(
+            "[set_bucket] zone %s: %.1f mm of rain is superseded by the asserted bucket value",
+            zone.get(const.ZONE_NAME),
+            superseded,
+        )
+        return {**data, const.ZONE_PRECIPITATION_SUPERSEDED: superseded}
+
     async def async_update_zone_config(
         self, zone_id: int | None = None, data: dict | None = None
     ):
@@ -1947,6 +1987,7 @@ class SmartIrrigationCoordinator(
             await self.handle_clear_weatherdata(None)
         elif zone_id is not None and self.store.get_zone(zone_id):
             # modify a zone
+            data = await self._supersede_precipitation_on_bucket_set(zone_id, data)
             entry = await self.store.async_update_zone(zone_id, data)
             async_dispatcher_send(self.hass, const.DOMAIN + "_config_updated", zone_id)
             await self.update_subscriptions()

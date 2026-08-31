@@ -191,6 +191,26 @@ class CalculationMixin:
         )
         return hour_multiplier
 
+    def _precipitation_net_of_superseded(self, zone, weatherdata):
+        """Precipitation for the interval, less what an asserted bucket covered.
+
+        Setting the bucket says the soil is in a known state, so the rain that
+        fell before it is already accounted for and must not be added on top of
+        the value asserted (#811).
+        """
+        precip = self._precipitation_for_interval(zone, weatherdata)
+        superseded = zone.get(const.ZONE_PRECIPITATION_SUPERSEDED) or 0.0
+        if superseded <= 0:
+            return precip
+        net = max(0.0, precip - superseded)
+        _LOGGER.debug(
+            "[calculate-module]: %.1f mm of the %.1f mm collected was superseded by an asserted bucket value, using %.1f mm",
+            superseded,
+            precip,
+            net,
+        )
+        return net
+
     def _precipitation_for_interval(self, zone, weatherdata):
         """Return the precipitation to add to the bucket, in mm.
 
@@ -231,6 +251,17 @@ class CalculationMixin:
             precip = rate
         else:
             interval_hours = weatherdata.get(const.MAPPING_DATA_MULTIPLIER, 0) * 24
+            # The services report the rain of the last hour only, so one sample
+            # accounts for one hour however far apart the samples are. Spreading
+            # the average over the whole interval extrapolates the hours that
+            # were never looked at: at a six-hourly update, 6 mm falling in a
+            # sampled hour came out as 36 mm. Never credit more hours than were
+            # actually observed.
+            observed_hours = weatherdata.get(
+                const.MAPPING_CURRENT_PRECIPITATION_SAMPLES
+            )
+            if observed_hours:
+                interval_hours = min(interval_hours, observed_hours)
             precip = rate * interval_hours
         _LOGGER.debug(
             "[calculate-module]: no precipitation depth, using the rate %s mm/h over the interval: %s",
@@ -261,6 +292,9 @@ class CalculationMixin:
             if key == const.RETRIEVED_AT:
                 continue
             d = [float(i) for i in d]
+
+            if key == const.MAPPING_CURRENT_PRECIPITATION:
+                resultdata[const.MAPPING_CURRENT_PRECIPITATION_SAMPLES] = len(d)
 
             aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT
             if key == const.MAPPING_PRECIPITATION:
@@ -590,6 +624,9 @@ class CalculationMixin:
 
         calc_data[const.ZONE_LAST_CALCULATED] = datetime.now()
         calc_data[const.ZONE_LAST_UPDATED] = datetime.now()
+        # The window this calculation just consumed is the one an asserted
+        # bucket value superseded part of, so the marker has done its job (#811).
+        calc_data[const.ZONE_PRECIPITATION_SUPERSEDED] = 0.0
 
         # check if data contains delete data true, if so delete the weather data
         if delete_weather_data:
@@ -675,7 +712,7 @@ class CalculationMixin:
             delta = modinst.calculate(
                 weather_data=weatherdata, forecast_data=forecastdata
             )
-            precip = self._precipitation_for_interval(zone, weatherdata)
+            precip = self._precipitation_net_of_superseded(zone, weatherdata)
         elif m[const.MODULE_NAME] == "Static":
             delta = modinst.calculate()
         elif m[const.MODULE_NAME] == "Passthrough":
@@ -686,7 +723,7 @@ class CalculationMixin:
                 # Passthrough bypasses the ET calculation, not the water
                 # balance: measured/forecast precipitation must still refill
                 # the bucket, otherwise it can only ever drain (#790).
-                precip = self._precipitation_for_interval(zone, weatherdata)
+                precip = self._precipitation_net_of_superseded(zone, weatherdata)
             else:
                 _LOGGER.error(
                     "No evapotranspiration value provided for Passthrough module for zone %s",

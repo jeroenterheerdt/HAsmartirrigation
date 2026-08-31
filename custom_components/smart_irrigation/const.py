@@ -305,6 +305,9 @@ ZONE_CURRENT_DRAINAGE = "current_drainage"
 # (litres). Both set when a run credits the bucket (direct or observed).
 ZONE_LAST_IRRIGATION = "last_irrigation"
 ZONE_WATER_USED = "water_used"
+# Rain already accounted for by an asserted bucket value, subtracted at the next
+# calculation so it is not credited twice (#811).
+ZONE_PRECIPITATION_SUPERSEDED = "precipitation_superseded"
 # Optional valve/switch entity observed to credit the bucket (closed-loop).
 ZONE_LINKED_ENTITY = "linked_entity"
 # Optional cumulative volume/flow meter; credits the bucket by measured volume.
@@ -336,6 +339,9 @@ MAPPING_MAX_TEMP = "Maximum Temperature"
 MAPPING_MIN_TEMP = "Minimum Temperature"
 MAPPING_PRECIPITATION = "Precipitation"
 MAPPING_CURRENT_PRECIPITATION = "Current Precipitation"
+# How many samples of the precipitation rate went into an aggregate. Each one
+# reports the last hour, so it also says how many hours were actually observed.
+MAPPING_CURRENT_PRECIPITATION_SAMPLES = "current_precipitation_samples"
 MAPPING_PRESSURE = "Pressure"
 MAPPING_SOLRAD = "Solar Radiation"
 MAPPING_TEMPERATURE = "Temperature"

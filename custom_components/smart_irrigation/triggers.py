@@ -468,6 +468,9 @@ class TriggersMixin:
                 continue
             try:
                 rain_mm = await self.precipitation_since_last_calculation(zone)
+                # Rain an asserted bucket value already accounted for is not
+                # available to shorten the run either (#811).
+                rain_mm -= zone.get(const.ZONE_PRECIPITATION_SUPERSEDED) or 0.0
                 if rain_mm <= 0:
                     continue
                 rain_native = (

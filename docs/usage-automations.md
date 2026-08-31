@@ -12,6 +12,8 @@ Since this integration does not interface with your irrigation system directly, 
 
 > **The last step in any automation is very important, since you will need to let the integration know you have finished irrigating and the evaporation counter can be reset by calling the `smart_irrigation.reset_bucket` service**
 
+> Resetting the bucket says the soil is at field capacity at that moment, so any rain collected since the last calculation is part of what that statement covers and is not counted again at the next one. Rain falling after the reset still counts as usual. This matters when it rains between the calculation and irrigation: without it the same rain would both shorten the run and fill the next bucket.
+
 Experts say you should water deeply but infrequently to avoid overwatering and encourage deep rooting. It might be a good idea to create an automation that starts early enough to finish before sunrise (using the [`smart_irrigation_start_irrigation_all_zones` event](usage-events.md)) and only once per week if duration is above `0` or whenever the `bucket < -25 mm`. Adjust to your specific needs.
 
 The examples on this page don't use a timer - see [this discussion](https://github.com/altmenorg/HAsmartirrigation/discussions/361) for an example of using a timer for extra safety.

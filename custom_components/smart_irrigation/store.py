@@ -128,6 +128,7 @@ from .const import (
     ZONE_MULTIPLIER,
     ZONE_NAME,
     ZONE_NUMBER_OF_DATA_POINTS,
+    ZONE_PRECIPITATION_SUPERSEDED,
     ZONE_SIZE,
     ZONE_STATE,
     ZONE_STATE_AUTOMATIC,
@@ -176,6 +177,11 @@ class ZoneEntry:
     water_used = attr.ib(type=float, default=0.0)
     # Optional valve/switch entity watched to credit the bucket (closed-loop).
     linked_entity = attr.ib(type=str, default=None)
+    # Rain already accounted for by an asserted bucket value. Setting the bucket
+    # says the soil is in a known state, which supersedes the rain collected
+    # since the last calculation; without this it lands in the bucket again at
+    # the next one (#811).
+    precipitation_superseded = attr.ib(type=float, default=0.0)
     # Optional cumulative volume meter; credits the bucket by measured volume.
     flow_sensor = attr.ib(type=str, default=None)
 
@@ -653,6 +659,9 @@ class SmartIrrigationStorage:
                         current_drainage=zone.get(ZONE_CURRENT_DRAINAGE, None),
                         last_irrigation=zone.get(ZONE_LAST_IRRIGATION, None),
                         water_used=zone.get(ZONE_WATER_USED, 0.0),
+                        precipitation_superseded=zone.get(
+                            ZONE_PRECIPITATION_SUPERSEDED, 0.0
+                        ),
                         linked_entity=zone.get(ZONE_LINKED_ENTITY, None),
                         flow_sensor=zone.get(ZONE_FLOW_SENSOR, None),
                     )
