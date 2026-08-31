@@ -303,17 +303,15 @@ class PirateWeatherClient:  # pylint: disable=invalid-name
                         PirateWeather_current_precip_key_name
                     ]
 
-                    # Use actual measured precipitation intensity (precipIntensity, mm/h)
-                    # instead of daily precipAccumulation (forecast total including
-                    # future rain). Crediting forecast rain before it falls causes bucket
-                    # jumps that swing back when the forecast changes or doesn't
-                    # materialise (issue #694).
-                    parsed_data[MAPPING_PRECIPITATION] = parsed_data.get(
-                        MAPPING_CURRENT_PRECIPITATION, 0.0
-                    )
+                    # The water balance is fed by Current Precipitation, the
+                    # rate, which is integrated over the calculation interval.
+                    # Copying it into Precipitation as well would hand the
+                    # aggregation a per-interval amount to treat as an
+                    # accumulated depth, which is what undercounted the rain
+                    # (#764).
                     _LOGGER.debug(
-                        "PirateWeatherCLIENT daily precipitation: %s",
-                        parsed_data[MAPPING_PRECIPITATION],
+                        "PirateWeatherCLIENT precipitation rate (precipIntensity): %s mm/h",
+                        parsed_data[MAPPING_CURRENT_PRECIPITATION],
                     )
 
                     self._cached_data = parsed_data

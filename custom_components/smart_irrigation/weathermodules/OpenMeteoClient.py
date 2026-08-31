@@ -174,10 +174,13 @@ class OpenMeteoClient:  # pylint: disable=invalid-name
                 parsed_data[MAPPING_SOLRAD] = (
                     cur["shortwave_radiation"] * WM2_TO_MJ_PER_DAY
                 )
-            # today's precipitation total from the daily block
-            parsed_data[MAPPING_PRECIPITATION] = self._daily_value(
-                doc, "precipitation_sum", 0, 0.0
-            )
+            # Today's daily total is deliberately not reported here. It is a
+            # forecast for the part of the day that has not happened yet, and
+            # feeding it to the water balance credited rain before it fell
+            # (#787). Current Precipitation above is the measured rate, which is
+            # integrated over the calculation interval instead (#764). The daily
+            # total is still used where a forecast is what is wanted, in
+            # get_forecast_data and the precipitation-skip check.
             self._cached_doc = doc
             return parsed_data
         except (KeyError, requests.RequestException, json.JSONDecodeError) as ex:

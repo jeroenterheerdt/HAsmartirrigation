@@ -322,16 +322,15 @@ class OWMClient:  # pylint: disable=invalid-name
                     # parsed_data[MAPPING_MAX_TEMP] = data[OWM_temp_key_name]
                     # parsed_data[MAPPING_MIN_TEMP] = data[OWM_temp_key_name]
 
-                    # Use actual measured rain (rain.1h + snow.1h from the current
-                    # observation) instead of daily[0].rain (forecast total). Crediting
-                    # forecast rain before it falls causes bucket jumps that swing back
-                    # when the forecast changes or doesn't materialise (issue #694).
-                    parsed_data[MAPPING_PRECIPITATION] = parsed_data.get(
-                        MAPPING_CURRENT_PRECIPITATION, 0.0
-                    )
+                    # The water balance is fed by Current Precipitation, the
+                    # rate, which is integrated over the calculation interval.
+                    # Copying it into Precipitation as well would hand the
+                    # aggregation a per-interval amount to treat as an
+                    # accumulated depth, which is what undercounted the rain
+                    # (#764).
                     _LOGGER.debug(
-                        "OWMCLIENT actual precipitation (rain.1h + snow.1h): %s",
-                        parsed_data[MAPPING_PRECIPITATION],
+                        "OWMCLIENT actual precipitation rate (rain.1h + snow.1h): %s mm/h",
+                        parsed_data[MAPPING_CURRENT_PRECIPITATION],
                     )
 
                     self._cached_data = parsed_data

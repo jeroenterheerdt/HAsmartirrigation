@@ -26,7 +26,7 @@ The following data can be provided:
 |**Dewpoint**|Yes|Weather Service<br/>Sensor<br/>Static value|°C<br/>°F|Average|Last|
 |**Evapotranspiration**|No|None (module will calculate it)<br/>Sensor<br/>Static value|in<br/>mm|Average|Last|
 |**Humidity**|Yes|Weather Service<br/>Sensor<br/>Static value|%|Average|Last|
-|**Total precipitation**|Yes|Weather Service<br/>Sensor<br/>Static value|in<br/>mm|Delta|Delta|
+|**Total precipitation**|No|Sensor<br/>Static value|in<br/>mm|Delta|Delta|
 |**Pressure** (*see notes below the table)|Yes|Weather Service<br/>Sensor<br/>Static value|hPa<br/>inch Hg<br/>millibar<br/>psi|Average|Last|
 |**Solar Radiation**|No|None (requires module to estimate it)<br/>Sensor<br/>Static value|MJ/day/m2<br/>MJ/day/sq ft<br/>W/m2<br/>W/sq ft|Average|Riemann Sum|
 |**Temperature**|Yes|Weather Service<br/>Sensor<br/>Static value|°C<br/>°F|Average|Last|
@@ -47,7 +47,10 @@ Please note:
    ```
 - Total precipitation is the total amount of precipitation you want to take into account for the calculations. Use the 'Delta' aggregation type along with a sensor source that accumulates over a time period, usually named something like 'daily rain', 'weekly rain', or 'total rain'. The delta aggregation will correctly handle value resets (such as daily rain becoming zero at midnight). Keep in mind that the total precipitation is expected to be a total over the time period, not the current precipitation rate.
 - Current precipitation is a *rate* (mm/h or in/h), while total precipitation is a *depth* (mm or in) accumulated over the interval. They are two different quantities and only one of them feeds the water balance: total precipitation is used when it has a value, and current precipitation is only used when it does not. That way a rain rate sensor is never counted on top of a rain gauge.
-- If total precipitation is the only one you can provide, map it and leave current precipitation unset, which is the usual case. If your weather station only exposes a rain *rate* and no accumulating total, map current precipitation instead: it is integrated over the interval since the last calculation to give the amount of rain that fell. With the 'Average' aggregation the mean rate over the interval is used, which is right for evenly spaced samples; with 'Riemann Sum' the samples are integrated over their own timestamps, which is more accurate when they are not evenly spaced.
+- **A weather service supplies the rate, not the total.** All three services report the rain of the last hour (or, for Pirate Weather, the rate at this instant), which is a measurement. Their daily precipitation figure is a *forecast* for the part of the day that has not happened yet, so crediting it to the bucket would add rain that may never fall. The rate is collected at every update and integrated over the interval since the last calculation to give the amount of rain that actually fell. If you use a weather service, leave total precipitation unset and let current precipitation come from the service.
+- **Set the automatic update interval to 1 hour or shorter when precipitation comes from a weather service.** The services report the last hour only, so collecting every few hours leaves the hours in between unobserved: rain falling in them is not counted at all. A warning is logged if the interval is longer than that.
+- Map total precipitation when you have a rain gauge of your own that accumulates, which is more accurate than any service. It then takes precedence over the service's rate, so the two are never added together.
+- With the 'Average' aggregation on current precipitation the mean rate over the interval is used, which is right for evenly spaced samples; with 'Riemann Sum' the samples are integrated over their own timestamps, which is more accurate when they are not evenly spaced.
 - When using continuous updates, all aggregations are expected to be set to `Last`, with the exception of Solar Radiation and Current Precipitation, which need to be set to `Riemann Sum`, and Total Precipitation, which needs `Delta`.
 
 ## Deleting a sensor group

@@ -157,3 +157,75 @@ async def test_created_group_gets_real_sources(hass):
         ]
         == const.MAPPING_CONF_SOURCE_WEATHER_SERVICE
     )
+
+
+def _weather_group(current_precipitation, precipitation_source=None):
+    """A group whose precipitation depth comes from the weather service."""
+    if precipitation_source is None:
+        precipitation_source = const.MAPPING_CONF_SOURCE_WEATHER_SERVICE
+    return {
+        const.MAPPING_ID: 0,
+        const.MAPPING_NAME: "Weather group",
+        const.MAPPING_MAPPINGS: {
+            const.MAPPING_PRECIPITATION: {
+                const.MAPPING_CONF_SOURCE: precipitation_source,
+                const.MAPPING_CONF_SENSOR: "",
+            },
+            const.MAPPING_CURRENT_PRECIPITATION: current_precipitation,
+        },
+    }
+
+
+def _payload(mapping):
+    return {
+        "config": {
+            const.CONF_USE_WEATHER_SERVICE: True,
+            const.CONF_WEATHER_SERVICE: "Open-Meteo",
+        },
+        "zones": [],
+        "mappings": [mapping],
+    }
+
+
+@pytest.mark.asyncio
+async def test_sourceless_rate_slot_is_pointed_at_the_weather_service(hass):
+    """Groups older than the rate field carry an empty slot for it.
+
+    The water balance is now fed by the rate rather than by the service's own
+    precipitation totals (#764), so leaving that slot sourceless would silently
+    drop rain from the balance of every group that predates the field.
+    """
+    store = SmartIrrigationStorage(hass)
+    await store._populate_from_data(_payload(_weather_group({})))
+
+    rate = store.mappings[0].mappings[const.MAPPING_CURRENT_PRECIPITATION]
+    assert rate[const.MAPPING_CONF_SOURCE] == (
+        const.MAPPING_CONF_SOURCE_WEATHER_SERVICE
+    )
+
+
+@pytest.mark.asyncio
+async def test_a_configured_rate_sensor_is_left_alone(hass):
+    """Someone who wired their own rain rate sensor keeps it."""
+    configured = {
+        const.MAPPING_CONF_SOURCE: const.MAPPING_CONF_SOURCE_SENSOR,
+        const.MAPPING_CONF_SENSOR: "sensor.rain_rate",
+        const.MAPPING_CONF_UNIT: "mm/h",
+    }
+    store = SmartIrrigationStorage(hass)
+    await store._populate_from_data(_payload(_weather_group(configured)))
+
+    assert store.mappings[0].mappings[const.MAPPING_CURRENT_PRECIPITATION] == configured
+
+
+@pytest.mark.asyncio
+async def test_a_group_that_does_not_use_the_service_for_rain_is_left_alone(hass):
+    """A rain gauge already feeds the depth; do not add a service rate next to it."""
+    store = SmartIrrigationStorage(hass)
+    await store._populate_from_data(
+        _payload(
+            _weather_group({}, precipitation_source=const.MAPPING_CONF_SOURCE_SENSOR)
+        )
+    )
+
+    assert store.mappings[0].mappings[const.MAPPING_CURRENT_PRECIPITATION] == {}

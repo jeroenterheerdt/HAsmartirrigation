@@ -216,6 +216,42 @@ def default_mapping_entry(mapping_key: str, use_weather_service: bool) -> dict:
     }
 
 
+def ensure_precipitation_rate_source(the_map: dict) -> dict:
+    """Give the precipitation rate a source when the depth came from the service.
+
+    The water balance is fed by ``Current Precipitation``, the rate, rather than
+    by the weather service's own precipitation totals (#764). Sensor groups that
+    predate the rate field carry it as an empty dict, backfilled by the loader
+    above with no source at all, so leaving them alone would silently drop rain
+    from the balance entirely. They asked the weather service for their rain, so
+    keep asking it, for the field that now carries it.
+
+    Only a slot with no source is touched. The panel offers no "none" option for
+    this field, so a sourceless one is always the backfill and never a choice.
+    """
+    if not isinstance(the_map, dict):
+        return the_map
+    depth = the_map.get(MAPPING_PRECIPITATION)
+    if (
+        not isinstance(depth, dict)
+        or depth.get(MAPPING_CONF_SOURCE) != MAPPING_CONF_SOURCE_WEATHER_SERVICE
+    ):
+        return the_map
+    rate = the_map.get(MAPPING_CURRENT_PRECIPITATION)
+    if isinstance(rate, dict) and rate.get(MAPPING_CONF_SOURCE) not in (
+        None,
+        "",
+        MAPPING_CONF_SOURCE_NONE,
+    ):
+        return the_map
+    the_map[MAPPING_CURRENT_PRECIPITATION] = {
+        MAPPING_CONF_SOURCE: MAPPING_CONF_SOURCE_WEATHER_SERVICE,
+        MAPPING_CONF_SENSOR: "",
+        MAPPING_CONF_UNIT: "",
+    }
+    return the_map
+
+
 def normalize_mapping_conf(the_map: dict, use_weather_service: bool) -> dict:
     """Replace sourceless sensor group fields by their default configuration.
 
@@ -638,6 +674,7 @@ class SmartIrrigationStorage:
                     the_map = normalize_mapping_conf(
                         the_map, config.use_weather_service
                     )
+                    the_map = ensure_precipitation_rate_source(the_map)
                     mappings[mapping[MAPPING_ID]] = MappingEntry(
                         id=mapping[MAPPING_ID],
                         name=mapping[MAPPING_NAME],

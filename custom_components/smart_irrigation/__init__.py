@@ -809,10 +809,41 @@ class SmartIrrigationCoordinator(
             self.weather_service,
         )
 
+    def _warn_if_update_interval_undersamples_rain(self, data):
+        """Warn when the update schedule cannot see all the rain.
+
+        The weather services report precipitation as the amount over the last
+        hour (Open-Meteo, OpenWeatherMap) or as an instantaneous rate (Pirate
+        Weather). Collecting that once every few hours leaves the hours in
+        between unobserved, so rain that fell in them is missed and rain that
+        fell in a sampled hour is stretched over the whole gap. Hourly or more
+        frequent collection is what the water balance expects.
+        """
+        if not self.use_weather_service or not data.get(const.CONF_AUTO_UPDATE_ENABLED):
+            return
+        schedule = data.get(const.CONF_AUTO_UPDATE_SCHEDULE)
+        try:
+            interval = int(data.get(const.CONF_AUTO_UPDATE_INTERVAL, 1))
+        except (TypeError, ValueError):
+            return
+        too_slow = (schedule == const.CONF_AUTO_UPDATE_HOURLY and interval > 1) or (
+            schedule == const.CONF_AUTO_UPDATE_DAILY
+        )
+        if too_slow:
+            _LOGGER.warning(
+                "Weather data is collected every %s %s. Precipitation is reported by the "
+                "weather service for the last hour only, so rain falling between two "
+                "collections is not counted. Set the automatic update interval to 1 hour "
+                "(or shorter) for the water balance to see all of it",
+                interval,
+                schedule,
+            )
+
     async def set_up_auto_update_time(self, data):  # noqa: D102
         # WIP v2024.6.X:
         # experiment to use subscriptions to catch all updates instead of just on a time schedule
         await self.update_subscriptions(data)
+        self._warn_if_update_interval_undersamples_rain(data)
         if data[const.CONF_AUTO_UPDATE_ENABLED]:
             # CONF_AUTO_UPDATE_SCHEDULE: minute, hour, day
             # CONF_AUTO_UPDATE_INTERVAL: X

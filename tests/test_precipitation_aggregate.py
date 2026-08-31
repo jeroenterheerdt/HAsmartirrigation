@@ -1,124 +1,102 @@
-"""Tests for the default aggregate applied to weather-service precipitation.
+"""The weather services feed the water balance with a rate, not a total (#764).
 
-The generic default is "delta", which only makes sense for a monotonic rain
-counter: it adds up the increases and throws away every decrease. Open-Meteo
-reports today's precipitation *total*, forecast for the rest of the day, so that
-total moves in both directions during the day. Under "delta" the result becomes
-the highest forecast ever seen, several times the rain that actually fell, which
-is what blew up the bucket in issue #787.
+Precipitation reaches the bucket through ``Current Precipitation``, the measured
+rate, which is integrated over the calculation interval. The services used to
+also copy that rate (or, for Open-Meteo, today's partly forecast daily total)
+into ``Precipitation``, where the "delta" aggregate treated it as an accumulated
+depth: it added only the increases, so OpenWeatherMap undercounted the rain and
+Open-Meteo kept the highest forecast of the day (#787, #788).
 """
+
+import inspect
+from unittest.mock import patch
 
 import pytest
 
 from custom_components.smart_irrigation import SmartIrrigationCoordinator, const
-from custom_components.smart_irrigation.store import SmartIrrigationStorage
-
-# A rainy day as Open-Meteo reports it: an early forecast of 25 mm that is
-# corrected downwards all day and settles on 2.7 mm of actual rain.
-REVISED_DAILY_TOTALS = [0.0, 25.1, 18.4, 9.6, 4.2, 2.7]
+from custom_components.smart_irrigation.weathermodules.OpenMeteoClient import (
+    OpenMeteoClient,
+)
 
 
-def _mapping(source=const.MAPPING_CONF_SOURCE_WEATHER_SERVICE, aggregate=None):
-    conf = {const.MAPPING_CONF_SOURCE: source}
-    if aggregate is not None:
-        conf[const.MAPPING_CONF_AGGREGATE] = aggregate
-    return {
-        const.MAPPING_ID: 0,
-        const.MAPPING_NAME: "Weather group",
-        const.MAPPING_MAPPINGS: {const.MAPPING_PRECIPITATION: conf},
-        const.MAPPING_DATA_LAST_CALCULATION: {},
+def test_open_meteo_reports_a_rate_and_not_the_daily_total():
+    """The daily total is a forecast for the rest of the day; the rate is measured."""
+    client = OpenMeteoClient(api_key="", api_version="", latitude=51.5, longitude=5.5)
+    doc = {
+        "current": {
+            "temperature_2m": 18.6,
+            "relative_humidity_2m": 95,
+            "dew_point_2m": 17.7,
+            "surface_pressure": 1015.0,
+            "wind_speed_10m": 3.6,
+            "precipitation": 1.2,
+            "shortwave_radiation": 0.0,
+        },
+        "daily": {"precipitation_sum": [25.1, 0.0]},
     }
 
+    with patch.object(OpenMeteoClient, "_get_doc", return_value=doc):
+        parsed = client.get_data()
 
-async def _load(coordinator, mapping):
-    """Put the mapping in the store so the aggregation can write back to it."""
-    await coordinator.store._populate_from_data(
-        {
-            "config": {const.CONF_WEATHER_SERVICE: coordinator.weather_service},
-            "mappings": [mapping],
-        }
-    )
+    assert parsed[const.MAPPING_CURRENT_PRECIPITATION] == 1.2
+    assert const.MAPPING_PRECIPITATION not in parsed
 
 
-def _coordinator(hass, weather_service):
-    coordinator = SmartIrrigationCoordinator.__new__(SmartIrrigationCoordinator)
-    coordinator.hass = hass
-    coordinator.weather_service = weather_service
-    coordinator.store = SmartIrrigationStorage(hass)
-    return coordinator
+def test_the_daily_total_is_still_available_to_the_forecast():
+    """The skip check and PyETO's forecast days do want the forecast total."""
+    source = inspect.getsource(OpenMeteoClient.get_forecast_data)
+    assert "precipitation_sum" in source
 
 
-def test_open_meteo_precipitation_defaults_to_last(hass):
-    """Open-Meteo delivers a daily total, so the last one is the day's rain."""
-    coordinator = _coordinator(hass, const.CONF_WEATHER_SERVICE_OM)
-    assert (
-        coordinator._default_precipitation_aggregate(_mapping())
-        == const.MAPPING_CONF_AGGREGATE_LAST
-    )
-
-
-def test_other_services_keep_the_delta_default(hass):
-    """The other services are untouched; their handling is tracked in #764."""
-    coordinator = _coordinator(hass, const.CONF_WEATHER_SERVICE_OWM)
-    assert (
-        coordinator._default_precipitation_aggregate(_mapping())
-        == const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION
-    )
-
-
-def test_sensor_sourced_precipitation_keeps_the_delta_default(hass):
-    """A user's own rain gauge is a counter, delta stays right for it."""
-    coordinator = _coordinator(hass, const.CONF_WEATHER_SERVICE_OM)
-    mapping = _mapping(source=const.MAPPING_CONF_SOURCE_SENSOR)
-    assert (
-        coordinator._default_precipitation_aggregate(mapping)
-        == const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION
-    )
-
-
-@pytest.mark.asyncio
-async def test_revised_forecast_no_longer_multiplies_the_rain(hass):
-    """A day of downward forecast revisions yields the rain that fell."""
-    coordinator = _coordinator(hass, const.CONF_WEATHER_SERVICE_OM)
-    mapping = _mapping()
-    await _load(coordinator, mapping)
-
-    resultdata = {}
-    await coordinator._aggregate_sensor_data(
-        {const.MAPPING_PRECIPITATION: list(REVISED_DAILY_TOTALS)},
-        mapping,
-        resultdata,
-    )
-
-    assert resultdata[const.MAPPING_PRECIPITATION] == pytest.approx(2.7)
-
-
-@pytest.mark.asyncio
-async def test_explicit_aggregate_still_wins(hass):
-    """A user who configured an aggregate keeps it."""
-    coordinator = _coordinator(hass, const.CONF_WEATHER_SERVICE_OM)
-    mapping = _mapping(aggregate=const.MAPPING_CONF_AGGREGATE_MAXIMUM)
-    await _load(coordinator, mapping)
-
-    resultdata = {}
-    await coordinator._aggregate_sensor_data(
-        {const.MAPPING_PRECIPITATION: list(REVISED_DAILY_TOTALS)},
-        mapping,
-        resultdata,
-    )
-
-    assert resultdata[const.MAPPING_PRECIPITATION] == pytest.approx(25.1)
-
-
-@pytest.mark.asyncio
-async def test_calculate_all_can_be_called_without_arguments(hass):
+def test_calculate_all_can_be_called_without_arguments():
     """The recurring scheduler calls it with no argument at all.
 
     ``_async_calculate_all`` used to require ``delete_weather_data``, so a
     recurring schedule with the "calculate all zones" action raised a TypeError
     instead of calculating.
     """
-    import inspect
-
     signature = inspect.signature(SmartIrrigationCoordinator._async_calculate_all)
     assert signature.parameters["delete_weather_data"].default is True
+
+
+@pytest.mark.parametrize(
+    ("schedule", "interval", "expected"),
+    [
+        (const.CONF_AUTO_UPDATE_HOURLY, "1", False),
+        (const.CONF_AUTO_UPDATE_MINUTELY, "15", False),
+        (const.CONF_AUTO_UPDATE_HOURLY, "6", True),
+        (const.CONF_AUTO_UPDATE_DAILY, "1", True),
+    ],
+)
+def test_warns_when_the_update_interval_cannot_see_all_the_rain(
+    caplog, schedule, interval, expected
+):
+    """The services report the last hour, so collecting less often misses rain."""
+    coordinator = SmartIrrigationCoordinator.__new__(SmartIrrigationCoordinator)
+    coordinator.use_weather_service = True
+
+    coordinator._warn_if_update_interval_undersamples_rain(
+        {
+            const.CONF_AUTO_UPDATE_ENABLED: True,
+            const.CONF_AUTO_UPDATE_SCHEDULE: schedule,
+            const.CONF_AUTO_UPDATE_INTERVAL: interval,
+        }
+    )
+
+    assert ("not counted" in caplog.text) is expected
+
+
+def test_no_warning_without_a_weather_service(caplog):
+    """A user's own rain gauge is not sampled by our schedule."""
+    coordinator = SmartIrrigationCoordinator.__new__(SmartIrrigationCoordinator)
+    coordinator.use_weather_service = False
+
+    coordinator._warn_if_update_interval_undersamples_rain(
+        {
+            const.CONF_AUTO_UPDATE_ENABLED: True,
+            const.CONF_AUTO_UPDATE_SCHEDULE: const.CONF_AUTO_UPDATE_DAILY,
+            const.CONF_AUTO_UPDATE_INTERVAL: "1",
+        }
+    )
+
+    assert "not counted" not in caplog.text
