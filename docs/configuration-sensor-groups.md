@@ -22,7 +22,7 @@ The following data can be provided:
 
 | Data | Required | Available sources | Available units | Expected aggregation | Expected aggregation for continuous updates |
 |---|---|---|---|--|--|
-|**Current precipitation (unused)**|No|Weather Service<br/>Sensor<br/>Static value|in/h<br/>mm/h|Average|Last|
+|**Current precipitation**|No|Weather Service<br/>Sensor<br/>Static value|in/h<br/>mm/h|Average|Riemann Sum|
 |**Dewpoint**|Yes|Weather Service<br/>Sensor<br/>Static value|°C<br/>°F|Average|Last|
 |**Evapotranspiration**|No|None (module will calculate it)<br/>Sensor<br/>Static value|in<br/>mm|Average|Last|
 |**Humidity**|Yes|Weather Service<br/>Sensor<br/>Static value|%|Average|Last|
@@ -46,8 +46,9 @@ Please note:
            value_template: {% raw %}"{{states('[name of your wind speed sensor (WSmeasured)]')|float()*(4.87/log((67.8*[height the wind speed was measured on in meters (H)])-5.42))}}"{% endraw %}
    ```
 - Total precipitation is the total amount of precipitation you want to take into account for the calculations. Use the 'Delta' aggregation type along with a sensor source that accumulates over a time period, usually named something like 'daily rain', 'weekly rain', or 'total rain'. The delta aggregation will correctly handle value resets (such as daily rain becoming zero at midnight). Keep in mind that the total precipitation is expected to be a total over the time period, not the current precipitation rate.
-- Current preciptation is currently unused. Total precipitation should be used instead.
-- When using continuous updates, all aggregations are expected to be set to `Last`, with the exception of Solar Radiation and Total Precipitation, which need to be set to `Riemann Sum` and `Delta`, respectively.
+- Current precipitation is a *rate* (mm/h or in/h), while total precipitation is a *depth* (mm or in) accumulated over the interval. They are two different quantities and only one of them feeds the water balance: total precipitation is used when it has a value, and current precipitation is only used when it does not. That way a rain rate sensor is never counted on top of a rain gauge.
+- If total precipitation is the only one you can provide, map it and leave current precipitation unset, which is the usual case. If your weather station only exposes a rain *rate* and no accumulating total, map current precipitation instead: it is integrated over the interval since the last calculation to give the amount of rain that fell. With the 'Average' aggregation the mean rate over the interval is used, which is right for evenly spaced samples; with 'Riemann Sum' the samples are integrated over their own timestamps, which is more accurate when they are not evenly spaced.
+- When using continuous updates, all aggregations are expected to be set to `Last`, with the exception of Solar Radiation and Current Precipitation, which need to be set to `Riemann Sum`, and Total Precipitation, which needs `Delta`.
 
 ## Deleting a sensor group
 ![](assets/images/configuration-sensor-groups-1.png)

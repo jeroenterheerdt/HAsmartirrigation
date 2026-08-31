@@ -161,6 +161,54 @@ class CalculationMixin:
         )
         return hour_multiplier
 
+    def _precipitation_for_interval(self, zone, weatherdata):
+        """Return the precipitation to add to the bucket, in mm.
+
+        Two different quantities can carry the rain, and only one of them may be
+        counted or it is added twice:
+
+        - ``Precipitation`` is a depth in mm already accumulated over the
+          interval, which is what its aggregate produces.
+        - ``Current Precipitation`` is a rate in mm/h, so it has to be
+          integrated over the interval to become a depth.
+
+        ``Precipitation`` wins when it has a value. Falling back to the rate is
+        what makes a sensor group that only maps a rain-rate sensor count its
+        rain at all: the rate was collected, converted and shown in the panel,
+        but never reached the water balance (#571).
+        """
+        precip = weatherdata.get(const.MAPPING_PRECIPITATION)
+        if precip is not None:
+            _LOGGER.debug("[calculate-module]: precip: %s", precip)
+            return precip
+
+        rate = weatherdata.get(const.MAPPING_CURRENT_PRECIPITATION)
+        if not rate:
+            return 0
+
+        mapping = self.store.get_mapping(zone.get(const.ZONE_MAPPING))
+        aggregate = ((mapping or {}).get(const.MAPPING_MAPPINGS) or {}).get(
+            const.MAPPING_CURRENT_PRECIPITATION
+        )
+        if not isinstance(aggregate, dict):
+            aggregate = {}
+        # A Riemann sum has already integrated the rate over the samples, so it
+        # is a depth; every other aggregate hands back a representative rate.
+        if (
+            aggregate.get(const.MAPPING_CONF_AGGREGATE)
+            == const.MAPPING_CONF_AGGREGATE_RIEMANNSUM
+        ):
+            precip = rate
+        else:
+            interval_hours = weatherdata.get(const.MAPPING_DATA_MULTIPLIER, 0) * 24
+            precip = rate * interval_hours
+        _LOGGER.debug(
+            "[calculate-module]: no precipitation depth, using the rate %s mm/h over the interval: %s",
+            rate,
+            precip,
+        )
+        return precip
+
     def _default_precipitation_aggregate(self, mapping):
         """Return the aggregate to use for precipitation when none is configured.
 
@@ -254,7 +302,7 @@ class CalculationMixin:
                 )
                 resultdata[key] = result
 
-            elif len(d) < 2:
+            elif len(d) < 2 and aggregate != const.MAPPING_CONF_AGGREGATE_RIEMANNSUM:
                 if key == const.MAPPING_TEMPERATURE:
                     resultdata[const.MAPPING_MAX_TEMP] = d[0]
                     resultdata[const.MAPPING_MIN_TEMP] = d[0]
@@ -278,13 +326,25 @@ class CalculationMixin:
                 # apply the riemann sum to the data in d
                 # Use the trapezoidal rule for Riemann sum approximation
                 # Assume each value in d is sampled at equal intervals
+                #
+                # dt has to be expressed in the same time unit as the values,
+                # which is per day for everything except the precipitation rate:
+                # convert_mapping_to_metric normalises solar radiation to
+                # MJ/day/m2 (#784) but leaves the precipitation rate in mm/h, so
+                # integrating it in days overstated the result 24-fold.
+                seconds_per_unit = (
+                    3600.0 if key == const.MAPPING_CURRENT_PRECIPITATION else 86400.0
+                )
                 if len(d) < 2:
-                    resultdata[key] = float(d[0])
+                    # A single sample carries no interval of its own, so
+                    # integrate the rate over the calculation interval instead of
+                    # handing back the rate as if it were already a total.
+                    interval_days = resultdata.get(const.MAPPING_DATA_MULTIPLIER, 0)
+                    resultdata[key] = float(d[0]) * (
+                        interval_days * 86400.0 / seconds_per_unit
+                    )
                 else:
                     # Trapezoidal rule: sum((d[i] + d[i+1]) / 2) * dt
-                    # Values were converted to per-day rates upstream
-                    # (e.g. W/m2 -> MJ/day/m2 in convert_mapping_to_metric),
-                    # so dt must be expressed in days, not seconds (#784).
                     dt = 1.0
                     # If we have timestamps, use them to get dt
                     if const.RETRIEVED_AT in data_by_sensor:
@@ -300,7 +360,7 @@ class CalculationMixin:
                                 if len(times) > 1:
                                     dts = [
                                         (times[i + 1] - times[i]).total_seconds()
-                                        / 86400.0
+                                        / seconds_per_unit
                                         for i in range(len(times) - 1)
                                     ]
                                     dt = statistics.mean(dts)
@@ -580,8 +640,7 @@ class CalculationMixin:
             delta = modinst.calculate(
                 weather_data=weatherdata, forecast_data=forecastdata
             )
-            precip = weatherdata.get(const.MAPPING_PRECIPITATION, 0)
-            _LOGGER.debug("[calculate-module]: precip: %s", precip)
+            precip = self._precipitation_for_interval(zone, weatherdata)
         elif m[const.MODULE_NAME] == "Static":
             delta = modinst.calculate()
         elif m[const.MODULE_NAME] == "Passthrough":
@@ -592,8 +651,7 @@ class CalculationMixin:
                 # Passthrough bypasses the ET calculation, not the water
                 # balance: measured/forecast precipitation must still refill
                 # the bucket, otherwise it can only ever drain (#790).
-                precip = weatherdata.get(const.MAPPING_PRECIPITATION, 0)
-                _LOGGER.debug("[calculate-module]: precip: %s", precip)
+                precip = self._precipitation_for_interval(zone, weatherdata)
             else:
                 _LOGGER.error(
                     "No evapotranspiration value provided for Passthrough module for zone %s",
