@@ -183,7 +183,7 @@ class ZoneEntry:
     flow_sensor = attr.ib(type=str, default=None)
     # How the precipitation rate is determined: from throughput+size, or entered directly.
     input_method = attr.ib(type=str, default=CONF_DEFAULT_ZONE_INPUT_METHOD)
-    # Directly entered precipitation rate (mm/h or in/h), used when input_method is "precipitation_rate".
+    # Directly entered precipitation rate (mm/h or in/h), used when input_method is "direct".
     precipitation_rate = attr.ib(type=float, default=None)
 
 
