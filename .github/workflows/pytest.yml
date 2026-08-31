@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.13']
+        # Home Assistant 2026.3 onwards requires Python 3.14.2, so testing on
+        # anything older tests a combination no user can install.
+        python-version: ['3.14']
 
     steps:
       - name: Checkout Smart Irrigation
@@ -52,7 +54,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: '3.13'
+          python-version: '3.14'
 
       - name: Install dependencies
         run: |
