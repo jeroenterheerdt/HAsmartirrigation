@@ -373,6 +373,12 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+# ...except the built panel, which is shipped to users and has to be committed.
+# Without these the two tracked files are skipped by `git add -A`, which is how
+# the bundle and its sourcemap drift apart.
+!custom_components/smart_irrigation/frontend/dist/
+!custom_components/smart_irrigation/frontend/dist/smart-irrigation.js
+!custom_components/smart_irrigation/frontend/dist/smart-irrigation.js.map
 
 # OS specific
 .DS_Store
