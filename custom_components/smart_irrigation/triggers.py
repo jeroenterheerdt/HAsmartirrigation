@@ -14,14 +14,20 @@ from functools import partial
 
 from homeassistant.const import CONF_LONGITUDE
 from homeassistant.core import callback
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.event import (
     async_track_point_in_utc_time,
     async_track_sunrise,
     async_track_sunset,
 )
+from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from . import const
-from .helpers import find_next_solar_azimuth_time, normalize_azimuth_angle
+from .helpers import (
+    convert_between,
+    find_next_solar_azimuth_time,
+    normalize_azimuth_angle,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -386,6 +392,9 @@ class TriggersMixin:
                     )
                     return
 
+                # Rain between the calculation and now shortens the run.
+                await self._apply_rain_since_calculation()
+
                 # Fire the event with the trigger's identity.
                 self.hass.bus.fire(event_to_fire, event_data)
                 _LOGGER.info(
@@ -426,6 +435,77 @@ class TriggersMixin:
                 )
 
         self.hass.async_create_task(check_and_fire())
+
+    async def _apply_rain_since_calculation(self):
+        """Shorten each zone's run by the rain that fell since it was calculated.
+
+        The duration is worked out at calculation time, hours before irrigation
+        starts, and rain in between was ignored: a bucket of -12 mm followed by
+        8 mm of rain overnight still watered 12 mm (#810).
+
+        The bucket itself is deliberately left alone. It is a running balance:
+        irrigation credits it by the water actually applied, and the next
+        calculation adds the whole interval's rain, so crediting the rain here as
+        well would count it twice. Shortening only this run keeps the balance
+        exact, since the smaller amount applied is what gets credited.
+
+        A zone whose sensor group saw no rain is not touched at all, so a dry
+        night leaves the calculated duration exactly as it was.
+        """
+        try:
+            zones = await self.store.async_get_zones()
+        except Exception as e:  # pragma: no cover - defensive
+            _LOGGER.error("Could not read the zones to account for rain: %s", e)
+            return
+
+        ha_config_is_metric = self.hass.config.units is METRIC_SYSTEM
+        for zone in zones:
+            if zone.get(const.ZONE_STATE) != const.ZONE_STATE_AUTOMATIC:
+                # A manual zone carries a duration its owner set, not one
+                # derived from the bucket.
+                continue
+            if not zone.get(const.ZONE_DURATION):
+                continue
+            try:
+                rain_mm = await self.precipitation_since_last_calculation(zone)
+                if rain_mm <= 0:
+                    continue
+                rain_native = (
+                    rain_mm
+                    if ha_config_is_metric
+                    else convert_between(const.UNIT_MM, const.UNIT_INCH, rain_mm)
+                )
+                bucket = (zone.get(const.ZONE_BUCKET) or 0.0) + rain_native
+                duration = self.duration_from_bucket(zone, bucket)
+                # Rain can only ever shorten a run. Anything else would mean the
+                # two ways of deriving a duration from a bucket have drifted
+                # apart, and lengthening a run over rain is not a thing to do on
+                # the strength of that.
+                if duration >= zone.get(const.ZONE_DURATION):
+                    continue
+                _LOGGER.info(
+                    "Zone %s: %.1f mm of rain since the calculation, watering for %s s instead of %s s",
+                    zone.get(const.ZONE_NAME),
+                    rain_mm,
+                    duration,
+                    zone.get(const.ZONE_DURATION),
+                )
+                await self.store.async_update_zone(
+                    zone.get(const.ZONE_ID), {const.ZONE_DURATION: duration}
+                )
+                async_dispatcher_send(
+                    self.hass,
+                    const.DOMAIN + "_config_updated",
+                    zone.get(const.ZONE_ID),
+                )
+            except Exception as e:
+                # Watering the calculated amount is the previous behaviour, so a
+                # failure here costs accuracy, not the run.
+                _LOGGER.error(
+                    "Could not account for rain since the calculation on zone %s: %s",
+                    zone.get(const.ZONE_NAME),
+                    e,
+                )
 
     @callback
     def _reset_event_fired_today(self, *args):

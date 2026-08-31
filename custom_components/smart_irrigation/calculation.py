@@ -63,12 +63,18 @@ class CalculationMixin:
 
         return retval
 
-    async def apply_aggregates_to_mapping_data(self, mapping, continuous_updates=False):
+    async def apply_aggregates_to_mapping_data(
+        self, mapping, continuous_updates=False, persist=True
+    ):
         """Apply aggregation functions to mapping data and return the aggregated result.
 
         Args:
             mapping: The mapping dictionary containing sensor data.
             continuous_updates: Whether continuous updates are enabled.
+            persist: Whether to record this as the mapping's last calculation.
+                Pass False to look at the data without consuming it: the last
+                calculation marks where the next interval starts, so moving it
+                would truncate the window the next real calculation works over.
 
         Returns:
             dict or None: Aggregated mapping data or None if no data is available.
@@ -88,7 +94,9 @@ class CalculationMixin:
         if continuous_updates:
             self._fill_missing_from_last_entry(mapping, data_by_sensor)
 
-        await self._aggregate_sensor_data(data_by_sensor, mapping, resultdata)
+        await self._aggregate_sensor_data(
+            data_by_sensor, mapping, resultdata, persist=persist
+        )
 
         _LOGGER.debug("[apply_aggregates_to_mapping_data] returns %s", resultdata)
         return resultdata
@@ -209,7 +217,9 @@ class CalculationMixin:
         )
         return precip
 
-    async def _aggregate_sensor_data(self, data_by_sensor, mapping, resultdata):
+    async def _aggregate_sensor_data(
+        self, data_by_sensor, mapping, resultdata, persist=True
+    ):
         """Aggregate sensor data by configured or default aggregate."""
         last_calc_data = mapping.get(const.MAPPING_DATA_LAST_CALCULATION) or {}
         last_calc_data[const.MAPPING_TIMESTAMP] = datetime.now()
@@ -351,6 +361,8 @@ class CalculationMixin:
                     resultdata[key] = riemann_sum
             last_calc_data[key] = d[-1]
 
+        if not persist:
+            return
         # update LAST_CALCULATION entry
         await self.store.async_update_mapping(
             mapping.get(const.MAPPING_ID),
@@ -944,6 +956,23 @@ class CalculationMixin:
         data[const.ZONE_DURATION] = duration
         data[const.ZONE_EXPLANATION] = explanation
         return data
+
+    async def precipitation_since_last_calculation(self, zone) -> float:
+        """Rain collected for a zone since its last calculation, in mm.
+
+        Reads the window the next calculation will consume without consuming it,
+        so the same rain is still counted there. Aggregation is the calculation's
+        own, which is what keeps the two answers consistent.
+        """
+        mapping = self.store.get_mapping(zone.get(const.ZONE_MAPPING))
+        if not mapping or not mapping.get(const.MAPPING_DATA):
+            return 0.0
+        weatherdata = await self.apply_aggregates_to_mapping_data(
+            mapping, persist=False
+        )
+        if not weatherdata:
+            return 0.0
+        return float(self._precipitation_for_interval(zone, weatherdata) or 0.0)
 
     def duration_from_bucket(self, zone: dict, bucket_native: float) -> float:
         """Duration (seconds) implied by a zone's current bucket value.

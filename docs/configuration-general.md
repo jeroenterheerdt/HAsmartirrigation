@@ -17,6 +17,12 @@ As calculation needs weatherdata make sure to update your weather data at least 
 ### Automatic duration calculation
 If enabled, set the time of calculation (HH:MM). Calculation uses weatherdata that is collected in updates to determine irrigation duration. After automatic calculation has happened used weatherdata is deleted.
 
+Irrigation usually starts hours after the calculation, and it can rain in between. When the start trigger is reached, each automatic zone's duration is reworked against the rain collected since its calculation, so a night of rain shortens the run or cancels it instead of watering the full calculated amount on wet ground.
+
+The bucket itself is left alone by that. It is a running balance: irrigation credits it by the water actually applied and the next calculation adds the whole interval's rain, so crediting the rain at the start as well would count it twice. A run is only ever shortened this way, never lengthened, and a dry night leaves the calculated duration exactly as it is.
+
+Note that the run still starts at the time it was scheduled for. A trigger set to finish at sunrise works back from the duration known at calculation time, so a run shortened by rain finishes early rather than starting late.
+
 ### Automatic weather data pruning
 If enabled configure time of pruning weather data. Use this to make sure that there is no left over weatherdata from previous days. Don't remove the weatherdata before you calculate and only use this option if you expect the automatic update to collect weatherdata after you calculated for the day. Ideally, you want to prune as late in the day as possible.
 
