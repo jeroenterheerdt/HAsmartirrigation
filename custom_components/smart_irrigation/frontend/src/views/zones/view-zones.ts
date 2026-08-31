@@ -55,6 +55,9 @@ import {
   ZONE_DRAINAGE_RATE,
   ZONE_DURATION,
   ZONE_FLOW_SENSOR,
+  ZONE_INPUT_METHOD,
+  ZONE_INPUT_METHOD_PRECIPITATION_RATE,
+  ZONE_INPUT_METHOD_THROUGHPUT,
   ZONE_LEAD_TIME,
   ZONE_LINKED_ENTITY,
   ZONE_MAPPING,
@@ -63,6 +66,7 @@ import {
   ZONE_MODULE,
   ZONE_MULTIPLIER,
   ZONE_NAME,
+  ZONE_PRECIPITATION_RATE,
   ZONE_SIZE,
   ZONE_STATE,
   ZONE_THROUGHPUT,
@@ -884,28 +888,74 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                   (v) =>
                     this.handleEditZone(index, { ...zone, [ZONE_NAME]: v }),
                 )}
-                ${this._numRow(
-                  localize("panels.zones.labels.size", lang),
-                  output_unit(this.config, ZONE_SIZE),
-                  zone.size,
-                  (v) =>
+                ${this._selectRow(
+                  localize("panels.zones.labels.input-method", lang),
+                  html`
+                    <option
+                      value="${ZONE_INPUT_METHOD_THROUGHPUT}"
+                      ?selected=${(zone.input_method ??
+                      ZONE_INPUT_METHOD_THROUGHPUT) ===
+                    ZONE_INPUT_METHOD_THROUGHPUT}
+                    >
+                      ${localize(
+                      "panels.zones.labels.input-methods.throughput",
+                      lang,
+                    )}
+                    </option>
+                    <option
+                      value="${ZONE_INPUT_METHOD_PRECIPITATION_RATE}"
+                      ?selected=${zone.input_method ===
+                    ZONE_INPUT_METHOD_PRECIPITATION_RATE}
+                    >
+                      ${localize(
+                      "panels.zones.labels.input-methods.direct",
+                      lang,
+                    )}
+                    </option>
+                  `,
+                  (e: Event) =>
                     this.handleEditZone(index, {
                       ...zone,
-                      [ZONE_SIZE]: parseFloat(v),
+                      [ZONE_INPUT_METHOD]: (e.target as HTMLSelectElement)
+                        .value,
                     }),
-                  0.1,
                 )}
-                ${this._numRow(
-                  localize("panels.zones.labels.throughput", lang),
-                  output_unit(this.config, ZONE_THROUGHPUT),
-                  zone.throughput,
-                  (v) =>
-                    this.handleEditZone(index, {
-                      ...zone,
-                      [ZONE_THROUGHPUT]: parseFloat(v),
-                    }),
-                  0.1,
-                )}
+                ${zone.input_method === ZONE_INPUT_METHOD_PRECIPITATION_RATE
+          ? this._numRow(
+            localize("panels.zones.labels.precipitation-rate", lang),
+            output_unit(this.config, ZONE_PRECIPITATION_RATE),
+            zone.precipitation_rate,
+            (v) =>
+              this.handleEditZone(index, {
+                ...zone,
+                [ZONE_PRECIPITATION_RATE]: parseFloat(v),
+              }),
+            0.1,
+          )
+          : html`
+                      ${this._numRow(
+                        localize("panels.zones.labels.size", lang),
+                        output_unit(this.config, ZONE_SIZE),
+                        zone.size,
+                        (v) =>
+                          this.handleEditZone(index, {
+                            ...zone,
+                            [ZONE_SIZE]: parseFloat(v),
+                          }),
+                        0.1,
+                      )}
+                      ${this._numRow(
+                        localize("panels.zones.labels.throughput", lang),
+                        output_unit(this.config, ZONE_THROUGHPUT),
+                        zone.throughput,
+                        (v) =>
+                          this.handleEditZone(index, {
+                            ...zone,
+                            [ZONE_THROUGHPUT]: parseFloat(v),
+                          }),
+                        0.1,
+                      )}
+                    `}
                 ${this._numRow(
                   localize("panels.zones.labels.drainage_rate", lang),
                   output_unit(this.config, ZONE_DRAINAGE_RATE),

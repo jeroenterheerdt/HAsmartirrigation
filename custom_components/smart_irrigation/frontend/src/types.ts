@@ -121,6 +121,8 @@ export class SmartIrrigationZone {
   current_drainage?: number;
   linked_entity?: string;
   flow_sensor?: string;
+  input_method?: string;
+  precipitation_rate?: number;
 
   constructor(
     i: number,
