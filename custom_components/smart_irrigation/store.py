@@ -198,6 +198,50 @@ class ModuleEntry:
     schema = attr.ib(type=str, default=None)
 
 
+def default_mapping_entry(mapping_key: str, use_weather_service: bool) -> dict:
+    """Return the default source configuration for a single sensor group field.
+
+    Evapotranspiration and solar radiation are never delivered by the configured
+    weather service directly, so they default to "none" when a weather service is
+    in use and to a sensor otherwise. Every other field defaults to the weather
+    service when there is one.
+    """
+    if mapping_key in (MAPPING_EVAPOTRANSPIRATION, MAPPING_SOLRAD):
+        source = (
+            MAPPING_CONF_SOURCE_NONE
+            if use_weather_service
+            else MAPPING_CONF_SOURCE_SENSOR
+        )
+    elif use_weather_service:
+        source = MAPPING_CONF_SOURCE_WEATHER_SERVICE
+    else:
+        source = MAPPING_CONF_SOURCE_SENSOR
+    return {
+        MAPPING_CONF_SOURCE: source,
+        MAPPING_CONF_SENSOR: "",
+        MAPPING_CONF_UNIT: "",
+    }
+
+
+def normalize_mapping_conf(the_map: dict, use_weather_service: bool) -> dict:
+    """Replace sourceless sensor group fields by their default configuration.
+
+    Sensor groups created from the panel used to store a plain empty string for
+    every field. The panel renders the source dropdown with "weather service" as
+    its first option, so such a group looks fully configured while the backend
+    sees no source at all and never fetches anything for it. Turn those entries
+    into the configuration the panel was showing all along.
+    """
+    if not isinstance(the_map, dict):
+        return the_map
+    for mapping_key, value in the_map.items():
+        if not isinstance(value, dict):
+            the_map[mapping_key] = default_mapping_entry(
+                mapping_key, use_weather_service
+            )
+    return the_map
+
+
 @attr.s(slots=True, frozen=True)
 class MappingEntry:
     """Mapping storage Entry."""
@@ -601,6 +645,10 @@ class SmartIrrigationStorage:
                         the_map.pop(MAPPING_MIN_TEMP)
                     if MAPPING_CURRENT_PRECIPITATION not in the_map:
                         the_map[MAPPING_CURRENT_PRECIPITATION] = {}
+                    # repair sensor groups saved without any source at all
+                    the_map = normalize_mapping_conf(
+                        the_map, config.use_weather_service
+                    )
                     mappings[mapping[MAPPING_ID]] = MappingEntry(
                         id=mapping[MAPPING_ID],
                         name=mapping[MAPPING_NAME],
@@ -683,13 +731,6 @@ class SmartIrrigationStorage:
 
     async def async_factory_default_mappings(self):
         """Set up factory default mappings if none exist."""
-        # this should be Weather Service mapping if a weather service is defined
-        mapping_source = ""
-        if self.config.use_weather_service:
-            # we're using a weather service
-            mapping_source = MAPPING_CONF_SOURCE_WEATHER_SERVICE
-        else:
-            mapping_source = MAPPING_CONF_SOURCE_SENSOR
         mappings = [
             MAPPING_DEWPOINT,
             MAPPING_EVAPOTRANSPIRATION,
@@ -701,20 +742,12 @@ class SmartIrrigationStorage:
             MAPPING_TEMPERATURE,
             MAPPING_WINDSPEED,
         ]
-        conf = {}
-        for mapping_key in mappings:
-            map_source = mapping_source
-            # evapotranspiration and solrad can only come from a sensor or none
-            if mapping_key in [MAPPING_EVAPOTRANSPIRATION, MAPPING_SOLRAD]:
-                if self.config.use_weather_service:
-                    map_source = MAPPING_CONF_SOURCE_NONE
-                else:
-                    map_source = MAPPING_CONF_SOURCE_SENSOR
-            conf[mapping_key] = {
-                MAPPING_CONF_SOURCE: map_source,
-                MAPPING_CONF_SENSOR: "",
-                MAPPING_CONF_UNIT: "",
-            }
+        conf = {
+            mapping_key: default_mapping_entry(
+                mapping_key, self.config.use_weather_service
+            )
+            for mapping_key in mappings
+        }
         new_mapping1 = MappingEntry(
             **{
                 MAPPING_ID: 0,
@@ -945,6 +978,13 @@ class SmartIrrigationStorage:
 
     async def async_create_mapping(self, data: dict) -> MappingEntry:
         """Create a new MappingEntry."""
+        if isinstance(data.get(MAPPING_MAPPINGS), dict):
+            data = {
+                **data,
+                MAPPING_MAPPINGS: normalize_mapping_conf(
+                    dict(data[MAPPING_MAPPINGS]), self.config.use_weather_service
+                ),
+            }
         new_mapping = MappingEntry(**data)
         if not new_mapping.id:
             mappings = await self.async_get_mappings()
@@ -970,6 +1010,10 @@ class SmartIrrigationStorage:
         old = self.mappings[mapping_id]
         # make sure we don't override the ID
         changes.pop("id", None)
+        if isinstance(changes.get(MAPPING_MAPPINGS), dict):
+            changes[MAPPING_MAPPINGS] = normalize_mapping_conf(
+                dict(changes[MAPPING_MAPPINGS]), self.config.use_weather_service
+            )
         if old is not None:
             if old.data_last_entry is not None and len(old.data_last_entry) > 0:
                 if MAPPING_DATA_LAST_ENTRY not in changes:

@@ -161,6 +161,31 @@ class CalculationMixin:
         )
         return hour_multiplier
 
+    def _default_precipitation_aggregate(self, mapping):
+        """Return the aggregate to use for precipitation when none is configured.
+
+        The default is "delta", which assumes a monotonic rain counter: it adds
+        up the increases and discards every decrease. Open-Meteo does not
+        deliver a counter, it delivers today's precipitation total, forecast for
+        the part of the day that has not happened yet. That total moves both ways
+        during the day, so "delta" keeps the highest forecast ever seen and drops
+        the corrections, reporting several times the rain that actually fell
+        (#787). The total itself is what we want, so take the last one.
+        """
+        if (
+            key_conf := (mapping.get(const.MAPPING_MAPPINGS) or {}).get(
+                const.MAPPING_PRECIPITATION
+            )
+        ) and isinstance(key_conf, dict):
+            if (
+                key_conf.get(const.MAPPING_CONF_SOURCE)
+                == const.MAPPING_CONF_SOURCE_WEATHER_SERVICE
+                and getattr(self, "weather_service", None)
+                == const.CONF_WEATHER_SERVICE_OM
+            ):
+                return const.MAPPING_CONF_AGGREGATE_LAST
+        return const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION
+
     async def _aggregate_sensor_data(self, data_by_sensor, mapping, resultdata):
         """Aggregate sensor data by configured or default aggregate."""
         last_calc_data = mapping.get(const.MAPPING_DATA_LAST_CALCULATION) or {}
@@ -173,7 +198,7 @@ class CalculationMixin:
 
             aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT
             if key == const.MAPPING_PRECIPITATION:
-                aggregate = const.MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT_PRECIPITATION
+                aggregate = self._default_precipitation_aggregate(mapping)
             elif key == const.MAPPING_TEMPERATURE:
                 resultdata[const.MAPPING_MAX_TEMP] = max(d)
                 resultdata[const.MAPPING_MIN_TEMP] = min(d)
@@ -333,7 +358,16 @@ class CalculationMixin:
                 mapping.get(const.MAPPING_ID), changes
             )
 
-    async def _async_calculate_all(self, delete_weather_data):
+    async def _async_calculate_all(self, delete_weather_data=True):
+        """Calculate every automatic zone.
+
+        ``delete_weather_data`` defaults to True because that is what every
+        caller wants: the weather data collected since the previous calculation
+        has been consumed and must not be counted again. It also doubles as the
+        time argument when this is used directly as an async_track_time_change
+        callback, and the recurring scheduler calls it without any argument at
+        all.
+        """
         _LOGGER.info("Calculating all automatic zones")
         # get all zones that are in automatic and for all of those, loop over the unique list of mappings
         # are any modules using OWM / sensors?

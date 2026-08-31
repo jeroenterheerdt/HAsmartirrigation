@@ -278,7 +278,16 @@ class RecurringScheduleManager:
                     await self.coordinator._async_calculate_all()
                 else:
                     for zone_id in zones:
-                        await self.coordinator.async_calculate_zone(zone_id)
+                        # async_calculate_zone wants the aggregated weather data
+                        # for the zone; async_update_zone_config is what gathers
+                        # it, the same path the calculate_zone service takes.
+                        await self.coordinator.async_update_zone_config(
+                            zone_id=zone_id,
+                            data={
+                                const.ATTR_CALCULATE: const.ATTR_CALCULATE,
+                                const.ATTR_DELETE_WEATHER_DATA: True,
+                            },
+                        )
             elif action == "update":
                 if zones == "all":
                     await self.coordinator._async_update_all()

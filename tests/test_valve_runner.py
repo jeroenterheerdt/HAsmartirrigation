@@ -1,5 +1,6 @@
 """Tests for direct valve control (the optional executor)."""
 
+import asyncio
 import datetime
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock
@@ -12,6 +13,10 @@ from custom_components.smart_irrigation import const
 from custom_components.smart_irrigation.calculation import CalculationMixin
 from custom_components.smart_irrigation.observed_watering import ObservedWateringMixin
 from custom_components.smart_irrigation.valve_runner import ValveRunnerMixin
+
+# Captured before the _no_sleep fixture replaces asyncio.sleep, for the few
+# tests that need to actually yield to the event loop.
+_REAL_SLEEP = asyncio.sleep
 
 
 class _Coordinator(ObservedWateringMixin, ValveRunnerMixin, CalculationMixin):
@@ -64,6 +69,9 @@ def _make_hass(metric=True, valve_state="on"):
     hass.loop.time = _now
     hass.services = Mock()
     hass.services.async_call = AsyncMock()
+    # The runner wraps each service call in a task so it can bound its wait, so
+    # this has to produce a real awaitable task rather than a Mock.
+    hass.async_create_task = lambda coro, *args, **kwargs: asyncio.ensure_future(coro)
     hass.bus = Mock()
     hass.bus.async_fire = Mock()
 
@@ -168,6 +176,10 @@ async def test_run_one_valve_opens_waits_closes_credits():
     calls = [c.args for c in hass.services.async_call.await_args_list]
     assert ("switch", "turn_on", {"entity_id": "switch.valve"}) in calls
     assert ("switch", "turn_off", {"entity_id": "switch.valve"}) in calls
+    assert all(
+        call.kwargs.get("blocking") is True
+        for call in hass.services.async_call.await_args_list
+    )
     # turn_on before turn_off
     assert calls.index(
         ("switch", "turn_on", {"entity_id": "switch.valve"})
@@ -292,3 +304,83 @@ async def test_resume_partial_run_finishes_remaining():
     names = [c.args[1] for c in hass.services.async_call.await_args_list]
     assert "turn_on" in names and "turn_off" in names  # re-opened then closed
     coord.store.async_update_zone.assert_awaited()  # credited the full duration
+
+
+async def test_valve_service_is_awaited_before_the_run_continues():
+    """The confirmation window must not race a still-running linked action."""
+    hass = _make_hass()
+    order = []
+
+    async def _slow_open(*args, **kwargs):
+        await asyncio.sleep(0)
+        order.append("service returned")
+
+    hass.services.async_call = _slow_open
+    coord = _Coordinator(hass, _make_store(_zone()))
+    original = coord._confirm_valve_running
+
+    async def _confirm(entity_id):
+        order.append("confirm started")
+        return await original(entity_id)
+
+    coord._confirm_valve_running = _confirm
+
+    await coord._run_one_valve(_zone())
+
+    assert order[:2] == ["service returned", "confirm started"]
+
+
+async def test_a_hanging_valve_service_does_not_stall_the_run(monkeypatch, caplog):
+    """A linked script that never returns must not hold the run hostage.
+
+    Otherwise the water is never credited, the persisted run dangles and, in
+    sequential mode, every later zone waits behind it.
+    """
+    monkeypatch.setattr(
+        "custom_components.smart_irrigation.valve_runner.VALVE_SERVICE_TIMEOUT", 0.01
+    )
+    hass = _make_hass()
+    never_returns = asyncio.Event()
+
+    async def _hang(*args, **kwargs):
+        await never_returns.wait()
+
+    hass.services.async_call = _hang
+    zone = _zone()
+    coord = _Coordinator(hass, _make_store(zone))
+
+    await coord._run_one_valve(zone)
+
+    # The run went through: persisted run cleared and the bucket credited.
+    assert coord._active_valve_runs == {}
+    args = coord.store.async_update_zone.await_args.args
+    assert args[1][const.ZONE_BUCKET] == pytest.approx(-2.0)
+    assert "did not complete within" in caplog.text
+
+    # Giving up on the wait must not cancel the service itself: it is still
+    # pending, and it completes once the linked action finally returns.
+    never_returns.set()
+    await _REAL_SLEEP(0)
+
+
+async def test_a_late_valve_service_failure_is_logged(monkeypatch, caplog):
+    monkeypatch.setattr(
+        "custom_components.smart_irrigation.valve_runner.VALVE_SERVICE_TIMEOUT", 0.01
+    )
+    hass = _make_hass()
+    release = asyncio.Event()
+
+    async def _fail_late(*args, **kwargs):
+        await release.wait()
+        raise RuntimeError("valve proxy exploded")
+
+    hass.services.async_call = _fail_late
+    coord = _Coordinator(hass, _make_store(_zone()))
+
+    await coord._run_one_valve(_zone())
+    release.set()
+    # One turn for the service task to raise, one for its done callback.
+    await _REAL_SLEEP(0)
+    await _REAL_SLEEP(0)
+
+    assert "valve proxy exploded" in caplog.text

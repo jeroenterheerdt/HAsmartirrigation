@@ -82,7 +82,14 @@ class TriggersMixin:
             await self._register_legacy_sunrise_trigger()
             return
 
-        if total_duration <= 0:
+        # A trigger that accounts for the duration has to know it to work out
+        # when to start, so there is nothing to schedule without one. A trigger
+        # that fires at a fixed offset does not need it and stays scheduled, so
+        # its event is still fired (and shown as the next start) on a day when
+        # no zone happens to need water.
+        if total_duration <= 0 and selected.get(
+            const.TRIGGER_CONF_ACCOUNT_FOR_DURATION, True
+        ):
             _LOGGER.info(
                 "No enabled zones with duration > 0, skipping trigger registration"
             )
@@ -365,8 +372,11 @@ class TriggersMixin:
                             "will not fire",
                             skip_reason,
                         )
-                        # Count this as a (skipped) day, once.
-                        await self._increment_days_since_irrigation()
+                        # Do NOT increment days-since-irrigation here: the
+                        # midnight reset already counts every calendar day
+                        # exactly once, skipped days included. Counting again
+                        # here advanced the counter by 2 per skipped day, so a
+                        # days-between setting of 5 watered every 3 days (#802).
 
                 if not self._watering_decision_today:
                     _LOGGER.info(
@@ -403,13 +413,17 @@ class TriggersMixin:
                         {const.START_EVENT_FIRED_TODAY: True}
                     )
             except Exception as e:
+                # Fail safe, not fail open (#804): if we cannot tell whether
+                # today is a watering day, not watering is recoverable (one
+                # missed day, visible in the log) while watering on an
+                # unevaluated decision is not. Firing here also risked a double
+                # fire when the exception came from the post-fire bookkeeping.
                 _LOGGER.error(
-                    "Error evaluating irrigation conditions for trigger '%s', "
-                    "firing event anyway: %s",
+                    "Error evaluating irrigation conditions for trigger '%s'; "
+                    "not firing the start event (fail-safe): %s",
                     name,
                     e,
                 )
-                self.hass.bus.fire(event_to_fire, event_data)
 
         self.hass.async_create_task(check_and_fire())
 

@@ -12,6 +12,8 @@ from . import const
 
 _LOGGER = logging.getLogger(__name__)
 
+REDACTED = "[redacted]"
+
 
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, config_entry: ConfigEntry
@@ -29,8 +31,19 @@ async def async_get_config_entry_diagnostics(
     if coordinator is not None:
         store = coordinator.store
         if store is not None:
+            # Manually configured coordinates pinpoint the user's home and
+            # diagnostics files get attached to public issues, so redact them
+            # (#806). Copy first: async_get_config may hand back the live dict.
+            config = dict(await store.async_get_config())
+            for key in (
+                const.CONF_MANUAL_LATITUDE,
+                const.CONF_MANUAL_LONGITUDE,
+                const.CONF_MANUAL_ELEVATION,
+            ):
+                if config.get(key) is not None:
+                    config[key] = REDACTED
             diagnostics["store"] = {
-                "config": await store.async_get_config(),
+                "config": config,
                 "mappings": await store.async_get_mappings(),
                 "modules": await store.async_get_modules(),
                 "zones": await store.async_get_zones(),
@@ -40,5 +53,5 @@ async def async_get_config_entry_diagnostics(
     else:
         _LOGGER.warning("Coordinator is not available")
     if const.CONF_WEATHER_SERVICE_API_KEY in diagnostics:
-        diagnostics[const.CONF_WEATHER_SERVICE_API_KEY] = "[redacted]"
+        diagnostics[const.CONF_WEATHER_SERVICE_API_KEY] = REDACTED
     return diagnostics
