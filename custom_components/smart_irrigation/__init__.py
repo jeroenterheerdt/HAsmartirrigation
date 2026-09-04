@@ -39,6 +39,7 @@ from homeassistant.util import slugify
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from . import const
+from .blueprint_install import async_install_bundled_blueprints
 from .calculation import CalculationMixin
 from .exceptions import SmartIrrigationError
 from .helpers import (
@@ -150,6 +151,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Smart Irrigation from a config entry."""
 
     _LOGGER.info("async_setup_entry called for %s", entry.entry_id)
+
+    # Lay down the example blueprints so they are one click away in the UI.
+    # Copy-if-missing, and it can never fail hard, so it is safe this early.
+    await async_install_bundled_blueprints(hass)
 
     session = async_get_clientsession(hass)
 

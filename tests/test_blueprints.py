@@ -20,7 +20,9 @@ import pathlib
 import pytest
 import yaml
 
-BLUEPRINTS = sorted(pathlib.Path("blueprints").rglob("*.yaml"))
+BLUEPRINTS = sorted(
+    pathlib.Path("custom_components/smart_irrigation/blueprints").rglob("*.yaml")
+)
 
 
 class _Loader(yaml.SafeLoader):
