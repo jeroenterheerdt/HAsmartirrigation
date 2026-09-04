@@ -411,7 +411,8 @@
     "trigger_types": {
       "sunrise": "Sunrise",
       "sunset": "Sunset",
-      "solar_azimuth": "Solar Azimuth"
+      "solar_azimuth": "Solar Azimuth",
+      "time": "Fixed time"
     },
     "fields": {
       "name": {
@@ -437,6 +438,9 @@
       "account_for_duration": {
         "name": "Account for Duration",
         "description": "When enabled, irrigation will start early enough to finish at the specified time. When disabled, irrigation will start exactly at the specified time."
+      },
+      "at": {
+        "name": "Time"
       }
     },
     "dialog": {
@@ -452,7 +456,8 @@
     "confirm_delete": "Are you sure you want to delete the trigger '{name}'?",
     "validation": {
       "name_required": "Trigger name is required",
-      "azimuth_invalid": "Azimuth angle must be a valid number"
+      "azimuth_invalid": "Azimuth angle must be a valid number",
+      "time_invalid": "Please enter a valid time as HH:MM."
     },
     "help": {
       "sunrise_offset": "For sunrise triggers: Use negative values to start before sunrise, positive to start after. Set to 0 to automatically start early enough to complete all zones before sunrise.",

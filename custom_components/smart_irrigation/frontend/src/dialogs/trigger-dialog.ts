@@ -9,6 +9,7 @@ import {
   TRIGGER_TYPE_SUNRISE,
   TRIGGER_TYPE_SUNSET,
   TRIGGER_TYPE_SOLAR_AZIMUTH,
+  TRIGGER_TYPE_TIME,
   TRIGGER_CONF_TYPE,
   TRIGGER_CONF_NAME,
   TRIGGER_CONF_ENABLED,
@@ -111,9 +112,16 @@ export class TriggerDialog extends LitElement {
             type: selValue,
             azimuth_angle: this._trigger.azimuth_angle ?? 90,
           };
-        } else {
-          // remove azimuth when switching away from azimuth type
+        } else if (selValue === TRIGGER_TYPE_TIME) {
           const { azimuth_angle, ...rest } = this._trigger as any;
+          this._trigger = {
+            ...rest,
+            type: selValue,
+            at: this._trigger.at ?? "06:00",
+          } as IrrigationStartTrigger;
+        } else {
+          // drop the fields that belong to the type being switched away from
+          const { azimuth_angle, at, ...rest } = this._trigger as any;
           this._trigger = {
             ...rest,
             type: selValue,
@@ -128,6 +136,19 @@ export class TriggerDialog extends LitElement {
       alert(
         localize(
           "irrigation_start_triggers.validation.name_required",
+          this.hass.language,
+        ),
+      );
+      return;
+    }
+
+    if (
+      this._trigger.type === TRIGGER_TYPE_TIME &&
+      !/^\d{1,2}:\d{2}$/.test(this._trigger.at ?? "")
+    ) {
+      alert(
+        localize(
+          "irrigation_start_triggers.validation.time_invalid",
           this.hass.language,
         ),
       );
@@ -271,6 +292,12 @@ export class TriggerDialog extends LitElement {
                   this.hass.language,
                 )}
               </ha-dropdown-item>
+              <ha-dropdown-item value=${TRIGGER_TYPE_TIME}>
+                ${localize(
+                  "irrigation_start_triggers.trigger_types.time",
+                  this.hass.language,
+                )}
+              </ha-dropdown-item>
             </ha-select>
           </div>
 
@@ -320,6 +347,24 @@ export class TriggerDialog extends LitElement {
             </ha-formfield>
           </div>
 
+          ${this._trigger.type === TRIGGER_TYPE_TIME
+            ? html`
+                <div class="form-group">
+                  <label class="form-label"
+                    >${localize(
+                      "irrigation_start_triggers.fields.at.name",
+                      this.hass.language,
+                    )}</label
+                  >
+                  <input
+                    class="form-input"
+                    type="time"
+                    .value=${this._trigger.at || "06:00"}
+                    @input=${this._atChanged}
+                  />
+                </div>
+              `
+            : ""}
           ${this._trigger.type === TRIGGER_TYPE_SOLAR_AZIMUTH
             ? html`
                 <div class="form-group">
@@ -435,6 +480,11 @@ export class TriggerDialog extends LitElement {
   private _accountForDurationChanged(event: Event) {
     const target = event.target as HTMLInputElement;
     this._updateTrigger({ account_for_duration: target.checked });
+  }
+
+  private _atChanged(e: Event) {
+    const value = (e.target as HTMLInputElement).value;
+    this._trigger = { ...this._trigger!, at: value };
   }
 
   private _azimuthChanged(event: Event) {

@@ -410,7 +410,8 @@
     "trigger_types": {
       "sunrise": "Lever du soleil",
       "sunset": "Coucher du soleil",
-      "solar_azimuth": "Azimut solaire"
+      "solar_azimuth": "Azimut solaire",
+      "time": "Heure fixe"
     },
     "fields": {
       "name": {
@@ -436,6 +437,9 @@
       "account_for_duration": {
         "name": "Tenir compte de la durée",
         "description": "Lorsqu'elle est activée, l'irrigation démarre assez tôt pour se terminer à l'heure indiquée. Lorsqu'elle est désactivée, l'irrigation démarre exactement à l'heure indiquée."
+      },
+      "at": {
+        "name": "Heure"
       }
     },
     "dialog": {
@@ -451,7 +455,8 @@
     "confirm_delete": "Voulez-vous vraiment supprimer le déclencheur \"{name}\" ?",
     "validation": {
       "name_required": "Le nom du déclencheur est obligatoire",
-      "azimuth_invalid": "L'angle d'azimut doit être un nombre valide"
+      "azimuth_invalid": "L'angle d'azimut doit être un nombre valide",
+      "time_invalid": "Veuillez saisir une heure valide au format HH:MM."
     },
     "help": {
       "sunrise_offset": "Pour les déclencheurs au lever du soleil : utilisez des valeurs négatives pour démarrer avant le lever, positives pour démarrer après. Réglez sur 0 pour démarrer automatiquement assez tôt afin de terminer toutes les zones avant le lever du soleil.",

@@ -47,6 +47,7 @@ export const START_TRIGGER_DEFAULT = "default";
 export const TRIGGER_TYPE_SUNRISE = "sunrise";
 export const TRIGGER_TYPE_SUNSET = "sunset";
 export const TRIGGER_TYPE_SOLAR_AZIMUTH = "solar_azimuth";
+export const TRIGGER_TYPE_TIME = "time";
 export const TRIGGER_CONF_TYPE = "type";
 export const TRIGGER_CONF_OFFSET_MINUTES = "offset_minutes";
 export const TRIGGER_CONF_AZIMUTH_ANGLE = "azimuth_angle";

@@ -81,6 +81,7 @@ export interface IrrigationStartTrigger {
   enabled: boolean;
   offset_minutes: number;
   azimuth_angle?: number;
+  at?: string;
   account_for_duration: boolean;
 }
 
@@ -88,6 +89,7 @@ export enum TriggerType {
   Sunrise = "sunrise",
   Sunset = "sunset",
   SolarAzimuth = "solar_azimuth",
+  Time = "time",
 }
 
 export enum SmartIrrigationZoneState {

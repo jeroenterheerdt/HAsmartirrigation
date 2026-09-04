@@ -19,11 +19,13 @@ from homeassistant.helpers.event import (
     async_track_point_in_utc_time,
     async_track_sunrise,
     async_track_sunset,
+    async_track_time_change,
 )
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from . import const
 from .helpers import (
+    check_time,
     convert_between,
     find_next_solar_azimuth_time,
     normalize_azimuth_angle,
@@ -141,6 +143,16 @@ class TriggersMixin:
                     account_for_duration,
                     trigger_info,
                 )
+            elif trigger_type == const.TRIGGER_TYPE_TIME:
+                at = trigger.get(const.TRIGGER_CONF_AT, const.TRIGGER_CONF_DEFAULT_AT)
+                trigger_info[const.TRIGGER_CONF_AT] = at
+                await self._register_time_trigger(
+                    at,
+                    trigger_name,
+                    total_duration,
+                    account_for_duration,
+                    trigger_info,
+                )
             elif trigger_type == const.TRIGGER_TYPE_SOLAR_AZIMUTH:
                 azimuth_angle = trigger.get(const.TRIGGER_CONF_AZIMUTH_ANGLE, 0)
                 # Normalize azimuth angle to 0-360 range
@@ -158,6 +170,52 @@ class TriggersMixin:
                 _LOGGER.warning("Unknown trigger type: %s", trigger_type)
         except Exception as e:
             _LOGGER.error("Failed to register trigger '%s': %s", trigger_name, e)
+
+    async def _register_time_trigger(
+        self,
+        at: str,
+        trigger_name: str,
+        total_duration: int,
+        account_for_duration: bool,
+        trigger_info: dict,
+    ):
+        """Register a trigger on a clock time.
+
+        With ``account_for_duration`` the run is worked back from ``at`` so it
+        finishes then, which is what people asking for this want: irrigation done
+        by a fixed hour whatever the season. Without it, it starts at ``at``.
+
+        Unlike the azimuth trigger this uses a repeating time tracker rather than
+        a one-shot point in time, so it survives a day on which nothing
+        re-registers it.
+        """
+        if not check_time(at):
+            _LOGGER.warning(
+                "Start trigger '%s' has an invalid time: %s", trigger_name, at
+            )
+            return
+        hours, minutes = (int(part) for part in at.split(":")[:2])
+        fire_at = datetime.now().replace(
+            hour=hours, minute=minutes, second=0, microsecond=0
+        )
+        if account_for_duration:
+            fire_at -= timedelta(seconds=total_duration)
+
+        unsub = async_track_time_change(
+            self.hass,
+            partial(self._fire_start_event, trigger_info),
+            hour=fire_at.hour,
+            minute=fire_at.minute,
+            second=0,
+        )
+        self._track_irrigation_triggers_unsub.append(unsub)
+        _LOGGER.info(
+            "Registered time trigger '%s': will fire at %02d:%02d%s",
+            trigger_name,
+            fire_at.hour,
+            fire_at.minute,
+            f" so the run finishes at {at}" if account_for_duration else "",
+        )
 
     async def _register_legacy_sunrise_trigger(self):
         """Register the legacy sunrise trigger for backward compatibility."""

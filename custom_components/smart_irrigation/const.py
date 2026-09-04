@@ -140,7 +140,15 @@ CONF_DEFAULT_IU_SHARE_ZONE_DATA = False
 TRIGGER_TYPE_SUNRISE = "sunrise"
 TRIGGER_TYPE_SUNSET = "sunset"
 TRIGGER_TYPE_SOLAR_AZIMUTH = "solar_azimuth"
-TRIGGER_TYPES = [TRIGGER_TYPE_SUNRISE, TRIGGER_TYPE_SUNSET, TRIGGER_TYPE_SOLAR_AZIMUTH]
+# A clock time rather than a solar event, for people who want irrigation to
+# finish (or start) at the same time every day whatever the season.
+TRIGGER_TYPE_TIME = "time"
+TRIGGER_TYPES = [
+    TRIGGER_TYPE_SUNRISE,
+    TRIGGER_TYPE_SUNSET,
+    TRIGGER_TYPE_SOLAR_AZIMUTH,
+    TRIGGER_TYPE_TIME,
+]
 
 # Trigger configuration keys
 TRIGGER_CONF_TYPE = "type"
@@ -149,6 +157,9 @@ TRIGGER_CONF_AZIMUTH_ANGLE = "azimuth_angle"
 TRIGGER_CONF_ENABLED = "enabled"
 TRIGGER_CONF_NAME = "name"
 TRIGGER_CONF_ACCOUNT_FOR_DURATION = "account_for_duration"
+# Clock time "HH:MM" for a time trigger.
+TRIGGER_CONF_AT = "at"
+TRIGGER_CONF_DEFAULT_AT = "06:00"
 
 CONF_WEATHER_SERVICE = "weather_service"
 CONF_WEATHER_SERVICE_API_KEY = "weather_service_api_key"
