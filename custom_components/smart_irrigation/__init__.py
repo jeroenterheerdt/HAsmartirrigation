@@ -542,6 +542,10 @@ class SmartIrrigationCoordinator(
         # computed once and shared by all triggers for the day:
         # None = undecided, True = water, False = skip.
         self._watering_decision_today = True if self._start_event_fired_today else None
+        # The structured result of the most recent real watering decision, so
+        # the panel can say why a run was skipped rather than only that it was.
+        # None until one has been made, and after a restart.
+        self._last_skip_evaluation = None
 
         # Initialize enhanced scheduling managers
         self.recurring_schedule_manager = RecurringScheduleManager(hass, self)

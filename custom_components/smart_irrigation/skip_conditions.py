@@ -52,13 +52,54 @@ class SkipConditionsMixin:
             return max(durations)
         return sum(durations)
 
-    async def _check_precipitation_forecast(self) -> bool:
-        """Check if precipitation is forecasted and should skip irrigation.
+    async def async_evaluate_skip_conditions(self) -> dict:
+        """Evaluate every skip condition and say which one vetoes watering.
 
-        Returns:
-            bool: True if irrigation should be skipped due to precipitation, False otherwise.
+        The runner needs one boolean, but a panel that only knows *that* a run
+        was skipped cannot tell anyone *why*, which is what people actually ask
+        (#794). So the checks report themselves, and the boolean falls out of
+        them, which also means the two can never disagree: the explanation is
+        produced by the code that makes the decision.
 
+        Returns a dict with ``should_skip``, the ``reason`` id of the first
+        check that vetoes, and ``checks``, one entry per condition carrying
+        whether it is enabled, whether it could be evaluated at all, whether it
+        skips, and the numbers behind that.
         """
+        checks = [
+            await self._evaluate_precipitation_forecast(),
+            await self._evaluate_days_between_irrigation(),
+        ]
+        vetoing = next((check for check in checks if check["skip"]), None)
+        return {
+            "should_skip": vetoing is not None,
+            "reason": vetoing["id"] if vetoing else None,
+            "checks": checks,
+        }
+
+    async def _check_precipitation_forecast(self) -> bool:
+        """Whether the forecast vetoes watering."""
+        return (await self._evaluate_precipitation_forecast())["skip"]
+
+    async def _check_days_between_irrigation(self) -> bool:
+        """Whether too few days have passed since the last irrigation."""
+        return (await self._evaluate_days_between_irrigation())["skip"]
+
+    async def _evaluate_precipitation_forecast(self) -> dict:
+        """Report the forecast-precipitation guard.
+
+        ``available`` is False when the forecast could not be read at all. The
+        run then goes ahead, which is the behaviour this has always had, but a
+        reader can tell "no rain is coming" apart from "we could not find out".
+        """
+        result = {
+            "id": "precipitation",
+            "enabled": False,
+            "available": True,
+            "skip": False,
+            "forecast_mm": None,
+            "threshold_mm": None,
+        }
         config = await self.store.async_get_config()
 
         # Check if precipitation skip is enabled
@@ -67,7 +108,8 @@ class SkipConditionsMixin:
             const.CONF_DEFAULT_SKIP_IRRIGATION_ON_PRECIPITATION,
         )
         if not skip_on_precipitation:
-            return False
+            return result
+        result["enabled"] = True
 
         # Check if weather service is being used
         use_weather_service = config.get(
@@ -77,13 +119,15 @@ class SkipConditionsMixin:
             _LOGGER.debug(
                 "Weather service not enabled, cannot check precipitation forecast"
             )
-            return False
+            result["available"] = False
+            return result
 
         # Get precipitation threshold
         threshold_mm = config.get(
             const.CONF_PRECIPITATION_THRESHOLD_MM,
             const.CONF_DEFAULT_PRECIPITATION_THRESHOLD_MM,
         )
+        result["threshold_mm"] = threshold_mm
 
         try:
             # Get weather service
@@ -92,13 +136,15 @@ class SkipConditionsMixin:
             )
             if weather_service is None:
                 _LOGGER.debug("No weather service configured")
-                return False
+                result["available"] = False
+                return result
 
             weather_client = self._WeatherServiceClient
 
             if weather_client is None:
                 _LOGGER.debug("Weather client not available")
-                return False
+                result["available"] = False
+                return result
 
             # Get forecast data including today (index 0). Without include_today
             # the list would start at tomorrow and today's forecast rain would
@@ -108,7 +154,8 @@ class SkipConditionsMixin:
             )
             if not forecast_data:
                 _LOGGER.debug("No forecast data available")
-                return False
+                result["available"] = False
+                return result
 
             # Check precipitation for today and tomorrow
             total_precipitation = 0.0
@@ -122,25 +169,31 @@ class SkipConditionsMixin:
                 threshold_mm,
             )
 
+            result["forecast_mm"] = total_precipitation
             if total_precipitation >= threshold_mm:
                 _LOGGER.info(
                     "Skipping irrigation due to forecasted precipitation: %.1f mm (threshold: %.1f mm)",
                     total_precipitation,
                     threshold_mm,
                 )
-                return True
+                result["skip"] = True
 
         except Exception as e:
             _LOGGER.warning("Error checking precipitation forecast: %s", e)
+            result["available"] = False
 
-        return False
+        return result
 
-    async def _check_days_between_irrigation(self) -> bool:
-        """Check if enough days have passed since the last irrigation event.
-
-        Returns:
-            bool: True if irrigation should be skipped due to insufficient days passed, False otherwise.
-        """
+    async def _evaluate_days_between_irrigation(self) -> dict:
+        """Report the days-between-irrigation guard."""
+        result = {
+            "id": "days_between",
+            "enabled": False,
+            "available": True,
+            "skip": False,
+            "days_since": None,
+            "days_required": None,
+        }
         config = await self.store.async_get_config()
 
         # Get the configured minimum days between irrigation
@@ -151,13 +204,16 @@ class SkipConditionsMixin:
 
         # If days_between is 0, no restriction (always allow irrigation)
         if days_between <= 0:
-            return False
+            return result
 
         # Get days since last irrigation
         days_since_last = config.get(
             const.CONF_DAYS_SINCE_LAST_IRRIGATION,
             const.CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION,
         )
+        result["enabled"] = True
+        result["days_required"] = days_between
+        result["days_since"] = days_since_last
 
         if days_since_last < days_between:
             _LOGGER.info(
@@ -165,9 +221,9 @@ class SkipConditionsMixin:
                 days_since_last,
                 days_between,
             )
-            return True
+            result["skip"] = True
 
-        return False
+        return result
 
     async def _increment_days_since_irrigation(self):
         """Increment the counter for days since last irrigation."""

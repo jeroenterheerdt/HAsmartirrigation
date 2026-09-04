@@ -140,9 +140,16 @@ async def test_precipitation_skip_does_not_advance_the_counter():
     coordinator = _Coordinator(3, days_since=3)
 
     async def _rain():
-        return True
+        return {
+            "id": "precipitation",
+            "enabled": True,
+            "available": True,
+            "skip": True,
+            "forecast_mm": 9.0,
+            "threshold_mm": 2.0,
+        }
 
-    coordinator._check_precipitation_forecast = _rain
+    coordinator._evaluate_precipitation_forecast = _rain
 
     await coordinator.reach_trigger()
 
@@ -157,7 +164,9 @@ async def test_start_event_is_not_fired_when_the_decision_cannot_be_evaluated():
     async def _boom():
         raise RuntimeError("weather service unreachable")
 
-    coordinator._check_precipitation_forecast = _boom
+    # The evaluation is the seam the runner calls; an error there must still
+    # reach the fail-safe rather than being read as "nothing vetoes, water".
+    coordinator._evaluate_precipitation_forecast = _boom
 
     await coordinator.reach_trigger()
 

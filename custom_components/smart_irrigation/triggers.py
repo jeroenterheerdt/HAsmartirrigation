@@ -424,12 +424,13 @@ class TriggersMixin:
             try:
                 # Decide once per day whether today is a watering day.
                 if self._watering_decision_today is None:
-                    skip_reason = None
-                    if await self._check_precipitation_forecast():
-                        skip_reason = "forecasted precipitation"
-                    elif await self._check_days_between_irrigation():
-                        skip_reason = "insufficient days since last irrigation"
-                    self._watering_decision_today = skip_reason is None
+                    # One structured evaluation rather than two booleans, so
+                    # what the panel shows and what the runner decides come from
+                    # the same call (#794).
+                    evaluation = await self.async_evaluate_skip_conditions()
+                    self._last_skip_evaluation = evaluation
+                    skip_reason = evaluation["reason"]
+                    self._watering_decision_today = not evaluation["should_skip"]
                     if skip_reason is not None:
                         _LOGGER.info(
                             "Today is not a watering day (%s); start triggers "

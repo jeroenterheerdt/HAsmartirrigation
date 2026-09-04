@@ -402,6 +402,16 @@ async def websocket_get_irrigation_info(hass: HomeAssistant, connection, msg):
         # Get all zones from the store
         zones = await coordinator.store.async_get_zones()
 
+        # What the skip conditions say right now, and what they said at the last
+        # real decision. The preview is evaluated live, so a forecast can still
+        # change before the run: it says what would happen, not what will (#794).
+        try:
+            skip_preview = await coordinator.async_evaluate_skip_conditions()
+        except Exception as e:  # noqa: BLE001 - the info panel must not fail on it
+            _LOGGER.debug("Skip preview unavailable: %s", e)
+            skip_preview = None
+        last_skip_evaluation = getattr(coordinator, "_last_skip_evaluation", None)
+
         # Calculate total duration and get enabled zones that need irrigation
         total_duration = await coordinator.get_total_duration_all_enabled_zones()
         enabled_zones = []
@@ -541,6 +551,8 @@ async def websocket_get_irrigation_info(hass: HomeAssistant, connection, msg):
             "sunrise_time": sunrise_time.isoformat() if sunrise_time else None,
             "total_irrigation_duration": int(total_duration),
             "irrigation_explanation": irrigation_explanation,
+            "skip_preview": skip_preview,
+            "last_skip_evaluation": last_skip_evaluation,
         }
 
         _LOGGER.debug("Irrigation info calculated: %s", irrigation_info)
@@ -561,6 +573,8 @@ async def websocket_get_irrigation_info(hass: HomeAssistant, connection, msg):
             "sunrise_time": sunrise_time.isoformat(),
             "total_irrigation_duration": 0,
             "irrigation_explanation": "Unable to calculate irrigation schedule. Please check system configuration.",
+            "skip_preview": None,
+            "last_skip_evaluation": None,
         }
 
     connection.send_result(msg["id"], irrigation_info)
