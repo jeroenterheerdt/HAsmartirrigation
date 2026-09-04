@@ -106,7 +106,7 @@ class WateringCalendarMixin:
 
         """
         mapping_id = zone.get(const.ZONE_MAPPING)
-        module_id = zone.get(const.ZONE_MODULE)
+        module_id = self.module_id_for_zone(zone)
 
         if mapping_id is None or module_id is None:
             raise SmartIrrigationError(
@@ -335,7 +335,7 @@ class WateringCalendarMixin:
             str: Description of the calculation method used.
 
         """
-        module_id = zone.get(const.ZONE_MODULE)
+        module_id = self.module_id_for_zone(zone)
         if module_id is None:
             return "No calculation module configured"
 

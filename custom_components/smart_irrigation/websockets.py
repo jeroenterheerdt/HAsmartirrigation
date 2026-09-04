@@ -175,6 +175,7 @@ class SmartIrrigationMappingView(HomeAssistantView):
                 vol.Optional(const.MAPPING_NAME): cv.string,
                 vol.Optional(const.MAPPING_MAPPINGS): vol.Coerce(dict),
                 vol.Optional(const.MAPPING_GREENHOUSE): cv.boolean,
+                vol.Optional(const.MAPPING_MODULE): vol.Or(int, str, None),
                 vol.Optional(const.ATTR_REMOVE): cv.boolean,
                 # The following fields are server-computed. They are accepted
                 # here (as ``object``) so that older frontends which echo them

@@ -63,6 +63,25 @@ class CalculationMixin:
 
         return retval
 
+    def module_id_for_zone(self, zone) -> int | None:
+        """Which engine computes this zone's evapotranspiration.
+
+        The sensor group decides when it says so: "this group produces ET this
+        way" is a property of the group, not of every zone that happens to read
+        it, and it is what lets the editor show only the sources that engine
+        consumes.
+
+        A group that has not adopted an engine, because its zones disagree or
+        because it predates the move, leaves the zone's own module in charge.
+        Nothing changes for those installs until the disagreement is resolved.
+        """
+        mapping_id = zone.get(const.ZONE_MAPPING)
+        if mapping_id is not None:
+            mapping = self.store.get_mapping(mapping_id)
+            if mapping and mapping.get(const.MAPPING_MODULE) is not None:
+                return mapping.get(const.MAPPING_MODULE)
+        return zone.get(const.ZONE_MODULE)
+
     async def apply_aggregates_to_mapping_data(
         self, mapping, continuous_updates=False, persist=True
     ):
@@ -557,7 +576,7 @@ class CalculationMixin:
         forecastdata = None
         for zone in zones:
             # get forecast data if needed (once)
-            modinst = await self.getModuleInstanceByID(zone.get(const.ZONE_MODULE))
+            modinst = await self.getModuleInstanceByID(self.module_id_for_zone(zone))
             if modinst and modinst.name == "PyETO" and modinst.forecast_days > 0:
                 if self.use_weather_service:
                     # get forecast info from OWM
@@ -692,7 +711,7 @@ class CalculationMixin:
         """
         _LOGGER.debug("calculate_module for zone: %s", zone)
         # _LOGGER.debug("[calculate_module] for zone: %s, weatherdata: %s, forecastdata: %s", zone, weatherdata, forecastdata)
-        mod_id = zone.get(const.ZONE_MODULE)
+        mod_id = self.module_id_for_zone(zone)
         m = self.store.get_module(mod_id)
         if m is None:
             return None

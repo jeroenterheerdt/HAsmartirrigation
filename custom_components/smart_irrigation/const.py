@@ -354,6 +354,10 @@ MAPPING_DATA_LAST_CALCULATION = "data_last_calculation"
 # asking a weather service about, so the settings that assume open air stop
 # applying to the zones that use this group.
 MAPPING_GREENHOUSE = "greenhouse"
+# Which engine this group's sources feed. The calculation reads it here in
+# preference to the zone, so "this group produces ET this way" is a property
+# of the group and the editor can show only the sources that engine consumes.
+MAPPING_MODULE = "module"
 CONF_DEFAULT_GREENHOUSE = False
 MAPPING_DATA_MULTIPLIER = "data_multiplier"
 MAPPING_MAPPINGS = "mappings"

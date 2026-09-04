@@ -93,6 +93,7 @@ from .const import (
     MAPPING_MAPPINGS,
     MAPPING_MAX_TEMP,
     MAPPING_MIN_TEMP,
+    MAPPING_MODULE,
     MAPPING_NAME,
     MAPPING_PRECIPITATION,
     MAPPING_PRESSURE,
@@ -244,6 +245,54 @@ def default_mapping_entry(mapping_key: str, use_weather_service: bool) -> dict:
     }
 
 
+def adopt_module_from_zones(mappings: dict, zones: dict) -> dict:
+    """Record each sensor group's engine on the group itself.
+
+    The engine used to live only on the zone, alongside a separate reference to
+    the sensor group. The two were independent, so a group could be shared by a
+    PyETO zone and a Passthrough one and there was no answer to "which sources
+    does this group need" - which is why the editor showed every field whatever
+    the engine consumed.
+
+    Moving it onto the group makes that question answerable. This migration
+    only records what is already true: a group whose zones all use the same
+    engine adopts it, and nothing else changes.
+
+    A group whose zones disagree is left undecided on purpose. Picking one for
+    them would silently change how the other zone's water balance is computed,
+    and splitting the group would rearrange a list the user built. Those zones
+    keep resolving through their own module, and the disagreement surfaces in
+    the editor instead of being resolved behind their back.
+    """
+
+    def uses(zone, mapping_id) -> bool:
+        # A zone's group reference may be stored as a string.
+        try:
+            return zone.mapping is not None and int(zone.mapping) == int(mapping_id)
+        except (TypeError, ValueError):
+            return False
+
+    for mapping_id, mapping in mappings.items():
+        if mapping.module is not None:
+            continue
+        engines = {
+            zone.module
+            for zone in zones.values()
+            if zone.module is not None and uses(zone, mapping_id)
+        }
+        if len(engines) == 1:
+            mappings[mapping_id] = attr.evolve(mapping, module=engines.pop())
+        elif len(engines) > 1:
+            _LOGGER.info(
+                "Sensor group %s is used by zones with different calculation "
+                "modules %s, so it has no module of its own; those zones keep "
+                "using theirs",
+                mapping_id,
+                sorted(engines),
+            )
+    return mappings
+
+
 def move_service_precipitation_to_the_rate(the_map: dict) -> dict:
     """Move a weather-service precipitation mapping onto the rate field.
 
@@ -325,6 +374,9 @@ class MappingEntry:
     # An enclosed environment: no rain reaches these zones and the weather
     # service has nothing useful to say about what does (#815 follow-up).
     greenhouse = attr.ib(type=bool, default=CONF_DEFAULT_GREENHOUSE)
+    # The engine that turns this group's sources into evapotranspiration. None
+    # means "not decided here", and the zones fall back to their own module.
+    module = attr.ib(type=int, default=None)
 
 
 @attr.s(slots=True, frozen=True)
@@ -741,7 +793,10 @@ class SmartIrrigationStorage:
                         greenhouse=mapping.get(
                             MAPPING_GREENHOUSE, CONF_DEFAULT_GREENHOUSE
                         ),
+                        module=mapping.get(MAPPING_MODULE, None),
                     )
+
+        mappings = adopt_module_from_zones(mappings, zones)
 
         self.config = config
         self.zones = zones

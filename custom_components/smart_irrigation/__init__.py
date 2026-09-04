@@ -1195,7 +1195,8 @@ class SmartIrrigationCoordinator(
                     z,
                 )
                 continue
-            if zone.get(const.ZONE_MODULE) is None:
+            module_id = self.module_id_for_zone(zone)
+            if module_id is None:
                 _LOGGER.info(
                     "[async_continuous_update_for_mapping] zone %s has no module, skipping",
                     z,
@@ -1203,7 +1204,7 @@ class SmartIrrigationCoordinator(
                 continue
 
             # check the module is not pyeto or if it is, that it does not use forecasting
-            mod = self.store.get_module(zone.get(const.ZONE_MODULE))
+            mod = self.store.get_module(module_id)
             if mod is None:
                 continue
 
@@ -2004,7 +2005,7 @@ class SmartIrrigationCoordinator(
 
             # get forecast data if needed
             forecastdata = None
-            modinst = await self.getModuleInstanceByID(zone.get(const.ZONE_MODULE))
+            modinst = await self.getModuleInstanceByID(self.module_id_for_zone(zone))
             if modinst and modinst.name == "PyETO" and modinst.forecast_days > 0:
                 if self.use_weather_service:
                     # get forecast info from OWM
