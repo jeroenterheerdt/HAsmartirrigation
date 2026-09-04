@@ -122,6 +122,7 @@ from .const import (
     ZONE_FLOW_SENSOR,
     ZONE_ID,
     ZONE_IRRIGATION_THRESHOLD,
+    ZONE_LAST_CONSUMED_AT,
     ZONE_LAST_IRRIGATION,
     ZONE_LAST_UPDATED,
     ZONE_LEAD_TIME,
@@ -196,6 +197,10 @@ class ZoneEntry:
     precipitation_superseded = attr.ib(type=float, default=0.0)
     # Optional cumulative volume meter; credits the bucket by measured volume.
     flow_sensor = attr.ib(type=str, default=None)
+    # How far this zone has read its sensor group's shared buffer (see const).
+    # None means it has never consumed one, and its first calculation takes
+    # everything there, which is what clearing the buffer used to leave behind.
+    last_consumed_at = attr.ib(type=datetime, default=None)
     # What the flow meter says the zone actually delivers, smoothed over runs,
     # with the number of runs behind it. Advisory only (see const).
     measured_throughput = attr.ib(type=float, default=None)
@@ -737,6 +742,7 @@ class SmartIrrigationStorage:
                         ),
                         linked_entity=zone.get(ZONE_LINKED_ENTITY, None),
                         flow_sensor=zone.get(ZONE_FLOW_SENSOR, None),
+                        last_consumed_at=zone.get(ZONE_LAST_CONSUMED_AT, None),
                         measured_throughput=zone.get(ZONE_MEASURED_THROUGHPUT, None),
                         measured_throughput_samples=zone.get(
                             ZONE_MEASURED_THROUGHPUT_SAMPLES, 0

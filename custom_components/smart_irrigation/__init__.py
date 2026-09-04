@@ -50,6 +50,7 @@ from .helpers import (
     convert_mapping_to_metric,
     loadModules,
     mapping_sources_changed,
+    parse_datetime,
     relative_to_absolute_pressure,
 )
 from .irrigation_unlimited import IrrigationUnlimitedIntegration
@@ -1995,7 +1996,12 @@ class SmartIrrigationCoordinator(
             mapping_id = zone[const.ZONE_MAPPING]
             mapping = self.store.get_mapping(mapping_id)
             if mapping.get(const.MAPPING_DATA):
-                weatherdata = await self.apply_aggregates_to_mapping_data(mapping)
+                # Only this zone's own window. The group's buffer belongs to
+                # every zone reading it, so calculating one must not consume
+                # the history the others have not read yet.
+                weatherdata = await self.apply_aggregates_to_mapping_data(
+                    mapping, since=parse_datetime(zone.get(const.ZONE_LAST_CONSUMED_AT))
+                )
             else:
                 _LOGGER.error(
                     "[async_update_zone_config] Error calculating zone %s: no sensor data available",

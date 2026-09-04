@@ -48,8 +48,11 @@ class LiveEstimateMixin:
         try:
             # persist=False: this must not become the mapping's last
             # calculation, or the real one would then see an empty window.
+            # The window starts at this zone's own watermark, so the estimate
+            # covers what the next calculation will, and not readings the zone
+            # has already taken into its bucket.
             weatherdata = await self.apply_aggregates_to_mapping_data(
-                mapping, persist=False
+                mapping, persist=False, since=self.zone_window_start(zone)
             )
             if not weatherdata:
                 return None

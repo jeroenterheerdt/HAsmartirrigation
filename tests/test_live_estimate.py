@@ -11,10 +11,14 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from custom_components.smart_irrigation import const
+from custom_components.smart_irrigation.calculation import CalculationMixin
 from custom_components.smart_irrigation.live_estimate import LiveEstimateMixin
 
 
-class _Coordinator(LiveEstimateMixin):
+class _Coordinator(LiveEstimateMixin, CalculationMixin):
+    """Both mixins, as the coordinator has: the estimate reads a zone's window,
+    and the window helper lives on the calculation side."""
+
     def __init__(self, store):
         self.store = store
         self.apply_aggregates_to_mapping_data = AsyncMock(

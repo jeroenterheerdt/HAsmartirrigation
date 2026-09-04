@@ -308,6 +308,11 @@ ZONE_LEAD_TIME = "lead_time"
 ZONE_MAXIMUM_DURATION = "maximum_duration"
 ZONE_MAXIMUM_BUCKET = "maximum_bucket"
 ZONE_LAST_CALCULATED = "last_calculated"
+# How far this zone has consumed its sensor group's shared buffer. A group
+# is read by several zones, so the buffer cannot be cleared when one of them
+# calculates: each zone reads only what arrived after its own watermark, and
+# the buffer is pruned to the oldest one instead of wiped.
+ZONE_LAST_CONSUMED_AT = "last_consumed_at"
 ZONE_LAST_UPDATED = "last_updated"
 ZONE_NUMBER_OF_DATA_POINTS = "number_of_data_points"
 ZONE_DRAINAGE_RATE = "drainage_rate"

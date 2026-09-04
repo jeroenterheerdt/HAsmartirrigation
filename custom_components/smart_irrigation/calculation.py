@@ -7,10 +7,9 @@ and duration per zone. The methods live on a mixin the coordinator inherits;
 their bodies are unchanged and still use ``self`` to reach coordinator state.
 """
 
-import asyncio
 import logging
 import statistics
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util.unit_system import METRIC_SYSTEM
@@ -82,8 +81,100 @@ class CalculationMixin:
                 return mapping.get(const.MAPPING_MODULE)
         return zone.get(const.ZONE_MODULE)
 
+    @staticmethod
+    def zone_window_start(zone):
+        """Where a zone's unread window starts, or None if it has read none.
+
+        None means the zone takes the whole buffer, which is what emptying the
+        buffer used to leave behind and so is what an install upgrading to
+        watermarks should see on its first calculation.
+        """
+        stamp = zone.get(const.ZONE_LAST_CONSUMED_AT)
+        if stamp is None:
+            return None
+        try:
+            return parse_datetime(stamp)
+        except (ValueError, TypeError):
+            return None
+
+    async def prune_consumed_readings(self, mapping_id) -> None:
+        """Drop the readings every zone of a group has already consumed.
+
+        The buffer is shared, so it can only lose what the slowest reader has
+        passed. A zone that is disabled does not hold it: it is not calculating,
+        and letting it pin the buffer forever would grow the store without end.
+
+        Readings are also capped at a week regardless, so a group whose zones
+        have all stopped calculating does not accumulate indefinitely.
+        """
+        mapping = self.store.get_mapping(mapping_id)
+        if not mapping or not mapping.get(const.MAPPING_DATA):
+            return
+
+        watermarks = []
+        for zone in await self.store.async_get_zones():
+            if zone.get(const.ZONE_STATE) == const.ZONE_STATE_DISABLED:
+                continue
+            if zone.get(const.ZONE_MAPPING) is None:
+                continue
+            try:
+                same = int(zone.get(const.ZONE_MAPPING)) == int(mapping_id)
+            except (TypeError, ValueError):
+                continue
+            if not same:
+                continue
+            start = self.zone_window_start(zone)
+            if start is None:
+                # A zone that has never consumed still needs everything.
+                return
+            watermarks.append(start)
+
+        cutoff = datetime.now() - timedelta(days=7)
+        if watermarks:
+            cutoff = max(cutoff, min(watermarks))
+
+        kept = self._readings_after(mapping.get(const.MAPPING_DATA), cutoff)
+        if len(kept) == len(mapping.get(const.MAPPING_DATA)):
+            return
+        _LOGGER.debug(
+            "[prune_consumed_readings] sensor group %s: %s readings kept of %s",
+            mapping_id,
+            len(kept),
+            len(mapping.get(const.MAPPING_DATA)),
+        )
+        await self.store.async_update_mapping(
+            mapping_id, changes={const.MAPPING_DATA: kept}
+        )
+
+    @staticmethod
+    def _readings_after(data, since):
+        """The buffered readings a zone has not consumed yet.
+
+        A sensor group's buffer is shared by every zone reading that group, so
+        it cannot be emptied when one of them calculates. Each zone takes only
+        what arrived after its own watermark instead.
+
+        A reading whose timestamp cannot be read is kept. It is an anomaly
+        either way, and counting a reading twice waters a little too much,
+        while dropping one silently waters too little and leaves no trace.
+        """
+        if since is None:
+            return data
+        window = []
+        for record in data:
+            if not isinstance(record, dict):
+                continue
+            stamp = record.get(const.RETRIEVED_AT)
+            try:
+                parsed = parse_datetime(stamp) if stamp is not None else None
+            except (ValueError, TypeError):
+                parsed = None
+            if parsed is None or parsed > since:
+                window.append(record)
+        return window
+
     async def apply_aggregates_to_mapping_data(
-        self, mapping, continuous_updates=False, persist=True
+        self, mapping, continuous_updates=False, persist=True, since=None
     ):
         """Apply aggregation functions to mapping data and return the aggregated result.
 
@@ -94,13 +185,16 @@ class CalculationMixin:
                 Pass False to look at the data without consuming it: the last
                 calculation marks where the next interval starts, so moving it
                 would truncate the window the next real calculation works over.
+            since: Only aggregate readings taken after this moment. This is how
+                one zone reads a group shared with others without consuming
+                their history. None takes the whole buffer.
 
         Returns:
             dict or None: Aggregated mapping data or None if no data is available.
 
         """
         _LOGGER.debug("[apply_aggregates_to_mapping_data]: mapping: %s", mapping)
-        data = mapping.get(const.MAPPING_DATA)
+        data = self._readings_after(mapping.get(const.MAPPING_DATA), since)
         if not data:
             return None
 
@@ -560,15 +654,11 @@ class CalculationMixin:
 
         # TODO: convert relative pressure to absolute?
 
-        # apply aggregates to sensor data for each mapping
+        # Each zone is aggregated over its own window rather than the group
+        # being aggregated once and shared: two zones on the same group can be
+        # at different points in its buffer, and the one that calculated most
+        # recently must not be handed the other's unread history.
         mapping_ids = await self._get_unique_mappings_for_automatic_zones(zones)
-        aggregated_mapping_data = {}
-        for mapping_id in mapping_ids:
-            mapping = self.store.get_mapping(mapping_id)
-            if mapping.get(const.MAPPING_DATA):
-                aggregated_mapping_data[mapping_id] = (
-                    await self.apply_aggregates_to_mapping_data(mapping, True)
-                )
 
         # TODO: maybe calc each module once here
 
@@ -594,7 +684,12 @@ class CalculationMixin:
             # calculate the zone
             if zone.get(const.ZONE_STATE) == const.ZONE_STATE_AUTOMATIC:
                 mapping_id = zone.get(const.ZONE_MAPPING)
-                weatherdata = aggregated_mapping_data.get(mapping_id)
+                mapping = self.store.get_mapping(mapping_id) if mapping_id else None
+                weatherdata = None
+                if mapping and mapping.get(const.MAPPING_DATA):
+                    weatherdata = await self.apply_aggregates_to_mapping_data(
+                        mapping, True, since=self.zone_window_start(zone)
+                    )
                 if not weatherdata:
                     _LOGGER.error(
                         "[async_calculate_all] Error calculating zone %s: no sensor data available",
@@ -602,30 +697,32 @@ class CalculationMixin:
                     )
                     continue
                 await self.async_calculate_zone(
-                    zone.get(const.ZONE_ID), weatherdata, forecastdata
+                    zone.get(const.ZONE_ID),
+                    weatherdata,
+                    forecastdata,
+                    delete_weather_data=delete_weather_data,
+                    prune=False,
                 )
 
-        # remove mapping data from all mappings used
+        # Drop what every zone of each group has now read. Not a wipe: a group
+        # can be shared with a zone that did not calculate in this pass, and its
+        # history is still owed to that zone.
         if delete_weather_data:
-            async with asyncio.TaskGroup() as tg:
-                for mapping_id in mapping_ids:
-                    changes = {}
-                    changes[const.MAPPING_DATA] = []
-                    if mapping_id is not None:
-                        _LOGGER.debug(
-                            "[async_calculate_all] Clearing sensor data for mapping %s",
-                            mapping_id,
-                        )
-                        tg.create_task(
-                            self.store.async_update_mapping(mapping_id, changes)
-                        )
+            for mapping_id in mapping_ids:
+                if mapping_id is not None:
+                    await self.prune_consumed_readings(mapping_id)
 
         # update start_event
         _LOGGER.debug("calling register start event from async_calculate_all")
         await self.register_start_event()
 
     async def async_calculate_zone(
-        self, zone_id, weatherdata, forecastdata=None, delete_weather_data=False
+        self,
+        zone_id,
+        weatherdata,
+        forecastdata=None,
+        delete_weather_data=False,
+        prune=True,
     ):
         """Calculate irrigation values for a specific zone.
 
@@ -655,16 +752,22 @@ class CalculationMixin:
         # bucket value superseded part of, so the marker has done its job (#811).
         calc_data[const.ZONE_PRECIPITATION_SUPERSEDED] = 0.0
 
-        # check if data contains delete data true, if so delete the weather data
+        # This zone has now read its window, so record where it got to instead
+        # of emptying the group's buffer. The buffer belongs to every zone
+        # reading that group: clearing it here left the others calculating on
+        # whatever had arrived since, which under-watered them silently.
         if delete_weather_data:
-            # remove sensor data from mapping
-            mapping_id = zone.get(const.ZONE_MAPPING)
-            if mapping_id is not None:
-                changes = {}
-                changes[const.MAPPING_DATA] = []
-                await self.store.async_update_mapping(mapping_id, changes=changes)
+            calc_data[const.ZONE_LAST_CONSUMED_AT] = datetime.now()
 
         await self.store.async_update_zone(zone.get(const.ZONE_ID), calc_data)
+
+        if delete_weather_data and prune:
+            # What every zone of the group has passed can go. The all-zones
+            # path prunes once at the end instead, since pruning between two
+            # zones of the same group would do the same work repeatedly.
+            mapping_id = zone.get(const.ZONE_MAPPING)
+            if mapping_id is not None:
+                await self.prune_consumed_readings(mapping_id)
         async_dispatcher_send(
             self.hass,
             const.DOMAIN + "_config_updated",

@@ -227,6 +227,7 @@ SERVER_OWNED_ZONE_FIELDS = (
     const.ZONE_MEASURED_THROUGHPUT,
     const.ZONE_MEASURED_THROUGHPUT_SAMPLES,
     const.ZONE_PRECIPITATION_SUPERSEDED,
+    const.ZONE_LAST_CONSUMED_AT,
 )
 
 
@@ -295,6 +296,9 @@ class SmartIrrigationZoneView(HomeAssistantView):
                 vol.Optional(const.ZONE_IRRIGATION_THRESHOLD): vol.Or(float, int, None),
                 vol.Optional(const.ZONE_MEASURED_THROUGHPUT): vol.Or(float, int, None),
                 vol.Optional(const.ZONE_MEASURED_THROUGHPUT_SAMPLES): vol.Or(int, None),
+                vol.Optional(const.ZONE_LAST_CONSUMED_AT): vol.Or(
+                    None, str, datetime.datetime
+                ),
             }
         )
     )
