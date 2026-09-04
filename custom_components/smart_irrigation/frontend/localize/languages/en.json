@@ -374,7 +374,7 @@
         "lead-time": "Lead time",
         "mapping": "Sensor Group",
         "maximum-duration": "Maximum duration",
-        "multiplier": "Multiplier",
+        "multiplier": "Crop factor (Kc)",
         "name": "Name",
         "size": "Size",
         "state": "State",

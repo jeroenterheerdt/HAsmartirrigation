@@ -5,7 +5,7 @@
   "main": "dist/smart-irrigation.js",
   "scripts": {
     "build": "npm run lint && npm run test && npm run rollup",
-    "rollup": "rollup -c",
+    "rollup": "rollup -c --bundleConfigAsCjs",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "start": "rollup -c --watch",

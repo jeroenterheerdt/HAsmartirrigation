@@ -373,7 +373,7 @@
         "lead-time": "Délai",
         "mapping": "Groupe de capteurs",
         "maximum-duration": "Durée maximale",
-        "multiplier": "Multiplicateur",
+        "multiplier": "Coefficient cultural (Kc)",
         "name": "Nom",
         "size": "Taille",
         "state": "État",
