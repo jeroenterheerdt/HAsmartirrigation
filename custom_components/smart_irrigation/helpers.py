@@ -796,11 +796,18 @@ def convert_list_to_dict(lst):
 
 
 def parse_datetime(val) -> datetime | None:
-    """Gets a datetime value or converts one from a string."""
+    """Gets a datetime value or converts one from a string.
+
+    Stored timestamps are produced by ``datetime.isoformat()``, which omits the
+    fractional part whenever the microsecond field happens to be 0. A fixed
+    ``%Y-%m-%dT%H:%M:%S.%f`` pattern requires that part, so the integration
+    wrote roughly one value in a million it could not read back, and the
+    calculation consuming it raised. ``fromisoformat`` accepts both shapes.
+    """
     if isinstance(val, datetime):
         return val
     if isinstance(val, str):
-        return datetime.strptime(val, "%Y-%m-%dT%H:%M:%S.%f")
+        return datetime.fromisoformat(val)
     _LOGGER.warning("[get_datetime]: value not instanceof datetime or string: %s", val)
     return None
 
