@@ -308,6 +308,10 @@ ZONE_WATER_USED = "water_used"
 # Rain already accounted for by an asserted bucket value, subtracted at the next
 # calculation so it is not credited twice (#811).
 ZONE_PRECIPITATION_SUPERSEDED = "precipitation_superseded"
+# Depth of soil moisture deficit to let build up before watering, in mm or inch
+# (the management allowed depletion). 0 waters as soon as anything is missing.
+ZONE_IRRIGATION_THRESHOLD = "irrigation_threshold"
+CONF_DEFAULT_IRRIGATION_THRESHOLD = 0.0
 # Optional valve/switch entity observed to credit the bucket (closed-loop).
 ZONE_LINKED_ENTITY = "linked_entity"
 # Optional cumulative volume/flow meter; credits the bucket by measured volume.

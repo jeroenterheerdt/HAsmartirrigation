@@ -70,7 +70,8 @@
         "drainage-rate-is": "Le taux de drainage à saturation (bucket au max) est de",
         "current-drainage-is": "Le drainage actuel est calculé comme",
         "no-drainage": "Le drainage actuel est de 0 car",
-        "crop-factor-applied-to-et": "Le multiplicateur est le coefficient cultural : il a été appliqué à l'évapotranspiration et non à cette durée, qui en tient donc déjà compte. Sa valeur est"
+        "crop-factor-applied-to-et": "Le multiplicateur est le coefficient cultural : il a été appliqué à l'évapotranspiration et non à cette durée, qui en tient donc déjà compte. Sa valeur est",
+        "below-irrigation-threshold": "Le déficit n'a pas encore atteint le seuil d'arrosage de cette zone, donc aucun arrosage n'est nécessaire et la durée est mise à 0. Déficit / seuil :"
       }
     }
   },
@@ -387,7 +388,8 @@
         "linked-entity-hint": "La vanne ou l'interrupteur qui arrose cette zone. Dès qu'il fonctionne (robinet manuel, automatisation, ou Smart Irrigation lui-même si le pilotage direct est activé), le réservoir est crédité d'après la durée de fonctionnement et le débit de la zone. Nécessaire pour les fonctions en boucle fermée.",
         "flow-sensor": "Compteur de volume cumulé",
         "flow-sensor-hint": "Pour un comptage exact au lieu de débit x temps : un total de compteur d'eau cumulé (state class total_increasing), pas un débit instantané. L'unité est lue automatiquement (L, mL, m³, gal, ft³).",
-        "optional": "option"
+        "optional": "option",
+        "irrigation-threshold": "Seuil d'arrosage"
       },
       "no_items": "Il n'y a pas encore de zone définie.",
       "title": "Zones"

@@ -58,6 +58,7 @@ import {
   ZONE_LEAD_TIME,
   ZONE_LINKED_ENTITY,
   ZONE_MAPPING,
+  ZONE_IRRIGATION_THRESHOLD,
   ZONE_MAXIMUM_BUCKET,
   ZONE_MAXIMUM_DURATION,
   ZONE_MODULE,
@@ -991,6 +992,17 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                     this.handleEditZone(index, {
                       ...zone,
                       [ZONE_MAXIMUM_BUCKET]: parseFloat(v),
+                    }),
+                  0.1,
+                )}
+                ${this._numRow(
+                  localize("panels.zones.labels.irrigation-threshold", lang),
+                  output_unit(this.config, ZONE_BUCKET),
+                  Number(zone.irrigation_threshold ?? 0).toFixed(1),
+                  (v) =>
+                    this.handleEditZone(index, {
+                      ...zone,
+                      [ZONE_IRRIGATION_THRESHOLD]: parseFloat(v),
                     }),
                   0.1,
                 )}

@@ -70,7 +70,8 @@
         "drainage-rate-is": "Drainage rate when saturated (bucket at max) is",
         "current-drainage-is": "Current drainage is calculated as",
         "no-drainage": "Current drainage is 0 because",
-        "crop-factor-applied-to-et": "The multiplier is the crop factor: it was applied to the evapotranspiration rather than to this duration, which therefore already accounts for it. Its value is"
+        "crop-factor-applied-to-et": "The multiplier is the crop factor: it was applied to the evapotranspiration rather than to this duration, which therefore already accounts for it. Its value is",
+        "below-irrigation-threshold": "The deficit has not reached this zone's irrigation threshold yet, so no irrigation is necessary and the duration is set to 0. Deficit / threshold:"
       }
     }
   },
@@ -388,7 +389,8 @@
         "linked-entity-hint": "The valve or switch that waters this zone. Whenever it runs (a manual tap, an automation, or Smart Irrigation itself when direct valve control is on), the bucket is credited from the run time and the zone's throughput. Required for the closed-loop features.",
         "flow-sensor": "Cumulative volume meter",
         "flow-sensor-hint": "For exact crediting instead of throughput x time: a cumulative water-meter total (state class total_increasing), not an instant flow rate. The unit is read automatically (L, mL, m³, gal, ft³).",
-        "optional": "optional"
+        "optional": "optional",
+        "irrigation-threshold": "Irrigation threshold"
       },
       "no_items": "There are no zones defined yet.",
       "title": "Zones"

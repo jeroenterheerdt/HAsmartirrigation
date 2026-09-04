@@ -64,6 +64,7 @@ This recommendation is based on the soil water holding capacity. See [this discu
     * Warm-season grasses (such as bermuda, zoysia) should be set to `0.7`.
 
     A dry spell waters the same as it always did: the crop factor ends up multiplying the same total either way. What changes is a period with rain, where a factor below 1 used to credit only that fraction of the millimetres that fell and therefore over-watered, and the moment irrigation becomes necessary, which now arrives at the crop's rate of depletion rather than about `1/Kc` times too early.
+- **Irrigation threshold**: how much of a soil moisture deficit to let build up before watering at all, in mm or inch. `0`, the default, waters as soon as anything is missing, which suits a lawn. A tree or a hedge wants the opposite: set a threshold and the zone stays dry until that much water is owed, then delivers all of it in one deep run. It changes *when* a zone waters, not *how much*: once the threshold is reached the run still covers the whole deficit. It follows that a zone never waters less than its threshold, so it also rules out very short runs. In soil terms this is the management allowed depletion, and a sensible value is a fraction of the **Maximum bucket** for that zone's root depth.
 - *Duration*: Irrigation duration in seconds. Either calculated or manually set.
 
 ### Available actions per zone

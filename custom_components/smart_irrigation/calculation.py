@@ -884,7 +884,16 @@ class CalculationMixin:
         else:
             explanation += f" max(0, [{old_bucket_loc}] + [{delta_loc}] - [{drainage_loc}]) = max(0, {old_bucket:.2f} + {data[const.ZONE_DELTA]:.2f} - {drainage:.2f}) = {newbucket:.2f}.<br/>"
 
-        if newbucket < 0:
+        threshold_mm = self.irrigation_threshold_mm(zone)
+        if newbucket < 0 and abs(newbucket) < threshold_mm:
+            explanation += (
+                await localize(
+                    "module.calculation.explanation.below-irrigation-threshold",
+                    self.hass.config.language,
+                )
+                + f" {abs(newbucket):.2f} / {threshold_mm:.2f}.<br/>"
+            )
+        if newbucket < 0 and abs(newbucket) >= threshold_mm:
             # calculate duration
 
             tput = zone.get(const.ZONE_THROUGHPUT)
@@ -1066,6 +1075,21 @@ class CalculationMixin:
             return 0.0
         return float(self._precipitation_for_interval(zone, weatherdata) or 0.0)
 
+    def irrigation_threshold_mm(self, zone) -> float:
+        """The deficit a zone lets build up before watering, in mm.
+
+        Watering the instant anything is missing is a management allowed
+        depletion of zero: right for a lawn, wrong for a tree or a hedge, which
+        wants the soil to dry down and then a deep soak. Both places that turn a
+        bucket into a duration read it from here so they cannot disagree (#815).
+        """
+        threshold = zone.get(const.ZONE_IRRIGATION_THRESHOLD)
+        if not threshold or threshold <= 0:
+            return 0.0
+        if self.hass.config.units is METRIC_SYSTEM:
+            return float(threshold)
+        return float(convert_between(const.UNIT_INCH, const.UNIT_MM, threshold))
+
     def duration_from_bucket(self, zone: dict, bucket_native: float) -> float:
         """Duration (seconds) implied by a zone's current bucket value.
 
@@ -1084,6 +1108,10 @@ class CalculationMixin:
             else convert_between(const.UNIT_INCH, const.UNIT_MM, bucket_native)
         )
         if bucket_mm >= 0:
+            return 0
+        # Below the allowed depletion there is nothing to do yet, so that the
+        # water builds up into one deep run instead of a trickle every day.
+        if abs(bucket_mm) < self.irrigation_threshold_mm(zone):
             return 0
 
         tput = zone.get(const.ZONE_THROUGHPUT)

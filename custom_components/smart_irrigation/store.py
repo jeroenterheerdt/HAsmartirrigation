@@ -43,6 +43,7 @@ from .const import (
     CONF_DEFAULT_DIRECT_VALVE_CONTROL_ENABLED,
     CONF_DEFAULT_DRAINAGE_RATE,
     CONF_DEFAULT_IRRIGATION_START_TRIGGERS,
+    CONF_DEFAULT_IRRIGATION_THRESHOLD,
     CONF_DEFAULT_MAXIMUM_BUCKET,
     CONF_DEFAULT_MAXIMUM_DURATION,
     CONF_DEFAULT_OBSERVED_WATERING_ENABLED,
@@ -117,6 +118,7 @@ from .const import (
     ZONE_ET_DEFICIENCY,
     ZONE_FLOW_SENSOR,
     ZONE_ID,
+    ZONE_IRRIGATION_THRESHOLD,
     ZONE_LAST_IRRIGATION,
     ZONE_LAST_UPDATED,
     ZONE_LEAD_TIME,
@@ -177,6 +179,11 @@ class ZoneEntry:
     water_used = attr.ib(type=float, default=0.0)
     # Optional valve/switch entity watched to credit the bucket (closed-loop).
     linked_entity = attr.ib(type=str, default=None)
+    # How much of a deficit to let build up before watering, in the user's depth
+    # unit. 0 keeps watering as soon as anything is missing (#815).
+    irrigation_threshold = attr.ib(
+        type=float, default=CONF_DEFAULT_IRRIGATION_THRESHOLD
+    )
     # Rain already accounted for by an asserted bucket value. Setting the bucket
     # says the soil is in a known state, which supersedes the rain collected
     # since the last calculation; without this it lands in the bucket again at
@@ -661,6 +668,9 @@ class SmartIrrigationStorage:
                         water_used=zone.get(ZONE_WATER_USED, 0.0),
                         precipitation_superseded=zone.get(
                             ZONE_PRECIPITATION_SUPERSEDED, 0.0
+                        ),
+                        irrigation_threshold=zone.get(
+                            ZONE_IRRIGATION_THRESHOLD, CONF_DEFAULT_IRRIGATION_THRESHOLD
                         ),
                         linked_entity=zone.get(ZONE_LINKED_ENTITY, None),
                         flow_sensor=zone.get(ZONE_FLOW_SENSOR, None),
