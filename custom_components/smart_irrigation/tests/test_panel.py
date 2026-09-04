@@ -69,7 +69,11 @@ class TestSmartIrrigationPanel:
             assert static_config.cache_headers is False
             # Path should point to the panel file
             assert "smart_irrigation" in str(static_config.path)
-            assert "frontend/dist/smart-irrigation.js" in str(static_config.path)
+            # Compare with forward slashes: the path is built with os.path, so
+            # it comes back with backslashes on Windows and the literal below
+            # would never match there.
+            served = str(static_config.path).replace(chr(92), "/")
+            assert "frontend/dist/smart-irrigation.js" in served
 
     def test_remove_panel(self, mock_hass):
         """Test panel removal."""
