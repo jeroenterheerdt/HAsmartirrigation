@@ -35,6 +35,11 @@
     "saving-messages": {
       "adding": "Legger til…",
       "saving": "Lagrer…"
+    },
+    "modes": {
+      "manual": "Manuell",
+      "standard": "Standard",
+      "advanced": "Avansert"
     }
   },
   "defaults": {
@@ -75,13 +80,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Beregn varigheten basert på FAO56-beregningen fra PyETO-biblioteket"
+      "description": "Den fulle beregningen fra dine egne sensorer: temperatur, luftfuktighet, trykk, vind og solstråling. Det mest nøyaktige alternativet, og det som krever mest."
     },
     "static": {
-      "description": "'Dummy'-modul med en statisk konfigurerbar endring (delta)"
+      "description": "En fast mengde fordampning per dag, som du oppgir selv. Ingen sensorer og ingen værtjeneste."
     },
     "passthrough": {
-      "description": "En 'Passthrough'-modul som returnerer verdien av en Evapotranspiration-sensor som delta"
+      "description": "Bruker en evapotranspirasjonsverdi som allerede finnes, fra en sensor eller fra en værtjeneste som leverer den. Den anbefalte veien hvis du har en."
     }
   },
   "panels": {

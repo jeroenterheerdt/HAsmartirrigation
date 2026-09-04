@@ -35,6 +35,11 @@
     "saving-messages": {
       "adding": "Hozzáadás…",
       "saving": "Mentés…"
+    },
+    "modes": {
+      "manual": "Kézi",
+      "standard": "Normál",
+      "advanced": "Haladó"
     }
   },
   "defaults": {
@@ -75,13 +80,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Az időtartam kiszámítása a PyETO könyvtár FAO56 számítása alapján"
+      "description": "A teljes számítás a saját érzékelőiből: hőmérséklet, páratartalom, légnyomás, szél és napsugárzás. A legpontosabb, egyben a legtöbbet igénylő lehetőség."
     },
     "static": {
-      "description": "„Próba” modul statikus, konfigurálható deltával"
+      "description": "Napi rögzített párolgási mennyiség, amelyet Ön ad meg. Nincs szükség érzékelőkre és időjárás-szolgáltatásra."
     },
     "passthrough": {
-      "description": "Átengedő modul, amely egy evapotranspirációs érzékelő értékét adja vissza deltaként"
+      "description": "Egy már meglévő párolgási értéket vesz át érzékelőből vagy olyan időjárás-szolgáltatásból, amely közli azt. Ez az ajánlott út, ha rendelkezésre áll."
     }
   },
   "panels": {

@@ -35,6 +35,11 @@
     "saving-messages": {
       "adding": "Lägger till...",
       "saving": "Sparar..."
+    },
+    "modes": {
+      "manual": "Manuellt",
+      "standard": "Standard",
+      "advanced": "Avancerat"
     }
   },
   "defaults": {
@@ -75,13 +80,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Beräkna varaktighet baserat på FAO56-beräkningen från PyETO-biblioteket"
+      "description": "Den fullständiga beräkningen från dina egna sensorer: temperatur, luftfuktighet, tryck, vind och solinstrålning. Det mest exakta alternativet, och det som kräver mest."
     },
     "static": {
-      "description": "'Dummy'-modul med en statisk konfigurerbar delta"
+      "description": "En fast mängd avdunstning per dag, som du anger själv. Inga sensorer och ingen vädertjänst."
     },
     "passthrough": {
-      "description": "Genomströmningsmodul som returnerar värdet från en evapotranspirationssensor som delta"
+      "description": "Använder ett evapotranspirationsvärde som redan finns, från en sensor eller från en vädertjänst som levererar ett. Den rekommenderade vägen om du har ett."
     }
   },
   "panels": {

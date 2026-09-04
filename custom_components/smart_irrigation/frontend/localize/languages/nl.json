@@ -35,6 +35,11 @@
     "saving-messages": {
       "adding": "Toevoegen…",
       "saving": "Opslaan…"
+    },
+    "modes": {
+      "manual": "Handmatig",
+      "standard": "Standaard",
+      "advanced": "Geavanceerd"
     }
   },
   "defaults": {
@@ -75,13 +80,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Bereken duur op basis van de FAU56 formule en de PyETO library"
+      "description": "De volledige berekening op basis van uw eigen sensoren: temperatuur, luchtvochtigheid, druk, wind en zonnestraling. De nauwkeurigste optie, en de veeleisendste."
     },
     "static": {
-      "description": "Module met instelbare verandering"
+      "description": "Een vaste hoeveelheid verdamping per dag, die u zelf opgeeft. Geen sensoren en geen weerdienst."
     },
     "passthrough": {
-      "description": "Geeft waarde van ET sensor as verandering terug"
+      "description": "Neemt een reeds bestaande verdampingswaarde over, van een sensor of van een weerdienst die er een levert. De aanbevolen weg als u er een heeft."
     }
   },
   "panels": {

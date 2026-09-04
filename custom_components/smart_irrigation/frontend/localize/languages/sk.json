@@ -35,6 +35,11 @@
     "saving-messages": {
       "adding": "Pridáva sa…",
       "saving": "Ukladá sa…"
+    },
+    "modes": {
+      "manual": "Ručný",
+      "standard": "Štandardný",
+      "advanced": "Pokročilý"
     }
   },
   "defaults": {
@@ -75,13 +80,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Vypočítajte trvanie na základe výpočtu FAO56 z knižnice PyETO"
+      "description": "Úplný výpočet z vašich vlastných senzorov: teplota, vlhkosť, tlak, vietor a slnečné žiarenie. Najpresnejšia možnosť, a zároveň najnáročnejšia."
     },
     "static": {
-      "description": "'Atrapa' modul so statickou konfigurovateľnou deltou"
+      "description": "Pevné množstvo výparu za deň, ktoré zadáte sami. Bez senzorov a bez meteorologickej služby."
     },
     "passthrough": {
-      "description": "Priechodný modul, ktorý vracia hodnotu evapotranspiračného senzora ako delta"
+      "description": "Použije už vypočítanú evapotranspiráciu zo senzora alebo z meteorologickej služby, ktorá ju poskytuje. Odporúčaná cesta, ak ju máte."
     }
   },
   "panels": {

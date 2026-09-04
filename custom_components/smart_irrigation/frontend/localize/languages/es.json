@@ -35,6 +35,11 @@
     "saving-messages": {
       "adding": "Añadiendo…",
       "saving": "Guardando…"
+    },
+    "modes": {
+      "manual": "Manual",
+      "standard": "Estándar",
+      "advanced": "Avanzado"
     }
   },
   "defaults": {
@@ -75,13 +80,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Calcular la duración a partir del cálculo FAO56 de la biblioteca PyETO"
+      "description": "El cálculo completo a partir de sus propios sensores: temperatura, humedad, presión, viento y radiación solar. La opción más precisa, y la que más exige."
     },
     "static": {
-      "description": "Módulo 'de prueba' con un delta estático configurable"
+      "description": "Una cantidad fija de evaporación por día, que usted mismo indica. Sin sensores y sin servicio meteorológico."
     },
     "passthrough": {
-      "description": "Módulo de paso que devuelve el valor de un sensor de evapotranspiración como delta"
+      "description": "Toma un valor de evapotranspiración que ya existe, de un sensor o de un servicio meteorológico que lo publique. La vía recomendada si dispone de uno."
     }
   },
   "panels": {

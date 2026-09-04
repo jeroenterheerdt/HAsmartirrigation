@@ -35,6 +35,11 @@
     "saving-messages": {
       "adding": "Wird hinzugefügt…",
       "saving": "Wird gespeichert…"
+    },
+    "modes": {
+      "manual": "Manuell",
+      "standard": "Standard",
+      "advanced": "Erweitert"
     }
   },
   "defaults": {
@@ -75,13 +80,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Die Berechnung der Verunstungsrate basiert auf der FAO56-Formel aus der PyETO-Bibliothek"
+      "description": "Die vollständige Berechnung aus Ihren eigenen Sensoren: Temperatur, Luftfeuchtigkeit, Luftdruck, Wind und Sonneneinstrahlung. Die genaueste Option, und die anspruchsvollste."
     },
     "static": {
-      "description": "Modul mit einer statisch konfigurierbaren Verdunstungsrate."
+      "description": "Eine feste Verdunstungsmenge pro Tag, die Sie selbst angeben. Keine Sensoren und kein Wetterdienst."
     },
     "passthrough": {
-      "description": "Pass Through übernimmt den Evapotranspirationssensor und gibt seinen Wert zurück. Auf diese Weise werden alle Berechnungen der Verdunstung umgangen, außer der Anwendung von Aggregaten wie Summe, Durchschnitt etc)."
+      "description": "Übernimmt einen bereits vorhandenen Evapotranspirationswert, von einem Sensor oder von einem Wetterdienst, der ihn liefert. Der empfohlene Weg, wenn Sie einen haben."
     }
   },
   "panels": {

@@ -8,27 +8,58 @@ title: Configuration: Modules
 > Previous: [Zone configuration](configuration-zones.md)<br/>
 > Next: [Sensor group configuration](configuration-sensor-groups.md)
 
-Add one or more modules that calculate irrigation duration. Each module comes with its own configuration and can be used to calculate duration for one or more [zones](configuration-zones.md). Modules can't be deleted if they are used by one or more zones.
+A module is the method used to work out how much water evaporated. You pick one per [sensor group](configuration-sensor-groups.md), and every zone using that group inherits it. A module cannot be deleted while something still uses it.
+
+## The three modes
+
+They differ in one thing: where the evapotranspiration figure comes from. Everything after that, the water balance, the rain, the duration, is the same whichever you choose.
+
+| Mode | Where the figure comes from | What you need |
+| --- | --- | --- |
+| **Manual** | You give one number, used every day | Nothing |
+| **Standard** | An evapotranspiration figure that already exists | A weather service that publishes one, or your own sensor |
+| **Advanced** | Computed from the weather, by FAO-56 Penman-Monteith | Temperature, humidity, pressure and wind, ideally solar radiation |
+
+If you are unsure, **Standard** with Open-Meteo is the shortest path to something correct: it is free, needs no API key, and publishes a reference evapotranspiration computed the same way Advanced would.
+
+> In the logs, the services and the stored configuration these are still called `Static`, `Passthrough` and `PyETO`. The names above are what the panel shows.
+
+### Manual
+
+A fixed amount of evaporation per day, which you set yourself in the **Delta** box. No sensors and no weather service.
+
+It is coarser than the other two, but it is not the same as no integration at all: rain still counts against it, the water balance still tracks what you have already applied, and the duration still follows from your zone's size and throughput. Somewhere around 4 to 5 mm a day is a common starting point for a temperate summer, and worth adjusting by season.
+
+### Standard
+
+Takes an evapotranspiration figure that already exists and uses it as it stands.
+
+Two ways to feed it. Either a weather service that publishes one, which today means **Open-Meteo** among the three supported, or a sensor of your own that reports evapotranspiration. Set the **Evapotranspiration** source in the sensor group accordingly.
+
+Rain still counts: the water balance is the evapotranspiration from this figure minus the precipitation your sensor group reports. Nothing else is required, and the group will not ask you for temperature or wind, because this mode never reads them.
+
+### Advanced
+
+The full FAO-56 Penman-Monteith calculation, from the individual weather quantities. The most accurate option when your sensors sit where the plants are, and the one that asks for the most.
+
+It reads temperature, dewpoint, humidity, pressure, wind speed and solar radiation from the sensor group. Solar radiation is the term that drives the result: when a source provides it, it is used; when none does, it is estimated from the daily temperature range, which is coarser but still workable. Under glass, a light sensor can stand in for a radiation sensor, described under [sensor groups](configuration-sensor-groups.md).
+
+Two settings of its own:
+
+- _Coastal_: enable it if your location is on or near the coast of a large land mass, or anywhere air masses are influenced by a nearby body of water. It adjusts the radiation estimate.
+- _Forecast days_: how many forecast days to fold into the calculation, so a run can be reduced ahead of rain that has not fallen yet. Requires a weather service.
 
 ## Adding a module
-Select a module type and select `Add module`. Once added, you can configure the module
 
-## Configuring a module
-The following modules are available:
-- **PyETO**: Calculate duration based on the FAO56 calculation from the PyETO library. The following options are available:
-    - _Coastal_: If the location you are tracking is situated on or adjacent to coast of a large land mass or anywhere else where air masses are influenced by a nearby water body, enable this setting.
-    - _Solrad behavior_: Determine how you want to retrieve or estimate solar radiation. This might take some experimentation to figure out what works best for you. There are multiple options available:
-        - `Estimate from temperature`: estimate solar radiation from temperature. Any solar radiation value provided by your [sensor group](configuration-sensor-groups.md) is ignored.
-        - `Estimate from sun hours`: estimate solar radiation from the number of sun hours. Any solar radiation value provided by your [sensor group](configuration-sensor-groups.md) is ignored.
-        - `Do not estimate`: This requires a solar radiation sensor in the [sensor group](configuration-sensor-groups.md) to be configured. Since many weather stations and weather services don't provide this information, it's likely you'll want to instead use one of the 'estimate' options.
-        - `Estimate from average of sun hours and temperature`: estimate the solar radiation from both the sun hours and temperature. Any solar radiation value provided by your [sensor group](configuration-sensor-groups.md) is ignored.
-  - _Forecast days_: How many forecast days taken into account. This is useful to avoid irrigating if the forecast suggests it will rain.
-- **Static**: static configurable nett precipitation. Enter the nett precipitation in the `Delta` box.
-- **Passthrough**: Use the value of an evapotranspiration sensor instead of calculating ET. Passthrough takes your evapotranspiration sensor and uses its value as-is, bypassing the ET calculation (aggregates still apply). Precipitation from your sensor group still counts towards the bucket: the delta is precipitation minus the sensor's ET. This requires a solar radiation source to be configured in your [sensor groups](configuration-sensor-groups.md).
+Select a mode and choose `Add module`. It can then be configured, and picked from any sensor group.
+
+Most people never need to come here: the **Setup** tab creates the module, the sensor group and the zone together, from what you answer.
 
 ## Deleting a module
+
 ![](assets/images/configuration-modules-1.png)
-Use the button at the bottom to delete a module. Note you can only delete modules that are not used by any [zones](configuration-zones.md).
+
+Use the button at the bottom. A module can only be deleted once nothing uses it.
 
 > Main page: [Configuration](configuration.md)<br/>
 > Previous: [Zone configuration](configuration-zones.md)<br/>

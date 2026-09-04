@@ -35,6 +35,11 @@
     "saving-messages": {
       "adding": "正在添加……",
       "saving": "正在保存……"
+    },
+    "modes": {
+      "manual": "手动",
+      "standard": "标准",
+      "advanced": "高级"
     }
   },
   "defaults": {
@@ -75,13 +80,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "基于 PyETO 库的 FAO56 算法计算持续时间"
+      "description": "基于你自己的传感器进行完整计算：温度、湿度、气压、风速和太阳辐射。最准确的选项，要求也最高。"
     },
     "static": {
-      "description": "带有可配置静态 delta 的“虚拟”模块"
+      "description": "每天固定的蒸发量，由你自己填写。不需要传感器，也不需要天气服务。"
     },
     "passthrough": {
-      "description": "直通模块，将蒸散传感器的值作为 delta 返回"
+      "description": "直接采用已有的蒸散量数值，来自传感器或提供该数值的天气服务。如果有的话，这是推荐的方式。"
     }
   },
   "panels": {

@@ -35,6 +35,11 @@
     "saving-messages": {
       "adding": "Dodawanie...",
       "saving": "Zapisywanie..."
+    },
+    "modes": {
+      "manual": "Ręczny",
+      "standard": "Standardowy",
+      "advanced": "Zaawansowany"
     }
   },
   "defaults": {
@@ -75,13 +80,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Oblicz czas trwania na podstawie obliczeń FAO56 z biblioteki PyETO"
+      "description": "Pełne obliczenie na podstawie własnych czujników: temperatura, wilgotność, ciśnienie, wiatr i promieniowanie słoneczne. Najdokładniejsza opcja i najbardziej wymagająca."
     },
     "static": {
-      "description": "Moduł „atrapa” ze statyczną, konfigurowalną deltą"
+      "description": "Stała ilość parowania na dobę, którą podajesz samodzielnie. Bez czujników i bez serwisu pogodowego."
     },
     "passthrough": {
-      "description": "Moduł przekazujący, który zwraca wartość czujnika ewapotranspiracji jako deltę"
+      "description": "Wykorzystuje gotową wartość ewapotranspiracji z czujnika lub z serwisu pogodowego, który ją udostępnia. Zalecana droga, jeśli taką masz."
     }
   },
   "panels": {

@@ -35,6 +35,11 @@
     "saving-messages": {
       "adding": "Lisätään...",
       "saving": "Tallennetaan..."
+    },
+    "modes": {
+      "manual": "Manuaalinen",
+      "standard": "Vakio",
+      "advanced": "Edistynyt"
     }
   },
   "defaults": {
@@ -75,13 +80,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Laske kesto PyETO-kirjaston FAO56-laskennan perusteella"
+      "description": "Täysi laskenta omista antureistasi: lämpötila, kosteus, paine, tuuli ja auringon säteily. Tarkin vaihtoehto, ja eniten vaativa."
     },
     "static": {
-      "description": "'Dummy'-moduuli, jolla on staattinen määritettävä delta"
+      "description": "Kiinteä haihdunta päivässä, jonka annat itse. Ei antureita eikä sääpalvelua."
     },
     "passthrough": {
-      "description": "Läpivientimoduuli, joka palauttaa haihdunta-anturin arvon deltana"
+      "description": "Käyttää valmiiksi laskettua haihduntaa anturista tai sääpalvelusta, joka sen julkaisee. Suositeltu tapa, jos sellainen on käytettävissä."
     }
   },
   "panels": {
