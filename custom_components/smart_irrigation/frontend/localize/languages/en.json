@@ -89,6 +89,63 @@
     }
   },
   "panels": {
+    "setup": {
+      "title": "Setup",
+      "description": "A guided way to create your first zone. It asks one question at a time, and only the questions your previous answers leave open.",
+      "next": "Next",
+      "back": "Back",
+      "create": "Create it",
+      "creating": "Creating...",
+      "failed": "Something went wrong and nothing was created. The other tabs are still there if you would rather set it up by hand.",
+      "done": "Your zone is ready.",
+      "done-note": "It appears under Zones, with its sensor group under Sensor groups. Nothing here is special: edit either of them as you would any other. Run an update and a calculation once your sensors have reported, and the zone will start producing a duration.",
+      "steps": {
+        "zone": {
+          "question": "What are you watering?",
+          "help": "One zone is one valve, watering one area.",
+          "name": "Name",
+          "size": "Area",
+          "throughput": "Throughput",
+          "throughput-help": "How much water this zone delivers per minute. Measure it if you can, rather than taking it from a datasheet: it is what every duration is derived from, and it is the quietest way to water twice as long as you meant to."
+        },
+        "environment": {
+          "question": "Where does it grow?",
+          "outdoors": "Outdoors",
+          "outdoors-help": "Open air. Rain reaches it, and the sky is worth asking about.",
+          "under-glass": "Under glass or plastic",
+          "under-glass-help": "A greenhouse, a polytunnel, a conservatory. No rain arrives, and a forecast describes weather these plants never see."
+        },
+        "weather": {
+          "question": "Where should the evaporation figure come from?",
+          "service": "The weather service you configured",
+          "service-help": "Nothing else to install. Smart Irrigation takes the weather for your location and computes evapotranspiration from it.",
+          "no-service-indoors": "A weather service is not offered here: it describes the sky, which these plants are not under.",
+          "sensors": "My own weather sensors",
+          "sensors-help": "You have sensors for temperature, humidity and the rest. The most accurate option, because it measures where the plants actually are.",
+          "et": "A sensor that already reports evapotranspiration",
+          "et-help": "Something else already computes it, and Smart Irrigation should use that figure as it stands.",
+          "static": "A fixed amount per day",
+          "static-help": "No sensors and no service. You give one number and it is used every day. Rough, but it still tracks what you have already watered."
+        },
+        "sensors": {
+          "question": "Which entities should it read?",
+          "help": "Only the ones the calculation actually uses are asked for.",
+          "lux-hint": "Under glass a light sensor can stand in for solar radiation: pick your illuminance entity here and set its source to Light sensor (lux) afterwards, in the sensor group.",
+          "static-question": "How much does it evaporate per day?",
+          "static-help": "A depth of water, in the unit your zones use. Somewhere around 4 to 5 mm a day is common for a temperate summer.",
+          "static-label": "Evaporation per day"
+        },
+        "review": {
+          "question": "Ready to create",
+          "zone": "Zone",
+          "environment": "Environment",
+          "engine": "Calculation engine",
+          "sources": "Sources",
+          "from-the-service": "from the weather service",
+          "help": "This creates a calculation module, a sensor group and a zone, exactly as the other tabs would. Nothing is locked afterwards."
+        }
+      }
+    },
     "weatherservice": {
       "title": "Weather service",
       "description": "View and change the weather service used to fetch weather data — no need to reinstall the integration. The API key is validated and the change is applied immediately.",

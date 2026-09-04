@@ -89,6 +89,63 @@
     }
   },
   "panels": {
+    "setup": {
+      "title": "Assistant",
+      "description": "Une manière guidée de créer votre première zone. Une question à la fois, et seulement celles que vos réponses précédentes laissent ouvertes.",
+      "next": "Suivant",
+      "back": "Retour",
+      "create": "Créer",
+      "creating": "Création...",
+      "failed": "Quelque chose a échoué et rien n'a été créé. Les autres onglets restent disponibles si vous préférez configurer à la main.",
+      "done": "Votre zone est prête.",
+      "done-note": "Elle apparaît dans Zones, avec son groupe de capteurs dans Groupes de capteurs. Rien n'est particulier ici : modifiez-les comme n'importe quels autres. Lancez une mise à jour puis un calcul une fois que vos capteurs auront remonté des valeurs, et la zone commencera à produire une durée.",
+      "steps": {
+        "zone": {
+          "question": "Qu'arrosez-vous ?",
+          "help": "Une zone, c'est une vanne qui arrose une surface.",
+          "name": "Nom",
+          "size": "Surface",
+          "throughput": "Débit",
+          "throughput-help": "La quantité d'eau que cette zone délivre par minute. Mesurez-la plutôt que de la lire sur une fiche technique : c'est de là que découlent toutes les durées, et c'est la façon la plus discrète d'arroser deux fois trop longtemps."
+        },
+        "environment": {
+          "question": "Où cela pousse-t-il ?",
+          "outdoors": "En extérieur",
+          "outdoors-help": "À l'air libre. La pluie y arrive, et le ciel vaut la peine d'être consulté.",
+          "under-glass": "Sous verre ou sous plastique",
+          "under-glass-help": "Une serre, un tunnel, une véranda. Aucune pluie n'arrive, et une prévision décrit un temps que ces plantes ne voient jamais."
+        },
+        "weather": {
+          "question": "D'où doit venir l'évaporation ?",
+          "service": "Le service météo que vous avez configuré",
+          "service-help": "Rien d'autre à installer. Smart Irrigation récupère la météo de votre position et en calcule l'évapotranspiration.",
+          "no-service-indoors": "Le service météo n'est pas proposé ici : il décrit le ciel, sous lequel ces plantes ne sont pas.",
+          "sensors": "Mes propres capteurs météo",
+          "sensors-help": "Vous avez des capteurs de température, d'humidité et le reste. L'option la plus juste, puisqu'elle mesure là où sont les plantes.",
+          "et": "Un capteur qui donne déjà l'évapotranspiration",
+          "et-help": "Autre chose la calcule déjà, et Smart Irrigation doit reprendre cette valeur telle quelle.",
+          "static": "Une quantité fixe par jour",
+          "static-help": "Ni capteurs ni service. Vous donnez un chiffre, utilisé chaque jour. Grossier, mais cela suit tout de même ce que vous avez déjà arrosé."
+        },
+        "sensors": {
+          "question": "Quelles entités doit-il lire ?",
+          "help": "Seules celles que le calcul utilise vraiment vous sont demandées.",
+          "lux-hint": "Sous verre, un capteur de luminosité peut remplacer un capteur de rayonnement : choisissez ici votre entité d'illuminance, puis réglez sa source sur Capteur de luminosité (lux) dans le groupe de capteurs.",
+          "static-question": "Combien s'évapore-t-il par jour ?",
+          "static-help": "Une hauteur d'eau, dans l'unité de vos zones. Autour de 4 à 5 mm par jour est courant pour un été tempéré.",
+          "static-label": "Évaporation par jour"
+        },
+        "review": {
+          "question": "Prêt à créer",
+          "zone": "Zone",
+          "environment": "Environnement",
+          "engine": "Moteur de calcul",
+          "sources": "Sources",
+          "from-the-service": "depuis le service météo",
+          "help": "Ceci crée un module de calcul, un groupe de capteurs et une zone, exactement comme les autres onglets le feraient. Rien n'est verrouillé ensuite."
+        }
+      }
+    },
     "weatherservice": {
       "title": "Service météo",
       "description": "Consultez et modifiez le service météo utilisé pour récupérer les données — sans réinstaller l'intégration. La clé API est validée et le changement est appliqué immédiatement.",

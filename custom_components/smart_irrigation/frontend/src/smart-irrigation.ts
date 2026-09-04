@@ -11,6 +11,7 @@ import "./views/mappings/view-mappings.ts";
 import "./views/weatherservice/view-weatherservice.ts";
 import "./views/backuprestore/view-backuprestore.ts";
 import "./views/info/view-info.ts";
+import "./views/setup/view-setup.ts";
 
 import { commonStyle } from "./styles";
 import { VERSION, PLATFORM } from "./const";
@@ -18,6 +19,7 @@ import { localize } from "../localize/localize";
 import { exportPath, getPath, Path } from "./common/navigation";
 
 enum EMenuItems {
+  Setup = "setup",
   Info = "info",
   General = "general",
   Zones = "zones",
@@ -139,6 +141,13 @@ export class SmartIrrigationPanel extends LitElement {
   getView(path: Path) {
     const page = path.page;
     switch (page) {
+      case "setup":
+        return html`
+          <smart-irrigation-view-setup
+            .hass=${this.hass}
+            .narrow=${this.narrow}
+          ></smart-irrigation-view-setup>
+        `;
       case "info":
         return html`
           <smart-irrigation-view-info
