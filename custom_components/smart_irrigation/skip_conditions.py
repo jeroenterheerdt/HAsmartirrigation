@@ -85,6 +85,25 @@ class SkipConditionsMixin:
         """Whether too few days have passed since the last irrigation."""
         return (await self._evaluate_days_between_irrigation())["skip"]
 
+    async def async_zones_sheltered_from_rain(self) -> set:
+        """Zone ids the forecast cannot reach, because they are under glass.
+
+        A rain forecast is a statement about the sky. It says nothing about a
+        greenhouse, so pausing those zones over it waters nothing and dries out
+        the plants that depend on us most.
+        """
+        sheltered = set()
+        for zone in await self.store.async_get_zones():
+            if zone.get(const.ZONE_STATE) != const.ZONE_STATE_AUTOMATIC:
+                continue
+            mapping_id = zone.get(const.ZONE_MAPPING)
+            if mapping_id is None:
+                continue
+            mapping = self.store.get_mapping(mapping_id)
+            if mapping and mapping.get(const.MAPPING_GREENHOUSE):
+                sheltered.add(zone.get(const.ZONE_ID))
+        return sheltered
+
     async def _evaluate_precipitation_forecast(self) -> dict:
         """Report the forecast-precipitation guard.
 

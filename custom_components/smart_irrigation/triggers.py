@@ -449,13 +449,32 @@ class TriggersMixin:
                         # here advanced the counter by 2 per skipped day, so a
                         # days-between setting of 5 watered every 3 days (#802).
 
+                sheltered = set()
                 if not self._watering_decision_today:
+                    # A rain forecast is a statement about the sky, so it has
+                    # nothing to say about zones under glass. When some of them
+                    # are sheltered the run goes ahead for those, and only the
+                    # zones the rain can actually reach are held back.
+                    if (
+                        self._last_skip_evaluation
+                        and self._last_skip_evaluation.get("reason") == "precipitation"
+                    ):
+                        sheltered = await self.async_zones_sheltered_from_rain()
+                    if not sheltered:
+                        # Nothing is sheltered, so this is a skip day exactly as
+                        # before: no event, and no automation of the user's runs
+                        # against zeroed durations it may not think to check.
+                        _LOGGER.info(
+                            "Trigger '%s' reached but today is a skip day; not "
+                            "firing event",
+                            name,
+                        )
+                        return
                     _LOGGER.info(
-                        "Trigger '%s' reached but today is a skip day; not "
-                        "firing event",
-                        name,
+                        "Rain is forecast, so only the %s sheltered zone(s) run",
+                        len(sheltered),
                     )
-                    return
+                    await self._hold_back_zones_exposed_to_rain(sheltered)
 
                 # Rain between the calculation and now shortens the run.
                 await self._apply_rain_since_calculation()
@@ -500,6 +519,40 @@ class TriggersMixin:
                 )
 
         self.hass.async_create_task(check_and_fire())
+
+    async def _hold_back_zones_exposed_to_rain(self, sheltered: set) -> None:
+        """Zero this run for every zone the forecast rain will reach.
+
+        The start event is a single event for the whole install, and an
+        executor decides what to water from each zone's duration. So holding a
+        zone back means giving it a duration of 0 for this run, which is the
+        same thing the calculation already does for a zone that has not reached
+        its threshold.
+
+        The bucket is left alone on purpose. It is a running balance, so the
+        deficit simply rolls over to the next run, exactly as it would have on
+        a whole skipped day.
+        """
+        try:
+            zones = await self.store.async_get_zones()
+        except Exception as e:  # pragma: no cover - defensive
+            _LOGGER.error("Could not read the zones to hold back: %s", e)
+            return
+
+        for zone in zones:
+            zone_id = zone.get(const.ZONE_ID)
+            if zone_id in sheltered:
+                continue
+            if zone.get(const.ZONE_STATE) != const.ZONE_STATE_AUTOMATIC:
+                continue
+            if not zone.get(const.ZONE_DURATION):
+                continue
+            _LOGGER.info(
+                "Zone %s is held back: rain is forecast and it is not sheltered",
+                zone.get(const.ZONE_NAME),
+            )
+            await self.store.async_update_zone(zone_id, {const.ZONE_DURATION: 0})
+        async_dispatcher_send(self.hass, const.DOMAIN + "_update_frontend")
 
     async def _apply_rain_since_calculation(self):
         """Shorten each zone's run by the rain that fell since it was calculated.
