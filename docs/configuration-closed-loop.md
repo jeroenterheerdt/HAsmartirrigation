@@ -25,6 +25,14 @@ For exact accounting you can also set a zone's **Cumulative volume meter**. The 
 
 It must be a **cumulative** water-meter total (state class `total_increasing`), not an instant flow rate. The unit is read automatically from the sensor (L, mL, m³, gal, ft³). An instant flow-rate sensor (for example L/min) will not work; if your hardware only exposes a rate, feed it through a Riemann-sum **Integration** helper first to get a cumulative total.
 
+### What the meter tells us about your throughput
+
+Every irrigation duration is derived from the zone's configured throughput: the bucket says how many mm are missing, the size turns that into litres, and the throughput turns litres into minutes. A throughput copied off a datasheet rather than measured at the tap is one of the quietest ways to water twice as long as intended, or half as long, for a whole season.
+
+A zone with a volume meter gives the answer for free, since a run knows both how many litres came out and how long the valve was open. Smart Irrigation divides one by the other, smooths the result over several runs, and raises a repair notice in **Settings > Repairs** when it drifts more than 25% from what you configured. Runs shorter than two minutes are ignored: filling the pipe dominates them.
+
+It only ever tells you. The zone's throughput is never rewritten, because pressure varies, a meter can sit upstream of more than one zone, and silently changing how long valves stay open is not something to do behind your back. If the measurement looks right, copy it into the zone yourself.
+
 ## Direct valve control (let Smart Irrigation run the valves)
 
 With **Let Smart Irrigation control the valve** on, Smart Irrigation opens each zone's linked valve, waits the calculated duration, then closes it. No execution automation needed. The start event still fires, so external executors keep working too.

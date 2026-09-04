@@ -256,5 +256,11 @@
         }
       }
     }
+  },
+  "issues": {
+    "throughput_mismatch": {
+      "title": "Zone {zone} : le débit mesuré ne correspond pas au débit configuré",
+      "description": "Sur les {samples} derniers arrosages, le compteur de la zone **{zone}** a mesuré environ **{measured}** alors que la zone est configurée à **{configured}**, soit {percentage}% d'écart.\n\nToutes les durées d'arrosage sont calculées à partir du débit configuré : elles sont donc toutes fausses dans la même proportion.\n\nSi la mesure vous paraît juste, reportez-la dans le débit de la zone. Sinon, vérifiez que le compteur ne mesure que cette zone et que la pression est celle attendue. Smart Irrigation ne modifie jamais la valeur à votre place."
+    }
   }
 }

@@ -266,6 +266,8 @@ class SmartIrrigationZoneView(HomeAssistantView):
                     float, int, None
                 ),
                 vol.Optional(const.ZONE_IRRIGATION_THRESHOLD): vol.Or(float, int, None),
+                vol.Optional(const.ZONE_MEASURED_THROUGHPUT): vol.Or(float, int, None),
+                vol.Optional(const.ZONE_MEASURED_THROUGHPUT_SAMPLES): vol.Or(int, None),
             }
         )
     )

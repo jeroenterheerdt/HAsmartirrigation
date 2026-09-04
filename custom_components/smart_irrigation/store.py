@@ -128,6 +128,8 @@ from .const import (
     ZONE_MAPPING,
     ZONE_MAXIMUM_BUCKET,
     ZONE_MAXIMUM_DURATION,
+    ZONE_MEASURED_THROUGHPUT,
+    ZONE_MEASURED_THROUGHPUT_SAMPLES,
     ZONE_MODULE,
     ZONE_MULTIPLIER,
     ZONE_NAME,
@@ -193,6 +195,10 @@ class ZoneEntry:
     precipitation_superseded = attr.ib(type=float, default=0.0)
     # Optional cumulative volume meter; credits the bucket by measured volume.
     flow_sensor = attr.ib(type=str, default=None)
+    # What the flow meter says the zone actually delivers, smoothed over runs,
+    # with the number of runs behind it. Advisory only (see const).
+    measured_throughput = attr.ib(type=float, default=None)
+    measured_throughput_samples = attr.ib(type=int, default=0)
 
 
 @attr.s(slots=True, frozen=True)
@@ -679,6 +685,10 @@ class SmartIrrigationStorage:
                         ),
                         linked_entity=zone.get(ZONE_LINKED_ENTITY, None),
                         flow_sensor=zone.get(ZONE_FLOW_SENSOR, None),
+                        measured_throughput=zone.get(ZONE_MEASURED_THROUGHPUT, None),
+                        measured_throughput_samples=zone.get(
+                            ZONE_MEASURED_THROUGHPUT_SAMPLES, 0
+                        ),
                     )
             if "modules" in data:
                 for module in data["modules"]:

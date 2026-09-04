@@ -256,5 +256,11 @@
         }
       }
     }
+  },
+  "issues": {
+    "throughput_mismatch": {
+      "title": "Zone {zone}: measured flow does not match the configured throughput",
+      "description": "Over the last {samples} runs, the flow meter on zone **{zone}** measured about **{measured}** where the zone is configured for **{configured}** - {percentage}% off.\n\nEvery irrigation duration is derived from the configured throughput, so they are all off by roughly the same amount.\n\nIf the measurement looks right, set the zone's throughput to it. If it does not, check that the meter only counts this zone, and that mains pressure is what you expect. Smart Irrigation never changes the value for you."
+    }
   }
 }

@@ -10,14 +10,18 @@ from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from custom_components.smart_irrigation import const
 from custom_components.smart_irrigation.calculation import CalculationMixin
+from custom_components.smart_irrigation.flow_calibration import (
+    FlowCalibrationMixin,
+)
 from custom_components.smart_irrigation.observed_watering import ObservedWateringMixin
 
 
-class _Coordinator(ObservedWateringMixin, CalculationMixin):
+class _Coordinator(ObservedWateringMixin, FlowCalibrationMixin, CalculationMixin):
     """Minimal host exposing the mixin's collaborators (store, hass).
 
     Also mixes in ``CalculationMixin`` so the credit path can call
-    ``duration_from_bucket`` (the coordinator inherits both in production).
+    ``duration_from_bucket``, and ``FlowCalibrationMixin`` because the metered
+    credit feeds it the run (the coordinator inherits all three in production).
     """
 
     def __init__(self, hass, store):

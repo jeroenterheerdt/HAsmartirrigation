@@ -42,6 +42,7 @@ from . import const
 from .blueprint_install import async_install_bundled_blueprints
 from .calculation import CalculationMixin
 from .exceptions import SmartIrrigationError
+from .flow_calibration import FlowCalibrationMixin
 from .helpers import (
     altitudeToPressure,
     check_time,
@@ -413,6 +414,7 @@ async def async_remove_entry(hass: HomeAssistant, entry):
 
 class SmartIrrigationCoordinator(
     ObservedWateringMixin,
+    FlowCalibrationMixin,
     ValveRunnerMixin,
     SkipConditionsMixin,
     ServiceHandlersMixin,
@@ -1955,6 +1957,8 @@ class SmartIrrigationCoordinator(
                 return
             await self.store.async_delete_zone(zone_id)
             await self.async_remove_entity(zone_id)
+            # Nothing left to advise about once the zone is gone.
+            self.async_clear_throughput_issue(zone_id)
 
         elif const.ATTR_CALCULATE in data:
             # calculate a specific zone

@@ -166,8 +166,11 @@ class ObservedWateringMixin:
                 litres_now = self._read_volume_litres(flow_sensor)
                 if litres_now is not None and litres_now >= flow_start:
                     volume_l = litres_now - flow_start
+                    # The run time is only interesting alongside the metered
+                    # volume: together they say what the zone really delivers.
+                    seconds = (dt_util.utcnow() - started).total_seconds()
                     self.hass.async_create_task(
-                        self._credit_from_volume(zone_id, volume_l)
+                        self._credit_from_volume(zone_id, volume_l, seconds)
                     )
                     return
                 _LOGGER.warning(
@@ -259,8 +262,15 @@ class ObservedWateringMixin:
         volume_l = tput_lpm * (seconds / 60.0)
         await self._apply_volume_credit(zone, volume_l, source=f"{seconds:.0f}s timed")
 
-    async def _credit_from_volume(self, zone_id: int, volume_l: float) -> None:
-        """Credit a zone's bucket from a metered ``volume_l`` (litres delivered)."""
+    async def _credit_from_volume(
+        self, zone_id: int, volume_l: float, seconds: float | None = None
+    ) -> None:
+        """Credit a zone's bucket from a metered ``volume_l`` (litres delivered).
+
+        ``seconds`` is how long the valve was open for that volume. It plays no
+        part in the credit -- the meter already knows what came out -- but it
+        lets the flow calibration check the configured throughput.
+        """
         if volume_l <= 0:
             return
         zone = self.store.get_zone(zone_id)
@@ -274,6 +284,8 @@ class ObservedWateringMixin:
         await self._apply_volume_credit(
             zone, volume_l, source=f"{volume_l:.1f} L metered"
         )
+        if seconds is not None:
+            await self.async_record_measured_flow(zone_id, volume_l, seconds)
 
     async def _apply_volume_credit(
         self, zone: dict, volume_l: float, *, source: str

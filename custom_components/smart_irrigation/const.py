@@ -327,6 +327,11 @@ CONF_DEFAULT_IRRIGATION_THRESHOLD = 0.0
 ZONE_LINKED_ENTITY = "linked_entity"
 # Optional cumulative volume/flow meter; credits the bucket by measured volume.
 ZONE_FLOW_SENSOR = "flow_sensor"
+# Throughput actually measured by the flow meter, smoothed over runs, in the
+# user's volume-rate unit. Advisory only: it is never used to compute a
+# duration, it only lets us tell the user their configured value is off.
+ZONE_MEASURED_THROUGHPUT = "measured_throughput"
+ZONE_MEASURED_THROUGHPUT_SAMPLES = "measured_throughput_samples"
 
 MODULE_DIR = "calcmodules"
 MODULE_ID = "id"
