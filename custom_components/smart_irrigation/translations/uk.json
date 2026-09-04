@@ -220,5 +220,20 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "multiplier": {
+        "name": "Множник"
+      },
+      "precipitation_threshold": {
+        "name": "Поріг опадів"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Пропускати за опадів"
+      }
+    }
   }
 }

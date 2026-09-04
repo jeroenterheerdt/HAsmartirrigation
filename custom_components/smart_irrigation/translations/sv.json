@@ -220,5 +220,20 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "multiplier": {
+        "name": "Multiplikator"
+      },
+      "precipitation_threshold": {
+        "name": "Nederbördströskel"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Hoppa över vid nederbörd"
+      }
+    }
   }
 }

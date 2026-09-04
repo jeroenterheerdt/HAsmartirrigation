@@ -220,5 +220,20 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "multiplier": {
+        "name": "Mnożnik"
+      },
+      "precipitation_threshold": {
+        "name": "Próg opadów"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Pomiń przy opadach"
+      }
+    }
   }
 }

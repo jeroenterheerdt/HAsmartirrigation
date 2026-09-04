@@ -220,5 +220,20 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "multiplier": {
+        "name": "倍数"
+      },
+      "precipitation_threshold": {
+        "name": "降水阈值"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "有降水时跳过"
+      }
+    }
   }
 }

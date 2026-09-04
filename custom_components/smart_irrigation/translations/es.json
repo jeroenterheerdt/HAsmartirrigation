@@ -220,5 +220,20 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "multiplier": {
+        "name": "Multiplicador"
+      },
+      "precipitation_threshold": {
+        "name": "Umbral de precipitación"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Omitir si hay precipitación"
+      }
+    }
   }
 }

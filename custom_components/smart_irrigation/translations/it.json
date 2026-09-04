@@ -26,6 +26,9 @@
     "number": {
       "multiplier": {
         "name": "Moltiplicatore"
+      },
+      "precipitation_threshold": {
+        "name": "Soglia di precipitazione"
       }
     },
     "button": {
@@ -60,6 +63,11 @@
       },
       "problem": {
         "name": "Problema"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Salta in caso di pioggia"
       }
     }
   },

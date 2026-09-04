@@ -220,5 +220,20 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "multiplier": {
+        "name": "Kerroin"
+      },
+      "precipitation_threshold": {
+        "name": "Sademäärän raja"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Ohita sateella"
+      }
+    }
   }
 }

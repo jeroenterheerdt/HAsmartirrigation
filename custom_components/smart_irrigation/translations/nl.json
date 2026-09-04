@@ -220,5 +220,20 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "multiplier": {
+        "name": "Vermenigvuldiger"
+      },
+      "precipitation_threshold": {
+        "name": "Neerslagdrempel"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Overslaan bij neerslag"
+      }
+    }
   }
 }

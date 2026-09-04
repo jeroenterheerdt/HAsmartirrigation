@@ -220,5 +220,20 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "multiplier": {
+        "name": "Множитель"
+      },
+      "precipitation_threshold": {
+        "name": "Порог осадков"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Пропускать при осадках"
+      }
+    }
   }
 }

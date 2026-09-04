@@ -220,5 +220,20 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "multiplier": {
+        "name": "Szorzó"
+      },
+      "precipitation_threshold": {
+        "name": "Csapadékküszöb"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Kihagyás csapadék esetén"
+      }
+    }
   }
 }

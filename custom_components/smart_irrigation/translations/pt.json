@@ -220,5 +220,20 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "multiplier": {
+        "name": "Multiplicador"
+      },
+      "precipitation_threshold": {
+        "name": "Limiar de precipitação"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Ignorar com precipitação"
+      }
+    }
   }
 }

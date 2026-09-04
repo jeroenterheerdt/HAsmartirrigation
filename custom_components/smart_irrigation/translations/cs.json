@@ -220,5 +220,20 @@
         }
       }
     }
+  },
+  "entity": {
+    "number": {
+      "multiplier": {
+        "name": "Násobitel"
+      },
+      "precipitation_threshold": {
+        "name": "Práh srážek"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Vynechat při srážkách"
+      }
+    }
   }
 }

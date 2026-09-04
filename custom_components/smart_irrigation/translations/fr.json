@@ -26,6 +26,9 @@
     "number": {
       "multiplier": {
         "name": "Multiplicateur"
+      },
+      "precipitation_threshold": {
+        "name": "Seuil de précipitation"
       }
     },
     "button": {
@@ -60,6 +63,11 @@
       },
       "problem": {
         "name": "Problème"
+      }
+    },
+    "switch": {
+      "skip_on_precipitation": {
+        "name": "Ignorer en cas de pluie"
       }
     }
   },
