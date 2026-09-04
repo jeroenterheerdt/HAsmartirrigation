@@ -366,10 +366,27 @@ MAPPING_CONF_SOURCE_WEATHER_SERVICE = "weather_service"
 MAPPING_CONF_SOURCE_SENSOR = "sensor"
 MAPPING_CONF_SOURCE_NONE = "none"
 MAPPING_CONF_SOURCE_STATIC_VALUE = "static"
+# A light sensor standing in for a solar radiation sensor. Under glass or
+# plastic there is no usable sky: no rain, no weather service worth asking, and
+# no pyranometer in most greenhouses. An illuminance sensor placed inside is
+# something people do have, and daylight has a roughly known luminous efficacy,
+# so lux converts to W/m2 and FAO-56 gets the driving term it is missing.
+MAPPING_CONF_SOURCE_ILLUMINANCE = "illuminance"
+# Sources whose value is read from a Home Assistant entity.
+MAPPING_CONF_SENSOR_BACKED_SOURCES = (
+    MAPPING_CONF_SOURCE_SENSOR,
+    MAPPING_CONF_SOURCE_ILLUMINANCE,
+)
 
 MAPPING_CONF_SOURCE = "source"
 MAPPING_CONF_SENSOR = "sensorentity"
 MAPPING_CONF_STATIC_VALUE = "static_value"
+# Luminous efficacy of daylight in lumen per watt, used to turn an illuminance
+# reading into shortwave radiation. Daylight sits around 93-120 lm/W and the
+# glazing of a greenhouse shifts the spectrum, so it is exposed rather than
+# hard-coded: measure against a known radiation figure and adjust.
+MAPPING_CONF_LUMINOUS_EFFICACY = "luminous_efficacy"
+CONF_DEFAULT_LUMINOUS_EFFICACY = 110.0
 MAPPING_CONF_UNIT = "unit"
 MAPPING_CONF_PRESSURE_TYPE = "pressure_type"
 MAPPING_CONF_PRESSURE_ABSOLUTE = "absolute"

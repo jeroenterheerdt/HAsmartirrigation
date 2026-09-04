@@ -286,8 +286,10 @@
             "none": "None",
             "weather_service": "Weather service",
             "sensor": "Sensor",
-            "static": "Static value"
-          }
+            "static": "Static value",
+            "illuminance": "Light sensor (lux)"
+          },
+          "luminous_efficacy": "Luminous efficacy"
         }
       },
       "description": "Add one or more sensor groups that retrieve weather data from Weather service, from sensors or a combination of these. You can map each sensor group to one or more zones",

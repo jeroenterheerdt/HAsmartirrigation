@@ -40,6 +40,8 @@ import {
   MAPPING_CONF_SOURCE_WEATHER_SERVICE,
   MAPPING_CONF_SOURCE_SENSOR,
   MAPPING_CONF_SOURCE_STATIC_VALUE,
+  MAPPING_CONF_SOURCE_ILLUMINANCE,
+  MAPPING_CONF_LUMINOUS_EFFICACY,
   MAPPING_CONF_STATIC_VALUE,
   MAPPING_CONF_UNIT,
   MAPPING_DEWPOINT,
@@ -764,6 +766,17 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
           this.hass.language,
         )}
       </option>
+      ${value === MAPPING_SOLRAD
+        ? html`<option
+            value="${MAPPING_CONF_SOURCE_ILLUMINANCE}"
+            ?selected=${currentSource === MAPPING_CONF_SOURCE_ILLUMINANCE}
+          >
+            ${localize(
+              "panels.mappings.cards.mapping.sources.illuminance",
+              this.hass.language,
+            )}
+          </option>`
+        : ""}
     `;
   }
 
@@ -1058,8 +1071,12 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     const source = mappingline[MAPPING_CONF_SOURCE];
 
     return html`
-      ${source === MAPPING_CONF_SOURCE_SENSOR
+      ${source === MAPPING_CONF_SOURCE_SENSOR ||
+      source === MAPPING_CONF_SOURCE_ILLUMINANCE
         ? this.renderSensorInput(index, value, mappingline)
+        : ""}
+      ${source === MAPPING_CONF_SOURCE_ILLUMINANCE
+        ? this.renderLuminousEfficacyInput(index, value, mappingline)
         : ""}
       ${source === MAPPING_CONF_SOURCE_STATIC_VALUE
         ? this.renderStaticValueInput(index, value, mappingline)
@@ -1073,7 +1090,8 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         source === MAPPING_CONF_SOURCE_STATIC_VALUE)
         ? this.renderPressureTypeSelect(index, value, mappingline)
         : ""}
-      ${source === MAPPING_CONF_SOURCE_SENSOR
+      ${source === MAPPING_CONF_SOURCE_SENSOR ||
+      source === MAPPING_CONF_SOURCE_ILLUMINANCE
         ? this.renderAggregateSelect(index, value, mappingline)
         : ""}
     `;
@@ -1106,6 +1124,51 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
         ></ha-entity-picker>
       </div>
     `;
+  }
+
+  private renderLuminousEfficacyInput(
+    index: number,
+    value: string,
+    mappingline: any,
+  ): TemplateResult {
+    if (!this.hass) return html``;
+
+    // Daylight is around 110 lm/W, and greenhouse glazing shifts the spectrum,
+    // so this is the one number worth calibrating against a known radiation
+    // figure. It is not a setting most people need to touch.
+    return this._numRow(
+      localize(
+        "panels.mappings.cards.mapping.luminous_efficacy",
+        this.hass.language,
+      ),
+      "lm/W",
+      mappingline[MAPPING_CONF_LUMINOUS_EFFICACY] ?? 110,
+      (v: string) =>
+        this.handleLuminousEfficacyChange(index, value, {
+          target: { value: v },
+        } as unknown as Event),
+      1,
+    );
+  }
+
+  private handleLuminousEfficacyChange(
+    index: number,
+    value: string,
+    e: Event,
+  ): void {
+    const mapping = this.mappings[index];
+    this.handleEditMapping(index, {
+      ...mapping,
+      mappings: {
+        ...mapping.mappings,
+        [value]: {
+          ...mapping.mappings[value],
+          [MAPPING_CONF_LUMINOUS_EFFICACY]: parseFloat(
+            (e.target as HTMLInputElement).value,
+          ),
+        },
+      },
+    });
   }
 
   private renderStaticValueInput(

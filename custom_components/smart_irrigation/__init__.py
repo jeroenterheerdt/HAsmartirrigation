@@ -963,7 +963,7 @@ class SmartIrrigationCoordinator(
                     if not isinstance(the_map, str):
                         if the_map.get(
                             const.MAPPING_CONF_SOURCE
-                        ) == const.MAPPING_CONF_SOURCE_SENSOR and the_map.get(
+                        ) in const.MAPPING_CONF_SENSOR_BACKED_SOURCES and the_map.get(
                             const.MAPPING_CONF_SENSOR
                         ):
                             # this mapping maps to a sensor, so retrieve its value from HA
@@ -1749,7 +1749,7 @@ class SmartIrrigationCoordinator(
                             owm_in_mapping = True
                         if (
                             the_map.get(const.MAPPING_CONF_SOURCE)
-                            == const.MAPPING_CONF_SOURCE_SENSOR
+                            in const.MAPPING_CONF_SENSOR_BACKED_SOURCES
                         ):
                             sensor_in_mapping = True
                         if (
@@ -1783,10 +1783,29 @@ class SmartIrrigationCoordinator(
             for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
                 if not isinstance(the_map, str) and (
                     the_map.get(const.MAPPING_CONF_SOURCE)
-                    == const.MAPPING_CONF_SOURCE_SENSOR
+                    in const.MAPPING_CONF_SENSOR_BACKED_SOURCES
                 ):
                     keys.add(key)
         return keys
+
+    def radiation_from_illuminance(self, lux, the_map):
+        """Turn a light reading in lux into shortwave radiation in W/m2.
+
+        Illuminance is what the eye sees, radiation is what drives evaporation,
+        and daylight relates the two by its luminous efficacy: around 110 lm/W,
+        within a range of roughly 93 to 120 depending on the light. Greenhouse
+        glazing shifts the spectrum, so the figure is configurable per sensor
+        group rather than fixed, and it is the one thing worth calibrating if an
+        independent radiation figure is available to compare against.
+        """
+        efficacy = (the_map or {}).get(const.MAPPING_CONF_LUMINOUS_EFFICACY)
+        try:
+            efficacy = float(efficacy)
+        except (TypeError, ValueError):
+            efficacy = const.CONF_DEFAULT_LUMINOUS_EFFICACY
+        if efficacy <= 0:
+            efficacy = const.CONF_DEFAULT_LUMINOUS_EFFICACY
+        return float(lux) / efficacy
 
     def build_sensor_values_for_mapping(self, mapping):
         """Build a dictionary of sensor values for a given mapping by retrieving and converting sensor states from Home Assistant.
@@ -1801,9 +1820,8 @@ class SmartIrrigationCoordinator(
         sensor_values = {}
         for key, the_map in mapping[const.MAPPING_MAPPINGS].items():
             if not isinstance(the_map, str):
-                if the_map.get(
-                    const.MAPPING_CONF_SOURCE
-                ) == const.MAPPING_CONF_SOURCE_SENSOR and the_map.get(
+                source = the_map.get(const.MAPPING_CONF_SOURCE)
+                if source in const.MAPPING_CONF_SENSOR_BACKED_SOURCES and the_map.get(
                     const.MAPPING_CONF_SENSOR
                 ):
                     # this mapping maps to a sensor, so retrieve its value from HA
@@ -1814,11 +1832,17 @@ class SmartIrrigationCoordinator(
                                     the_map.get(const.MAPPING_CONF_SENSOR)
                                 ).state
                             )
+                            unit = the_map.get(const.MAPPING_CONF_UNIT)
+                            if source == const.MAPPING_CONF_SOURCE_ILLUMINANCE:
+                                val = self.radiation_from_illuminance(val, the_map)
+                                # The result is shortwave radiation, whatever
+                                # unit the light sensor itself reported in.
+                                unit = const.UNIT_W_M2
                             # make sure to store the val as metric and do necessary conversions along the way
                             val = convert_mapping_to_metric(
                                 val,
                                 key,
-                                the_map.get(const.MAPPING_CONF_UNIT),
+                                unit,
                                 self.hass.config.units is METRIC_SYSTEM,
                             )
                             # add val to sensor values, at debug logging level due to startup ordering issues

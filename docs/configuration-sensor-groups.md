@@ -28,7 +28,7 @@ The following data can be provided:
 |**Humidity**|Yes|Weather Service<br/>Sensor<br/>Static value|%|Average|Last|
 |**Total precipitation**|No|Sensor<br/>Static value|in<br/>mm|Delta|Delta|
 |**Pressure** (*see notes below the table)|Yes|Weather Service<br/>Sensor<br/>Static value|hPa<br/>inch Hg<br/>millibar<br/>psi|Average|Last|
-|**Solar Radiation**|No|None (requires module to estimate it)<br/>Sensor<br/>Static value|MJ/day/m2<br/>MJ/day/sq ft<br/>W/m2<br/>W/sq ft|Average|Riemann Sum|
+|**Solar Radiation**|No|None (requires module to estimate it)<br/>Sensor<br/>Light sensor (lux)<br/>Static value|MJ/day/m2<br/>MJ/day/sq ft<br/>W/m2<br/>W/sq ft|Average|Riemann Sum|
 |**Temperature**|Yes|Weather Service<br/>Sensor<br/>Static value|°C<br/>°F|Average|Last|
 |**Wind speed**|Yes|Weather Service<br/>Sensor<br/>Static value|meter/s<br/>mile/h<br/>km/h<br/>knot|Average|Last|
 
@@ -36,6 +36,13 @@ Please note:
 - If you use a [weather service](installation-weatherservice.md), make sure your home zone coordinates are set correctly so the data is correct. This is especially true if you set the coordinates manually in the configuration.yaml.
 - Pressure can either be absolute or relative pressure: _absolute barometric pressure_ is the actual pressure measured at your location, while _relative barometric pressure_ is the pressure calculated at sea level. Check the source of your data to find out whether it provides absolute or relative pressure.
 - Humidity for your sensor group is the air humidity / atmospheric humidity, _not_ soil humidity. Soil Humidity sensors do not provide useful information for this integration and cannot be used.
+- **Greenhouses: a light sensor can stand in for a solar radiation sensor.** Under glass or plastic there is no usable sky, so a weather service has nothing relevant to say and the calculation loses the term that drives it. Most greenhouses have no pyranometer, but a light sensor is cheap and common. Set Solar Radiation's source to **Light sensor (lux)**, pick your illuminance entity, and the reading is converted to W/m2 and fed to the same Penman-Monteith calculation a real radiation sensor would feed.
+
+  The conversion divides lux by the **luminous efficacy** of daylight, which the panel exposes and defaults to 110 lm/W. Daylight sits between roughly 93 and 120 lm/W and glazing shifts the spectrum, so that is the number to calibrate if you can compare against an independent radiation figure: raise it and the estimated radiation falls. As a sanity check, full daylight of about 100 000 lux comes out near 900 W/m2.
+
+  Two other things to set for a greenhouse, which the integration does not infer for you: put Wind speed on a **static value** near 0, since the FAO-56 aerodynamic term assumes open air, and leave precipitation unmapped or static at 0, since it does not rain indoors.
+
+  If you would rather not use this, a template sensor dividing your lux entity by 110 and reported as `W/m2` reaches the same result through the ordinary Sensor source.
 - Wind speed needs to be measured at 2 meters height. If you are using Open Weather Map this is automatically done for you, but if you do not, you need to make sure the input sensor returns the wind speed at the correct height. You can use a template sensor like the following for this:
    ```yaml
    sensor:
