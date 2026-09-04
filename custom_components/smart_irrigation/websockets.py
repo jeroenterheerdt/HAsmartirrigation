@@ -378,6 +378,39 @@ async def websocket_get_mappings(hass: HomeAssistant, connection, msg):
     connection.send_result(msg["id"], mappings)
 
 
+def _project_days_between_to_start(skip_preview, skip_days):
+    """Move the days-between check forward to the start the panel is showing.
+
+    The counter is bumped once a day, so evaluating it "now" is pessimistic
+    right after a run: it reads 0 of 5 and vetoes, while the start time shown
+    beside it has already been pushed out by those same five days. Left alone
+    the panel contradicts itself, announcing a run and calling it blocked.
+
+    At the projected start the counter will have caught up, so that check no
+    longer vetoes. Only that one moves: a rain forecast five days out is not
+    something we can claim to know, and it keeps its live value.
+    """
+    if not skip_preview or skip_days <= 0:
+        return skip_preview
+
+    checks = []
+    for check in skip_preview.get("checks", []):
+        if check.get("id") != "days_between" or not check.get("enabled"):
+            checks.append(check)
+            continue
+        checks.append(
+            {**check, "days_since": check.get("days_required"), "skip": False}
+        )
+
+    vetoing = next((c for c in checks if c.get("skip")), None)
+    return {
+        "should_skip": vetoing is not None,
+        "reason": vetoing["id"] if vetoing else None,
+        "checks": checks,
+        "projected_to_start": True,
+    }
+
+
 def _trigger_start_base_and_offset(selected, total_duration):
     """Return (base_event, offset_seconds) for the selected start trigger.
 
@@ -439,6 +472,14 @@ async def websocket_get_irrigation_info(hass: HomeAssistant, connection, msg):
             _LOGGER.debug("Skip preview unavailable: %s", e)
             skip_preview = None
         last_skip_evaluation = getattr(coordinator, "_last_skip_evaluation", None)
+
+        # Where each zone stands right now rather than at the last calculation.
+        # Display only: nothing here is committed. See live_estimate.py.
+        try:
+            zone_estimates = await coordinator.async_estimate_all_zones_now()
+        except Exception as e:  # noqa: BLE001 - the panel must not fail on it
+            _LOGGER.debug("Live estimates unavailable: %s", e)
+            zone_estimates = {}
 
         # Calculate total duration and get enabled zones that need irrigation
         total_duration = await coordinator.get_total_duration_all_enabled_zones()
@@ -533,6 +574,12 @@ async def websocket_get_irrigation_info(hass: HomeAssistant, connection, msg):
                 skip_days = days_between - days_since_last
                 if skip_days > 0 and next_irrigation_start:
                     next_irrigation_start += datetime.timedelta(days=skip_days)
+                    # The start we are about to show is that many days out, so
+                    # the guard that pushed it there must be shown as it will
+                    # be then, not as it is now.
+                    skip_preview = _project_days_between_to_start(
+                        skip_preview, skip_days
+                    )
         except Exception as e:  # noqa: BLE001
             _LOGGER.warning(
                 "Failed to apply days-between-irrigation offset to next "
@@ -540,45 +587,37 @@ async def websocket_get_irrigation_info(hass: HomeAssistant, connection, msg):
                 e,
             )
 
-        # Collect irrigation reasons from zones
-        reasons = []
-        explanations = []
-
-        for zone in enabled_zones:
-            if zone.get(const.ZONE_DURATION, 0) > 0:
-                zone_explanation = zone.get(const.ZONE_EXPLANATION, "")
-                if zone_explanation:
-                    explanations.append(
-                        f"Zone {zone.get(const.ZONE_NAME, zone.get(const.ZONE_ID))}: {zone_explanation}"
-                    )
-
-                # Simple reason based on bucket value
-                bucket = zone.get(const.ZONE_BUCKET, 0)
-                if bucket < 0:
-                    reasons.append(
-                        f"Soil moisture deficit in {zone.get(const.ZONE_NAME, f'Zone {zone.get(const.ZONE_ID)}')}"
-                    )
-
-        # Default reason if no specific reasons found
-        irrigation_reason = (
-            "; ".join(reasons) if reasons else "Scheduled irrigation maintenance"
-        )
-        irrigation_explanation = (
-            "<br/>".join(explanations)
-            if explanations
-            else "Irrigation scheduled based on soil moisture calculations and weather data."
-        )
-
+        # No invented prose. The old code manufactured "Scheduled irrigation
+        # maintenance" and "Irrigation scheduled based on soil moisture
+        # calculations and weather data" whenever it had no reason to give,
+        # which reads like information and is not. What the panel shows now is
+        # the trigger, the arithmetic behind the total, and the skip checks.
         irrigation_info = {
             "next_irrigation_start": (
                 next_irrigation_start.isoformat() if next_irrigation_start else None
             ),
             "next_irrigation_duration": int(total_duration),
             "next_irrigation_zones": irrigation_zones,
-            "irrigation_reason": irrigation_reason,
             "sunrise_time": sunrise_time.isoformat() if sunrise_time else None,
-            "total_irrigation_duration": int(total_duration),
-            "irrigation_explanation": irrigation_explanation,
+            # Why the start is at that moment: the trigger the user selected,
+            # and the sun event it is measured from.
+            "trigger_name": (
+                selected.get(const.TRIGGER_CONF_NAME) if selected else None
+            ),
+            "trigger_type": (
+                selected.get(const.TRIGGER_CONF_TYPE) if selected else None
+            ),
+            "trigger_base": base_name,
+            "trigger_accounts_for_duration": (
+                selected.get(const.TRIGGER_CONF_ACCOUNT_FOR_DURATION, True)
+                if selected
+                else True
+            ),
+            # How the total was counted: the sum of the zones or the longest.
+            "zone_sequencing": config.get(
+                const.CONF_ZONE_SEQUENCING, const.CONF_DEFAULT_ZONE_SEQUENCING
+            ),
+            "zone_estimates": zone_estimates,
             "skip_preview": skip_preview,
             "last_skip_evaluation": last_skip_evaluation,
         }
@@ -597,10 +636,14 @@ async def websocket_get_irrigation_info(hass: HomeAssistant, connection, msg):
             "next_irrigation_start": sunrise_time.isoformat(),
             "next_irrigation_duration": 0,
             "next_irrigation_zones": [],
-            "irrigation_reason": "Error calculating irrigation schedule",
             "sunrise_time": sunrise_time.isoformat(),
-            "total_irrigation_duration": 0,
-            "irrigation_explanation": "Unable to calculate irrigation schedule. Please check system configuration.",
+            "trigger_name": None,
+            "trigger_type": None,
+            "trigger_base": None,
+            "trigger_accounts_for_duration": None,
+            "zone_sequencing": None,
+            "error": str(e),
+            "zone_estimates": {},
             "skip_preview": None,
             "last_skip_evaluation": None,
         }

@@ -53,6 +53,7 @@ from .helpers import (
     relative_to_absolute_pressure,
 )
 from .irrigation_unlimited import IrrigationUnlimitedIntegration
+from .live_estimate import LiveEstimateMixin
 from .observed_watering import ObservedWateringMixin
 from .panel import async_register_panel, remove_panel
 from .scheduler import RecurringScheduleManager, SeasonalAdjustmentManager
@@ -416,6 +417,7 @@ async def async_remove_entry(hass: HomeAssistant, entry):
 class SmartIrrigationCoordinator(
     ObservedWateringMixin,
     FlowCalibrationMixin,
+    LiveEstimateMixin,
     ValveRunnerMixin,
     SkipConditionsMixin,
     ServiceHandlersMixin,

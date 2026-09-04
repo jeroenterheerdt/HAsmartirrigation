@@ -12,6 +12,7 @@ import logging
 from datetime import datetime, timedelta
 from functools import partial
 
+import homeassistant.util.dt as dt_util
 from homeassistant.const import CONF_LONGITUDE
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -428,7 +429,12 @@ class TriggersMixin:
                     # what the panel shows and what the runner decides come from
                     # the same call (#794).
                     evaluation = await self.async_evaluate_skip_conditions()
-                    self._last_skip_evaluation = evaluation
+                    # Stamp it: the panel shows this next to the live preview,
+                    # and "what it decided" is only meaningful with "when".
+                    self._last_skip_evaluation = {
+                        **evaluation,
+                        "evaluated_at": dt_util.now().isoformat(),
+                    }
                     skip_reason = evaluation["reason"]
                     self._watering_decision_today = not evaluation["should_skip"]
                     if skip_reason is not None:
