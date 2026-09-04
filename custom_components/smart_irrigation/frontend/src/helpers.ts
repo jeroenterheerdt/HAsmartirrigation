@@ -1,4 +1,5 @@
 import { TemplateResult, html } from "lit";
+import { localize } from "../localize/localize";
 import { HomeAssistant, stateIcon, fireEvent } from "custom-card-helpers";
 import { HassEntity } from "home-assistant-js-websocket";
 import {
@@ -330,3 +331,30 @@ export const navigate = (
     replace,
   });
 };
+
+/**
+ * The name to show for a calculation engine.
+ *
+ * The engines are called PyETO, Passthrough and Static in the code, and those
+ * names describe how they are implemented rather than what choosing one means.
+ * The panel shows the intent instead: Manual for a number you give, Standard
+ * for an evapotranspiration figure that already exists, Advanced for the full
+ * calculation from your own weather sensors.
+ *
+ * An engine we do not recognise keeps its own name: a third party's should
+ * appear as it calls itself rather than be forced into one of our three.
+ */
+const ENGINE_MODES: Record<string, string> = {
+  Static: "manual",
+  Passthrough: "standard",
+  PyETO: "advanced",
+};
+
+export function engineModeLabel(
+  engineName: string | undefined,
+  lang: string,
+): string {
+  if (!engineName) return "";
+  const mode = ENGINE_MODES[engineName];
+  return mode ? localize(`common.modes.${mode}`, lang) : engineName;
+}

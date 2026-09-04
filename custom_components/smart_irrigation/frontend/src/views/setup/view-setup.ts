@@ -7,6 +7,7 @@ import {
   fetchConfig,
   fetchMappings,
   fetchModules,
+  fetchWeatherService,
   fetchZones,
   saveMapping,
   saveModule,
@@ -18,6 +19,7 @@ import {
   SmartIrrigationMapping,
   SmartIrrigationModule,
 } from "../../types";
+import { engineModeLabel } from "../../helpers";
 import { globalStyle } from "../../styles/global-style";
 import { modernStyle } from "../../styles/modern-style";
 import { localize } from "../../../localize/localize";
@@ -59,9 +61,14 @@ const ALL_SOURCES = [
 /** How the user says their evapotranspiration is going to be produced. */
 type WeatherAnswer = "service" | "sensors" | "et" | "static";
 
-/** The engine each answer implies. The wizard never asks for an engine by name. */
-const ENGINE_FOR: Record<WeatherAnswer, string> = {
-  service: "PyETO",
+/**
+ * The engine each answer implies. The wizard never asks for an engine by name.
+ *
+ * "service" is decided at runtime rather than here: a service that hands us a
+ * reference ET0 should have that figure taken as it stands, and only a service
+ * that does not forces us to recompute Penman-Monteith from its raw fields.
+ */
+const ENGINE_FOR: Record<Exclude<WeatherAnswer, "service">, string> = {
   sensors: "PyETO",
   et: "Passthrough",
   static: "Static",
@@ -102,6 +109,7 @@ class SmartIrrigationViewSetup extends LitElement {
   @state() private weather: WeatherAnswer = "service";
   @state() private sensors: Record<string, string> = {};
   @state() private staticDelta = "";
+  @state() private serviceSuppliesEt = false;
 
   firstUpdated() {
     loadHaForm().catch(() => undefined);
@@ -110,14 +118,16 @@ class SmartIrrigationViewSetup extends LitElement {
 
   private async _load(): Promise<void> {
     if (!this.hass) return;
-    const [config, allModules, modules] = await Promise.all([
+    const [config, allModules, modules, service] = await Promise.all([
       fetchConfig(this.hass),
       fetchAllModules(this.hass),
       fetchModules(this.hass),
+      fetchWeatherService(this.hass).catch(() => undefined),
     ]);
     this.config = config;
     this.allModules = allModules;
     this.modules = modules;
+    this.serviceSuppliesEt = !!(service as any)?.supplies_evapotranspiration;
     // Without a weather service there is nothing for that answer to mean.
     if (!this.usesWeatherService) {
       this.weather = "sensors";
@@ -138,6 +148,13 @@ class SmartIrrigationViewSetup extends LitElement {
 
   /** The engine the current answers imply, as the backend named it. */
   private get engineName(): string {
+    if (this.weather === "service") {
+      // Open-Meteo publishes FAO-56 ET0 directly, so taking it is both simpler
+      // and closer to the source than recomputing it from the same service's
+      // temperature and wind. A service that does not publish one leaves us
+      // the full calculation.
+      return this.serviceSuppliesEt ? "Passthrough" : "PyETO";
+    }
     return ENGINE_FOR[this.weather];
   }
 
@@ -430,7 +447,8 @@ class SmartIrrigationViewSetup extends LitElement {
             : this.t("steps.environment.outdoors")}
         </div>
         <div>
-          <span>${this.t("steps.review.engine")}</span> ${this.engineName}
+          <span>${this.t("steps.review.engine")}</span>
+          ${engineModeLabel(this.engineName, this.lng)}
         </div>
         <div>
           <span>${this.t("steps.review.sources")}</span>

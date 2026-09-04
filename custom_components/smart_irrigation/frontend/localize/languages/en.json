@@ -37,6 +37,11 @@
     "saving-messages": {
       "adding": "Adding...",
       "saving": "Saving..."
+    },
+    "modes": {
+      "manual": "Manual",
+      "standard": "Standard",
+      "advanced": "Advanced"
     }
   },
   "defaults": {
@@ -79,13 +84,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Calculate duration based on the FAO56 calculation from the PyETO library"
+      "description": "The full calculation, from your own weather sensors: temperature, humidity, pressure, wind and solar radiation. The most accurate option, and the one that asks for the most."
     },
     "static": {
-      "description": "'Dummy' module with a static configurable delta"
+      "description": "A fixed amount of evaporation per day, which you set yourself. No sensors and no weather service."
     },
     "passthrough": {
-      "description": "Passthrough module that returns the value of an Evapotranspiration sensor as delta"
+      "description": "Takes an evapotranspiration figure that already exists, from a sensor or from a weather service that publishes one. The recommended path when you have one."
     }
   },
   "panels": {

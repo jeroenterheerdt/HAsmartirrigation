@@ -37,6 +37,11 @@
     "saving-messages": {
       "adding": "Ajout…",
       "saving": "Enregistrement…"
+    },
+    "modes": {
+      "manual": "Manuel",
+      "standard": "Standard",
+      "advanced": "Avancé"
     }
   },
   "defaults": {
@@ -79,13 +84,13 @@
   },
   "calcmodules": {
     "pyeto": {
-      "description": "Le calcul de durée est basée sur le calcul FAO56 de la bibliothèque PyETO"
+      "description": "Le calcul complet, à partir de vos propres capteurs : température, humidité, pression, vent et rayonnement. L'option la plus juste, et celle qui demande le plus."
     },
     "static": {
-      "description": "Module 'Dummy' avec un delta statique configurable"
+      "description": "Une quantité d'évaporation fixe par jour, que vous saisissez vous-même. Ni capteurs ni service météo."
     },
     "passthrough": {
-      "description": "Module passerelle qui renvoie la valeur d'un capteur d'Évapotranspiration comme delta"
+      "description": "Reprend une évapotranspiration déjà calculée, depuis un capteur ou un service météo qui en publie une. Le chemin recommandé quand vous en avez une."
     }
   },
   "panels": {

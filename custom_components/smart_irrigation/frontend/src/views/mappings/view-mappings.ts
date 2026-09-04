@@ -64,7 +64,11 @@ import {
   MAPPING_CONF_PRESSURE_RELATIVE,
   MAPPING_CURRENT_PRECIPITATION,
 } from "../../const";
-import { getOptionsForMappingType, handleError } from "../../helpers";
+import {
+  engineModeLabel,
+  getOptionsForMappingType,
+  handleError,
+} from "../../helpers";
 import {
   mdiConsoleNetworkOutline,
   mdiDelete,
@@ -709,7 +713,7 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                       value="${m.id}"
                       ?selected=${m.id === mapping.module}
                     >
-                      ${m.id}: ${m.name}
+                      ${engineModeLabel(m.name, this.hass!.language)}
                     </option>`,
                 )}
               </select>

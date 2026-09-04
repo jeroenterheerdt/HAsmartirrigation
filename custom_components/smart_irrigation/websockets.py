@@ -844,6 +844,11 @@ async def websocket_get_weather_service(hass: HomeAssistant, connection, msg):
                 const.CONF_WEATHER_SERVICE_API_KEY
             ),
             "services": const.CONF_WEATHER_SERVICES,
+            # Whether this service hands us a reference ET0 directly. When it
+            # does, the recommended path is to take that figure rather than
+            # recompute Penman-Monteith from its individual weather fields.
+            "supplies_evapotranspiration": data.get(const.CONF_WEATHER_SERVICE)
+            in const.CONF_WEATHER_SERVICES_WITH_SOLRAD_ET,
         },
     )
 

@@ -45,7 +45,7 @@ import {
   SmartIrrigationMapping,
   WeatherRecord,
 } from "../../types";
-import { output_unit } from "../../helpers";
+import { engineModeLabel, output_unit } from "../../helpers";
 import { globalStyle } from "../../styles/global-style";
 import { localize } from "../../../localize/localize";
 import {
@@ -764,7 +764,11 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     return group?.module !== undefined && group?.module !== null;
   }
 
-  private renderTheOptions(thelist: object, selected?: number): TemplateResult {
+  private renderTheOptions(
+    thelist: object,
+    selected?: number,
+    label?: (value: any) => string,
+  ): TemplateResult {
     if (!this.hass) {
       return html``;
     } else {
@@ -786,7 +790,7 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
               value="${value["id"]}"
               ?selected="${selected === value["id"]}"
             >
-              ${value["id"]}: ${value["name"]}
+              ${label ? label(value) : `${value["id"]}: ${value["name"]}`}
             </option>`),
       );
       return r;
@@ -977,7 +981,9 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                     </div>`
                   : this._selectRow(
                       localize("common.labels.module", lang),
-                      this.renderTheOptions(this.modules, zone.module),
+                      this.renderTheOptions(this.modules, zone.module, (m) =>
+                        engineModeLabel(m["name"], lang),
+                      ),
                       (e: Event) => {
                         const v = (e.target as HTMLSelectElement).value;
                         this.handleEditZone(index, {
