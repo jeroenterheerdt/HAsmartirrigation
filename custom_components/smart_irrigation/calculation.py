@@ -738,8 +738,23 @@ class CalculationMixin:
         # hour_multiplier or on bucket resets, so it is the value to compare when
         # experimenting with configurations (issue #576).
         et_deficiency = delta
+        # The multiplier is the crop factor Kc, so it belongs on the crop's water
+        # use and nowhere else: ETc = ET0 * Kc. It used to be applied at the very
+        # end, to the duration, which scaled the whole water balance and so
+        # scaled the rain along with it, crediting only Kc times the millimetres
+        # that fell. It also left the bucket draining at the full ET0, reaching
+        # any irrigation threshold about 1/Kc times too fast, and no factor
+        # applied afterwards can undo a decision about *when* to water (#779).
+        crop_factor = zone.get(const.ZONE_MULTIPLIER)
+        if crop_factor is None:
+            crop_factor = 1.0
+        delta = delta * crop_factor
         hour_multiplier = weatherdata.get(const.MAPPING_DATA_MULTIPLIER, 1.0)
-        _LOGGER.debug("[calculate-module]: hour_multiplier: %s", hour_multiplier)
+        _LOGGER.debug(
+            "[calculate-module]: crop factor: %s, hour_multiplier: %s",
+            crop_factor,
+            hour_multiplier,
+        )
         delta = delta * hour_multiplier + precip
         data[const.ZONE_DELTA] = delta
         _LOGGER.debug("[calculate-module]: new delta: %s", delta)
@@ -940,21 +955,13 @@ class CalculationMixin:
                 )
                 + f"] * 3600 = {abs(newbucket):.2f} / {precipitation_rate:.1f} * 3600 = {duration:.0f}.</li>"
             )
-            duration = zone.get(const.ZONE_MULTIPLIER) * duration
             explanation += (
                 "<li>"
                 + await localize(
-                    "module.calculation.explanation.multiplier-is-applied",
+                    "module.calculation.explanation.crop-factor-applied-to-et",
                     self.hass.config.language,
                 )
-                + f" {zone.get(const.ZONE_MULTIPLIER)}, "
-            )
-            explanation += (
-                await localize(
-                    "module.calculation.explanation.duration-after-multiplier-is",
-                    self.hass.config.language,
-                )
-                + f" {round(duration)}.</li>"
+                + f" {crop_factor}.</li>"
             )
 
             # get maximum duration if set and >=0 and override duration if it's higher than maximum duration
@@ -1088,7 +1095,8 @@ class CalculationMixin:
             sz = convert_between(const.UNIT_SQ_FT, const.UNIT_M2, sz)
         precipitation_rate = (tput * 60) / sz
         duration = abs(bucket_mm) / precipitation_rate * 3600
-        duration = zone.get(const.ZONE_MULTIPLIER) * duration
+        # No crop factor here: it is applied to the evapotranspiration that fills
+        # the bucket, so the bucket handed in already carries it (#779).
 
         maximum_duration = zone.get(const.ZONE_MAXIMUM_DURATION)
         if (

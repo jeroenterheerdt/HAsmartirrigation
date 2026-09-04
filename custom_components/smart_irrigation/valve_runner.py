@@ -383,9 +383,6 @@ class ValveRunnerMixin:
                 zone_id,
             )
             return
-        multiplier = zone.get(const.ZONE_MULTIPLIER) or 1.0
-        if multiplier <= 0:
-            multiplier = 1.0
         # Clamp the credited time to the safety cap (a long downtime overrun must
         # not credit unbounded water).
         max_duration = zone.get(const.ZONE_MAXIMUM_DURATION)
@@ -399,9 +396,11 @@ class ValveRunnerMixin:
             if ha_metric
             else convert_between(const.UNIT_GPM, const.UNIT_LPM, throughput)
         )
-        # Divide the multiplier back out: the duration inflated the run as part
-        # of the "need", so a full run lands the bucket on target.
-        volume_l = tput_lpm * (credit_seconds / 60.0) / multiplier
+        # The crop factor is applied to the evapotranspiration now, not to the
+        # duration (#779), so the run is no longer inflated by it and there is
+        # nothing to divide back out. Credit the water that actually flowed,
+        # which is also what the flow-sensor path credits.
+        volume_l = tput_lpm * (credit_seconds / 60.0)
         await self._apply_volume_credit(
             zone, volume_l, source=f"direct run {elapsed:.0f}s"
         )

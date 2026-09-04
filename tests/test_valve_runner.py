@@ -129,8 +129,14 @@ def test_valve_services_by_domain():
     assert coord._valve_services("valve.x") == ("valve", "open_valve", "close_valve")
 
 
-async def test_credit_divides_out_multiplier():
-    """5 min at 10 L/min over 50 m2 == 1 mm; multiplier 2 halves the credit."""
+async def test_credit_is_the_water_that_actually_flowed():
+    """5 min at 10 L/min over 50 m2 is 1 mm, whatever the crop factor.
+
+    The credit used to divide the crop factor back out, because the duration had
+    been inflated by it. The crop factor is applied to the evapotranspiration now
+    (#779), so the run is not inflated and the water that flowed is the water
+    credited, which is also what the flow-sensor path does.
+    """
     coord = _Coordinator(_make_hass(), _make_store(_zone(multiplier=1.0)))
     await coord._credit_direct_run(0, 300)
     args = coord.store.async_update_zone.await_args.args
@@ -139,7 +145,7 @@ async def test_credit_divides_out_multiplier():
     coord2 = _Coordinator(_make_hass(), _make_store(_zone(multiplier=2.0)))
     await coord2._credit_direct_run(0, 300)
     args2 = coord2.store.async_update_zone.await_args.args
-    assert args2[1][const.ZONE_BUCKET] == pytest.approx(-2.5)
+    assert args2[1][const.ZONE_BUCKET] == pytest.approx(-2.0)
 
 
 async def test_credit_clamps_seconds_to_max_duration():

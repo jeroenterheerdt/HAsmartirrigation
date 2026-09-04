@@ -59,9 +59,11 @@ This recommendation is based on the soil water holding capacity. See [this discu
 
 - **Lead time**: Time needed to warm up your irrigation system (in seconds), e.g. time to establish a connection, start a pump, build pressure, etc. After the duration is calculated, the lead time is added but only if the duration is > 0.
 - **Maximum duration**: The maximum duration of the irrigation, to avoid flooding, wasting water, etc.
-- **Multiplier**: Multiplies / divides the duration of the irrigation. For lawns, it is recommended to set the multiplier depending on your grass type (See [this discussion for more details](https://github.com/altmenorg/HAsmartirrigation/discussions/448)):
+- **Multiplier**: The crop factor Kc. It scales the evapotranspiration to the water your crop actually uses, `ETc = ET0 * Kc`, so the bucket is depleted at the crop's rate rather than the reference one. It is applied to the evapotranspiration and not to the rain that fell on it, nor to the resulting duration. For lawns, it is recommended to set the multiplier depending on your grass type (See [this discussion for more details](https://github.com/altmenorg/HAsmartirrigation/discussions/448)):
     * Cool-reason grasses (such as fescue, bluegrass) should be set to `0.8`
-    * Warm-season grasses (such as bermuda, zoysia) should be set to `0.7`. 
+    * Warm-season grasses (such as bermuda, zoysia) should be set to `0.7`.
+
+    A dry spell waters the same as it always did: the crop factor ends up multiplying the same total either way. What changes is a period with rain, where a factor below 1 used to credit only that fraction of the millimetres that fell and therefore over-watered, and the moment irrigation becomes necessary, which now arrives at the crop's rate of depletion rather than about `1/Kc` times too early.
 - *Duration*: Irrigation duration in seconds. Either calculated or manually set.
 
 ### Available actions per zone
@@ -72,7 +74,7 @@ Below each zone there are some buttons, to perform the following tasks:
 
 * update weather data. This collects weather data from the sensor group for the zone.
 * calculate irrigation duration. Note that if you calculate irrigation duration using the buttons per zone, the weather data for the sensor group for that zone is deleted. 
-* after a calculation there is also a button to get some information how duration was calculated, which gives insight into how the bucket was updated, and how the lead time and multiplier influenced the calculated duration.
+* after a calculation there is also a button to get some information how duration was calculated, which gives insight into how the bucket was updated, and how the crop factor and lead time influenced the result.
 * view weather data. View the last 10 records of the associated sensor group.
 * view watering calendar. View a yearly watering calendar based on the location and normal weather patterns.
 * delete the zone. 

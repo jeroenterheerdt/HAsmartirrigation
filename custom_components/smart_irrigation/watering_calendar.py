@@ -317,11 +317,10 @@ class WateringCalendarMixin:
                 const.UNIT_SQ_FT, const.UNIT_M2, zone_size_m2
             )
 
-        # Calculate net water need (ET minus precipitation)
-        net_water_need_mm = max(0, et_mm - precipitation_mm)
-
-        # Apply zone multiplier
-        adjusted_water_need_mm = net_water_need_mm * multiplier
+        # The multiplier is the crop factor: it scales the crop's water use, not
+        # the rain that fell on it, so it goes on the ET before the rain is
+        # subtracted rather than on the net need (#779).
+        adjusted_water_need_mm = max(0, et_mm * multiplier - precipitation_mm)
 
         # Convert mm over area to liters (1mm over 1m² = 1 liter)
         return adjusted_water_need_mm * zone_size_m2

@@ -69,7 +69,8 @@
         "maximum-bucket-is": "Maximum bucket size is",
         "drainage-rate-is": "Drainage rate when saturated (bucket at max) is",
         "current-drainage-is": "Current drainage is calculated as",
-        "no-drainage": "Current drainage is 0 because"
+        "no-drainage": "Current drainage is 0 because",
+        "crop-factor-applied-to-et": "The multiplier is the crop factor: it was applied to the evapotranspiration rather than to this duration, which therefore already accounts for it. Its value is"
       }
     }
   },
