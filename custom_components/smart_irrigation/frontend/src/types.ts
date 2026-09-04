@@ -179,12 +179,15 @@ export class SmartIrrigationMapping {
   name: string;
   mappings: object;
   data?: any[];
+  /** An enclosed environment: no rain reaches the zones using this group. */
+  greenhouse?: boolean;
 
   constructor(i: number, n: string, m: object) {
     this.id = i;
     this.name = n;
     this.mappings = m;
     this.data = undefined;
+    this.greenhouse = false;
   }
 }
 

@@ -1,30 +1,33 @@
-"""The zone endpoint has to accept every field a zone is made of.
+"""The write endpoints have to accept every field their model is made of.
 
-The panel reads a zone and posts the whole object back when any single field is
-edited. Voluptuous rejects unknown keys, so a field added to ZoneEntry without
-being added to this schema fails the entire save with a 400, whatever the user
-was actually editing.
+The panel reads an object and posts the whole thing back when any single field
+is edited. Voluptuous rejects unknown keys, so a field added to a model without
+being added to that endpoint's schema fails the entire save with a 400, whatever
+the user was actually editing.
 
 That is how v2026.8.3 shipped with `precipitation_superseded` breaking every
-zone save from the panel (#813, #812). This test compares the two lists so the
-next field cannot do it again.
+zone save from the panel (#813, #812). This compares the two lists so the next
+field cannot do it again, for zones and for sensor groups alike.
 """
 
 import re
 
 import attr
+import pytest
 
 from custom_components.smart_irrigation import const
-from custom_components.smart_irrigation.store import ZoneEntry
+from custom_components.smart_irrigation.store import MappingEntry, ZoneEntry
+
+NEW_CLASS = "\nclass "
 
 
-def _accepted_keys():
-    """The const-backed keys the zone endpoint's write schema allows."""
+def _accepted_keys(view):
+    """The const-backed keys a view's write schema allows."""
     source = open(
         "custom_components/smart_irrigation/websockets.py", encoding="utf-8"
     ).read()
-    start = source.index("class SmartIrrigationZoneView")
-    block = source[start : source.index("\nclass ", start + 10)]
+    start = source.index("class " + view)
+    block = source[start : source.index(NEW_CLASS, start + 10)]
     names = re.findall(r"vol\.Optional\(const\.([A-Z_]+)\)", block)
     return {
         getattr(const, name)
@@ -33,12 +36,21 @@ def _accepted_keys():
     }
 
 
-def test_every_zone_field_is_accepted_by_the_endpoint():
-    fields = set(attr.fields_dict(ZoneEntry).keys())
+@pytest.mark.parametrize(
+    ("model", "view"),
+    [
+        (ZoneEntry, "SmartIrrigationZoneView"),
+        (MappingEntry, "SmartIrrigationMappingView"),
+    ],
+    ids=["zone", "sensor-group"],
+)
+def test_every_field_is_accepted_by_its_endpoint(model, view):
+    """A field the API returns but the endpoint rejects fails every save."""
+    fields = set(attr.fields_dict(model).keys())
 
-    missing = sorted(fields - _accepted_keys())
+    missing = sorted(fields - _accepted_keys(view))
 
     assert not missing, (
-        "these zone fields are returned by the API but rejected on save, "
-        f"which fails every zone edit from the panel: {missing}"
+        "these fields are returned by the API but rejected on save, which "
+        f"fails every edit of this object from the panel: {missing}"
     )

@@ -344,6 +344,12 @@ MAPPING_DATA = "data"
 MAPPING_DATA_LAST_UPDATED = "data_last_updated"
 MAPPING_DATA_LAST_ENTRY = "data_last_entry"
 MAPPING_DATA_LAST_CALCULATION = "data_last_calculation"
+# A sensor group describing an enclosed environment: a greenhouse, a polytunnel,
+# anything under glass or plastic. There is no rain to collect and no sky worth
+# asking a weather service about, so the settings that assume open air stop
+# applying to the zones that use this group.
+MAPPING_GREENHOUSE = "greenhouse"
+CONF_DEFAULT_GREENHOUSE = False
 MAPPING_DATA_MULTIPLIER = "data_multiplier"
 MAPPING_MAPPINGS = "mappings"
 MAPPING_TIMESTAMP = "timestamp"

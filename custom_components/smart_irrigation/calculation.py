@@ -227,6 +227,15 @@ class CalculationMixin:
         rain at all: the rate was collected, converted and shown in the panel,
         but never reached the water balance (#571).
         """
+        mapping = self.store.get_mapping(zone.get(const.ZONE_MAPPING))
+        if (mapping or {}).get(const.MAPPING_GREENHOUSE):
+            # Nothing falls on a greenhouse. Any precipitation reaching this
+            # group is measuring the weather outside it, which waters nothing.
+            _LOGGER.debug(
+                "[calculate-module]: sensor group is a greenhouse, no rain counted"
+            )
+            return 0
+
         precip = weatherdata.get(const.MAPPING_PRECIPITATION)
         if precip is not None:
             _LOGGER.debug("[calculate-module]: precip: %s", precip)
@@ -236,7 +245,6 @@ class CalculationMixin:
         if not rate:
             return 0
 
-        mapping = self.store.get_mapping(zone.get(const.ZONE_MAPPING))
         aggregate = ((mapping or {}).get(const.MAPPING_MAPPINGS) or {}).get(
             const.MAPPING_CURRENT_PRECIPITATION
         )

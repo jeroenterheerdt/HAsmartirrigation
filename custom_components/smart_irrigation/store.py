@@ -42,6 +42,7 @@ from .const import (
     CONF_DEFAULT_DAYS_SINCE_LAST_IRRIGATION,
     CONF_DEFAULT_DIRECT_VALVE_CONTROL_ENABLED,
     CONF_DEFAULT_DRAINAGE_RATE,
+    CONF_DEFAULT_GREENHOUSE,
     CONF_DEFAULT_IRRIGATION_START_TRIGGERS,
     CONF_DEFAULT_IRRIGATION_THRESHOLD,
     CONF_DEFAULT_MAXIMUM_BUCKET,
@@ -86,6 +87,7 @@ from .const import (
     MAPPING_DATA_LAST_UPDATED,
     MAPPING_DEWPOINT,
     MAPPING_EVAPOTRANSPIRATION,
+    MAPPING_GREENHOUSE,
     MAPPING_HUMIDITY,
     MAPPING_ID,
     MAPPING_MAPPINGS,
@@ -314,6 +316,9 @@ class MappingEntry:
     data_last_updated = attr.ib(type=datetime, default=None)
     data_last_entry = attr.ib(type=str, default={})
     data_last_calculation = attr.ib(type=str, default={})
+    # An enclosed environment: no rain reaches these zones and the weather
+    # service has nothing useful to say about what does (#815 follow-up).
+    greenhouse = attr.ib(type=bool, default=CONF_DEFAULT_GREENHOUSE)
 
 
 @attr.s(slots=True, frozen=True)
@@ -722,6 +727,9 @@ class SmartIrrigationStorage:
                         data_last_entry=mapping.get(MAPPING_DATA_LAST_ENTRY, {}),
                         data_last_calculation=mapping.get(
                             MAPPING_DATA_LAST_CALCULATION, {}
+                        ),
+                        greenhouse=mapping.get(
+                            MAPPING_GREENHOUSE, CONF_DEFAULT_GREENHOUSE
                         ),
                     )
 

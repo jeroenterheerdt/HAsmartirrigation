@@ -134,3 +134,57 @@ def test_the_reading_is_converted_when_the_values_are_built():
 
     # 50000 lux / 110 = 454.5 W/m2 -> 39.3 MJ/m2/day
     assert values[const.MAPPING_SOLRAD] == pytest.approx(39.3, abs=0.1)
+
+
+def _greenhouse_coordinator(greenhouse):
+    coordinator = _coordinator()
+    coordinator.store = MagicMock()
+    coordinator.store.get_mapping = MagicMock(
+        return_value={const.MAPPING_ID: 0, const.MAPPING_GREENHOUSE: greenhouse}
+    )
+    return coordinator
+
+
+def test_a_greenhouse_group_counts_no_rain():
+    """Rain measured outside waters nothing under glass."""
+    coordinator = _greenhouse_coordinator(True)
+    weatherdata = {
+        const.MAPPING_PRECIPITATION: 8.0,
+        const.MAPPING_DATA_MULTIPLIER: 1.0,
+    }
+
+    assert (
+        coordinator._precipitation_for_interval(
+            {const.ZONE_ID: 0, const.ZONE_MAPPING: 0}, weatherdata
+        )
+        == 0
+    )
+
+
+def test_an_outdoor_group_still_counts_rain():
+    coordinator = _greenhouse_coordinator(False)
+    weatherdata = {
+        const.MAPPING_PRECIPITATION: 8.0,
+        const.MAPPING_DATA_MULTIPLIER: 1.0,
+    }
+
+    assert coordinator._precipitation_for_interval(
+        {const.ZONE_ID: 0, const.ZONE_MAPPING: 0}, weatherdata
+    ) == pytest.approx(8.0)
+
+
+def test_a_greenhouse_ignores_a_precipitation_rate_too():
+    """Not just the depth: the rate must not sneak in through the fallback."""
+    coordinator = _greenhouse_coordinator(True)
+    weatherdata = {
+        const.MAPPING_CURRENT_PRECIPITATION: 4.0,
+        const.MAPPING_DATA_MULTIPLIER: 1.0,
+        const.MAPPING_CURRENT_PRECIPITATION_SAMPLES: 24,
+    }
+
+    assert (
+        coordinator._precipitation_for_interval(
+            {const.ZONE_ID: 0, const.ZONE_MAPPING: 0}, weatherdata
+        )
+        == 0
+    )

@@ -642,9 +642,41 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                   name: (e.target as HTMLInputElement).value,
                 })}"
             />
-            ${Object.entries(mapping.mappings).map(([value]) =>
-              this.renderMappingSetting(index, value),
-            )}
+            <div class="setting-row">
+              <div class="setting-label">
+                ${localize(
+                  "panels.mappings.cards.mapping.greenhouse",
+                  this.hass.language,
+                )}
+              </div>
+              <ha-switch
+                .checked=${!!mapping.greenhouse}
+                @change=${(e: Event) =>
+                  this.handleEditMapping(index, {
+                    ...mapping,
+                    greenhouse: (e.target as any).checked,
+                  })}
+              ></ha-switch>
+            </div>
+            ${mapping.greenhouse
+              ? html`<div class="weather-note">
+                  ${localize(
+                    "panels.mappings.cards.mapping.greenhouse_description",
+                    this.hass.language,
+                  )}
+                </div>`
+              : ""}
+            ${Object.entries(mapping.mappings)
+              // Nothing falls on a greenhouse, so the two rain fields are not
+              // just unused here, they are misleading: a rain gauge outside
+              // measures water that never reaches these zones.
+              .filter(
+                ([value]) =>
+                  !mapping.greenhouse ||
+                  (value !== MAPPING_PRECIPITATION &&
+                    value !== MAPPING_CURRENT_PRECIPITATION),
+              )
+              .map(([value]) => this.renderMappingSetting(index, value))}
             ${numberofzonesusingthismapping
               ? html`<div class="weather-note">
                   ${localize(

@@ -22,6 +22,9 @@ from custom_components.smart_irrigation.calculation import CalculationMixin
 class _Coordinator(CalculationMixin):
     def __init__(self):
         self.store = MagicMock()
+        # get_mapping returns a dict or None in production; a bare MagicMock
+        # would answer truthily to every .get(), including the greenhouse flag.
+        self.store.get_mapping = MagicMock(return_value={})
 
 
 def _zone(superseded=0.0):

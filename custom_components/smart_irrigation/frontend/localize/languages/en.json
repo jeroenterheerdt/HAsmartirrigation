@@ -289,7 +289,9 @@
             "static": "Static value",
             "illuminance": "Light sensor (lux)"
           },
-          "luminous_efficacy": "Luminous efficacy"
+          "luminous_efficacy": "Luminous efficacy",
+          "greenhouse": "Greenhouse",
+          "greenhouse_description": "An enclosed environment: a greenhouse, a polytunnel, anything under glass or plastic. No rain reaches these zones, so precipitation is left out of their water balance and its fields are hidden. Two things to set yourself, because they cannot be guessed: give Wind speed a static value near 0, since the calculation assumes open air, and use a light sensor for Solar Radiation, since the glazing filters the sky."
         }
       },
       "description": "Add one or more sensor groups that retrieve weather data from Weather service, from sensors or a combination of these. You can map each sensor group to one or more zones",

@@ -22,6 +22,9 @@ class _Coordinator(CalculationMixin):
         self.hass.config.units = METRIC_SYSTEM
         self.hass.config.language = "en"
         self.store = MagicMock()
+        # get_mapping returns a dict or None in production; a bare MagicMock
+        # would answer truthily to every .get(), including the greenhouse flag.
+        self.store.get_mapping = MagicMock(return_value={})
         self.store.get_module = MagicMock(
             return_value={
                 const.MODULE_NAME: "Passthrough",
