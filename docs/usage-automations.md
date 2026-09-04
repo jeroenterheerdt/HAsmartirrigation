@@ -20,19 +20,20 @@ The examples on this page don't use a timer - see [this discussion](https://gith
 
 ## Blueprints we provide
 
-A blueprint is a parameterised mould for an automation: you import it once, pick your entities from filtered dropdowns, and Home Assistant writes the automation for you. Import from the raw URL of the file, or browse [the whole folder](https://github.com/altmenorg/HAsmartirrigation/tree/master/blueprints).
+A blueprint is a parameterised mould for an automation: you import it once, pick your entities from filtered dropdowns, and Home Assistant writes the automation for you. Use the **Import** link in the table to open the import dialog straight away, or browse [the whole folder](https://github.com/altmenorg/HAsmartirrigation/tree/master/blueprints).
 
 Pick the one that matches how your valves are actually driven:
 
-| Blueprint | Use it when |
-| --- | --- |
-| `automation/Standard Irrigation.yaml` | A plain switch, valve or input_boolean per zone. Turns it on for the calculated duration, then resets the bucket. Has an optional pause switch. |
-| `automation/esphome.yaml` | An ESPHome device that takes the duration itself. |
-| `script/simple-scheduler.yaml` | A script rather than an automation, if you prefer to call irrigation from elsewhere. |
-| `automation/Irrigation Unlimited adjust time single zone.yaml` | Irrigation Unlimited runs your schedule and you want Smart Irrigation to set the run time of one zone through `adjust_time`. |
-| `automation/Irrigation Unlimited adjust time sequence.yaml` | The same for a whole IU sequence, scaling every zone in it. |
-| `automation/Irrigation Unlimited reset bucket.yaml` | Pair with either of the two above: resets the bucket when IU reports the run finished. |
-| `weather_responsive_scheduling.yaml` | You want a seasonal multiplier applied automatically and runs skipped on cold or windy days. |
+| Blueprint | Use it when | |
+| --- | --- | --- |
+| [`standard-irrigation.yaml`](https://github.com/altmenorg/HAsmartirrigation/blob/master/blueprints/automation/standard-irrigation.yaml) | A plain switch, valve or input_boolean per zone. Turns it on for the calculated duration, then resets the bucket. Has an optional pause switch. | [Import](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Faltmenorg%2FHAsmartirrigation%2Fblob%2Fmaster%2Fblueprints%2Fautomation%2Fstandard-irrigation.yaml) |
+| [`esphome.yaml`](https://github.com/altmenorg/HAsmartirrigation/blob/master/blueprints/automation/esphome.yaml) | An ESPHome device that takes the duration itself. | [Import](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Faltmenorg%2FHAsmartirrigation%2Fblob%2Fmaster%2Fblueprints%2Fautomation%2Fesphome.yaml) |
+| [`simple-scheduler.yaml`](https://github.com/altmenorg/HAsmartirrigation/blob/master/blueprints/script/simple-scheduler.yaml) | A script rather than an automation, if you prefer to call irrigation from elsewhere. | [Import](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Faltmenorg%2FHAsmartirrigation%2Fblob%2Fmaster%2Fblueprints%2Fscript%2Fsimple-scheduler.yaml) |
+| [`irrigation-unlimited-adjust-time-single-zone.yaml`](https://github.com/altmenorg/HAsmartirrigation/blob/master/blueprints/automation/irrigation-unlimited-adjust-time-single-zone.yaml) | Irrigation Unlimited runs your schedule and you want Smart Irrigation to set the run time of one zone through `adjust_time`. | [Import](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Faltmenorg%2FHAsmartirrigation%2Fblob%2Fmaster%2Fblueprints%2Fautomation%2Firrigation-unlimited-adjust-time-single-zone.yaml) |
+| [`irrigation-unlimited-adjust-time-sequence.yaml`](https://github.com/altmenorg/HAsmartirrigation/blob/master/blueprints/automation/irrigation-unlimited-adjust-time-sequence.yaml) | The same for a whole IU sequence, scaling every zone in it. | [Import](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Faltmenorg%2FHAsmartirrigation%2Fblob%2Fmaster%2Fblueprints%2Fautomation%2Firrigation-unlimited-adjust-time-sequence.yaml) |
+| [`irrigation-unlimited-reset-bucket.yaml`](https://github.com/altmenorg/HAsmartirrigation/blob/master/blueprints/automation/irrigation-unlimited-reset-bucket.yaml) | Pair with either of the two above: resets the bucket when IU reports the run finished. | [Import](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Faltmenorg%2FHAsmartirrigation%2Fblob%2Fmaster%2Fblueprints%2Fautomation%2Firrigation-unlimited-reset-bucket.yaml) |
+| [`weather-responsive-scheduling.yaml`](https://github.com/altmenorg/HAsmartirrigation/blob/master/blueprints/automation/weather-responsive-scheduling.yaml) | You want a seasonal multiplier applied automatically and runs skipped on cold or windy days. | [Import](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Faltmenorg%2FHAsmartirrigation%2Fblob%2Fmaster%2Fblueprints%2Fautomation%2Fweather-responsive-scheduling.yaml) |
+| [`valve-watchdog.yaml`](https://github.com/altmenorg/HAsmartirrigation/blob/master/blueprints/automation/valve-watchdog.yaml) | A backstop: closes a valve left open longer than a limit you set, and tells you. Worth adding whatever else you use. | [Import](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Faltmenorg%2FHAsmartirrigation%2Fblob%2Fmaster%2Fblueprints%2Fautomation%2Fvalve-watchdog.yaml) |
 
 **Irrigation-V5 needs no blueprint at all**: it reads a numeric entity as a multiplier, so pointing its Adjustment Sensor at our zone sensor with a base watering time of 1 second gives it the calculated duration directly. See [executor integration](usage-enhanced-scheduling-integration.md).
 

@@ -152,7 +152,7 @@ automation:
           actual: "{{ timedelta(seconds=states('sensor.smart_irrigation_zone_1') | int(0)) }}"
 ```
 
-The bucket reset can be handled by a separate automation that triggers when the IU zone turns off (see the [Irrigation Unlimited reset bucket blueprint](../blueprints/automation/Irrigation%20Unlimited%20reset%20bucket.yaml)).
+The bucket reset can be handled by a separate automation that triggers when the IU zone turns off (see the [Irrigation Unlimited reset bucket blueprint](usage-automations.md), which you can import in one click from the blueprints table).
 
 ## Irrigation-V5
 

@@ -1,0 +1,100 @@
+blueprint:
+  name: Smart Irrigation valve watchdog
+  description: >-
+    Closes an irrigation valve that has been open longer than it should be, and
+    tells you about it.
+
+
+    Whatever runs your valves, something can leave one open: an automation that
+    stops halfway, a run that never gets its closing step, a manual switch
+    somebody forgot. This watches one valve and shuts it after a limit you set.
+
+
+    It is a backstop, not a guarantee. It runs inside Home Assistant, so it
+    cannot help while Home Assistant is down, which is exactly when a valve
+    driven by it would stay open. Give the valve a hardware maximum runtime as
+    well if it has one; this covers the far more common case of software that
+    stops paying attention.
+  domain: automation
+  input:
+    valve:
+      name: Valve
+      description: The valve, switch or solenoid to watch.
+      selector:
+        entity:
+          filter:
+            - domain: switch
+            - domain: valve
+            - domain: input_boolean
+    maximum_minutes:
+      name: Maximum run time
+      description: >-
+        Close the valve once it has been open for this long without stopping.
+        Set it comfortably above the longest run you ever expect, so a normal
+        long watering is never cut short.
+      default: 60
+      selector:
+        number:
+          min: 1
+          max: 720
+          unit_of_measurement: minutes
+          mode: box
+    notify_service:
+      name: Notification service (optional)
+      description: >-
+        A notify service to call when the valve is closed, for example
+        notify.mobile_app_your_phone. Leave empty to only write to the logbook.
+      default: ""
+      selector:
+        text:
+
+variables:
+  watched_valve: !input valve
+  notify_target: !input notify_service
+
+trigger:
+  - platform: state
+    entity_id: !input valve
+    to: "on"
+    for:
+      minutes: !input maximum_minutes
+  - platform: state
+    entity_id: !input valve
+    to: "open"
+    for:
+      minutes: !input maximum_minutes
+
+action:
+  # A valve entity closes with valve.close_valve; a switch or input_boolean with
+  # turn_off. Pick by the domain of the entity that was chosen.
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ watched_valve.startswith('valve.') }}"
+        sequence:
+          - service: valve.close_valve
+            target:
+              entity_id: !input valve
+    default:
+      - service: homeassistant.turn_off
+        target:
+          entity_id: !input valve
+
+  - service: logbook.log
+    data:
+      name: Smart Irrigation valve watchdog
+      entity_id: !input valve
+      message: >-
+        closed after being open longer than the configured maximum run time
+
+  - condition: template
+    value_template: "{{ notify_target not in (none, '') }}"
+  - service: "{{ notify_target }}"
+    data:
+      title: Irrigation valve closed
+      message: >-
+        {{ state_attr(watched_valve, 'friendly_name') or watched_valve }} was
+        open longer than its maximum run time and has been closed.
+
+mode: parallel
+max: 10
