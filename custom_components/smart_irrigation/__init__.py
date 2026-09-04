@@ -49,6 +49,7 @@ from .helpers import (
     convert_between,
     convert_mapping_to_metric,
     loadModules,
+    mapping_sources_changed,
     relative_to_absolute_pressure,
 )
 from .irrigation_unlimited import IrrigationUnlimitedIntegration
@@ -1721,8 +1722,26 @@ class SmartIrrigationCoordinator(
             if not res:
                 return
             await self.store.async_delete_mapping(mapping_id)
-        elif mapping_id is not None and self.store.get_mapping(mapping_id):
+        elif mapping_id is not None and (stored := self.store.get_mapping(mapping_id)):
             # modify a mapping
+            if mapping_sources_changed(
+                stored.get(const.MAPPING_MAPPINGS), data.get(const.MAPPING_MAPPINGS)
+            ):
+                # Readings buffered from the old source are not comparable with
+                # the new one's. Left in place, a difference-based aggregate
+                # reads the switch itself as one enormous step: moving a rain
+                # gauge from a rate to a cumulative total is the usual way in.
+                _LOGGER.info(
+                    "Sensor group %s changed data source, clearing its buffered "
+                    "readings so the switch is not read as a measurement",
+                    mapping_id,
+                )
+                data = {
+                    **data,
+                    const.MAPPING_DATA: [],
+                    const.MAPPING_DATA_LAST_ENTRY: {},
+                    const.MAPPING_DATA_LAST_CALCULATION: {},
+                }
             await self.store.async_update_mapping(mapping_id, data)
             async_dispatcher_send(
                 self.hass, const.DOMAIN + "_config_updated", mapping_id

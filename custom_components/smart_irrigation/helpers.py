@@ -26,6 +26,8 @@ from .const import (
     KNOTS_TO_MS_FACTOR,
     LITER_TO_GALLON_FACTOR,
     M2_TO_SQ_FT_FACTOR,
+    MAPPING_CONF_SENSOR,
+    MAPPING_CONF_SOURCE,
     MAPPING_CURRENT_PRECIPITATION,
     MAPPING_DEWPOINT,
     MAPPING_EVAPOTRANSPIRATION,
@@ -793,6 +795,44 @@ def convert_list_to_dict(lst):
             else:
                 res_dict[lst[i]] = lst[i + 1]
     return res_dict
+
+
+def _quantity_source(value):
+    """The (source type, sensor entity) a mapped quantity reads from.
+
+    A stored quantity is normally a dict, but legacy entries can be a bare
+    string. Those carry no source, and returning a distinct marker for them
+    means a legacy entry compared against a real one counts as a change, which
+    errs toward invalidating the buffer rather than trusting it.
+    """
+    if not isinstance(value, dict):
+        return (None, None)
+    return (value.get(MAPPING_CONF_SOURCE), value.get(MAPPING_CONF_SENSOR))
+
+
+def mapping_sources_changed(stored, incoming) -> bool:
+    """True when a sensor group's readings no longer come from where they did.
+
+    A group owns one buffer of readings shared by its zones. Those readings are
+    only comparable with each other while they come from the same place: an
+    aggregate that works on a difference (delta, Riemann sum) reads a change of
+    source as one enormous step. Swapping a rain gauge from a rate to a
+    cumulative total is the usual way in, and it produces a rainfall figure
+    large enough to pin every zone's bucket.
+
+    The unit is deliberately not part of this. Readings are converted to metric
+    as they are ingested, using the unit configured at that moment, so a later
+    unit change does not reinterpret what is already stored.
+    """
+    if not isinstance(incoming, dict):
+        return False
+    stored = stored if isinstance(stored, dict) else {}
+    for quantity in set(stored) | set(incoming):
+        if _quantity_source(stored.get(quantity)) != _quantity_source(
+            incoming.get(quantity)
+        ):
+            return True
+    return False
 
 
 def parse_datetime(val) -> datetime | None:
