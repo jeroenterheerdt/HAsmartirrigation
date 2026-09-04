@@ -52,10 +52,10 @@ You can change the following settings on a zone:
 - **Module**: Choose the [calculation module](configuration-modules.md) that should be used to calculate irrigation for the zone.
 - **Sensor group**: Choose the [sensor group](configuration-sensor-groups.md) that provides the weather data for this zone.
 - **Bucket**: Either calculated or manually set. If `bucket >= 0` then no irrigation is necesarry, if `bucket < 0` irrigation is necessary. See [automations](automations.md) for examples on how to use this value to decide to irrigate.
-- **Maximum bucket**: You can manually set a maximum bucket size which represents the soil's water holding capacity. The maximum recommended bucket size is based on the type of soil:
+- **Maximum bucket**: A cap on the **surplus** side of the bucket, so it only ever applies when `bucket > 0`, meaning the soil is already at field capacity. It is how much water the ground can hold on to above field capacity before the rest runs off or drains past the roots, and it doubles as the saturation reference for the drainage curve. It is not the total water your soil can hold for the plant, and it has no effect on the deficit side, so it never changes when a zone starts watering. The recommended value is based on the type of soil:
     - clay soil: 30 mm (1.18")
     - sandy soil: 12 mm (0.47"). 
-This recommendation is based on the soil water holding capacity. See [this discussion for more details](https://github.com/altmenorg/HAsmartirrigation/discussions/448).
+These come from how much water each soil type retains above field capacity before the excess is lost. See [this discussion for more details](https://github.com/altmenorg/HAsmartirrigation/discussions/448).
 
 - **Lead time**: Time needed to warm up your irrigation system (in seconds), e.g. time to establish a connection, start a pump, build pressure, etc. After the duration is calculated, the lead time is added but only if the duration is > 0.
 - **Maximum duration**: The maximum duration of the irrigation, to avoid flooding, wasting water, etc.
@@ -64,7 +64,13 @@ This recommendation is based on the soil water holding capacity. See [this discu
     * Warm-season grasses (such as bermuda, zoysia) should be set to `0.7`.
 
     A dry spell waters the same as it always did: the crop factor ends up multiplying the same total either way. What changes is a period with rain, where a factor below 1 used to credit only that fraction of the millimetres that fell and therefore over-watered, and the moment irrigation becomes necessary, which now arrives at the crop's rate of depletion rather than about `1/Kc` times too early.
-- **Irrigation threshold**: how much of a soil moisture deficit to let build up before watering at all, in mm or inch. `0`, the default, waters as soon as anything is missing, which suits a lawn. A tree or a hedge wants the opposite: set a threshold and the zone stays dry until that much water is owed, then delivers all of it in one deep run. It changes *when* a zone waters, not *how much*: once the threshold is reached the run still covers the whole deficit. It follows that a zone never waters less than its threshold, so it also rules out very short runs. In soil terms this is the management allowed depletion, and a sensible value is a fraction of the **Maximum bucket** for that zone's root depth.
+- **Irrigation threshold**: how much of a soil moisture deficit to let build up before watering at all, in mm or inch. `0`, the default, waters as soon as anything is missing, which suits a lawn. A tree or a hedge wants the opposite: set a threshold and the zone stays dry until that much water is owed, then delivers all of it in one deep run. It changes *when* a zone waters, not *how much*: once the threshold is reached the run still covers the whole deficit. It follows that a zone never waters less than its threshold, so it also rules out very short runs. In soil terms this is the management allowed depletion (MAD).
+
+To pick a value, work from the water your soil actually holds for the plant, the total available water: `TAW = available water capacity of the soil x root depth`. As a rough guide the available water capacity runs about 60 to 90 mm per metre in sand, 130 to 170 in loam and 150 to 200 in clay, and the root depth is what matters for that planting, perhaps 0.15 to 0.3 m for turf and a metre or more for an established tree. The threshold is then a fraction of that, `p x TAW`, with `p` around 0.5 as a starting point (FAO-56 gives per-crop values, mostly between 0.4 and 0.6). A lawn on loam at 0.2 m therefore lands somewhere near 15 mm.
+
+Do **not** derive it from the **Maximum bucket**: that setting caps the surplus above field capacity, which is the other side of zero and a different quantity entirely.
+
+The default of `0` is there to keep existing installs behaving exactly as before, not because watering the instant anything is missing is good practice. Deep and infrequent watering suits a lawn too, it simply wants a smaller threshold than a tree because its roots are shallower.
 - *Duration*: Irrigation duration in seconds. Either calculated or manually set.
 
 ### Available actions per zone
