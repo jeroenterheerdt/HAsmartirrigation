@@ -16,7 +16,9 @@
       "after": "après"
     },
     "units": {
-      "seconds": "secondes"
+      "seconds": "secondes",
+      "minutes": "min",
+      "hours": "h"
     },
     "attributes": {
       "size": "taille",
@@ -199,36 +201,57 @@
       }
     },
     "info": {
-      "title": "Infos",
-      "description": "Consultez les informations sur la prochaine irrigation et l'état du système.",
-      "configuration-not-available": "Configuration non disponible.",
+      "title": "Info",
+      "description": "Ce qui va se passer au prochain départ, et pourquoi.",
+      "configuration-not-available": "Configuration indisponible.",
       "cards": {
-        "zone-bucket-values": {
-          "title": "Valeurs de bucket et durée par zone",
+        "next-run": {
+          "title": "Prochain arrosage",
           "labels": {
-            "bucket": "Bucket",
-            "duration": "Durée"
+            "start": "Début",
+            "duration": "Durée totale",
+            "zones": "Zones arrosées",
+            "trigger": "Déclencheur"
           },
-          "no-zones": "Aucune zone configurée"
+          "no-start": "Aucune heure de départ n'a encore pu être établie.",
+          "nothing-to-water": "Rien à arroser : aucune zone n'a atteint son seuil d'arrosage.",
+          "trigger-default": "Par défaut, se termine au lever du soleil",
+          "accounts-for-duration": "calculé à rebours pour finir à ce moment",
+          "starts-at-trigger": "démarre à ce moment",
+          "sequencing-sequential": "une zone à la fois, le total est donc la somme des zones",
+          "sequencing-parallel": "toutes les zones à la fois, le total est donc la zone la plus longue"
         },
-        "next-irrigation": {
-          "title": "Prochaine irrigation",
-          "labels": {
-            "next-start": "Prochain démarrage",
-            "duration": "Durée",
-            "zones": "Zones"
-          },
-          "no-data": "Aucune donnée disponible"
+        "decision": {
+          "title": "L'arrosage sera-t-il annulé ?",
+          "will-run": "Rien ne s'oppose à l'arrosage.",
+          "will-skip": "L'arrosage serait annulé.",
+          "preview-note": "Évalué à l'instant. Une prévision peut encore changer d'ici le départ.",
+          "unavailable": "Les conditions d'annulation n'ont pas pu être évaluées.",
+          "last-title": "Dernière décision réelle",
+          "last-none": "Aucun arrosage n'a encore été décidé.",
+          "last-skipped": "Annulé",
+          "last-ran": "Maintenu",
+          "check-precipitation": "Pluie prévue",
+          "check-days_between": "Jours entre deux arrosages",
+          "state-off": "Désactivé",
+          "state-unavailable": "Non vérifiable",
+          "state-passing": "Ne bloque pas",
+          "state-blocking": "Bloque",
+          "detail-forecast": "Prévision",
+          "detail-threshold": "Seuil",
+          "detail-days-since": "Jours depuis le dernier arrosage",
+          "detail-days-required": "Jours requis"
         },
-        "irrigation-reason": {
-          "title": "Raison de l'irrigation",
+        "estimate": {
+          "title": "Où en est chaque zone",
+          "note": "Estimé en refaisant le calcul sur les relevés collectés depuis la dernière fois. Rien n'est enregistré : une zone conserve la valeur de son dernier calcul jusqu'au suivant.",
+          "none": "Aucune zone ne peut encore être estimée.",
           "labels": {
-            "reason": "Raison",
-            "sunrise": "Lever du soleil",
-            "total-duration": "Durée totale",
-            "explanation": "Explication"
+            "now": "Maintenant",
+            "at-last-calculation": "Au dernier calcul",
+            "would-water": "Arroserait"
           },
-          "no-data": "Aucune donnée disponible"
+          "nothing": "rien"
         }
       }
     },

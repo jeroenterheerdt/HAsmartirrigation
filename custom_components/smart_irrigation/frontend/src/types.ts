@@ -191,14 +191,59 @@ export class SmartIrrigationMapping {
   }
 }
 
+/** One skip condition, as the backend evaluated it. */
+export interface SkipCheck {
+  id: string;
+  /** The user has turned this condition on. */
+  enabled: boolean;
+  /** We could actually evaluate it. False means "we could not find out". */
+  available: boolean;
+  /** It is vetoing the run. */
+  skip: boolean;
+  forecast_mm?: number | null;
+  threshold_mm?: number | null;
+  days_since?: number | null;
+  days_required?: number | null;
+}
+
+export interface SkipEvaluation {
+  should_skip: boolean;
+  /** The id of the check that vetoed, when one did. */
+  reason?: string | null;
+  checks: SkipCheck[];
+  /** Only on a recorded decision, not on the live preview. */
+  evaluated_at?: string | null;
+}
+
+/** A zone's position right now, projected from the last calculation. */
+export interface ZoneEstimate {
+  bucket: number;
+  delta?: number | null;
+  duration?: number | null;
+  /** The calculation this is measured from. */
+  since?: string | null;
+  as_of?: string | null;
+}
+
 export interface SmartIrrigationInfo {
   next_irrigation_start?: Date;
   next_irrigation_duration?: number;
   next_irrigation_zones?: string[];
-  irrigation_reason?: string;
   sunrise_time?: Date;
-  total_irrigation_duration?: number;
-  irrigation_explanation?: string;
+  /** Why the start is at that moment. */
+  trigger_name?: string | null;
+  trigger_type?: string | null;
+  trigger_base?: string | null;
+  trigger_accounts_for_duration?: boolean | null;
+  /** How the total was counted: sum of the zones, or the longest of them. */
+  zone_sequencing?: string | null;
+  /** Live estimates keyed by zone id, as a string. Display only. */
+  zone_estimates?: Record<string, ZoneEstimate>;
+  /** What the checks say now. A forecast can still change before the start. */
+  skip_preview?: SkipEvaluation | null;
+  /** What they said at the last real decision. */
+  last_skip_evaluation?: SkipEvaluation | null;
+  error?: string;
 }
 
 export interface WeatherRecord {

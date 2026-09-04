@@ -16,7 +16,9 @@
       "after": "after"
     },
     "units": {
-      "seconds": "seconds"
+      "seconds": "seconds",
+      "minutes": "min",
+      "hours": "h"
     },
     "attributes": {
       "size": "size",
@@ -201,35 +203,56 @@
     },
     "info": {
       "title": "Info",
-      "description": "View information about next irrigation and system status.",
+      "description": "What will happen at the next start, and why.",
       "configuration-not-available": "Configuration not available.",
       "cards": {
-        "zone-bucket-values": {
-          "title": "Zone bucket values & duration",
+        "next-run": {
+          "title": "Next run",
           "labels": {
-            "bucket": "Bucket",
-            "duration": "Duration"
+            "start": "Starts",
+            "duration": "Total duration",
+            "zones": "Zones watering",
+            "trigger": "Trigger"
           },
-          "no-zones": "No zones configured"
+          "no-start": "No start time could be worked out yet.",
+          "nothing-to-water": "Nothing to water: no zone has reached its irrigation threshold.",
+          "trigger-default": "Default, finishing at sunrise",
+          "accounts-for-duration": "counted back so the run finishes then",
+          "starts-at-trigger": "starts at that moment",
+          "sequencing-sequential": "one zone at a time, so the total is every zone added up",
+          "sequencing-parallel": "all zones at once, so the total is the longest zone"
         },
-        "next-irrigation": {
-          "title": "Next irrigation",
-          "labels": {
-            "next-start": "Next start",
-            "duration": "Duration",
-            "zones": "Zones"
-          },
-          "no-data": "No data available"
+        "decision": {
+          "title": "Will it be skipped?",
+          "will-run": "Nothing is holding the run back.",
+          "will-skip": "The run would be skipped.",
+          "preview-note": "Evaluated just now. A forecast can still change before the start.",
+          "unavailable": "The skip conditions could not be evaluated.",
+          "last-title": "Last real decision",
+          "last-none": "No run has been decided yet.",
+          "last-skipped": "Skipped",
+          "last-ran": "Went ahead",
+          "check-precipitation": "Rain forecast",
+          "check-days_between": "Days between irrigation",
+          "state-off": "Off",
+          "state-unavailable": "Could not be checked",
+          "state-passing": "Not blocking",
+          "state-blocking": "Blocking",
+          "detail-forecast": "Forecast",
+          "detail-threshold": "Threshold",
+          "detail-days-since": "Days since last run",
+          "detail-days-required": "Days required"
         },
-        "irrigation-reason": {
-          "title": "Irrigation reason",
+        "estimate": {
+          "title": "Where each zone stands now",
+          "note": "Estimated by running the calculation on the readings collected since it last ran. Nothing is committed: a zone keeps the value from its last calculation until the next one.",
+          "none": "No zone can be estimated yet.",
           "labels": {
-            "reason": "Reason",
-            "sunrise": "Sunrise",
-            "total-duration": "Total duration",
-            "explanation": "Explanation"
+            "now": "Now",
+            "at-last-calculation": "At last calculation",
+            "would-water": "Would water"
           },
-          "no-data": "No data available"
+          "nothing": "nothing"
         }
       }
     },
