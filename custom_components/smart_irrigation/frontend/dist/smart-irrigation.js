@@ -3436,7 +3436,7 @@ t.version="2.30.1",i(Yt),t.fn=or,t.min=Jt,t.max=Qt,t.now=Xt,t.utc=m,t.unix=lr,t.
             .narrow=${this.narrow}
           ></ha-menu-button>
           <div class="main-title">${ko("title",this.hass.language)}</div>
-          <div class="version">${"v2026.8.3"}</div>
+          <div class="version">${"v2026.8.4"}</div>
         </div>
 
         ${a&&t?L`
