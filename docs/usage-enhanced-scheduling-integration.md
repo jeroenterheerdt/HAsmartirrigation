@@ -1,6 +1,6 @@
-# Enhanced Scheduling and Irrigation Unlimited Integration
+# Enhanced Scheduling and Executor Integration
 
-This document describes the enhanced scheduling capabilities and Irrigation Unlimited integration features added to Smart Irrigation.
+This document describes the enhanced scheduling capabilities and how Smart Irrigation hands its calculated run times to the schedulers and controllers that drive the valves: Irrigation Unlimited and Irrigation-V5.
 
 ## Overview
 
@@ -154,23 +154,29 @@ automation:
 
 The bucket reset can be handled by a separate automation that triggers when the IU zone turns off (see the [Irrigation Unlimited reset bucket blueprint](../blueprints/automation/Irrigation%20Unlimited%20reset%20bucket.yaml)).
 
+## Irrigation-V5
+
+[Irrigation-V5](https://github.com/petergridge/Irrigation-V5) is another scheduler and controller. Like Irrigation Unlimited it does not calculate anything, so Smart Irrigation supplies the run time and V5 runs the valves.
+
+**No automation is needed for this one.** V5 reads a numeric entity as a multiplier on a zone's watering time, and its author documents the trick that turns that into "run for exactly this many seconds":
+
+1. In the zone's advanced options, set the **watering unit to seconds**.
+2. Set the zone's **watering time to 1**.
+3. Set the zone's **Adjustment Sensor** to the Smart Irrigation sensor for that zone, `sensor.smart_irrigation_[zone_name]`.
+
+V5 then runs for `1 x the value of our sensor` seconds, which is the calculated duration. When Smart Irrigation says no irrigation is needed the sensor reads 0, the multiplier is 0, and V5 skips the zone: the decision of whether to water and of how long both come from the calculation.
+
+> Keep the unit of our duration sensor as seconds. It has a `duration` device class, so Home Assistant lets you change the displayed unit per entity; switching it to minutes would make V5 read minutes as if they were seconds and water for a sixtieth of the time.
+
+### Crediting the bucket with Irrigation-V5
+
+V5 drives your own valve or solenoid entity, which means Smart Irrigation can simply watch that same entity: enable **observed watering** and set the zone's linked entity to the valve V5 operates (see [closed loop](configuration-closed-loop.md)). The bucket is then credited from the run that actually happened, and no reset automation is needed.
+
+If you prefer to stay open loop, call `smart_irrigation.reset_bucket` from your own automation when the valve turns off, and do **not** enable observed watering as well, or the bucket is credited twice.
+
 ## Automation Blueprints
 
-### Smart Irrigation with Irrigation Unlimited Integration
-
-A comprehensive blueprint that automatically syncs Smart Irrigation zones with Irrigation Unlimited entities, handling:
-- Duration-based irrigation control
-- Automatic bucket reset after irrigation
-- Minimum/maximum duration limits
-- Event-driven triggers
-
-### Weather-Responsive Scheduling  
-
-An advanced blueprint that implements weather-responsive irrigation with:
-- Seasonal multiplier adjustments
-- Temperature and wind speed thresholds
-- Rain sensor integration
-- Automatic seasonal adjustment creation
+See [the blueprints page](usage-automations.md) for the full list and which one to pick. For Irrigation Unlimited, use the `adjust time` blueprint that matches your setup (single zone or sequence) together with the `reset bucket` one.
 
 ## API Reference
 

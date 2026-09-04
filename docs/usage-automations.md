@@ -34,6 +34,8 @@ Pick the one that matches how your valves are actually driven:
 | `automation/Irrigation Unlimited reset bucket.yaml` | Pair with either of the two above: resets the bucket when IU reports the run finished. |
 | `weather_responsive_scheduling.yaml` | You want a seasonal multiplier applied automatically and runs skipped on cold or windy days. |
 
+**Irrigation-V5 needs no blueprint at all**: it reads a numeric entity as a multiplier, so pointing its Adjustment Sensor at our zone sensor with a base watering time of 1 second gives it the calculated duration directly. See [executor integration](usage-enhanced-scheduling-integration.md).
+
 With Irrigation Unlimited, note that it exposes **binary sensors**, not switches: Smart Irrigation tells it how long to run through `adjust_time` and IU does the running. Do not drive the valve yourself in parallel, or the two will fight.
 
 If you use **observed watering** or **direct valve control** (see [closed loop](configuration-closed-loop.md)), do not use a blueprint that calls `reset_bucket`: the integration credits the bucket itself and the two would count twice.
