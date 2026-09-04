@@ -6,7 +6,7 @@ import logging
 import voluptuous as vol
 from dateutil import parser as dateutil_parser
 from homeassistant.components import websocket_api
-from homeassistant.components.http import HomeAssistantView
+from homeassistant.components.http import HomeAssistantView, require_admin
 from homeassistant.components.http.data_validator import RequestDataValidator
 from homeassistant.components.websocket_api import (
     async_register_command,
@@ -759,6 +759,20 @@ class SmartIrrigationWateringCalendarView(HomeAssistantView):
             return self.json({"error": str(e)}, status_code=500)
 
 
+# Only an administrator may see or change how this install talks to its weather
+# service, or dump and replace the whole configuration. The panel is already
+# admin-only, but these commands are registered on the websocket API and can be
+# called by any authenticated client without going through it, and the weather
+# service payload carries the API key in clear.
+#
+# The gate is deliberately limited to that surface. Reading zones, modules,
+# sensor groups and the calendar stays open to any authenticated user: a
+# household member should be able to see whether the garden is being watered,
+# and a Lovelace card for exactly that is on the roadmap. Widening this later
+# would break it silently, so widen it on purpose or not at all.
+
+
+@websocket_api.require_admin
 @async_response
 async def websocket_get_weather_service(hass: HomeAssistant, connection, msg):
     """Publish the currently configured weather service so the panel can show/edit it."""
@@ -778,6 +792,7 @@ async def websocket_get_weather_service(hass: HomeAssistant, connection, msg):
     )
 
 
+@websocket_api.require_admin
 @async_response
 async def websocket_set_weather_service(hass: HomeAssistant, connection, msg):
     """Change the weather service after install.
@@ -887,6 +902,7 @@ class SmartIrrigationExportView(HomeAssistantView):
     url = "/api/" + const.DOMAIN + "/export"
     name = "api:" + const.DOMAIN + ":export"
 
+    @require_admin
     async def get(self, request):
         """Return the full configuration (config + zones + modules + mappings)."""
         from .store import STORAGE_VERSION
@@ -903,6 +919,7 @@ class SmartIrrigationRestoreView(HomeAssistantView):
     url = "/api/" + const.DOMAIN + "/restore"
     name = "api:" + const.DOMAIN + ":restore"
 
+    @require_admin
     @RequestDataValidator(
         vol.Schema(
             {
