@@ -214,6 +214,31 @@ class SmartIrrigationMappingView(HomeAssistantView):
         return self.json({"success": True})
 
 
+# What a zone records about itself, as opposed to what the user configures. The
+# panel saves a zone by POSTing the whole object it is holding, so a settings
+# page left open across an irrigation run carries a stale copy of these back and
+# reverts what the run wrote. None of them has an input in the panel: it only
+# passes them through. Dropping them here keeps the store their sole writer.
+SERVER_OWNED_ZONE_FIELDS = (
+    const.ZONE_WATER_USED,
+    const.ZONE_LAST_IRRIGATION,
+    const.ZONE_MEASURED_THROUGHPUT,
+    const.ZONE_MEASURED_THROUGHPUT_SAMPLES,
+    const.ZONE_PRECIPITATION_SUPERSEDED,
+)
+
+
+def _without_server_owned_fields(data):
+    """Return the posted zone data with the fields the server owns removed."""
+    dropped = [field for field in SERVER_OWNED_ZONE_FIELDS if field in data]
+    if not dropped:
+        return data
+    _LOGGER.debug(
+        "[websocket]: ignoring server-owned fields in a zone save: %s", dropped
+    )
+    return {key: value for key, value in data.items() if key not in dropped}
+
+
 class SmartIrrigationZoneView(HomeAssistantView):
     """View to handle Smart Irrigation zone configuration via HTTP API."""
 
@@ -277,6 +302,7 @@ class SmartIrrigationZoneView(HomeAssistantView):
         hass = request.app["hass"]
         coordinator = hass.data[const.DOMAIN]["coordinator"]
         zone = int(data[const.ZONE_ID]) if const.ZONE_ID in data else None
+        data = _without_server_owned_fields(data)
         await coordinator.async_update_zone_config(zone, data)
         async_dispatcher_send(hass, const.DOMAIN + "_update_frontend")
         return self.json({"success": True})
