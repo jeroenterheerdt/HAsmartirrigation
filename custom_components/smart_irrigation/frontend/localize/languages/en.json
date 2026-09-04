@@ -502,6 +502,25 @@
       "no_items": "There are no zones defined yet.",
       "title": "Zones",
       "module-comes-from-the-group": "The calculation engine comes from this zone's sensor group. Change it there, and every zone using that group follows."
+    },
+    "history": {
+      "title": "History",
+      "description": "Every irrigation run Smart Irrigation has credited to a zone: when it started, how long it watered and how much water it used. Runs are recorded by direct valve control and by observed watering, and are kept for 90 days.",
+      "refresh": "Refresh",
+      "no-data": "No irrigation runs have been recorded yet.",
+      "table": {
+        "title": "Irrigation runs",
+        "start": "Start",
+        "zone": "Zone",
+        "duration": "Duration",
+        "water": "Water used",
+        "truncated": "Showing the {count} most recent runs out of {total}."
+      },
+      "charts": {
+        "total-title": "Total water used per day (last 30 days)",
+        "per-zone-title": "Water used per day, per zone (last 30 days)",
+        "no-data": "No water was used in this period."
+      }
     }
   },
   "title": "Smart Irrigation",
@@ -608,5 +627,11 @@
       "parallel": "Parallel (all zones at once)"
     },
     "sequencing_description": "How your zones are watered. This sets what a start trigger works back from when it has to finish at sunrise: one after another takes the sum of every zone's run time, all at once takes the longest of them. It applies whether Smart Irrigation opens the valves itself or an automation of your own does."
+  },
+  "calculation_log": {
+    "title": "Calculation log",
+    "description": "Write the complete input of every calculation to a file, so two days that look alike but water very differently can be compared afterwards. Each calculation appends one line: the sensor group records and how they were aggregated, the module intermediates (solar radiation, net radiation, ET0), and the resulting bucket, duration and volume. Off by default; the file is capped in size and rotated, so it can be left on for a season.",
+    "enabled_label": "Log calculation inputs to a file",
+    "file_hint": "Written to config/smart_irrigation/calc_log.jsonl, one JSON record per line. The most recent records are also included in the diagnostics download (coordinates rounded, entity ids removed), so you can attach them to an issue in one step."
   }
 }

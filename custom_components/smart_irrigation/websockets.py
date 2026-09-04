@@ -912,20 +912,6 @@ async def websocket_get_weather_service_history(hass: HomeAssistant, connection,
     )
 
 
-# Only an administrator may see or change how this install talks to its weather
-# service, or dump and replace the whole configuration. The panel is already
-# admin-only, but these commands are registered on the websocket API and can be
-# called by any authenticated client without going through it, and the weather
-# service payload carries the API key in clear.
-#
-# The gate is deliberately limited to that surface. Reading zones, modules,
-# sensor groups and the calendar stays open to any authenticated user: a
-# household member should be able to see whether the garden is being watered,
-# and a Lovelace card for exactly that is on the roadmap. Widening this later
-# would break it silently, so widen it on purpose or not at all.
-
-
-@websocket_api.require_admin
 @async_response
 async def websocket_get_irrigation_history(hass: HomeAssistant, connection, msg):
     """Publish the recorded irrigation runs, newest first.
@@ -951,6 +937,20 @@ async def websocket_get_irrigation_history(hass: HomeAssistant, connection, msg)
     connection.send_result(msg["id"], {"records": runs})
 
 
+# Only an administrator may see or change how this install talks to its weather
+# service, or dump and replace the whole configuration. The panel is already
+# admin-only, but these commands are registered on the websocket API and can be
+# called by any authenticated client without going through it, and the weather
+# service payload carries the API key in clear.
+#
+# The gate is deliberately limited to that surface. Reading zones, modules,
+# sensor groups and the calendar stays open to any authenticated user: a
+# household member should be able to see whether the garden is being watered,
+# and a Lovelace card for exactly that is on the roadmap. Widening this later
+# would break it silently, so widen it on purpose or not at all.
+
+
+@websocket_api.require_admin
 @async_response
 async def websocket_get_weather_service(hass: HomeAssistant, connection, msg):
     """Publish the currently configured weather service so the panel can show/edit it."""

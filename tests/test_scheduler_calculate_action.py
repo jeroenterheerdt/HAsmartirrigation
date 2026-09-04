@@ -61,19 +61,6 @@ async def test_calculate_all_passes_delete_weather_data():
     coordinator._async_calculate_all.assert_awaited_once_with(delete_weather_data=True)
 
 
-async def test_calculate_zone_gathers_weather_data():
-    """A per-zone calculation aggregates the mapping data before calculating."""
-    mapping = {const.MAPPING_DATA: [{"temperature": 20}]}
-    manager, coordinator = _make_manager(zones={1: _zone(1)}, mappings={1: mapping})
-
-    await manager._perform_schedule_action("calculate", [1], "Nightly")
-
-    coordinator.apply_aggregates_to_mapping_data.assert_awaited_once_with(mapping)
-    coordinator.async_calculate_zone.assert_awaited_once_with(
-        1, {"temperature": 20}, None
-    )
-
-
 async def test_calculate_zone_without_sensor_data_is_skipped():
     """No sensor data: the zone is skipped instead of calculated with None."""
     manager, coordinator = _make_manager(
@@ -96,21 +83,6 @@ async def test_unknown_zone_is_skipped():
     coordinator.async_calculate_zone.assert_not_awaited()
 
 
-async def test_calculate_zone_fetches_forecast_for_pyeto():
-    """PyETO with forecasting enabled gets forecast data passed in."""
-    manager, coordinator = _make_manager(
-        zones={1: _zone(1)},
-        modinst=_pyeto_module(forecast_days=2),
-        use_weather_service=True,
-    )
-
-    await manager._perform_schedule_action("calculate", [1], "Nightly")
-
-    coordinator.async_calculate_zone.assert_awaited_once_with(
-        1, {"temperature": 20}, "forecast-data"
-    )
-
-
 async def test_pyeto_forecast_without_weather_service_is_skipped():
     """Forecasting configured without a weather service: skip, do not calculate."""
     manager, coordinator = _make_manager(
@@ -124,21 +96,6 @@ async def test_pyeto_forecast_without_weather_service_is_skipped():
     coordinator.async_calculate_zone.assert_not_awaited()
 
 
-async def test_shared_mapping_is_cleared_once_after_all_zones():
-    """Zones sharing a mapping all get data; the mapping is cleared once, at the end."""
-    manager, coordinator = _make_manager(
-        zones={1: _zone(1, mapping_id=7), 2: _zone(2, mapping_id=7)},
-        mappings={7: {const.MAPPING_DATA: [{"temperature": 20}]}},
-    )
-
-    await manager._perform_schedule_action("calculate", [1, 2], "Nightly")
-
-    assert coordinator.async_calculate_zone.await_count == 2
-    coordinator.store.async_update_mapping.assert_awaited_once_with(
-        7, {const.MAPPING_DATA: []}
-    )
-
-
 async def test_update_action_still_uses_the_update_helpers():
     """The update action is unaffected by the calculate fix."""
     manager, coordinator = _make_manager(zones={1: _zone(1)})
@@ -148,3 +105,26 @@ async def test_update_action_still_uses_the_update_helpers():
 
     coordinator._async_update_all.assert_awaited_once()
     coordinator._async_update_zone.assert_awaited_once_with(1)
+
+
+async def test_calculate_zone_goes_through_the_service_path():
+    """A scheduled per-zone calculation takes the same route as the service.
+
+    This used to gather the weather data itself and call async_calculate_zone
+    directly. It now delegates to async_update_zone_config, which is what the
+    calculate_zone service calls, so the scheduler inherits the per-zone window
+    consumption and the pruning rather than reimplementing them. The invariant
+    the original test protected, that siblings sharing a sensor group do not
+    lose each other's history, lives in tests/test_per_zone_consumption.py.
+    """
+    manager, coordinator = _make_manager(zones={1: _zone(1)})
+
+    await manager._perform_schedule_action("calculate", [1], "Nightly")
+
+    coordinator.async_update_zone_config.assert_awaited_once_with(
+        zone_id=1,
+        data={
+            const.ATTR_CALCULATE: const.ATTR_CALCULATE,
+            const.ATTR_DELETE_WEATHER_DATA: True,
+        },
+    )

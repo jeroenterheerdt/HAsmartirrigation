@@ -489,7 +489,12 @@ class CalculationMixin:
         RETRIEVED_AT list is used, which is only right when every record carries
         every key.
         """
-        last_calc_data = mapping.get(const.MAPPING_DATA_LAST_CALCULATION) or {}
+        # A copy, not the stored dict: this is stamped with a new timestamp
+        # below, and anything that is only looking (a dry run, the live
+        # estimate) must leave the mapping it was handed exactly as it found
+        # it. Bumping that timestamp in place would shorten the interval the
+        # next real calculation works over, and under-water every zone.
+        last_calc_data = dict(mapping.get(const.MAPPING_DATA_LAST_CALCULATION) or {})
         last_calc_data[const.MAPPING_TIMESTAMP] = datetime.now()
 
         for key, d in data_by_sensor.items():

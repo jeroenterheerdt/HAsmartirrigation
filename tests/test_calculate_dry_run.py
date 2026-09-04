@@ -52,7 +52,7 @@ async def test_dry_run_does_not_persist_last_calculation():
     agg = _Aggregator()
     mapping = _mapping()
 
-    result = await agg.apply_aggregates_to_mapping_data(mapping, dry_run=True)
+    result = await agg.apply_aggregates_to_mapping_data(mapping, persist=False)
 
     assert result is not None
     agg.store.async_update_mapping.assert_not_called()
@@ -63,7 +63,7 @@ async def test_real_run_persists_last_calculation():
     agg = _Aggregator()
     mapping = _mapping()
 
-    await agg.apply_aggregates_to_mapping_data(mapping, dry_run=False)
+    await agg.apply_aggregates_to_mapping_data(mapping, persist=True)
 
     agg.store.async_update_mapping.assert_called_once()
     _, changes = agg.store.async_update_mapping.call_args[0]
@@ -77,7 +77,7 @@ async def test_dry_run_leaves_stored_last_calculation_untouched():
     mapping = _mapping(last_calculation=stored)
     agg = _Aggregator()
 
-    await agg.apply_aggregates_to_mapping_data(mapping, dry_run=True)
+    await agg.apply_aggregates_to_mapping_data(mapping, persist=False)
 
     # Same object, same content: no in-place timestamp bump, no new sensor keys.
     assert mapping[const.MAPPING_DATA_LAST_CALCULATION] is stored
@@ -88,7 +88,7 @@ async def test_dry_run_still_aggregates_min_and_max_temperature():
     """Skipping the write must not skip the aggregation itself."""
     agg = _Aggregator()
 
-    result = await agg.apply_aggregates_to_mapping_data(_mapping(), dry_run=True)
+    result = await agg.apply_aggregates_to_mapping_data(_mapping(), persist=False)
 
     assert result[const.MAPPING_MAX_TEMP] == 20.0
     assert result[const.MAPPING_MIN_TEMP] == 10.0
@@ -126,9 +126,14 @@ async def test_dry_run_zone_writes_nothing():
     assert result[const.ZONE_BUCKET] == -7.5
 
 
-async def test_real_run_zone_writes_and_clears():
-    """A normal run still commits the zone and clears the weather data."""
+async def test_real_run_zone_writes_and_consumes_its_window():
+    """A normal run commits the zone and records how far it has read.
+
+    It no longer empties the sensor group: the buffer is shared, so a real run
+    marks its own watermark and the group is pruned to the slowest reader.
+    """
     calc = _zone_calculator()
+    calc.prune_consumed_readings = AsyncMock()
 
     with patch.object(calculation, "async_dispatcher_send"):
         await calc.async_calculate_zone(
@@ -136,7 +141,9 @@ async def test_real_run_zone_writes_and_clears():
         )
 
     calc.store.async_update_zone.assert_called_once()
-    calc.store.async_update_mapping.assert_called_once()
+    written = calc.store.async_update_zone.call_args[0][1]
+    assert written[const.ZONE_LAST_CONSUMED_AT] is not None
+    calc.prune_consumed_readings.assert_awaited_once()
 
 
 def test_summarize_calculations_is_json_serializable():
@@ -309,15 +316,18 @@ async def test_calculate_all_dry_run_does_not_clear_the_weather_data():
     assert results[1][const.ZONE_BUCKET] == -7.5
 
 
-async def test_calculate_all_real_run_clears_the_weather_data():
-    """A normal run still clears the data and re-registers the start event."""
+async def test_calculate_all_real_run_prunes_and_registers_the_start_event():
+    """A normal run prunes what every zone has read, and re-registers the event.
+
+    Pruning replaced the wipe this used to assert: a group can be shared with a
+    zone that did not calculate in this pass, and its history is still owed.
+    """
     calc = _all_zones_calculator()
+    calc.prune_consumed_readings = AsyncMock()
 
     await calc._async_calculate_all(delete_weather_data=True, dry_run=False)
 
-    calc.store.async_update_mapping.assert_called_once()
-    _, changes = calc.store.async_update_mapping.call_args[0]
-    assert changes[const.MAPPING_DATA] == []
+    calc.prune_consumed_readings.assert_awaited()
     calc.register_start_event.assert_awaited_once()
 
 

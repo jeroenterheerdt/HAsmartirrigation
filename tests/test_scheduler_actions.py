@@ -32,7 +32,9 @@ async def test_calculate_all_zones_action():
 
     await manager._perform_schedule_action("calculate", "all", "nightly")
 
-    manager.coordinator._async_calculate_all.assert_awaited_once_with()
+    manager.coordinator._async_calculate_all.assert_awaited_once_with(
+        delete_weather_data=True
+    )
 
 
 @pytest.mark.asyncio

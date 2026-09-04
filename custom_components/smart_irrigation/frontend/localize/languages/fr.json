@@ -494,6 +494,25 @@
       "no_items": "Il n'y a pas encore de zone définie.",
       "title": "Zones",
       "module-comes-from-the-group": "Le moteur de calcul vient du groupe de capteurs de cette zone. Modifiez-le là-bas, et toutes les zones de ce groupe suivent."
+    },
+    "history": {
+      "title": "Historique",
+      "description": "Chaque arrosage comptabilisé par Smart Irrigation pour une zone : quand il a commencé, combien de temps il a duré et quel volume d'eau il a utilisé. Les arrosages sont enregistrés par le contrôle direct des vannes et par l'arrosage observé, et sont conservés 90 jours.",
+      "refresh": "Actualiser",
+      "no-data": "Aucun arrosage n'a encore été enregistré.",
+      "table": {
+        "title": "Arrosages",
+        "start": "Début",
+        "zone": "Zone",
+        "duration": "Durée",
+        "water": "Eau utilisée",
+        "truncated": "Affichage des {count} arrosages les plus récents sur {total}."
+      },
+      "charts": {
+        "total-title": "Eau totale utilisée par jour (30 derniers jours)",
+        "per-zone-title": "Eau utilisée par jour et par zone (30 derniers jours)",
+        "no-data": "Aucune eau utilisée sur cette période."
+      }
     }
   },
   "title": "Smart Irrigation",
@@ -600,5 +619,11 @@
       "parallel": "Parallèle (toutes les zones en même temps)"
     },
     "sequencing_description": "Comment vos zones sont arrosées. Ce réglage détermine la durée dont un déclencheur tient compte lorsqu'il doit finir au lever du soleil : l'une après l'autre prend la somme des durées de chaque zone, toutes en même temps prend la plus longue. Il s'applique que Smart Irrigation pilote les vannes lui-même ou que ce soit votre propre automatisation."
+  },
+  "calculation_log": {
+    "title": "Journal de calcul",
+    "description": "Écrit dans un fichier l'intégralité des données d'entrée de chaque calcul, afin de pouvoir comparer après coup deux journées qui se ressemblent mais qui arrosent très différemment. Chaque calcul ajoute une ligne : les relevés du groupe de capteurs et la façon dont ils ont été agrégés, les valeurs intermédiaires du module (rayonnement solaire, rayonnement net, ET0), ainsi que le réservoir, la durée et le volume obtenus. Désactivé par défaut ; la taille du fichier est limitée et il est archivé par rotation, il peut donc rester activé toute une saison.",
+    "enabled_label": "Journaliser les données de calcul dans un fichier",
+    "file_hint": "Écrit dans config/smart_irrigation/calc_log.jsonl, un enregistrement JSON par ligne. Les enregistrements les plus récents sont aussi inclus dans le téléchargement des diagnostics (coordonnées arrondies, identifiants d'entités supprimés), pour les joindre à un ticket en une seule étape."
   }
 }
