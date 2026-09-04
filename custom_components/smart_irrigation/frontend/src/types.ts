@@ -160,6 +160,12 @@ export class SmartIrrigationModule {
   id?: number;
   name: string;
   description: string;
+  /**
+   * The sensor-group sources this engine reads. Sent by the backend, which
+   * declares it next to the engines, so the editor and the calculation cannot
+   * disagree about what a group needs.
+   */
+  consumes?: string[];
   //duration: number;
   config: object;
   schema: object;
@@ -181,6 +187,11 @@ export class SmartIrrigationMapping {
   data?: any[];
   /** An enclosed environment: no rain reaches the zones using this group. */
   greenhouse?: boolean;
+  /**
+   * The engine this group's sources feed. Undefined means the group has not
+   * adopted one, and the zones using it fall back to their own.
+   */
+  module?: number;
 
   constructor(i: number, n: string, m: object) {
     this.id = i;

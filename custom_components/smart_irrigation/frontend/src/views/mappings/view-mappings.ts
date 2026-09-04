@@ -9,6 +9,7 @@ import {
   deleteMapping,
   fetchConfig,
   fetchMappings,
+  fetchModules,
   saveMapping,
   fetchZones,
   fetchMappingWeatherRecords,
@@ -19,6 +20,7 @@ import {
   SmartIrrigationConfig,
   SmartIrrigationZone,
   SmartIrrigationMapping,
+  SmartIrrigationModule,
   WeatherRecord,
 } from "../../types";
 import { globalStyle } from "../../styles/global-style";
@@ -27,6 +29,7 @@ import { localize } from "../../../localize/localize";
 import {
   DOMAIN,
   MAPPING_CONF_AGGREGATE,
+  MAPPING_MODULE,
   MAPPING_CONF_AGGREGATE_OPTIONS,
   MAPPING_CONF_AGGREGATE_OPTIONS_DEFAULT,
   //removing this as part of beta12. Temperature is the only thing we want to take and we will apply min and max aggregation on our own.
@@ -151,6 +154,9 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
   }
 
   //@property({ type: Array })
+  @property({ type: Array })
+  private modules: SmartIrrigationModule[] = [];
+
   //private allmodules: SmartIrrigationModule[] = [];
 
   @query("#mappingNameInput")
@@ -201,15 +207,17 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
       }
 
       // Fetch all data concurrently to reduce total wait time
-      const [config, zones, mappings] = await Promise.all([
+      const [config, zones, mappings, modules] = await Promise.all([
         fetchConfig(this.hass),
         fetchZones(this.hass),
         fetchMappings(this.hass),
+        fetchModules(this.hass),
       ]);
 
       this.config = config;
       this.zones = zones;
       this.mappings = mappings;
+      this.modules = modules;
 
       // Fetch weather records for each mapping
       this._fetchWeatherRecords();
@@ -604,6 +612,20 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
     const { id, name, mappings } = mapping;
     await saveMapping(this.hass, { id, name, mappings });
   }
+  /**
+   * The sources this group's engine reads, or null when every source applies.
+   *
+   * The list comes from the backend, which declares it next to the engines, so
+   * a source can never be hidden here while the calculation still needs it.
+   */
+  private consumedSources(mapping: SmartIrrigationMapping): string[] | null {
+    if (mapping.module === undefined || mapping.module === null) {
+      return null;
+    }
+    const engine = this.modules.find((m) => m.id === mapping.module);
+    return engine?.consumes ?? null;
+  }
+
   private renderMapping(
     mapping: SmartIrrigationMapping,
     index: number,
@@ -658,6 +680,48 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                   })}
               ></ha-switch>
             </div>
+            <div class="setting-row">
+              <div class="setting-label">
+                ${localize(
+                  "panels.mappings.cards.mapping.module",
+                  this.hass.language,
+                )}
+              </div>
+              <select
+                @change=${(e: Event) => {
+                  const v = (e.target as HTMLSelectElement).value;
+                  this.handleEditMapping(index, {
+                    ...mapping,
+                    [MAPPING_MODULE]: v === "" ? undefined : parseInt(v),
+                  });
+                }}
+              >
+                <option
+                  value=""
+                  ?selected=${mapping.module === undefined ||
+                  mapping.module === null}
+                >
+                  ---${localize("common.labels.select", this.hass.language)}---
+                </option>
+                ${this.modules.map(
+                  (m) =>
+                    html`<option
+                      value="${m.id}"
+                      ?selected=${m.id === mapping.module}
+                    >
+                      ${m.id}: ${m.name}
+                    </option>`,
+                )}
+              </select>
+            </div>
+            <div class="weather-note">
+              ${localize(
+                mapping.module === undefined || mapping.module === null
+                  ? "panels.mappings.cards.mapping.module_undecided"
+                  : "panels.mappings.cards.mapping.module_description",
+                this.hass.language,
+              )}
+            </div>
             ${mapping.greenhouse
               ? html`<div class="weather-note">
                   ${localize(
@@ -676,6 +740,14 @@ class SmartIrrigationViewMappings extends SubscribeMixin(LitElement) {
                   (value !== MAPPING_PRECIPITATION &&
                     value !== MAPPING_CURRENT_PRECIPITATION),
               )
+              // Offer only what this group's engine reads. A group with no
+              // engine yet keeps every source: hiding fields before the user
+              // has said how the group produces its evapotranspiration would
+              // be guessing on their behalf.
+              .filter(([value]) => {
+                const consumes = this.consumedSources(mapping);
+                return consumes === null || consumes.includes(value);
+              })
               .map(([value]) => this.renderMappingSetting(index, value))}
             ${numberofzonesusingthismapping
               ? html`<div class="weather-note">

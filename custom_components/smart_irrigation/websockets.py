@@ -22,6 +22,7 @@ from homeassistant.helpers.dispatcher import (
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
 from . import const
+from .calcmodules.consumes import consumed_mappings
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -356,10 +357,21 @@ async def websocket_get_zones(hass: HomeAssistant, connection, msg):
 
 @async_response
 async def websocket_get_modules(hass: HomeAssistant, connection, msg):
-    """Publish module data."""
+    """Publish module data, with the sources each engine reads.
+
+    ``consumes`` travels with the module so the sensor-group editor can offer
+    only the sources that engine uses. It is computed here rather than stored:
+    it is a property of the code, not of the user's configuration.
+    """
     coordinator = hass.data[const.DOMAIN]["coordinator"]
     modules = await coordinator.store.async_get_modules()
-    connection.send_result(msg["id"], modules)
+    connection.send_result(
+        msg["id"],
+        [
+            {**module, "consumes": consumed_mappings(module.get("name"))}
+            for module in modules
+        ],
+    )
 
 
 @async_response

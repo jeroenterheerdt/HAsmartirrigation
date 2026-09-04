@@ -747,6 +747,23 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
     }
   }
 
+  /**
+   * Whether this zone's sensor group has adopted an engine.
+   *
+   * When it has, the group is where that choice belongs and the zone's own
+   * selector would be a second, contradictory control. When it has not, either
+   * because the group is shared by zones that disagree or because it predates
+   * the move, the zone keeps choosing: removing the control would leave those
+   * installs with no way to change it at all.
+   */
+  private groupDecidesEngine(zone: SmartIrrigationZone): boolean {
+    if (zone.mapping === undefined || zone.mapping === null) {
+      return false;
+    }
+    const group = this.mappings.find((m) => m.id === zone.mapping);
+    return group?.module !== undefined && group?.module !== null;
+  }
+
   private renderTheOptions(thelist: object, selected?: number): TemplateResult {
     if (!this.hass) {
       return html``;
@@ -951,17 +968,24 @@ class SmartIrrigationViewZones extends SubscribeMixin(LitElement) {
                       [ZONE_DURATION]: 0,
                     }),
                 )}
-                ${this._selectRow(
-                  localize("common.labels.module", lang),
-                  this.renderTheOptions(this.modules, zone.module),
-                  (e: Event) => {
-                    const v = (e.target as HTMLSelectElement).value;
-                    this.handleEditZone(index, {
-                      ...zone,
-                      [ZONE_MODULE]: v === "" ? undefined : parseInt(v),
-                    });
-                  },
-                )}
+                ${this.groupDecidesEngine(zone)
+                  ? html`<div class="weather-note">
+                      ${localize(
+                        "panels.zones.module-comes-from-the-group",
+                        lang,
+                      )}
+                    </div>`
+                  : this._selectRow(
+                      localize("common.labels.module", lang),
+                      this.renderTheOptions(this.modules, zone.module),
+                      (e: Event) => {
+                        const v = (e.target as HTMLSelectElement).value;
+                        this.handleEditZone(index, {
+                          ...zone,
+                          [ZONE_MODULE]: v === "" ? undefined : parseInt(v),
+                        });
+                      },
+                    )}
                 ${this._selectRow(
                   localize("panels.zones.labels.mapping", lang),
                   this.renderTheOptions(this.mappings, zone.mapping),

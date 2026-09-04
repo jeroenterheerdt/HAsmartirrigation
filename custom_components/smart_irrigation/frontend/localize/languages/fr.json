@@ -313,7 +313,10 @@
           },
           "luminous_efficacy": "Efficacité lumineuse",
           "greenhouse": "Serre",
-          "greenhouse_description": "Un environnement clos : serre, tunnel, tout ce qui est sous verre ou plastique. Aucune pluie n'atteint ces zones, donc la précipitation est exclue de leur bilan hydrique et ses champs sont masqués. Deux réglages restent à votre main, faute de pouvoir être devinés : donnez au vent une valeur statique proche de 0, car le calcul suppose l'air libre, et utilisez un capteur de luminosité pour le rayonnement solaire, car le vitrage filtre le ciel."
+          "greenhouse_description": "Un environnement clos : serre, tunnel, tout ce qui est sous verre ou plastique. Aucune pluie n'atteint ces zones, donc la précipitation est exclue de leur bilan hydrique et ses champs sont masqués. Deux réglages restent à votre main, faute de pouvoir être devinés : donnez au vent une valeur statique proche de 0, car le calcul suppose l'air libre, et utilisez un capteur de luminosité pour le rayonnement solaire, car le vitrage filtre le ciel.",
+          "module": "Moteur de calcul",
+          "module_description": "Ce groupe ne propose que les sources lues par ce moteur. Les zones qui l'utilisent héritent du choix.",
+          "module_undecided": "Aucun moteur choisi, donc toutes les sources sont proposées et chaque zone utilisant ce groupe garde le sien. Choisissez-en un pour ne voir que les sources qu'il lit."
         }
       },
       "description": "Ajouter un ou plusieurs groupes de capteurs qui récupèrent les données météo de Weather service, de capteurs locaux ou d'une combinaison de tous ceux-ci. Vous pouvez associer chaque groupe de capteurs avec une ou plusieurs zones",
@@ -419,7 +422,8 @@
         "irrigation-threshold": "Seuil d'arrosage"
       },
       "no_items": "Il n'y a pas encore de zone définie.",
-      "title": "Zones"
+      "title": "Zones",
+      "module-comes-from-the-group": "Le moteur de calcul vient du groupe de capteurs de cette zone. Modifiez-le là-bas, et toutes les zones de ce groupe suivent."
     }
   },
   "title": "Smart Irrigation",

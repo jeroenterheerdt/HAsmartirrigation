@@ -65,6 +65,7 @@ export const MAPPING_DEWPOINT = "Dewpoint";
 export const MAPPING_EVAPOTRANSPIRATION = "Evapotranspiration";
 export const MAPPING_HUMIDITY = "Humidity";
 export const MAPPING_PRECIPITATION = "Precipitation";
+export const MAPPING_MODULE = "module";
 export const MAPPING_CURRENT_PRECIPITATION = "Current Precipitation";
 export const MAPPING_PRESSURE = "Pressure";
 export const MAPPING_SOLRAD = "Solar Radiation";
