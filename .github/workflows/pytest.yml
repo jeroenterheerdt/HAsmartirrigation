@@ -66,3 +66,40 @@ jobs:
 
       - name: Check code formatting with black
         run: black --check custom_components/smart_irrigation/
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Smart Irrigation
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: custom_components/smart_irrigation/frontend/package-lock.json
+
+      # The panel is thousands of lines that nothing checked until now: a break
+      # in it is invisible to the Python suite and only shows up in someone's
+      # browser.
+      - name: Install dependencies
+        working-directory: custom_components/smart_irrigation/frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: custom_components/smart_irrigation/frontend
+        run: npm run lint
+
+      - name: Run unit tests
+        working-directory: custom_components/smart_irrigation/frontend
+        run: npm run test
+
+      - name: Check the committed bundle matches the sources
+        working-directory: custom_components/smart_irrigation/frontend
+        run: |
+          npx rollup -c --bundleConfigAsCjs
+          cd ../../..
+          git diff --exit-code --stat -- custom_components/smart_irrigation/frontend/dist \
+            || { echo "::error::The committed bundle does not match the sources. Run the build and commit dist/."; exit 1; }
