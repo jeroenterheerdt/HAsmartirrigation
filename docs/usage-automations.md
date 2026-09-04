@@ -18,7 +18,25 @@ Experts say you should water deeply but infrequently to avoid overwatering and e
 
 The examples on this page don't use a timer - see [this discussion](https://github.com/altmenorg/HAsmartirrigation/discussions/361) for an example of using a timer for extra safety.
 
-Also, check out the [blueprints we provide](https://github.com/altmenorg/HAsmartirrigation/tree/master/blueprints).
+## Blueprints we provide
+
+A blueprint is a parameterised mould for an automation: you import it once, pick your entities from filtered dropdowns, and Home Assistant writes the automation for you. Import from the raw URL of the file, or browse [the whole folder](https://github.com/altmenorg/HAsmartirrigation/tree/master/blueprints).
+
+Pick the one that matches how your valves are actually driven:
+
+| Blueprint | Use it when |
+| --- | --- |
+| `automation/Standard Irrigation.yaml` | A plain switch, valve or input_boolean per zone. Turns it on for the calculated duration, then resets the bucket. Has an optional pause switch. |
+| `automation/esphome.yaml` | An ESPHome device that takes the duration itself. |
+| `script/simple-scheduler.yaml` | A script rather than an automation, if you prefer to call irrigation from elsewhere. |
+| `automation/Irrigation Unlimited adjust time single zone.yaml` | Irrigation Unlimited runs your schedule and you want Smart Irrigation to set the run time of one zone through `adjust_time`. |
+| `automation/Irrigation Unlimited adjust time sequence.yaml` | The same for a whole IU sequence, scaling every zone in it. |
+| `automation/Irrigation Unlimited reset bucket.yaml` | Pair with either of the two above: resets the bucket when IU reports the run finished. |
+| `weather_responsive_scheduling.yaml` | You want a seasonal multiplier applied automatically and runs skipped on cold or windy days. |
+
+With Irrigation Unlimited, note that it exposes **binary sensors**, not switches: Smart Irrigation tells it how long to run through `adjust_time` and IU does the running. Do not drive the valve yourself in parallel, or the two will fight.
+
+If you use **observed watering** or **direct valve control** (see [closed loop](configuration-closed-loop.md)), do not use a blueprint that calls `reset_bucket`: the integration credits the bucket itself and the two would count twice.
 
 ### Example 1: one valve, once per week irrigation if duration > 0 or if the bucket < - 25 mm:
 

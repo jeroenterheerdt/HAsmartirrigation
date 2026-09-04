@@ -27,7 +27,10 @@ blueprint:
       selector:
         entity:
           filter:
-            - device_class: duration
+            # Narrow to this integration: a bare duration filter offers every
+            # duration sensor in the house.
+            - integration: smart_irrigation
+              device_class: duration
 
 variables:
   duration: !input irrigation_zone

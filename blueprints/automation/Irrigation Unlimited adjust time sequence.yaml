@@ -9,7 +9,10 @@ blueprint:
       selector:
         entity:
           filter:
-            - device_class: duration
+            # Narrow to this integration: a bare duration filter offers every
+            # duration sensor in the house.
+            - integration: smart_irrigation
+              device_class: duration
 
     unlimited_sequence:
       name: Unlimited sequence
@@ -44,13 +47,17 @@ trigger:
   at: !input time_on
 
 condition:
+  # `duration` holds the entity id of the Smart Irrigation zone, so it has to
+  # reach states() unquoted. Quoting it looked up an entity literally named
+  # "duration", which does not exist: the condition never passed, and had it
+  # passed the adjustment would have been sent as zero seconds.
   - condition: template
-    value_template: "{{ (states('duration') | float(-1)) >= 0 }}"
+    value_template: "{{ (states(duration) | float(-1)) >= 0 }}"
 
 action:
   - service: irrigation_unlimited.adjust_time
     data:
-      actual: "{{ timedelta(seconds=states('duration') | int(0)) }}"
+      actual: "{{ timedelta(seconds=states(duration) | int(0)) }}"
       # 2. Adjust a sequence.
       entity_id: !input unlimited_sequence
       sequence_id: !input unlimited_sequence_id

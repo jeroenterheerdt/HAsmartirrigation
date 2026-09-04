@@ -89,21 +89,27 @@ trigger:
   - platform: time
     at: "06:00:00"
 
+# A blueprint input is not a Jinja variable: it has to be bound with !input,
+# either in place or through a variables block, before a template can read it.
+variables:
+  weather: !input weather_entity
+  rain: !input rain_sensor
+  spring: !input seasonal_multiplier_spring
+  summer: !input seasonal_multiplier_summer
+  autumn: !input seasonal_multiplier_autumn
+  winter: !input seasonal_multiplier_winter
+
 condition:
   # Check if it's not raining (if rain sensor is configured)
-  - condition: or
-    conditions:
-      - condition: template
-        value_template: "{{ rain_sensor == none }}"
-      - condition: state
-        entity_id: !input rain_sensor
-        state: "off"
+  - condition: template
+    value_template: >
+      {{ rain is none or rain == '' or is_state(rain, 'off') }}
 
 action:
   - variables:
       current_month: "{{ now().month }}"
-      current_temp: "{{ state_attr(weather_entity, 'temperature') | float }}"
-      current_wind: "{{ state_attr(weather_entity, 'wind_speed') | float }}"
+      current_temp: "{{ state_attr(weather, 'temperature') | float(0) }}"
+      current_wind: "{{ state_attr(weather, 'wind_speed') | float(0) }}"
       temp_threshold: !input temperature_threshold
       wind_threshold: !input wind_threshold
       
@@ -111,13 +117,13 @@ action:
       seasonal_multiplier: >
         {% set month = current_month %}
         {% if month in [3, 4, 5] %}
-          {{ seasonal_multiplier_spring }}
+          {{ spring }}
         {% elif month in [6, 7, 8] %}
-          {{ seasonal_multiplier_summer }}
+          {{ summer }}
         {% elif month in [9, 10, 11] %}
-          {{ seasonal_multiplier_autumn }}
+          {{ autumn }}
         {% else %}
-          {{ seasonal_multiplier_winter }}
+          {{ winter }}
         {% endif %}
 
   # Check weather conditions
