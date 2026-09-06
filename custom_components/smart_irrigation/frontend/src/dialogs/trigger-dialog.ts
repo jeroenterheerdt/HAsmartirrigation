@@ -24,7 +24,6 @@ export interface TriggerDialogParams {
   triggerIndex?: number;
 }
 
-
 /** The hour a fixed-time trigger falls back to when none has been set. */
 const TRIGGER_DEFAULT_AT = "06:00";
 
