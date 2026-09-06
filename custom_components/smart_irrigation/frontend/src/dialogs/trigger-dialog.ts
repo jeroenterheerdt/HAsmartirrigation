@@ -24,6 +24,36 @@ export interface TriggerDialogParams {
   triggerIndex?: number;
 }
 
+
+/** The hour a fixed-time trigger falls back to when none has been set. */
+const TRIGGER_DEFAULT_AT = "06:00";
+
+/**
+ * The trigger as the dialog should hold it while being edited.
+ *
+ * Every type gets the fields it uses and none of the others, so switching type
+ * cannot leave a stale angle or hour behind. Each type must carry its own
+ * field: dropping one here makes the input fall back to its default, and saving
+ * then writes that default back, which is how a fixed time could never be
+ * changed from 06:00.
+ */
+export function triggerForEditing(t: IrrigationStartTrigger) {
+  const base = {
+    type: t.type,
+    name: t.name ?? "",
+    enabled: t.enabled ?? true,
+    offset_minutes: t.offset_minutes ?? 0,
+    account_for_duration: t.account_for_duration ?? true,
+  };
+  if (t.type === TRIGGER_TYPE_SOLAR_AZIMUTH) {
+    return { ...base, azimuth_angle: t.azimuth_angle ?? 90 };
+  }
+  if (t.type === TRIGGER_TYPE_TIME) {
+    return { ...base, at: t.at ?? TRIGGER_DEFAULT_AT };
+  }
+  return base;
+}
+
 @customElement("smart-irrigation-trigger-dialog")
 export class TriggerDialog extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -68,23 +98,7 @@ export class TriggerDialog extends LitElement {
     } else if (params.trigger) {
       // Defensive: fill in missing fields for editing
       const t = params.trigger;
-      this._trigger =
-        t.type === TRIGGER_TYPE_SOLAR_AZIMUTH
-          ? {
-              type: t.type,
-              name: t.name ?? "",
-              enabled: t.enabled ?? true,
-              offset_minutes: t.offset_minutes ?? 0,
-              azimuth_angle: t.azimuth_angle ?? 90,
-              account_for_duration: t.account_for_duration ?? true,
-            }
-          : {
-              type: t.type,
-              name: t.name ?? "",
-              enabled: t.enabled ?? true,
-              offset_minutes: t.offset_minutes ?? 0,
-              account_for_duration: t.account_for_duration ?? true,
-            };
+      this._trigger = triggerForEditing(t);
     } else {
       this._trigger = undefined;
     }
@@ -117,7 +131,7 @@ export class TriggerDialog extends LitElement {
           this._trigger = {
             ...rest,
             type: selValue,
-            at: this._trigger.at ?? "06:00",
+            at: this._trigger.at ?? TRIGGER_DEFAULT_AT,
           } as IrrigationStartTrigger;
         } else {
           // drop the fields that belong to the type being switched away from
@@ -359,7 +373,7 @@ export class TriggerDialog extends LitElement {
                   <input
                     class="form-input"
                     type="time"
-                    .value=${this._trigger.at || "06:00"}
+                    .value=${this._trigger.at || TRIGGER_DEFAULT_AT}
                     @input=${this._atChanged}
                   />
                 </div>
